@@ -10,7 +10,7 @@ const int CONSTRUCT_VALUE = 50;
 
 Random _shotspreadrandom(0x11598); //clientside
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.getCurrentScript().tickFrequency = 2;
 
@@ -21,16 +21,16 @@ void onInit( CBlob@ this )
 	this.addCommandID("disable");
    
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer( "weapon", 16, 16 );
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
     if (layer !is null)
     {
         layer.SetRelativeZ(2);
         layer.SetLighting( false );
-        Animation@ anim = layer.addAnimation( "fire", Maths::Round( DECONSTRUCT_RATE ), false );
+        Animation@ anim = layer.addAnimation("fire", Maths::Round( DECONSTRUCT_RATE ), false);
         anim.AddFrame(Block::HARVESTER_A2);
         anim.AddFrame(Block::HARVESTER_A1);
-               
-		Animation@ anim3 = layer.addAnimation( "default", 1, false );
+
+		Animation@ anim3 = layer.addAnimation("default", 1, false);
 		anim3.AddFrame(Block::HARVESTER_A1);
         layer.SetAnimation("default");  
     }
@@ -44,18 +44,18 @@ void onInit( CBlob@ this )
  
 void onTick( CBlob@ this )
 {
-	if ( this.getShape().getVars().customData <= 0 )//not placed yet
+	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
 		
 	u32 gameTime = getGameTime();
 	
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer( "laser" );
+    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 	
 	//kill laser after a certain time
-	if ( laser !is null && this.get_u32("fire time") + DECONSTRUCT_RATE < gameTime )
+	if (laser !is null && this.get_u32("fire time") + DECONSTRUCT_RATE < gameTime)
 	{
-		if ( sprite.getEmitSoundPaused() == false )
+		if (!sprite.getEmitSoundPaused())
 		{
 			sprite.SetEmitSoundPaused(true);
 		}	
@@ -63,58 +63,51 @@ void onTick( CBlob@ this )
 	}
 	
 	//don't shoot if docked on mothership
-	if ( getNet().isServer() && ( gameTime + this.getNetworkID() * 33 ) % 15 == 0 )//every 1 sec
+	if (isServer() && (gameTime + this.getNetworkID() * 33) % 15 == 0)//every 1 sec
 	{	
-		Island@ isle = getIsland( this.getShape().getVars().customData );
-		if ( isle !is null )
+		Island@ isle = getIsland(this.getShape().getVars().customData);
+		if (isle !is null)
 		{
-			if ( isle.isMothership )
+			if (isle.isMothership)
 			{			
 				//don't shoot if docked on mothership
 				//CBlob@ core = getMothership( this.getTeamNum() );
 				//if ( core !is null )
 				//	this.set_bool( "mShipDocked", !coreLinkedDirectional( this, gameTime, core.getPosition() ) ); //very buggy
-				this.set_bool( "mShipDocked", false );
+				this.set_bool("mShipDocked", false);
 			} 
 			else
-				this.set_bool( "mShipDocked", false );
+				this.set_bool("mShipDocked", false);
 		}
 	}
 }
  
-bool canShoot( CBlob@ this )
+bool canShoot(CBlob@ this)
 {
-	return ( this.get_u32("fire time") + DECONSTRUCT_RATE < getGameTime() );
+	return (this.get_u32("fire time") + DECONSTRUCT_RATE < getGameTime());
 }
  
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if ( !canShoot(this) )
-			return;
+		if (!canShoot(this)) return;
 		
 		u16 shooterID;
-		if ( !params.saferead_u16(shooterID) )
-			return;
+		if (!params.saferead_u16(shooterID)) return;
 			
 		CBlob@ shooter = getBlobByNetworkID( shooterID );
-		if (shooter is null)
-			return;
-		
-		bool isServer = getNet().isServer();
-		Vec2f pos = this.getPosition();
+		if (shooter is null) return;
 		
 		Island@ island = getIsland( this.getShape().getVars().customData );
-		if ( island is null )
-			return;
+		if (island is null) return;
 
 		this.set_u32("fire time", getGameTime());
 			
 		//effects
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.getSpriteLayer( "weapon" );
-		layer.SetAnimation( "default" );
+		CSpriteLayer@ layer = sprite.getSpriteLayer("weapon");
+		layer.SetAnimation("default");
 	   
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 		   		
@@ -127,22 +120,22 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		bool killed = false;
 		bool blocked = false;
 			
-		if( map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos ) )
+		if (map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;	  
-				if(b is null || b is this) continue;
+				if (b is null || b is this) continue;
 
 				const int color = b.getShape().getVars().customData;
 				const int blockType = b.getSprite().getFrame();
 				const bool isBlock = b.getName() == "block";
 
-				if ( isBlock )
+				if (isBlock)
 				{
 					killed = true;
 					
-					if ( getNet().isClient() )//effects
+					if (isClient())//effects
 					{
 						sprite.RemoveSpriteLayer("laser");
 						CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "ReclaimBeam.png", 16, 16);
@@ -154,9 +147,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							laser.SetVisible(true);
 							f32 laserLength = Maths::Max(0.1f, (hi.hitpos - barrelPos).getLength() / 16.0f);						
 							laser.ResetTransform();						
-							laser.ScaleBy( Vec2f(laserLength, 1.0f) );							
-							laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f) );							
-							laser.RotateBy( 0.0f, Vec2f());
+							laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+							laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));							
+							laser.RotateBy(0.0f, Vec2f());
 							laser.setRenderStyle(RenderStyle::light);
 							laser.SetRelativeZ(1);
 						}
@@ -165,10 +158,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 					}			
 								
 					CPlayer@ thisPlayer = shooter.getPlayer();						
-					if ( thisPlayer is null ) 
-						return;		
+					if (thisPlayer is null) return;		
 					
-					Vec2f aimVector = hi.hitpos - pos;	 
+					Vec2f aimVector = hi.hitpos - barrelPos;	 
 					
 					if (b !is null)
 					{		
@@ -177,7 +169,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 
 						if (blockType == Block::STATION || blockType == Block::MINISTATION) continue;
 
-						Island@ island = getIsland( b.getShape().getVars().customData );
+						Island@ island = getIsland(b.getShape().getVars().customData);
 							
 						const f32 bCost = b.get_u32("cost");
 						f32 bHealth = b.getHealth();
@@ -186,23 +178,23 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 						f32 currentReclaim = b.get_f32("current reclaim");
 						
 						f32 fullConstructAmount;
-						if ( bCost > 0 )
+						if (bCost > 0)
 							fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim;
 						else
 							fullConstructAmount = 0.0f;
 										
-						if ( island !is null && bCost > 0)
+						if (island !is null && bCost > 0)
 						{
 							string islandOwnerName = island.owner;
-							CBlob@ mBlobOwnerBlob = getBlobByNetworkID(b.get_u16( "ownerID" ));
+							CBlob@ mBlobOwnerBlob = getBlobByNetworkID(b.get_u16("ownerID"));
 							
-							if ( !(blockType == Block::MOTHERSHIP5) )
+							if (!(blockType == Block::MOTHERSHIP5))
 							{
 								f32 deconstructAmount = 0;
 								if ( (islandOwnerName == "" && !island.isMothership)
 									|| (islandOwnerName == "" && b.get_string( "playerOwner" ) == "")
 									|| (islandOwnerName == thisPlayer.getUsername())
-									|| (b.get_string( "playerOwner" ) == thisPlayer.getUsername()) )
+									|| (b.get_string( "playerOwner" ) == thisPlayer.getUsername()))
 								{
 									deconstructAmount = fullConstructAmount; 
 								}
@@ -211,14 +203,15 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 									deconstructAmount = (1.0f/bCost)*initialReclaim;
 								}				
 								
-								if ( (currentReclaim - deconstructAmount) <=0 )
+								if ((currentReclaim - deconstructAmount) <= 0)
 								{
 									string cName = thisPlayer.getUsername();
 									u16 cBooty = server_getPlayerBooty( cName );
 
-									server_setPlayerBooty( cName, cBooty + bCost*(bHealth/bInitHealth) );
-									directionalSoundPlay( "/ChaChing.ogg", pos );
+									server_setPlayerBooty(cName, cBooty + bCost*(bHealth/bInitHealth));
+									directionalSoundPlay("/ChaChing.ogg", barrelPos);
 
+									b.Tag("disabled");
 									b.server_Die();
 								}
 								else
@@ -226,19 +219,19 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							}
 						}
 					}				
-					if ( killed ) break;
+					if (killed) break;
 				}
 			}
 		
-		if ( !blocked )
+		if (!blocked)
 		{
-			if ( sprite.getEmitSoundPaused() == true )
+			if (sprite.getEmitSoundPaused())
 			{
 				sprite.SetEmitSoundPaused(false);
 			}
 		}
 		
-		if ( !killed && getNet().isClient() )//full length 'laser'
+		if (!killed && isClient())//full length 'laser'
 		{
 			sprite.RemoveSpriteLayer("laser");
 			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "ReclaimBeam.png", 16, 16);
@@ -252,17 +245,17 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				laser.ResetTransform();						
 				laser.ScaleBy( Vec2f(laserLength, 1.0f) );							
 				laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f) );								
-				laser.RotateBy( 0.0f, Vec2f());
+				laser.RotateBy(0.0f, Vec2f());
 				laser.setRenderStyle(RenderStyle::light);
 				laser.SetRelativeZ(1);
 			}
 			
-			MakeWaterParticle( barrelPos + aimVector * (BULLET_RANGE), Vec2f_zero );
+			MakeWaterParticle(barrelPos + aimVector * (BULLET_RANGE), Vec2f_zero);
 		}
     }
 }
 
-void hitEffects( CBlob@ hitBlob, Vec2f worldPoint )
+void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 {
 	CSprite@ sprite = hitBlob.getSprite();
 	const int blockType = sprite.getFrame();
@@ -270,16 +263,17 @@ void hitEffects( CBlob@ hitBlob, Vec2f worldPoint )
 	sparks(worldPoint, 4);
 }
 
-Random _sprk_r;
 void sparks(Vec2f pos, int amount)
 {
+	Random _sprk_r;
+
 	for (int i = 0; i < amount; i++)
     {
         Vec2f vel(_sprk_r.NextFloat() * 1.0f, 0);
         vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
 
         CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true );
-        if(p is null) return; //bail if we stop getting particles
+        if (p is null) return; //bail if we stop getting particles
 
         p.timeout = 10 + _sprk_r.NextRanged(20);
         p.scale = 0.5f + _sprk_r.NextFloat();

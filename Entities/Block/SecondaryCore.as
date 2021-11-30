@@ -11,7 +11,7 @@ void onInit(CBlob@ this)
 {
   this.Tag('secondaryCore');
 
-  if (getNet().isServer())
+  if (isServer())
   {
     this.server_SetHealth(INITIAL_HEALTH);
   }
@@ -39,7 +39,7 @@ void onTick(CBlob@ this)
 {
   uint8 team = this.getTeamNum();
   
-  if (getNet().isServer())
+  if (isServer())
   { 
     if (getGameTime() % 60 == 0)
     {
@@ -140,7 +140,7 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 
 void onHealthChange(CBlob@ this, float old)
 {
-  if (getNet().isClient())
+  if (isClient())
   {
     updateFrame(this);
   }
@@ -160,6 +160,7 @@ void onDie(CBlob@ this)
 {
   if (this.getShape().getVars().customData > 0)
   {
-    Destruct::self(this, BLAST_RADIUS);
+	if (!this.hasTag("disabled"))
+		Destruct::self(this, BLAST_RADIUS);
   }
 }
