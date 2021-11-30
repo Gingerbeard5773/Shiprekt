@@ -15,5 +15,5 @@ https://discord.gg/qUENfkAX3u
   <li><b>Chrispin</b> - Creator</li>
   <li><b>Strathos</b> - Creator</li>
   <li><b>Gingerbeard</b> - Maintainer, scripting</li>
-  <li><b>Daskew</b> - Hoster, Mapper</li>
+  <li><b>Daskew</b> - Hoster, Mapper, Designer</li>
 </ul>
