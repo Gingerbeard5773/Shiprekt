@@ -108,9 +108,10 @@ void onRender(CRules@ this)
 		string lastChangesInfo = "Last changes :\n"
 
 		+ "- 11-30-2021 - By Gingerbeard\n"
-		+ "   Mini-station takes half as much time to capture.\n"
-		+ "   Auxillary Core can now be deconstructed without detonating.\n"
-		+ "   Harvesters can now properly deconstruct bombs.\n";
+		+ "  * Mini-station takes half as much time to capture.\n"
+		+ "  * Explosives can now be deconstructed properly without detonating.\n"
+		+ "  * Auxillary Core can only be created at your mothership.\n"
+		+ "  * Harvesters can now properly deconstruct bombs.\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);

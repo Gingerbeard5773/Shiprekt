@@ -5,32 +5,32 @@ int angle = 0;
 f32 zoom = 1.0f;
 const f32 ZOOM_SPEED = 0.1f;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.getCurrentScript().runFlags |= Script::tick_myplayer;
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
 	CCamera@ camera = getCamera();
 	if (camera is null)
 		return;
 		
-	Island@ island = getIsland( this );
-	if ( island !is null && island.centerBlock !is null )
+	Island@ island = getIsland(this);
+	if (island !is null && island.centerBlock !is null)
 	{
 		//find best refBlock
-		CBlob@ refBlob = getIslandBlob( this );
-		if ( refBlob !is null )
+		CBlob@ refBlob = getIslandBlob(this);
+		if (refBlob !is null)
 		{
 			//find rotation
 			f32 camAngle = camera.getRotation();
 			f32 nearest_angle = refBlob.getAngleDegrees();
 					
-			while(nearest_angle > camAngle + 45)
+			while (nearest_angle > camAngle + 45)
 				nearest_angle -= 90.0f;
 
-			while(nearest_angle < camAngle - 45)
+			while (nearest_angle < camAngle - 45)
 				nearest_angle += 90.0f;
 
 			angle = nearest_angle;
@@ -42,22 +42,23 @@ void onTick( CBlob@ this )
 	{
 		CBlob@ seat = this.getAttachmentPoint(0).getOccupied();
 		
-		if(seat !is null && seat.hasTag("seat"))
+		if (seat !is null && seat.hasTag("seat"))
 		{
 			const f32 seat_angle = seat.getAngleDegrees() + 90.0f;
 			angle = seat_angle;
 		}
 	}
 
-	CameraRotation( angle );//set rotation
+	CameraRotation(angle);//set rotation
 	
 	CControls@ controls = getControls();
-	bool zoomIn = controls.isKeyJustPressed( controls.getActionKeyKey( AK_ZOOMIN ) );
-	bool zoomOut = controls.isKeyJustPressed( controls.getActionKeyKey( AK_ZOOMOUT ) );
+	bool zoomIn = controls.isKeyJustPressed( controls.getActionKeyKey(AK_ZOOMIN));
+	bool zoomOut = controls.isKeyJustPressed( controls.getActionKeyKey(AK_ZOOMOUT));
 	// zoom
 	if (zoom == 2.0f)	
 	{
-		if (zoomOut){
+		if (zoomOut)
+		{
   			zoom = 1.0f;
   		}
 		else if (camera.targetDistance < zoom)
@@ -65,20 +66,21 @@ void onTick( CBlob@ this )
 	}
 	else if (zoom == 1.0f)	
 	{
-		if (zoomOut){
+		if (zoomOut)
+		{
   			zoom = 0.5f;
   		}
-  		else if (zoomIn){
+  		else if (zoomIn)
+		{
   			zoom = 2.0f;
   		}
-  		else if (camera.targetDistance < zoom)
-			camera.targetDistance += ZOOM_SPEED;	
-		else if (camera.targetDistance > zoom)
-			camera.targetDistance -= ZOOM_SPEED;	
+  		else 
+			camera.targetDistance < zoom ? camera.targetDistance += ZOOM_SPEED : camera.targetDistance -= ZOOM_SPEED;
 	}
 	else if (zoom == 0.5f)
 	{
-		if (zoomIn){
+		if (zoomIn)
+		{
   			zoom = 1.0f;
   		}
 		else if (camera.targetDistance > zoom)	
@@ -86,17 +88,19 @@ void onTick( CBlob@ this )
 	}
 }
 
-void CameraRotation( f32 angle )
+void CameraRotation(f32 angle)
 {
 	CCamera@ camera = getCamera();
 	if (camera !is null)
 	{
 		f32 camAngle = camera.getRotation();
 		f32 rotdelta = angle - camAngle;
-		if (rotdelta > 180) {
+		if (rotdelta > 180)
+		{
 			rotdelta -= 360;
 		}
-		if (rotdelta < -180) {
+		if (rotdelta < -180)
+		{
 			rotdelta += 360;
 		}
 
@@ -107,14 +111,16 @@ void CameraRotation( f32 angle )
 		const f32 rot = rotdelta / 1.75f;
 		camAngle += rot;
 
-		while(camAngle < -180.0f){
+		while(camAngle < -180.0f)
+		{
 			camAngle += 360.0f;
 		}
-		while(camAngle > 180.0f){
+		while(camAngle > 180.0f)
+		{
 			camAngle -= 360.0f;
 		}
 		
-		camera.setRotation( camAngle );
+		camera.setRotation(camAngle);
 	}
 }
 
@@ -129,9 +135,9 @@ void onSetPlayer( CBlob@ this, CPlayer@ player )
 	}
 }
 
-void onDie( CBlob@ this )
+void onDie(CBlob@ this)
 {
-	if(this.isMyPlayer())
+	if (this.isMyPlayer())
 	{
 		CCamera@ camera = getCamera();
 		if (camera !is null)
