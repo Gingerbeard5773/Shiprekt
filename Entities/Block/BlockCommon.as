@@ -42,7 +42,7 @@ namespace Block
 		HARVESTER_A1 = 67,
 		HARVESTER_A2 = 68,
 
-		PATCHER = 50,
+		PATCHER = 51,
 		PATCHER_A1 = 69,
 		PATCHER_A2 = 70,
 		

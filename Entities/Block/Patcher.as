@@ -1,8 +1,9 @@
-#include "WaterEffects.as"
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
+#include "WaterEffects.as";
+#include "BlockCommon.as";
+#include "IslandsCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
+#include "ParticleSparks.as";
  
 const f32 BULLET_RANGE = 100.0f;
 const f32 CONSTRUCT_RATE = 14.0f; //higher values = higher recover
@@ -64,7 +65,7 @@ void onTick( CBlob@ this )
 	}
 	
 	//don't shoot if docked on mothership
-	if ( getNet().isServer() && ( gameTime + this.getNetworkID() * 33 ) % 15 == 0 )//every 1 sec
+	if (isServer() && (gameTime + this.getNetworkID() * 33) % 15 == 0)//every 1 sec
 	{	
 		Island@ isle = getIsland( this.getShape().getVars().customData );
 		if ( isle !is null )
@@ -310,9 +311,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				}
 			}
 		
-		if ( !blocked )
+		if (!blocked)
 		{
-			if ( sprite.getEmitSoundPaused() == true )
+			if (sprite.getEmitSoundPaused())
 			{
 				sprite.SetEmitSoundPaused(false);
 			}
@@ -342,27 +343,10 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
     }
 }
 
-void hitEffects( CBlob@ hitBlob, Vec2f worldPoint )
+void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 {
 	CSprite@ sprite = hitBlob.getSprite();
 	const int blockType = sprite.getFrame();
 
 	sparks(worldPoint, 4);
-}
-
-Random _sprk_r;
-void sparks(Vec2f pos, int amount)
-{
-	for (int i = 0; i < amount; i++)
-    {
-        Vec2f vel(_sprk_r.NextFloat() * 1.0f, 0);
-        vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
-
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true );
-        if(p is null) return; //bail if we stop getting particles
-
-        p.timeout = 10 + _sprk_r.NextRanged(20);
-        p.scale = 0.5f + _sprk_r.NextFloat();
-        p.damping = 0.95f;
-    }
 }

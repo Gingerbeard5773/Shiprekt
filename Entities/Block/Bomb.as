@@ -194,42 +194,42 @@ void StartDetonation(CBlob@ this)//not being used
     sprite.RewindEmitSound();
 }
 
-void damageBooty( CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim )
+void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 {
-	if ( victim.getName() == "block" )
+	if (victim.getName() == "block")
 	{
 		const int blockType = victim.getSprite().getFrame();
 		u8 teamNum = attacker.getTeamNum();
 		u8 victimTeamNum = victim.getTeamNum();
 		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland( victim.getShape().getVars().customData );
+		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
 
-		if ( victimIsle !is null && victimIsle.blocks.length > 3
-			&& ( victimIsle.owner != "" || victimIsle.isMothership )
+		if (victimIsle !is null && victimIsle.blocks.length > 3
+			&& (victimIsle.owner != "" || victimIsle.isMothership)
 			&& victimTeamNum != teamNum
-			&& ( Block::isSolid( blockType ) || victim.hasTag("weapon") 
-					|| blockType == Block::MOTHERSHIP5 || Block::isBomb( blockType ) || blockType == Block::SEAT || blockType == Block::RAMCHAIR ) )
+			&& (Block::isSolid( blockType ) || victim.hasTag("weapon") 
+					|| blockType == Block::MOTHERSHIP5 || Block::isBomb(blockType) || blockType == Block::SEAT || blockType == Block::RAMCHAIR))
 		{
-			if ( attacker.isMyPlayer() )
-				directionalSoundPlay( "Pinball_3", attackerBlob.getPosition(), 0.8f );
+			if (attacker.isMyPlayer())
+				directionalSoundPlay( "Pinball_3", attackerBlob.getPosition(), 1.2f);
 
-			if ( getNet().isServer() )
+			if (isServer())
 			{
 				CRules@ rules = getRules();
 				
 				u16 reward = 15;//propellers, seat, solids
-				if ( victim.hasTag( "weapon" ) || Block::isBomb( blockType ) )
+				if (victim.hasTag("weapon") || Block::isBomb(blockType))
 					reward += 10;
-				else if ( blockType == Block::MOTHERSHIP5 )
+				else if (blockType == Block::MOTHERSHIP5)
 					reward += 20;
 
-				f32 bFactor = ( rules.get_bool( "whirlpool" ) ? 3.0f : 1.0f ) * Maths::Min( 2.5f, Maths::Max( 0.15f,
-				( 2.0f * rules.get_u16( "bootyTeam_total" + victimTeamNum ) - rules.get_u16( "bootyTeam_total" + teamNum ) + 1000 )/( rules.get_u32( "bootyTeam_median" ) + 1000 ) ) );
+				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
+				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32( "bootyTeam_median") + 1000)));
 				
-				reward = Maths::Round( reward * bFactor );
+				reward = Maths::Round(reward * bFactor);
 				
-				server_setPlayerBooty( attackerName, server_getPlayerBooty( attackerName ) + reward );
-				server_updateTotalBooty( teamNum, reward );
+				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
+				server_updateTotalBooty(teamNum, reward);
 			}
 		}
 	}

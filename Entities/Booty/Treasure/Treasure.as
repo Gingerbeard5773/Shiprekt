@@ -15,16 +15,16 @@ void onInit( CBlob@ this )
 {
 	this.Tag("treasure");
 	this.getCurrentScript().tickFrequency = CHECK_FREQUENCY;
-	this.set_u8("killtimer", SPACE_HOG_TICKS );
+	this.set_u8("killtimer", SPACE_HOG_TICKS);
 	this.SetMinimapRenderAlways(true);
 }
 
-void onInit( CSprite@ this )
+void onInit(CSprite@ this)
 {
 	this.ReloadSprites(0, 0);
 	u16 ammount = this.getBlob().get_u16("ammount");
-	f32 size = ammount/( getRules().get_u16("booty_x_max") * 0.3f);
-	if (size >= 1.0f )
+	f32 size = ammount/(getRules().get_u16("booty_x_max") * 0.3f);
+	if (size >= 1.0f)
 		this.ScaleBy(Vec2f(size, size));
 	this.SetZ(-15.0f);
 	this.RotateBy(XORRandom(360), Vec2f_zero);

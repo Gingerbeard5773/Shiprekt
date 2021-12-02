@@ -40,7 +40,7 @@ void onTick(CRules@ this)
 
 void server_turnOffPropellers(Island@ island)
 {
-	if (isServer()) return;
+	if (!isServer()) return;
 	
 	for (uint i = 0; i < island.blocks.length; ++i)
 	{

@@ -1,10 +1,11 @@
-#include "WaterEffects.as"
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
-#include "MakeDustParticle.as"
-#include "TileCommon.as"
+#include "WaterEffects.as";
+#include "BlockCommon.as";
+#include "IslandsCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
+#include "MakeDustParticle.as";
+#include "TileCommon.as";
+#include "ParticleSparks.as";
 
 const f32 SPLASH_RADIUS = 8.0f;
 const f32 SPLASH_DAMAGE = 0.75f;
@@ -133,7 +134,7 @@ void onTick( CBlob@ this )
 	if (isTouchingRock(pos) || pos.y < 0.0f)
 	{
 		this.server_Die();
-		sparks(pos, 15);
+		sparks(pos, 15, 5.0f, 20);
 		smoke(pos, 5);	
 		blast(pos, 5);															
 		directionalSoundPlay( "Blast2.ogg", pos );
@@ -260,7 +261,7 @@ void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob
 	else if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || 
 			 blockType == Block::SEAT || blockType == Block::DOOR || hitBlob.hasTag("weapon"))
 	{
-		sparks(worldPoint, 15);
+		sparks(worldPoint, 15, 5.0f, 20);
 			
 		if (blockType == Block::MOTHERSHIP5)
 			directionalSoundPlay( "Entities/Characters/Knight/ShieldHit.ogg", worldPoint );
@@ -303,23 +304,6 @@ void onDie(CBlob@ this)
 				this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b, blockType) * SPLASH_DAMAGE, 9, false);
 		}
 	}
-}
-
-Random _sprk_r(0x10000);
-void sparks(Vec2f pos, int amount)
-{
-	for (int i = 0; i < amount; i++)
-    {
-        Vec2f vel(_sprk_r.NextFloat() * 5.0f, 0);
-        vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
-
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true );
-        if(p is null) return; //bail if we stop getting particles
-
-        p.timeout = 20 + _sprk_r.NextRanged(20);
-        p.scale = 1.0f + _sprk_r.NextFloat();
-        p.damping = 0.85f;
-    }
 }
 
 Random _smoke_r(0x10001);

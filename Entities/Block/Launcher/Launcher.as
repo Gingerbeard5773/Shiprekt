@@ -1,8 +1,8 @@
-#include "WaterEffects.as"
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
+#include "WaterEffects.as";
+#include "BlockCommon.as";
+#include "IslandsCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
 
 const f32 BULLET_SPEED = 3.0f;
 const int FIRE_RATE = 200;
@@ -254,23 +254,6 @@ void shotParticles(Vec2f pos, float angle )
 																					  true ); //selflit
 	if(p !is null)
 			p.Z = 10.0f;
-}
-
-Random _sprk_r;
-void sparks(Vec2f pos, int amount)
-{
-	for (int i = 0; i < amount; i++)
-    {
-        Vec2f vel(_sprk_r.NextFloat() * 1.0f, 0);
-        vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
-
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true );
-        if(p is null) return; //bail if we stop getting particles
-
-        p.timeout = 10 + _sprk_r.NextRanged(20);
-        p.scale = 0.5f + _sprk_r.NextFloat();
-        p.damping = 0.95f;
-    }
 }
 
 void damageBooty( CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim )

@@ -1,8 +1,9 @@
-#include "WaterEffects.as"
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
+#include "WaterEffects.as";
+#include "BlockCommon.as";
+#include "IslandsCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
+#include "ParticleSparks.as";
  
 const f32 BULLET_RANGE = 100.0f;
 const f32 DECONSTRUCT_RATE = 10.0f; //higher values = higher recover
@@ -25,7 +26,7 @@ void onInit(CBlob@ this)
     if (layer !is null)
     {
         layer.SetRelativeZ(2);
-        layer.SetLighting( false );
+        layer.SetLighting(false);
         Animation@ anim = layer.addAnimation("fire", Maths::Round( DECONSTRUCT_RATE ), false);
         anim.AddFrame(Block::HARVESTER_A2);
         anim.AddFrame(Block::HARVESTER_A1);
@@ -261,22 +262,4 @@ void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 	const int blockType = sprite.getFrame();
 
 	sparks(worldPoint, 4);
-}
-
-void sparks(Vec2f pos, int amount)
-{
-	Random _sprk_r;
-
-	for (int i = 0; i < amount; i++)
-    {
-        Vec2f vel(_sprk_r.NextFloat() * 1.0f, 0);
-        vel.RotateBy(_sprk_r.NextFloat() * 360.0f);
-
-        CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true );
-        if (p is null) return; //bail if we stop getting particles
-
-        p.timeout = 10 + _sprk_r.NextRanged(20);
-        p.scale = 0.5f + _sprk_r.NextFloat();
-        p.damping = 0.95f;
-    }
 }
