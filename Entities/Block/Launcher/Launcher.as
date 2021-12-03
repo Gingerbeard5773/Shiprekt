@@ -188,11 +188,11 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		}
 
 		//ammo
-		u16 ammo = this.get_u16( "ammo" );
-		if ( isServer )
-			this.get( "ammo", ammo );
+		u16 ammo = this.get_u16("ammo");
+		if (isServer)
+			this.get("ammo", ammo);
 
-		if ( ammo == 0 )
+		if (ammo <= 0)
 		{
 			directionalSoundPlay( "LoadingTick1", pos, 0.35f );
 			return;
@@ -254,48 +254,4 @@ void shotParticles(Vec2f pos, float angle )
 																					  true ); //selflit
 	if(p !is null)
 			p.Z = 10.0f;
-}
-
-void damageBooty( CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim )
-{
-	if ( victim.getName() == "block" )
-	{
-		const int blockType = victim.getSprite().getFrame();
-		u8 teamNum = attacker.getTeamNum();
-		u8 victimTeamNum = victim.getTeamNum();
-		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland( victim.getShape().getVars().customData );
-
-		if ( victimIsle !is null && victimIsle.blocks.length > 3
-			&& ( victimIsle.owner != "" || victimIsle.isMothership )
-			&& victimTeamNum != teamNum
-			&& ( blockType == Block::PROPELLER || victim.hasTag("weapon") || Block::isBomb( blockType ) || blockType == Block::SEAT || blockType == Block::RAMCHAIR )
-			)
-		{
-			if ( attacker.isMyPlayer() )
-			{
-				u8 n = XORRandom(4);
-				if ( n == 3 )
-					Sound::Play( "Pinball_" + XORRandom(4), attackerBlob.getPosition(), 0.5f );
-				else
-					Sound::Play( "Pinball_" + n, attackerBlob.getPosition(), 0.5f );
-			}
-
-			if ( getNet().isServer() )
-			{
-				CRules@ rules = getRules();
-
-				u16 reward = 16;//propellers, seat
-				if ( victim.hasTag( "weapon" ) || Block::isBomb( blockType ) )
-					reward = 8;
-
-				f32 bFactor = ( rules.get_bool( "whirlpool" ) ? 3.0f : 1.0f );
-
-				reward = Maths::Round( reward * bFactor );
-
-				server_setPlayerBooty( attackerName, server_getPlayerBooty( attackerName ) + reward );
-				server_updateTotalBooty( teamNum, reward );
-			}
-		}
-	}
 }

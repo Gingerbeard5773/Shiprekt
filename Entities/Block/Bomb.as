@@ -148,7 +148,7 @@ void Explode( CBlob@ this, f32 radius = BOMB_RADIUS )
 				string teamCaptainName = getCaptainName( this.getTeamNum() );
 				CBlob@ blob = owner.getBlob();
 				if ( owner.getUsername() != teamCaptainName && blob !is null )
-					damageBooty( owner, blob, hit_blob );
+					damageBootyBomb(owner, blob, hit_blob);
 			}
 			//print( hit_blob.getNetworkID() + " for: " + BOMB_BASE_DAMAGE * distanceFactor + " dFctr: " + distanceFactor + ", dist: " + this.getDistanceTo( hit_blob) );
         }
@@ -194,7 +194,7 @@ void StartDetonation(CBlob@ this)//not being used
     sprite.RewindEmitSound();
 }
 
-void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
+void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 {
 	if (victim.getName() == "block")
 	{
@@ -207,11 +207,10 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 		if (victimIsle !is null && victimIsle.blocks.length > 3
 			&& (victimIsle.owner != "" || victimIsle.isMothership)
 			&& victimTeamNum != teamNum
-			&& (Block::isSolid( blockType ) || victim.hasTag("weapon") 
-					|| blockType == Block::MOTHERSHIP5 || Block::isBomb(blockType) || blockType == Block::SEAT || blockType == Block::RAMCHAIR))
+			&& (blockType != Block::PLATFORM))
 		{
 			if (attacker.isMyPlayer())
-				directionalSoundPlay( "Pinball_3", attackerBlob.getPosition(), 1.2f);
+				directionalSoundPlay("Pinball_3", attackerBlob.getPosition(), 1.2f);
 
 			if (isServer())
 			{
@@ -219,9 +218,9 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 				
 				u16 reward = 15;//propellers, seat, solids
 				if (victim.hasTag("weapon") || Block::isBomb(blockType))
-					reward += 10;
+					reward += 15;
 				else if (blockType == Block::MOTHERSHIP5)
-					reward += 20;
+					reward += 30;
 
 				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
 				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32( "bootyTeam_median") + 1000)));

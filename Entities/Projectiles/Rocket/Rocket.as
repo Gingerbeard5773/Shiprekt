@@ -190,7 +190,7 @@ void onTick( CBlob@ this )
 					{
 						CBlob@ blob = owner.getBlob();
 						if (blob !is null)
-							damageBooty(owner, blob, b);
+							damageBooty(owner, blob, b, Block::isSolid(blockType) || blockType == Block::DOOR, 10);
 					}
 					
 					f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
@@ -350,46 +350,4 @@ void blast(Vec2f pos, int amount)
         p.damping = 0.85f;
 		p.Z = 550.0f;
     }
-}
-
-void damageBooty( CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim )
-{
-	if (victim.getName() == "block")
-	{
-		const int blockType = victim.getSprite().getFrame();
-		u8 teamNum = attacker.getTeamNum();
-		u8 victimTeamNum = victim.getTeamNum();
-		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
-
-		if (victimIsle !is null && victimIsle.blocks.length > 3
-			&& (victimIsle.owner != "" || victimIsle.isMothership )
-			&& victimTeamNum != teamNum
-			&& (Block::isSolid(blockType) || victim.hasTag("weapon") || blockType == Block::MOTHERSHIP5 || blockType == Block::DOOR || Block::isBomb( blockType ) || blockType == Block::SEAT)
-			)
-		{
-			if (attacker.isMyPlayer())
-				Sound::Play( "Pinball_0", attackerBlob.getPosition(), 0.5f);
-
-			if (isServer())
-			{
-				CRules@ rules = getRules();
-				
-				u16 reward = 3;//solids,seat
-				if (blockType == Block::PROPELLER)
-					reward += 5;//propellers
-				else if (victim.hasTag("weapon") || Block::isBomb(blockType))
-					reward += 5;
-				else if (blockType == Block::MOTHERSHIP5)
-					reward += 26;
-
-				f32 bFactor = ( rules.get_bool("whirlpool") ? 3.0f : 1.0f );
-				
-				reward = Maths::Round(reward * bFactor);
-					
-				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
-				server_updateTotalBooty(teamNum, reward);
-			}
-		}
-	}
 }

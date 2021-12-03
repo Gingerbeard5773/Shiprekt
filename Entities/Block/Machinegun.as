@@ -305,13 +305,13 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 					}
 
 					CPlayer@ attacker = shooter.getPlayer();
-					if ( attacker !is null )
-						damageBooty( attacker, shooter, b );
+					if (attacker !is null && blockType != Block::MOTHERSHIP5)
+						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 2, "Pinball_", true);
 
-					if ( isServer )
+					if (isServer)
 					{
-						f32 damage = getDamage( b, blockType );
-						if ( b.hasTag( "propeller" ) && b.getTeamNum() != teamNum && XORRandom(3) == 0 )
+						f32 damage = getDamage(b, blockType);
+						if (b.hasTag("propeller") && b.getTeamNum() != teamNum && XORRandom(3) == 0 )
 							b.SendCommand(b.getCommandID("off"));
 						this.server_Hit( b, hi.hitpos, Vec2f_zero, damage, 0, true );
 					}
@@ -460,45 +460,39 @@ void shotParticles(Vec2f pos, float angle )
 	}
 }
 
-void damageBooty( CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim )
+void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 {
-	if ( victim.getName() == "block" )
+	if (victim.getName() == "block")
 	{
 		const int blockType = victim.getSprite().getFrame();
 		u8 teamNum = attacker.getTeamNum();
 		u8 victimTeamNum = victim.getTeamNum();
 		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland( victim.getShape().getVars().customData );
+		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
 
-		if ( victimIsle !is null && victimIsle.blocks.length > 3
-			&& ( victimIsle.owner != "" || victimIsle.isMothership )
+		if (victimIsle !is null && victimIsle.blocks.length > 3
+			&& (victimIsle.owner != "" || victimIsle.isMothership)
 			&& victimTeamNum != teamNum
-			&& ( victim.hasTag("propeller") || victim.hasTag("weapon") || Block::isBomb( blockType ) || blockType == Block::SEAT || blockType == Block::RAMCHAIR )
+			&& (victim.hasTag("propeller"))
 			)
 		{
-			if ( attacker.isMyPlayer() )
+			if (attacker.isMyPlayer())
 			{
-				u8 n = XORRandom(4);
-				if ( n == 3 )
-					Sound::Play( "Pinball_" + XORRandom(4), attackerBlob.getPosition(), 0.5f );
-				else
-					Sound::Play( "Pinball_" + n, attackerBlob.getPosition(), 0.5f );
+				Sound::Play("Pinball_" + XORRandom(4), attackerBlob.getPosition(), 0.5f );
 			}
 
-			if ( getNet().isServer() )
+			if (isServer())
 			{
 				CRules@ rules = getRules();
 
-				u16 reward = 2;//propellers, seat
-				if ( victim.hasTag( "weapon" ) || Block::isBomb( blockType ) )
-					reward = 2;
+				u16 reward = 2;
 
-				f32 bFactor = ( rules.get_bool( "whirlpool" ) ? 3.0f : 1.0f );
+				f32 bFactor = (rules.get_bool( "whirlpool") ? 3.0f : 1.0f);
 
-				reward = Maths::Round( reward * bFactor );
+				reward = Maths::Round(reward * bFactor);
 
-				server_setPlayerBooty( attackerName, server_getPlayerBooty( attackerName ) + reward );
-				server_updateTotalBooty( teamNum, reward );
+				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
+				server_updateTotalBooty(teamNum, reward);
 			}
 		}
 	}

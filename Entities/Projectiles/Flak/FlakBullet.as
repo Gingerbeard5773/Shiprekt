@@ -90,8 +90,8 @@ void flak(CBlob@ this)
 					if ( owner !is null )
 					{
 						CBlob@ blob = owner.getBlob();
-						if ( blob !is null )
-							damageBooty( owner, blob, b );
+						if (blob !is null)
+							damageBooty(owner, blob, b);
 					}
 					
 					break;
@@ -170,43 +170,5 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 		Vec2f vel = worldPoint - hitBlob.getPosition();//todo: calculate real bounce angles?
 		ShrapnelParticle(worldPoint, vel);
 		directionalSoundPlay("Ricochet" +  (XORRandom(3) + 1) + ".ogg", worldPoint, 0.35f);
-	}
-}
-
-void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
-{
-	if (victim.getName() == "block")
-	{
-		const int blockType = victim.getSprite().getFrame();
-		u8 teamNum = attacker.getTeamNum();
-		u8 victimTeamNum = victim.getTeamNum();
-		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland( victim.getShape().getVars().customData);
-
-		if (victimIsle !is null && victimIsle.blocks.length > 3
-			&& (victimIsle.owner != "" || victimIsle.isMothership )
-			&& victimTeamNum != teamNum
-			&& (victim.hasTag("weapon") || blockType == Block::MOTHERSHIP5 || blockType == Block::DOOR || Block::isBomb( blockType ) || blockType == Block::SEAT)
-			)
-		{
-			if (attacker.isMyPlayer())
-				Sound::Play("Pinball_0", attackerBlob.getPosition(), 0.5f);
-
-			if (isServer())
-			{
-				CRules@ rules = getRules();
-				
-				u16 reward = 4;//propellers, seats
-				if (blockType == Block::MOTHERSHIP5)
-					reward = 8;
-
-				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f );
-				
-				reward = Maths::Round(reward * bFactor);
-					
-				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
-				server_updateTotalBooty(teamNum, reward);
-			}
-		}
 	}
 }

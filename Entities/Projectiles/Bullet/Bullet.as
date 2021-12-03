@@ -116,7 +116,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 			{
 				CBlob@ blob = owner.getBlob();
 				if (blob !is null)
-					damageBooty(owner, blob, b);
+					damageBooty(owner, blob, b, b.hasTag("propeller"), 5);
 			}
 
 			this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(b, blockType), 0, true);
@@ -131,42 +131,4 @@ void onDie(CBlob@ this)
 {
 	if (isInWater(this.getPosition()))
 		MakeWaterParticle(this.getPosition(), Vec2f_zero);
-}
-
-void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
-{
-	if (victim.getName() == "block")
-	{
-		const int blockType = victim.getSprite().getFrame();
-		u8 teamNum = attacker.getTeamNum();
-		u8 victimTeamNum = victim.getTeamNum();
-		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
-
-		if (victimIsle !is null && victimIsle.blocks.length > 3
-			&& (victimIsle.owner != "" || victimIsle.isMothership)
-			&& victimTeamNum != teamNum
-			&& (victim.hasTag("propeller") || victim.hasTag("weapon") || blockType == Block::MOTHERSHIP5 || Block::isBomb(blockType) || blockType == Block::SEAT || blockType == Block::DOOR)
-			)
-		{
-			if (attacker.isMyPlayer())
-				Sound::Play("Pinball_0", attackerBlob.getPosition(), 0.5f);
-
-			if (isServer())
-			{
-				CRules@ rules = getRules();
-				
-				u16 reward = 5;//propellers, seat
-				if (blockType == Block::MOTHERSHIP5)
-					reward += 7;
-
-				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f);
-				
-				reward = Maths::Round(reward * bFactor);
-								
-				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
-				server_updateTotalBooty(teamNum, reward);
-			}
-		}
-	}
 }

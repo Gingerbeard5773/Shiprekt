@@ -1,10 +1,11 @@
 #include "ExplosionEffects.as";
-#include "WaterEffects.as"
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
-#include "TileCommon.as"
+#include "WaterEffects.as";
+#include "BlockCommon.as";
+#include "IslandsCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
+#include "TileCommon.as";
+#include "ParticleSparks.as";
 
 const f32 EXPLODE_RADIUS = 25.0f;
 const f32 FLAK_REACH = 50.0f;
@@ -19,10 +20,6 @@ void onInit( CBlob@ this )
 	consts.bullet = true;	
 
 	this.getSprite().SetZ(550.0f);
-	
-	if( !CustomEmitEffectExists( "FlakEmmit" ) )
-		SetupCustomEmitEffect( "FlakEmmit", "FlakBullet.as", "updateFlakParticle", 1, 0, 30 );
-		//SetupCustomEmitEffect( STRING name, STRING scriptfile, STRING scriptfunction, u8 hard_freq, u8 chance_freq, u16 timeout )
 	
 	//shake screen (onInit accounts for firing latency)
 	CPlayer@ localPlayer = getLocalPlayer();
@@ -169,74 +166,10 @@ void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob
 {	
 	const int blockType = hitBlob.getSprite().getFrame();
 
-	if (hitBlob.getName() == "shark"){
-		ParticleBloodSplat( worldPoint, true );
-		directionalSoundPlay( "BodyGibFall", worldPoint );		
-	}
-	else	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
+	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
 	{
 		Vec2f vel = worldPoint - hitBlob.getPosition();//todo: calculate real bounce angles?
-		makeSharpnelParticle( worldPoint, vel );
+		ShrapnelParticle( worldPoint, vel );
 		directionalSoundPlay( "Ricochet" +  ( XORRandom(3) + 1 ) + ".ogg", worldPoint, 0.35f );
-	}
-}
-
-void updateFlakParticle( CParticle@ p )
-{
-	p.colour.setGreen( p.colour.getGreen() - 7 );
-	p.colour.setBlue( p.colour.getBlue() - 5 );
-	p.velocity *= 0.85f;
-}
-
-Random _sprk_r;
-void makeSharpnelParticle( Vec2f pos, Vec2f vel )
-{
-	u8 emiteffect = GetCustomEmitEffectID( "FlakEmmit" );
-	CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 255, 235, 100 ), true );
-	if(p !is null)
-	{
-		p.timeout = 10 + _sprk_r.NextRanged(5);
-		p.scale = 1.5f;
-		p.emiteffect = emiteffect;
-	}
-}
-
-void damageBooty( CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim )
-{
-	if ( victim.getName() == "block" )
-	{
-		const int blockType = victim.getSprite().getFrame();
-		u8 teamNum = attacker.getTeamNum();
-		u8 victimTeamNum = victim.getTeamNum();
-		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland( victim.getShape().getVars().customData );
-
-		if ( victimIsle !is null && victimIsle.blocks.length > 3
-			&& ( victimIsle.owner != "" || victimIsle.isMothership )
-			&& victimTeamNum != teamNum
-			&& ( victim.hasTag("weapon") || blockType == Block::MOTHERSHIP5 || blockType == Block::DOOR || Block::isBomb( blockType ) || blockType == Block::SEAT )
-			)
-		{
-			if ( attacker.isMyPlayer() )
-				Sound::Play( "Pinball_0", attackerBlob.getPosition(), 0.5f );
-
-			if ( getNet().isServer() )
-			{
-				CRules@ rules = getRules();
-				
-				u16 reward = 4;//propellers, seats
-				if ( victim.hasTag( "weapon" ) || Block::isBomb( blockType ) )
-					reward = 4;
-				else if ( blockType == Block::MOTHERSHIP5 )
-					reward = 8;
-
-				f32 bFactor = ( rules.get_bool( "whirlpool" ) ? 3.0f : 1.0f );
-				
-				reward = Maths::Round( reward * bFactor );
-					
-				server_setPlayerBooty( attackerName, server_getPlayerBooty( attackerName ) + reward );
-				server_updateTotalBooty( teamNum, reward );
-			}
-		}
 	}
 }
