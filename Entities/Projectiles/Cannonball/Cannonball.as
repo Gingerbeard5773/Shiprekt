@@ -185,12 +185,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	
 	int piercedCount = this.get_u16("pierced count");
 
-	if (hitBlob.getName() == "shark")
-	{
-		ParticleBloodSplat(worldPoint, true);
-		directionalSoundPlay("BodyGibFall", worldPoint);		
-	}
-	else if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
+	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
 	{
 		sparksDirectional(worldPoint, this.getVelocity(), 7);
 		directionalSoundPlay("Pierce1.ogg", worldPoint);

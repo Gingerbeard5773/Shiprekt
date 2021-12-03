@@ -6,6 +6,7 @@ CBlob@ makeBlock( Vec2f pos, f32 angle, u16 blockType, const int team = -1 )
 	if (block !is null) 
 	{
 		block.getSprite().SetFrame( blockType );
+		block.getSprite().SetZ(Block::isSolid(block.getSprite().getFrame()) ? 510.0f : 490.0f);
 		block.set_f32( "weight", Block::getWeight( block ) );
 		block.setAngleDegrees( angle );
 		

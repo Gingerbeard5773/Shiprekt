@@ -33,3 +33,15 @@ void sparks(Vec2f pos, int amount, f32 spread = 1.0f, int16 pTime = 10)
 		p.Z = 550.0f;
     }
 }
+
+void ShrapnelParticle(Vec2f pos, Vec2f vel)
+{
+	CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + XORRandom(128), 100), true);
+	if (p !is null)
+	{
+		p.timeout = 10 + XORRandom(6);
+		p.scale = 1.5f;
+		p.Z = 550.0f;
+		p.damping = 0.85f;
+	}
+}

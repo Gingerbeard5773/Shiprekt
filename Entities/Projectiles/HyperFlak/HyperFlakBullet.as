@@ -1,10 +1,11 @@
 #include "ExplosionEffects.as";
-#include "WaterEffects.as"
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
-#include "TileCommon.as"
+#include "WaterEffects.as";
+#include "BlockCommon.as";
+#include "IslandsCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
+#include "TileCommon.as";
+#include "ParticleSparks";
 
 const f32 EXPLODE_RADIUS = 25.0f;
 const f32 FLAK_REACH = 50.0f;
@@ -20,10 +21,6 @@ void onInit( CBlob@ this )
 
 	this.getSprite().SetZ(550.0f);
 	
-	if( !CustomEmitEffectExists( "FlakEmmit" ) )
-		SetupCustomEmitEffect( "FlakEmmit", "FlakBullet.as", "updateFlakParticle", 1, 0, 30 );
-		//SetupCustomEmitEffect( STRING name, STRING scriptfile, STRING scriptfunction, u8 hard_freq, u8 chance_freq, u16 timeout )
-	
 	//shake screen (onInit accounts for firing latency)
 	CPlayer@ localPlayer = getLocalPlayer();
 	if ( localPlayer !is null && localPlayer is this.getDamageOwnerPlayer() )
@@ -32,12 +29,12 @@ void onInit( CBlob@ this )
 
 void onTick( CBlob@ this )
 {
-	if ( !getNet().isServer() ) return;
+	if (!isServer()) return;
 	
 	bool killed = false;
 
 	Vec2f pos = this.getPosition();
-	const int thisColor = this.get_u32( "color" );
+	const int thisColor = this.get_u32("color");
 	
 	if ( isTouchingRock(pos) )
 	{
@@ -110,14 +107,16 @@ void onDie( CBlob@ this )
 {
 	Vec2f pos = this.getPosition();
 	
-	if (getNet().isClient())
+	if (isClient())
 	{
 		directionalSoundPlay( "FlakExp"+XORRandom(2), pos, 2.0f );
 		for ( u8 i = 0; i < 3; i++ )
-				makeSmallExplosionParticle( pos + getRandomVelocity( 90, 12, 360 ) );
+		{
+			makeSmallExplosionParticle( pos + getRandomVelocity( 90, 12, 360 ) );
+		}
 	}
 
-	if ( getNet().isServer() ) 	
+	if (isServer()) 	
 		flak( this );
 }
 
@@ -169,35 +168,11 @@ void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob
 {	
 	const int blockType = hitBlob.getSprite().getFrame();
 
-	if (hitBlob.getName() == "shark"){
-		ParticleBloodSplat( worldPoint, true );
-		directionalSoundPlay( "BodyGibFall", worldPoint );		
-	}
-	else	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
+	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
 	{
 		Vec2f vel = worldPoint - hitBlob.getPosition();//todo: calculate real bounce angles?
-		makeSharpnelParticle( worldPoint, vel );
+		ShrapnelParticle(worldPoint, vel);
 		directionalSoundPlay( "Ricochet" +  ( XORRandom(3) + 1 ) + ".ogg", worldPoint, 0.35f );
-	}
-}
-
-void updateFlakParticle( CParticle@ p )
-{
-	p.colour.setGreen( p.colour.getGreen() - 7 );
-	p.colour.setBlue( p.colour.getBlue() - 5 );
-	p.velocity *= 0.85f;
-}
-
-Random _sprk_r;
-void makeSharpnelParticle( Vec2f pos, Vec2f vel )
-{
-	u8 emiteffect = GetCustomEmitEffectID( "FlakEmmit" );
-	CParticle@ p = ParticlePixel( pos, vel, SColor( 255, 255, 235, 100 ), true );
-	if(p !is null)
-	{
-		p.timeout = 10 + _sprk_r.NextRanged(5);
-		p.scale = 1.5f;
-		p.emiteffect = emiteffect;
 	}
 }
 

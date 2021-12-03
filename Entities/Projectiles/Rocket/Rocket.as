@@ -248,29 +248,25 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 	return 1.20f;
 }
 
-void onHitBlob( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData )
+void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
 	if (customData == 9) return;
 	
 	const int blockType = hitBlob.getSprite().getFrame();
 
-	if (hitBlob.getName() == "shark"){
-		ParticleBloodSplat(worldPoint, true);
-		directionalSoundPlay("BodyGibFall", worldPoint);		
-	}
-	else if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || 
+	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || 
 			 blockType == Block::SEAT || blockType == Block::DOOR || hitBlob.hasTag("weapon"))
 	{
 		sparks(worldPoint, 15, 5.0f, 20);
 			
 		if (blockType == Block::MOTHERSHIP5)
-			directionalSoundPlay( "Entities/Characters/Knight/ShieldHit.ogg", worldPoint );
+			directionalSoundPlay("Entities/Characters/Knight/ShieldHit.ogg", worldPoint);
 		else
-			directionalSoundPlay( "Blast1.ogg", worldPoint );
+			directionalSoundPlay("Blast1.ogg", worldPoint);
 	}
 }
 
-f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )
+f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	f32 spinFactor = this.getInitialHealth() - this.getHealth();
 	this.setAngularVelocity((float(XORRandom(30) - 15))*spinFactor);

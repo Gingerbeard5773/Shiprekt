@@ -1,13 +1,14 @@
-#include "HumanCommon.as"
+#include "HumanCommon.as";
 //#include "EmotesCommon.as"
-#include "MakeBlock.as"
-#include "WaterEffects.as"
-#include "IslandsCommon.as"
-#include "BlockCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
-#include "TileCommon.as"
-#include "CustomMap.as"
+#include "MakeBlock.as";
+#include "WaterEffects.as";
+#include "IslandsCommon.as";
+#include "BlockCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
+#include "TileCommon.as";
+#include "CustomMap.as";
+#include "Hitters.as";
 
 int useClickTime = 0;
 const int PUNCH_RATE = 15;
@@ -108,7 +109,7 @@ void onTick( CBlob@ this )
 		this.server_Die();
 }
 
-void Move( CBlob@ this )
+void Move(CBlob@ this)
 {
 	const bool myPlayer = this.isMyPlayer();
 	const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
@@ -207,12 +208,12 @@ void Move( CBlob@ this )
 				ShootPistol( this );
 				sprite.SetAnimation("shoot");
 			}
-			else if ( currentTool == "deconstructor" ) //reclaim
+			else if (currentTool == "deconstructor") //reclaim
 			{
 				Construct( this );
 				sprite.SetAnimation("reclaim");
 			}
-			else if ( currentTool == "reconstructor" ) //repair
+			else if (currentTool == "reconstructor") //repair
 			{
 				Construct( this );
 				sprite.SetAnimation("repair");
@@ -220,11 +221,11 @@ void Move( CBlob@ this )
 		}		
 
 		//canmove check
-		if ( !getRules().get_bool( "whirlpool" ) || solidGround )
+		if (!getRules().get_bool("whirlpool") || solidGround)
 		{
 			moveVel.RotateBy( camRotation );
 			Vec2f nextPos = (pos + moveVel*4.0f);
-			if ( isTouchingRock( nextPos ) )
+			if (isTouchingRock(nextPos))
 			{
 				moveVel = Vec2f(0,0);
 			}
@@ -295,7 +296,7 @@ void Move( CBlob@ this )
 	}
 }
 
-void PlayerControls( CBlob@ this )
+void PlayerControls(CBlob@ this)
 {
 	CHUD@ hud = getHUD();
 	CControls@ controls = getControls();
@@ -1036,13 +1037,13 @@ void Punch(CBlob@ this)
 	}
 
 	// miss
-	directionalSoundPlay( "throw", pos );
+	directionalSoundPlay("throw", pos);
 	this.set_u32("punch time", getGameTime());	
 }
 
 void ShootPistol( CBlob@ this )
 {
-	if ( !this.isMyPlayer() )
+	if (!this.isMyPlayer())
 		return;
 
 	Vec2f pos = this.getPosition();
@@ -1060,25 +1061,25 @@ void ShootPistol( CBlob@ this )
 	params.write_Vec2f( vel );
 	params.write_f32( lifetime );
 
-	Island@ island = getIsland( this );
-	if ( island !is null && island.centerBlock !is null )//relative positioning
+	Island@ island = getIsland(this);
+	if (island !is null && island.centerBlock !is null )//relative positioning
 	{
 		params.write_bool( true );
 		Vec2f rPos = ( pos + aimVector*3 ) - island.centerBlock.getPosition();
-		params.write_Vec2f( rPos );
+		params.write_Vec2f(rPos);
 		u32 islandColor = island.centerBlock.getShape().getVars().customData;
 		params.write_u32( islandColor );
 	} else//absolute positioning
 	{
 		params.write_bool( false );
 		Vec2f aPos = pos + aimVector*9;
-		params.write_Vec2f( aPos );
+		params.write_Vec2f(aPos);
 	}
 	
 	this.SendCommand( this.getCommandID("shoot"), params );
 }
 
-void Construct( CBlob@ this )
+void Construct(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	Vec2f aimPos = this.getAimPos();
@@ -1194,7 +1195,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			ParticleBloodSplat(pos, false);
 
 			if (isServer())
-				this.server_Hit( b, pos, Vec2f_zero, 0.25f, 0, false );
+				this.server_Hit( b, pos, Vec2f_zero, 0.25f, Hitters::muscles, false );
 		}
 	}
 	else if (this.getCommandID("shoot") == cmd && canShootPistol(this))
@@ -1238,7 +1239,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
 		this.set_u32("fire time", getGameTime());	
 		shotParticles(pos + Vec2f(1,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle());
-		directionalSoundPlay( "Gunshot.ogg", pos, 0.75f );
+		directionalSoundPlay("Gunshot.ogg", pos, 0.75f );
 	}
 	else if (this.getCommandID("construct") == cmd && canConstruct( this ) )
 	{
@@ -1353,7 +1354,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							server_setPlayerBooty(cName, cBooty - reconstructCost);
 						}
 					}
-					else if ( blockType == Block::STATION )
+					else if ( blockType == Block::STATION || blockType == Block::MINISTATION )
 					{							
 						if ( (currentReclaim + reconstructAmount) <= initialReclaim )
 						{
@@ -1368,28 +1369,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							if ( mBlob.getTeamNum() == 255 ) //neutral
 							{
 								mBlob.server_setTeamNum( this.getTeamNum() );
-								mBlob.getSprite().SetFrame( Block::STATION );
-							}
-						}
-						
-						mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
-					}
-					else if ( blockType == Block::MINISTATION )
-					{							
-						if ( (currentReclaim + reconstructAmount) <= initialReclaim )
-						{
-							reconstructAmount = fullConstructAmount;
-							reconstructCost = CONSTRUCT_VALUE;
-						}
-						else if ( (currentReclaim + reconstructAmount) > initialReclaim  )
-						{
-							reconstructAmount = initialReclaim - currentReclaim;
-							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
-							
-							if ( mBlob.getTeamNum() == 255 ) //neutral
-							{
-								mBlob.server_setTeamNum( this.getTeamNum() );
-								mBlob.getSprite().SetFrame( Block::MINISTATION );
+								mBlob.getSprite().SetFrame( blockType );
 							}
 						}
 						
@@ -1430,7 +1410,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			}
 			
 			//laser creation
-			if ( getNet().isClient() )//effects
+			if (isClient())//effects
 			{
 				Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
 				f32 offsetAngle = aimVector.Angle() - (mBlob.getPosition() - pos).Angle(); 
@@ -1483,7 +1463,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			seat.Sync( "playerOwner", true );
 		}
 	}
-	else if ( getNet().isServer() && this.getCommandID( "giveBooty" ) == cmd )//transfer booty
+	else if (isServer() && this.getCommandID("giveBooty") == cmd )//transfer booty
 	{
 		CRules@ rules = getRules();
 		if ( getGameTime() < rules.get_u16( "warmup_time" ) )	return;
@@ -1543,7 +1523,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			}
 		}
 	}
-	else if ( this.getCommandID( "swap tool" ) == cmd )
+	else if (this.getCommandID("swap tool") == cmd)
 	{
 		u16 netID = params.read_u16();
 		string tool = params.read_string();
@@ -1579,69 +1559,72 @@ void onDetach( CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint )
 	this.set_s8( "stay count", 3 );
 }
 
-void onDie( CBlob@ this )
+void onDie(CBlob@ this)
 {
 	CSprite@ sprite = this.getSprite();
 	Vec2f pos = this.getPosition();
 	
-	ParticleBloodSplat( pos, true );
-	directionalSoundPlay( "BodyGibFall", pos );
+	ParticleBloodSplat(pos, true);
+	directionalSoundPlay("BodyGibFall", pos);
 	
 	if (!sprite.getVars().gibbed) 
 	{
-		directionalSoundPlay( "SR_ManDeath" + ( XORRandom(4) + 1 ), pos, 0.75f );
+		directionalSoundPlay("SR_ManDeath" + ( XORRandom(4) + 1 ), pos, 0.75f);
 		sprite.Gib();
 	}
 	
 	//return held blocks
 	CRules@ rules = getRules();
 	CBlob@[]@ blocks;
-	if (this.get( "blocks", @blocks ) && blocks.size() > 0)                 
+	if (this.get("blocks", @blocks) && blocks.size() > 0)                 
 	{
-		if ( getNet().isServer() )
+		if (isServer())
 		{
 			CPlayer@ player = this.getPlayer();
-			if ( player !is null )
+			if (player !is null)
 			{
 				string pName = player.getUsername();
-				u16 pBooty = server_getPlayerBooty( pName );
+				u16 pBooty = server_getPlayerBooty(pName);
 				u16 returnBooty = 0;
 				for (uint i = 0; i < blocks.length; ++i)
 				{
-					int type = Block::getType( blocks[i] );
-					if ( type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1 )
-						returnBooty += Block::getCost( type );
+					int type = Block::getType(blocks[i]);
+					if (type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1 )
+						returnBooty += Block::getCost(type);
 				}
 				
-				if ( returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
+				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
 					server_setPlayerBooty( pName, pBooty + returnBooty );
 			}
 		}
-		Human::clearHeldBlocks( this );
-		this.set_bool( "blockPlacementWarn", false );
+		Human::clearHeldBlocks(this);
+		this.set_bool("blockPlacementWarn", false);
 	}
 
 	SetScreenFlash(0, 0, 0, 0, 0.0f);
 }
 
-f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )
+f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
+	if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
+	ParticleBloodSplat(worldPoint, false);
+
 	//when killed: reward hitterBlob if this was boarding his mothership
-	if ( hitterBlob.getName() == "human" && hitterBlob !is this && this.getHealth() - damage <= 0 )
+	if (hitterBlob.getName() == "human" && hitterBlob !is this && this.getHealth() - damage <= 0)
 	{
 		Island@ pIsle = getIsland( this );
 		CPlayer@ hitterPlayer = hitterBlob.getPlayer();
 		u8 teamNum = hitterBlob.getTeamNum();
-		if ( hitterPlayer !is null && pIsle !is null && pIsle.isMothership && pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum )
+		if (hitterPlayer !is null && pIsle !is null && pIsle.isMothership && pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum)
 		{
 			if ( hitterPlayer.isMyPlayer() )
 				Sound::Play( "snes_coin.ogg" );
 
-			if ( getNet().isServer() )
+			if (isServer())
 			{
 				string attackerName = hitterPlayer.getUsername();
 				u16 reward = 50;
-				if ( getRules().get_bool( "whirlpool" ) ) reward *= 3;
+				if (getRules().get_bool("whirlpool")) reward *= 3;
 				
 				server_setPlayerBooty( attackerName, server_getPlayerBooty( attackerName ) + reward );
 				server_updateTotalBooty( teamNum, reward );
@@ -1649,13 +1632,13 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 		}
 	}
 	
-	if ( this.getTickSinceCreated() > 60 )
+	if (this.getTickSinceCreated() > 60)
 		return damage;
 	else
 		return 0.0f;
 }
 
-void onHealthChange( CBlob@ this, f32 oldHealth )
+void onHealthChange(CBlob@ this, f32 oldHealth)
 {
 	if ( this.getHealth() > oldHealth )
 		directionalSoundPlay( "Heal.ogg", this.getPosition(), 2.0f );
@@ -1673,7 +1656,7 @@ void shotParticles(Vec2f pos, float angle)
 												  3, //animtime
 												  0.0f, //gravity
 												  true ); //selflit
-		if(p !is null)
+		if (p !is null)
 			p.Z = 540.0f;
 	}
 
@@ -1681,7 +1664,7 @@ void shotParticles(Vec2f pos, float angle)
 	shot_vel.RotateBy(-angle);
 
 	//smoke
-	for(int i = 0; i < 5; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		//random velocity direction
 		Vec2f vel(0.03f + _shotrandom.NextFloat()*0.03f, 0);
@@ -1695,7 +1678,7 @@ void shotParticles(Vec2f pos, float angle)
 												  3+_shotrandom.NextRanged(4), //animtime
 												  0.0f, //gravity
 												  true ); //selflit
-		if(p !is null)
+		if (p !is null)
 			p.Z = 550.0f;
 	}
 }

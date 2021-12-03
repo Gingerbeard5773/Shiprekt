@@ -10,8 +10,7 @@ void onInit( CBlob@ this )
 {
 	CSprite @sprite = this.getSprite();
 	CShape @shape = this.getShape();
-	sprite.asLayer().SetLighting( false );
-	sprite.SetZ(510.0f);
+	sprite.asLayer().SetLighting(false);
 	shape.getConsts().net_threshold_multiplier = -1.0f;
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) );
 }

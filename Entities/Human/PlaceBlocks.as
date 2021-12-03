@@ -6,7 +6,7 @@ const f32 rotate_speed = 30.0f;
 const f32 max_build_distance = 32.0f;
 u16 crewCantPlaceCounter = 0;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
     CBlob@[] blocks;
     this.set("blocks", blocks);
@@ -246,14 +246,14 @@ void PlaceBlocks(CBlob@ this, uint16 center, uint16 reference, Vec2f pos_offset,
 	
 	blocks.clear();//releases the blocks (they are placed)
 	getRules().set_bool("dirty islands", true);
-	directionalSoundPlay( "build_ladder.ogg", this.getPosition() );
+	directionalSoundPlay("build_ladder.ogg", this.getPosition());
 }
 
-void SetDisplay( CBlob@ blob, SColor color, RenderStyle::Style style, f32 Z=-10000)
+void SetDisplay(CBlob@ blob, SColor color, RenderStyle::Style style, f32 Z=-10000)
 {
     CSprite@ sprite = blob.getSprite();
-    sprite.asLayer().SetColor( color );
-    sprite.asLayer().setRenderStyle( style );
+    sprite.asLayer().SetColor(color);
+    sprite.asLayer().setRenderStyle(style);
     if (Z>-10000)
 	{
         sprite.SetZ(Z);

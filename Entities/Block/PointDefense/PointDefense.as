@@ -337,22 +337,13 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 
 f32 getDamage( CBlob@ hitBlob )
 {
-	if ( hitBlob.hasTag( "rocket" ) )
+	if (hitBlob.hasTag("rocket") || hitBlob.hasTag("hyperflak shell"))
 		return 0.5f;
 
-	if ( hitBlob.hasTag( "cannonball" ) )
+	if (hitBlob.hasTag("projectile"))
 		return 1.0f;
 
-	if ( hitBlob.hasTag( "bullet" ) )
-		return 1.0f;
-
-	if ( hitBlob.hasTag( "flak shell" ) )
-		return 1.0f;
-
-	if ( hitBlob.hasTag( "hyperflak shell" ) )
-		return 0.5f;
-
-	if ( hitBlob.getName() == "human" )
+	if (hitBlob.getName() == "human")
 		return 0.2f;
 
 	return 0.01f;//cores, solids

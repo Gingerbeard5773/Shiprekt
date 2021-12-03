@@ -21,7 +21,7 @@ void onGib(CSprite@ this)
 
     const u8 team = blob.getTeamNum();
     
-    for(int i = 0; i < 10; i++)
+    for (int i = 0; i < 10; i++)
     {
     	Vec2f veladd(0,_r.NextFloat() + 0.1f * (i+1));
     	veladd.RotateBy(_r.NextFloat() * 360.0f, Vec2f());
@@ -49,7 +49,7 @@ void onGib(CSprite@ this)
 
 	    	gib.emiteffect = emiteffect;
 
-	    	gib.Z = 5.0f + _r.NextFloat();
+	    	gib.Z = 500.0f;
 	    	gib.AddDieFunction("HumanGibs.as", "CreateWaterSplash");
 	    }
 	}
