@@ -207,7 +207,7 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 		if (victimIsle !is null && victimIsle.blocks.length > 3
 			&& (victimIsle.owner != "" || victimIsle.isMothership)
 			&& victimTeamNum != teamNum
-			&& (blockType != Block::PLATFORM))
+			&& (blockType != Block::PLATFORM && blockType != Block::COUPLING))
 		{
 			if (attacker.isMyPlayer())
 				directionalSoundPlay("Pinball_3", attackerBlob.getPosition(), 1.2f);

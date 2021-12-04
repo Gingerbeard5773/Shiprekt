@@ -405,46 +405,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 }
 
-Random _shotrandom(0x15125); //clientside
-
-void shotParticles(Vec2f pos, float angle)
-{
-	//muzzle flash
-	{
-		CParticle@ p = ParticleAnimated( "Entities/Block/turret_muzzle_flash.png",
-												  pos, Vec2f(),
-												  -angle, //angle
-												  1.0f, //scale
-												  3, //animtime
-												  0.0f, //gravity
-												  true ); //selflit
-		if (p !is null)
-			p.Z = 10.0f;
-	}
-
-	Vec2f shot_vel = Vec2f(0.5f,0);
-	shot_vel.RotateBy(-angle);
-
-	//smoke
-	for (int i = 0; i < 5; i++)
-	{
-		//random velocity direction
-		Vec2f vel(0.1f + _shotrandom.NextFloat()*0.2f, 0);
-		vel.RotateBy(_shotrandom.NextFloat() * 360.0f);
-		vel += shot_vel * i;
-
-		CParticle@ p = ParticleAnimated( "Entities/Block/turret_smoke.png",
-												  pos, vel,
-												  _shotrandom.NextFloat() * 360.0f, //angle
-												  1.0f, //scale
-												  3+_shotrandom.NextRanged(4), //animtime
-												  0.0f, //gravity
-												  true ); //selflit
-		if (p !is null)
-			p.Z = 110.0f;
-	}
-}
-
 void LoadSprites(CSprite@ this)
 {
     string texname = "Entities/Block/Harpoon.png";

@@ -1,3 +1,5 @@
+//Various particles 
+
 void sparks1(Vec2f at, f32 angle, f32 damage)
 {
     int amount = damage * 5 + XORRandom(5);
@@ -43,5 +45,51 @@ void ShrapnelParticle(Vec2f pos, Vec2f vel)
 		p.scale = 1.5f;
 		p.Z = 550.0f;
 		p.damping = 0.85f;
+	}
+}
+
+void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity = 0.1f, f32 scale = 1.0f)
+{
+	//muzzle flash
+	{
+		CParticle@ p = ParticleAnimated("Entities/Block/turret_muzzle_flash.png",
+										pos, Vec2f(),
+										-angle, //angle
+										1.0f, //scale
+										3, //animtime
+										0.0f, //gravity
+										true ); //selflit
+		if (p !is null)
+		{
+			p.Z = 10.0f;
+		}
+	}
+	
+	//smoke
+	if (smoke)
+	{
+		Vec2f shot_vel = Vec2f(0.5f,0);
+		shot_vel.RotateBy(-angle);
+		
+		Random shotrandom(0x15125); //clientside
+		for (int i = 0; i < 5; i++)
+		{
+			//random velocity direction
+			Vec2f vel(smokeVelocity + shotrandom.NextFloat()*0.1f, 0);
+			vel.RotateBy(shotrandom.NextFloat() * 360.0f);
+			vel += shot_vel * i;
+
+			CParticle@ p = ParticleAnimated("Entities/Block/turret_smoke.png",
+											pos, vel,
+											shotrandom.NextFloat() * 360.0f, //angle
+											scale, //scale
+											3+shotrandom.NextRanged(4), //animtime
+											0.0f, //gravity
+											true ); //selflit
+			if (p !is null)
+			{
+				p.Z = 550.0f;
+			}
+		}
 	}
 }

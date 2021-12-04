@@ -80,8 +80,8 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 		{
 			if (isBlock || b.hasTag("weapon"))
 			{
-				if (Block::isSolid(blockType) || (b.getTeamNum() != this.getTeamNum() && 
-				(blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("weapon") || blockType == Block::BOMB || blockType == Block::DOOR)))//hit these and die
+				if (Block::isSolid(blockType) || blockType == Block::DOOR || (b.getTeamNum() != this.getTeamNum() && 
+				(blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("weapon") || blockType == Block::BOMB)))//hit these and die
 				{
 					killed = true;
 					sparks(this.getPosition() + this.getVelocity(), 8);

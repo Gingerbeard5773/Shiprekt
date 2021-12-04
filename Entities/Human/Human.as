@@ -9,6 +9,7 @@
 #include "TileCommon.as";
 #include "CustomMap.as";
 #include "Hitters.as";
+#include "ParticleSparks";
 
 int useClickTime = 0;
 const int PUNCH_RATE = 15;
@@ -1238,7 +1239,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
     	}
 		
 		this.set_u32("fire time", getGameTime());	
-		shotParticles(pos + Vec2f(1,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle());
+		shotParticles(pos + Vec2f(0,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle(), true, 0.02f , 0.6f);
 		directionalSoundPlay("Gunshot.ogg", pos, 0.75f );
 	}
 	else if (this.getCommandID("construct") == cmd && canConstruct( this ) )
@@ -1643,43 +1644,3 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 	if ( this.getHealth() > oldHealth )
 		directionalSoundPlay( "Heal.ogg", this.getPosition(), 2.0f );
 }
-
-Random _shotrandom(0x15125); //clientside
-void shotParticles(Vec2f pos, float angle)
-{
-	//muzzle flash
-	{
-		CParticle@ p = ParticleAnimated( "Entities/Block/turret_muzzle_flash.png",
-												  pos, Vec2f(),
-												  -angle, //angle
-												  1.0f, //scale
-												  3, //animtime
-												  0.0f, //gravity
-												  true ); //selflit
-		if (p !is null)
-			p.Z = 540.0f;
-	}
-
-	Vec2f shot_vel = Vec2f(0.5f,0);
-	shot_vel.RotateBy(-angle);
-
-	//smoke
-	for (int i = 0; i < 5; i++)
-	{
-		//random velocity direction
-		Vec2f vel(0.03f + _shotrandom.NextFloat()*0.03f, 0);
-		vel.RotateBy(_shotrandom.NextFloat() * 360.0f);
-		vel += shot_vel * i;
-
-		CParticle@ p = ParticleAnimated( "Entities/Block/turret_smoke.png",
-												  pos, vel,
-												  _shotrandom.NextFloat() * 360.0f, //angle
-												  0.6f, //scale
-												  3+_shotrandom.NextRanged(4), //animtime
-												  0.0f, //gravity
-												  true ); //selflit
-		if (p !is null)
-			p.Z = 550.0f;
-	}
-}
-

@@ -3,6 +3,7 @@
 #include "IslandsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
+#include "ParticleSparks.as";
 
 const f32 BULLET_SPEED = 3.0f;
 const int FIRE_RATE = 200;
@@ -233,25 +234,10 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
             }
     	}
 
-		shotParticles( barrelPos, aimvector.Angle() );
-		directionalSoundPlay( "LauncherFire" + ( XORRandom(2) + 1 ) + ".ogg", barrelPos );
-		layer.SetAnimation( "fire" );
+		shotParticles(barrelPos, aimvector.Angle(), false);
+		directionalSoundPlay("LauncherFire" + (XORRandom(2) + 1) + ".ogg", barrelPos);
+		layer.SetAnimation("fire");
 
 		this.set_u32("fire time", getGameTime());
     }
-}
-
-Random _shotrandom(0x15125); //clientside
-void shotParticles(Vec2f pos, float angle )
-{
-	//muzzle flash
-	CParticle@ p = ParticleAnimated( "Entities/Block/turret_muzzle_flash.png",
-																					  pos, Vec2f(),
-																					  -angle, //angle
-																					  1.0f, //scale
-																					  3, //animtime
-																					  0.0f, //gravity
-																					  true ); //selflit
-	if(p !is null)
-			p.Z = 10.0f;
 }

@@ -16,7 +16,7 @@ void onInit( CBlob@ this )
 	this.Tag("projectile");
 
 	ShapeConsts@ consts = this.getShape().getConsts();
-    consts.mapCollisions = false;	 // weh ave our own map collision
+    consts.mapCollisions = false; // we have our own map collision
 	consts.bullet = true;	
 	
 	this.set_u16( "pierced count", 0 );
@@ -42,7 +42,7 @@ void onTick(CBlob@ this)
 	{
 		this.server_Die();
 		sparks(pos, 15, 2.5f, 20);
-		directionalSoundPlay("MetalImpact" +  (XORRandom(2) + 1) + ".ogg", pos);
+		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1) + ".ogg", pos);
 	}
 
 	// this gathers HitInfo objects which contain blob or tile hit information

@@ -23,75 +23,75 @@ void onInit( CBlob@ this )
 	
 	//shake screen (onInit accounts for firing latency)
 	CPlayer@ localPlayer = getLocalPlayer();
-	if ( localPlayer !is null && localPlayer is this.getDamageOwnerPlayer() )
-		ShakeScreen( 4, 4, this.getPosition() );
+	if (localPlayer !is null && localPlayer is this.getDamageOwnerPlayer())
+		ShakeScreen(4, 4, this.getPosition());
 }
 
 void onTick( CBlob@ this )
 {
-	if ( !getNet().isServer() ) return;
+	if (!isServer()) return;
 	
 	bool killed = false;
 
 	Vec2f pos = this.getPosition();
-	const int thisColor = this.get_u32( "color" );
+	const int thisColor = this.get_u32("color");
 	
-	if ( isTouchingRock(pos) )
+	if (isTouchingRock(pos))
 	{
 		this.server_Die();
 	}
 
 	CBlob@[] blobs;
-	if ( getMap().getBlobsInRadius( pos, Maths::Min( float( 5 + this.getTickSinceCreated() ), EXPLODE_RADIUS ), @blobs ) )
+	if (getMap().getBlobsInRadius(pos, Maths::Min(float(5 + this.getTickSinceCreated()), EXPLODE_RADIUS), @blobs))
 	{
-		for ( uint i = 0; i < blobs.length; i++ )
+		for (uint i = 0; i < blobs.length; i++)
 		{
 			CBlob@ b = blobs[i];
-			if( b is null ) continue;
+			if (b is null) continue;
 
 			const int color = b.getShape().getVars().customData;
 			const int blockType = b.getSprite().getFrame();
 			const bool isBlock = b.getName() == "block";
-			if ( isBlock && color > 0 && color != thisColor && Block::isSolid(blockType) )
+			if (isBlock && color > 0 && color != thisColor && Block::isSolid(blockType))
 				this.server_Die();
 		}
 	}
 }
 
-void flak( CBlob@ this )
+void flak(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	CMap@ map = getMap();
 	CBlob@[] blobs;
-	map.getBlobsInRadius( pos, FLAK_REACH, @blobs );
+	map.getBlobsInRadius(pos, FLAK_REACH, @blobs);
 	
-	if ( blobs.length < 2 )
+	if (blobs.length < 2)
 		return;
 		
-	f32 angle = XORRandom( 360 );
+	f32 angle = XORRandom(360);
 	CPlayer@ owner = this.getDamageOwnerPlayer();
 
-	for ( u8 s = 0; s < 12; s++ )
+	for (u8 s = 0; s < 12; s++)
 	{
 		HitInfo@[] hitInfos;
-		if ( map.getHitInfosFromRay( pos, angle, FLAK_REACH, this, @hitInfos ) )
+		if (map.getHitInfosFromRay(pos, angle, FLAK_REACH, this, @hitInfos))
 		{
-			for ( uint i = 0; i < hitInfos.length; i++ )//sharpnel trail
+			for (uint i = 0; i < hitInfos.length; i++)//sharpnel trail
 			{
 				CBlob@ b = hitInfos[i].blob;	  
-				if( b is null || b is this ) continue;
+				if (b is null || b is this) continue;
 									
 				const int blockType = b.getSprite().getFrame();
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
-				if ( Block::isSolid( blockType ) || ( !sameTeam
-					&& ( blockType == Block::SEAT || b.hasTag( "weapon" ) || b.hasTag( "rocket" ) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || Block::isBomb( blockType ) || ( b.hasTag( "player" ) && !b.isAttached() ) ) ) )
+				if (Block::isSolid(blockType) || (!sameTeam
+					&& (blockType == Block::SEAT || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || Block::isBomb( blockType ) || ( b.hasTag( "player" ) && !b.isAttached() ) ) ) )
 				{
-					this.server_Hit( b, hitInfos[i].hitpos, Vec2f_zero, getDamage( b, blockType ), 11, true );
-					if ( owner !is null )
+					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage(b, blockType), 11, true);
+					if (owner !is null)
 					{
 						CBlob@ blob = owner.getBlob();
-						if ( blob !is null )
-							damageBooty( owner, blob, b );
+						if (blob !is null)
+							damageBooty(owner, blob, b);
 					}
 					
 					break;
@@ -114,7 +114,7 @@ void onDie( CBlob@ this )
 				makeSmallExplosionParticle( pos + getRandomVelocity( 90, 12, 360 ) );
 	}
 
-	if ( getNet().isServer() ) 	
+	if (isServer()) 	
 		flak( this );
 }
 

@@ -232,14 +232,14 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 
 		f32 rangeOffset = ( _shotspreadrandom.NextFloat() - 0.5f ) * BULLET_SPREAD * 8.0f;
 
-		if( map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos ) )
+		if (map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos ) )
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;
 				u16 tileType = hi.tile;
 
-				if( b is null || b is this ) continue;
+				if (b is null || b is this) continue;
 
 				const int thisColor = this.getShape().getVars().customData;
 				int bColor = b.getShape().getVars().customData;
@@ -248,11 +248,11 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				const int blockType = b.getSprite().getFrame();
 				const bool isBlock = b.getName() == "block";
 
-				if ( !b.hasTag( "booty" ) && (bColor > 0 || !isBlock) )
+				if (!b.hasTag( "booty" ) && (bColor > 0 || !isBlock))
 				{
-					if ( isBlock || b.hasTag("rocket") )
+					if (isBlock || b.hasTag("rocket"))
 					{
-						if ( Block::isSolid(blockType) || ( b.getTeamNum() != teamNum && ( blockType == Block::MOTHERSHIP5 || blockType == Block::DECOYCORE || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::BOMB ) ) )//hit these and die
+						if (Block::isSolid(blockType) || (b.getTeamNum() != teamNum && ( blockType == Block::MOTHERSHIP5 || blockType == Block::DECOYCORE || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::BOMB)))//hit these and die
 							killed = true;
 						else if ( sameIsland && b.hasTag("weapon") && (b.getTeamNum() == teamNum) ) //team weaps
 						{
@@ -282,7 +282,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							continue;
 					}
 
-					if ( getNet().isClient() )//effects
+					if (isClient())//effects
 					{
 						sprite.RemoveSpriteLayer("laser");
 						CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
@@ -322,7 +322,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 
 		if ( !blocked )
 		{
-			shotParticles( barrelPos, aimVector.Angle() );
+			shotParticles(barrelPos, aimVector.Angle(), false);
 			directionalSoundPlay( "Gunshot" + ( XORRandom(2) + 2 ) + ".ogg", barrelPos );
 			if (this.get_string("barrel") == "left")
 				layer.SetAnimation( "fire left" );
@@ -330,53 +330,33 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				layer.SetAnimation( "fire right" );
 		}
 
-		Vec2f solidPos;
-		if ( !killed && map.rayCastSolid(pos, pos + aimVector * (BULLET_RANGE + rangeOffset), solidPos) )
+		if (!killed)
 		{
-			//print( "hit a rock" );
-			if ( getNet().isClient() )//effects
+			if (isClient())
 			{
 				sprite.RemoveSpriteLayer("laser");
 				CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
-				if (laser !is null)//partial length laser
+				if (laser !is null)
 				{
-					Animation@ anim = laser.addAnimation( "default", 1, false );
-					int[] frames = { 0, 1, 2, 3, 4, 5 };
+					Vec2f solidPos;
+					bool hitStone = map.rayCastSolid(pos, pos + aimVector * (BULLET_RANGE + rangeOffset), solidPos);
+					
+					Animation@ anim = laser.addAnimation("default", 1, false);
+					int[] frames = {0, 1, 2, 3, 4, 5};
 					anim.AddFrames(frames);
 					laser.SetVisible(true);
-					f32 laserLength = Maths::Max(0.1f, (solidPos - barrelPos).getLength() / 16.0f);
+					f32 laserLength = Maths::Max(0.1f, (hitStone ? solidPos - barrelPos : (aimVector * (BULLET_RANGE + rangeOffset))).getLength() / 16.0f);
 					laser.ResetTransform();
-					laser.ScaleBy( Vec2f(laserLength, 0.5f) );
-					laser.TranslateBy( Vec2f(laserLength*8.0f + 8.0f, barrelOffsetRelative.y) );
-					laser.RotateBy( offsetAngle, Vec2f());
+					laser.ScaleBy(Vec2f(laserLength, 0.5f));
+					laser.TranslateBy(Vec2f(laserLength * 8.0f + 8.0f, barrelOffsetRelative.y));
+					laser.RotateBy(offsetAngle, Vec2f());
 					laser.setRenderStyle(RenderStyle::light);
 					laser.SetRelativeZ(1);
+					
+					if (hitStone) hitEffects(this, solidPos);
+					else MakeWaterParticle(barrelPos + aimVector * (BULLET_RANGE + rangeOffset), Vec2f_zero);
 				}
-
-				hitEffects(this, solidPos);
 			}
-		}
-
-		else if ( !killed && getNet().isClient() )//full length 'laser'
-		{
-			sprite.RemoveSpriteLayer("laser");
-			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
-			if (laser !is null)
-			{
-				Animation@ anim = laser.addAnimation( "default", 1, false );
-				int[] frames = { 0, 1, 2, 3, 4, 5 };
-				anim.AddFrames(frames);
-				laser.SetVisible(true);
-				f32 laserLength = Maths::Max(0.1f, (aimVector * (BULLET_RANGE + rangeOffset)).getLength() / 16.0f);
-				laser.ResetTransform();
-				laser.ScaleBy( Vec2f(laserLength, 0.5f) );
-				laser.TranslateBy( Vec2f(laserLength*8.0f + 8.0f, barrelOffsetRelative.y) );
-				laser.RotateBy( offsetAngle, Vec2f());
-				laser.setRenderStyle(RenderStyle::light);
-				laser.SetRelativeZ(1);
-			}
-
-			MakeWaterParticle( barrelPos + aimVector * (BULLET_RANGE + rangeOffset), Vec2f_zero );
 		}
     }
 }
@@ -422,78 +402,11 @@ f32 getDamage( CBlob@ hitBlob, int blockType )
 	return 0.01f;//cores, solids
 }
 
-void hitEffects( CBlob@ hitBlob, Vec2f worldPoint )
+void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 {
-	CSprite@ sprite = hitBlob.getSprite();
-	const int blockType = sprite.getFrame();
-
-	if (hitBlob.getName() == "shark"){
-		ParticleBloodSplat( worldPoint, true );
-		directionalSoundPlay( "BodyGibFall", worldPoint );
-	}
-	else	if (hitBlob.hasTag("player") )
-	{
-		directionalSoundPlay( "ImpactFlesh", worldPoint );
-		ParticleBloodSplat( worldPoint, true );
-	}
-	else	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || hitBlob.hasTag("weapon")
-					|| blockType == Block::PLATFORM || blockType == Block::SEAT || blockType == Block::RAMCHAIR || blockType == Block::BOMB)
+	if (hitBlob.getName() == "block")
 	{
 		sparks(worldPoint, 4);
-		directionalSoundPlay( "Ricochet" +  ( XORRandom(3) + 1 ) + ".ogg", worldPoint, 0.50f );
-	}
-}
-
-void shotParticles(Vec2f pos, float angle )
-{
-	//muzzle flash
-	CParticle@ p = ParticleAnimated( "Entities/Block/turret_muzzle_flash.png",
-									 pos, Vec2f(),
-									-angle, //angle
-									1.0f, //scale
-									3, //animtime
-									0.0f, //gravity
-									true ); //selflit
-	if (p !is null)
-	{
-		p.Z = 10.0f;
-	}
-}
-
-void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
-{
-	if (victim.getName() == "block")
-	{
-		const int blockType = victim.getSprite().getFrame();
-		u8 teamNum = attacker.getTeamNum();
-		u8 victimTeamNum = victim.getTeamNum();
-		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
-
-		if (victimIsle !is null && victimIsle.blocks.length > 3
-			&& (victimIsle.owner != "" || victimIsle.isMothership)
-			&& victimTeamNum != teamNum
-			&& (victim.hasTag("propeller"))
-			)
-		{
-			if (attacker.isMyPlayer())
-			{
-				Sound::Play("Pinball_" + XORRandom(4), attackerBlob.getPosition(), 0.5f );
-			}
-
-			if (isServer())
-			{
-				CRules@ rules = getRules();
-
-				u16 reward = 2;
-
-				f32 bFactor = (rules.get_bool( "whirlpool") ? 3.0f : 1.0f);
-
-				reward = Maths::Round(reward * bFactor);
-
-				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
-				server_updateTotalBooty(teamNum, reward);
-			}
-		}
+		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", worldPoint, 0.50f);
 	}
 }

@@ -28,8 +28,6 @@ const uint8 REFILL_SECONDARY_CORE_SECONDS = 10;
 // connected to secondary cores
 const uint8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
-Random _shotspreadrandom(0x11598); //clientside
-
 void onInit( CBlob@ this )
 {
 	this.Tag("pointDefense");
@@ -38,7 +36,7 @@ void onInit( CBlob@ this )
 	this.addCommandID("fire");
 	this.addCommandID("clear attached");
 
-	if ( getNet().isServer() )
+	if (isServer())
 	{
 		this.set('ammo', MAX_AMMO);
 		this.set('maxAmmo', MAX_AMMO);
@@ -66,7 +64,7 @@ void onInit( CBlob@ this )
 
 void onTick( CBlob@ this )
 {
-	if ( this.getShape().getVars().customData <= 0 )
+	if (this.getShape().getVars().customData <= 0)
 		return;
 
 	u32 gameTime = getGameTime();
@@ -76,12 +74,12 @@ void onTick( CBlob@ this )
 
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ laser = sprite.getSpriteLayer( "laser" );
-	if ( laser !is null && this.get_u32("fire time") + 5.0f < gameTime )
+	if (laser !is null && this.get_u32("fire time") + 5.0f < gameTime )
 		sprite.RemoveSpriteLayer("laser");
 
-	Auto( this );
+	Auto(this);
 
-	if (getNet().isServer())
+	if (isServer())
 	{
 		Island@ isle = getIsland(this.getShape().getVars().customData);
 
@@ -299,7 +297,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			}
 
 			Rotate(this, aimVector);
-			shotParticles(pos + aimVector*9, aimVector.Angle());
+			shotParticles(pos + aimVector*9, aimVector.Angle(), false);
 			directionalSoundPlay( "Laser1.ogg", pos, 1.0f );
 
 			Vec2f barrelPos = pos + Vec2f(1,0).RotateBy(aimVector.Angle())*8;
@@ -349,31 +347,9 @@ f32 getDamage( CBlob@ hitBlob )
 	return 0.01f;//cores, solids
 }
 
-Random _shotrandom(0x15125); //clientside
-void shotParticles(Vec2f pos, float angle)
-{
-	//muzzle flash
-	{
-		CParticle@ p = ParticleAnimated( "Entities/Block/turret_muzzle_flash.png",
-												  pos, Vec2f(),
-												  -angle, //angle
-												  1.0f, //scale
-												  3, //animtime
-												  0.0f, //gravity
-												  true ); //selflit
-		if(p !is null)
-			p.Z = 10.0f;
-	}
-}
-
 void hitEffects( CBlob@ hitBlob, Vec2f worldPoint )
 {
-	if (hitBlob.hasTag("player") )
-	{
-		directionalSoundPlay( "ImpactFlesh", worldPoint );
-		ParticleBloodSplat( worldPoint, true );
-	}
-	else if ( hitBlob.hasTag("projectile") )
+	if (hitBlob.hasTag("projectile"))
 	{
 		sparks(worldPoint, 4);
 	}

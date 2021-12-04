@@ -111,7 +111,11 @@ void onRender(CRules@ this)
 		+ "  * Mini-station takes half as much time to capture.\n"
 		+ "  * Explosives can now be deconstructed properly without detonating.\n"
 		+ "  * Auxillary Core can only be created at your mothership.\n"
-		+ "  * Harvesters can now properly deconstruct bombs.\n";
+		+ "  * Improved particles.\n"
+		+ "  * Player sharks can kill humans without dying.\n"
+		+ "  * Many other small changes and bug fixes.\n"
+		+ "\n"
+		+ "NEWS: A shiprekt discord & github have been created. Links will be up soon.";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
