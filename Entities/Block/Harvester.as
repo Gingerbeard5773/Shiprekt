@@ -193,7 +193,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							{
 								f32 deconstructAmount = 0;
 								if ( (islandOwnerName == "" && !island.isMothership)
-									|| (islandOwnerName == "" && b.get_string( "playerOwner" ) == "")
+									|| (b.get_string( "playerOwner" ) == "" && !island.isMothership)
 									|| (islandOwnerName == thisPlayer.getUsername())
 									|| (b.get_string( "playerOwner" ) == thisPlayer.getUsername()))
 								{

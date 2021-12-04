@@ -46,13 +46,13 @@ void onTick (CBlob@ this)
 		}
 		
 		//Set Owner
-		if ( getNet().isServer() )
+		if (isServer())
 		{
-			CBlob@ owner = getBlobByNetworkID( this.get_u16( "ownerID" ) );    
-			if ( owner !is null )
+			CBlob@ owner = getBlobByNetworkID(this.get_u16("ownerID"));    
+			if (owner !is null)
 			{
-				this.set_string( "playerOwner", owner.getPlayer().getUsername() );
-				this.Sync( "playerOwner", true );
+				this.set_string("playerOwner", owner.getPlayer().getUsername());
+				this.Sync("playerOwner", true );
 			}
 		}
 	}
@@ -62,12 +62,12 @@ void onTick (CBlob@ this)
 	if ( color > 0 )
 	{
 		Island@ island = getIsland(color);
-		if ( island !is null && !island.isStation && !island.isMiniStation )
+		if ( island !is null && !island.isStation && !island.isMiniStation)
 		{
 			Vec2f velnorm = island.vel; 
 			const f32 vellen = velnorm.Normalize();		
 			
-			if ( vellen > 4.0f ) 
+			if (vellen > 4.0f) 
 			{						
 				bool dontHitMore = false;
 			
@@ -124,7 +124,7 @@ void onTick (CBlob@ this)
  	// push merged ships away from each other
 	if (this.get_bool("colliding")) this.set_bool("colliding", false); 
 
-	if (isServer())	//awkward fix for blob team changes wiping up the frame state (rest on islands.as)
+	if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on islands.as)
 	{
 		u8 frame = this.get_u8("frame");
 		if (thisSprite.getFrame() == 0 && frame != 0)
@@ -254,7 +254,6 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f poin
 						Die(blob);
 				}
 
-				
 				if (Block::isBomb(blockType)) //bombs annihilate all
 				{
 					if (other_blockType == Block::MOTHERSHIP5)

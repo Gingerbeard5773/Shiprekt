@@ -368,7 +368,8 @@ void PlayerControls(CBlob@ this)
 		    CGridMenu @gmenu;
 		    CGridButton @gbutton;
 		    this.ClickGridMenu(0, gmenu, gbutton); 
-	    } else if ( this.isKeyJustPressed(key_inventory) )
+	    } 
+		else if (this.isKeyJustPressed(key_inventory))
 		{
 			
 		}
@@ -378,13 +379,13 @@ void PlayerControls(CBlob@ this)
 	if (this.isKeyJustPressed(key_inventory) && !this.isAttached())
 	{
 		CBlob@ core = getMothership(this.getTeamNum());
-		if ( core !is null && !core.hasTag( "critical" ) )
+		if (core !is null && !core.hasTag("critical"))
 		{
 			Island@ pIsle = getIsland( this );
 			bool canShop = pIsle !is null && pIsle.centerBlock !is null 
-							&& ( (pIsle.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
-									|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
-									
+							&& ((pIsle.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
+							|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
+
 			if (!Human::isHoldingBlocks(this))
 			{
 				if (!hud.hasButtons())
@@ -1259,7 +1260,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		{		
 			CRules@ rules = getRules();
 			const int blockType = mBlob.getSprite().getFrame();
-			Island@ island = getIsland( mBlob.getShape().getVars().customData );
+			Island@ island = getIsland(mBlob.getShape().getVars().customData);
 				
 			const f32 mBlobCost = mBlob.get_u32("cost");
 			f32 mBlobHealth = mBlob.getHealth();
@@ -1283,12 +1284,11 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				if (currentTool == "deconstructor" && !(blockType == Block::MOTHERSHIP5) && mBlobCost > 0 )
 				{
 					f32 deconstructAmount = 0;
-					if (isleOwner == "" 
-						|| (isleOwner == "" && mBlob.get_string("playerOwner") == "")
+					if (isleOwner == ""
+						|| mBlob.get_string("playerOwner") == ""
 						|| isleOwner == thisPlayer.getUsername() 
 						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername()
-						|| blockType == Block::STATION
-						|| blockType == Block::MINISTATION)
+						|| blockType == Block::STATION || blockType == Block::MINISTATION)
 					{
 						deconstructAmount = fullConstructAmount; 
 					}
@@ -1355,51 +1355,51 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							server_setPlayerBooty(cName, cBooty - reconstructCost);
 						}
 					}
-					else if ( blockType == Block::STATION || blockType == Block::MINISTATION )
+					else if (blockType == Block::STATION || blockType == Block::MINISTATION)
 					{							
-						if ( (currentReclaim + reconstructAmount) <= initialReclaim )
+						if ((currentReclaim + reconstructAmount) <= initialReclaim)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ( (currentReclaim + reconstructAmount) > initialReclaim  )
+						else if ((currentReclaim + reconstructAmount) > initialReclaim)
 						{
 							reconstructAmount = initialReclaim - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
 							
-							if ( mBlob.getTeamNum() == 255 ) //neutral
+							if (mBlob.getTeamNum() == 255 ) //neutral
 							{
-								mBlob.server_setTeamNum( this.getTeamNum() );
-								mBlob.getSprite().SetFrame( blockType );
+								mBlob.server_setTeamNum(this.getTeamNum());
+								mBlob.getSprite().SetFrame(blockType);
 							}
 						}
 						
 						mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
-					else if ( currentReclaim < initialReclaim )
+					else if (currentReclaim < initialReclaim)
 					{					
-						if ( (currentReclaim + reconstructAmount) <= initialReclaim )
+						if ((currentReclaim + reconstructAmount) <= initialReclaim)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ( (currentReclaim + reconstructAmount) > initialReclaim  )
+						else if ((currentReclaim + reconstructAmount) > initialReclaim)
 						{
 							reconstructAmount = initialReclaim - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
 						}
 						
-						if ( (currentReclaim + reconstructAmount > mBlobHealth) && cBooty >= reconstructCost)
+						if ((currentReclaim + reconstructAmount > mBlobHealth) && cBooty >= reconstructCost)
 						{
-							mBlob.server_SetHealth( mBlobHealth + reconstructAmount );
+							mBlob.server_SetHealth( mBlobHealth + reconstructAmount);
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
-							server_setPlayerBooty( cName, cBooty - reconstructCost );
+							server_setPlayerBooty( cName, cBooty - reconstructCost);
 						}
-						else if ( (currentReclaim + reconstructAmount) < mBlobHealth )
+						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
 					
-					if ( currentReclaim >= initialReclaim*0.75f )	//visually repair block
+					if (currentReclaim >= initialReclaim * 0.75f ) //visually repair block
 					{
 						CSprite@ mBlobSprite = mBlob.getSprite();
 						for (uint frame = 0; frame < 11; ++frame)
