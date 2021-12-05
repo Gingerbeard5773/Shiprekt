@@ -129,6 +129,8 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 
 void onDie(CBlob@ this)
 {
-	if (isInWater(this.getPosition()))
+	if (isInWater(this.getPosition()) && this.getTouchingCount() <= 0)
+	{
 		MakeWaterParticle(this.getPosition(), Vec2f_zero);
+	}
 }

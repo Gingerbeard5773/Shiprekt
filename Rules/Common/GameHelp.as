@@ -105,17 +105,16 @@ void onRender(CRules@ this)
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Last changes :\n"
-
+		string lastChangesInfo = "Shiprekt Version 1.38\n"
+		
+		+ "Last changes :\n"
 		+ "- 11-30-2021 - By Gingerbeard\n"
 		+ "  * Mini-station takes half as much time to capture.\n"
 		+ "  * Explosives can now be deconstructed properly without detonating.\n"
 		+ "  * Auxillary Core can only be created at your mothership.\n"
-		+ "  * Improved particles.\n"
 		+ "  * Player sharks can kill humans without dying.\n"
-		+ "  * Many other small changes and bug fixes.\n"
-		+ "\n"
-		+ "NEWS: A shiprekt discord & github have been created. Links will be up soon.";
+		+ "  * Fixed that terrible button issue.\n"
+		+ "  * Many other small changes and bug fixes.\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
@@ -169,7 +168,48 @@ void onRender(CRules@ this)
 		{
 			if (helpWindow.isEnabled){helpWindow.draw();} //telling window to draw iteself
 		}
+		
+		//Add social links
+		makeWebsiteLink(100.0f, "Go to the Shiprekt Discord Server", "https://discord.gg/k5dvxFj2yW");
+		makeWebsiteLink(150.0f, "Go to the Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
 	}
+}
+
+void makeWebsiteLink(f32 yPos, string text, string website)
+{
+	f32 width;
+	f32 height = 40;
+
+	Vec2f dim;
+	GUI::GetTextDimensions(text, dim);
+
+	width = dim.x + 20;
+
+	Vec2f tl = Vec2f(getScreenWidth() - 10 - width, yPos);
+	Vec2f br = Vec2f(getScreenWidth() - 10, tl.y + height);
+
+	CControls@ controls = getControls();
+	Vec2f mousePos = controls.getMouseScreenPos();
+
+	bool hover = (mousePos.x > tl.x && mousePos.x < br.x && mousePos.y > tl.y && mousePos.y < br.y);
+
+	if (hover)
+	{
+		GUI::DrawButton(tl, br);
+
+		if (controls.isKeyJustPressed(KEY_LBUTTON))
+		{
+			Sound::Play("option");
+			OpenWebsite(website);
+			showHelp = !showHelp;
+		}
+	}
+	else
+	{
+		GUI::DrawPane(tl, br, 0xffcfcfcf);
+	}
+
+	GUI::DrawTextCentered(text, Vec2f(tl.x + (width * 0.50f), tl.y + (height * 0.50f)), 0xffffffff);
 }
 
 //failback for F1 key problems

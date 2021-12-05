@@ -51,12 +51,12 @@ void onInit( CBlob@ this )
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer( "weapon", 16, 16 );
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
     	layer.SetLighting( false );
-     	Animation@ anim = layer.addAnimation( "fire", 0, false );
+     	Animation@ anim = layer.addAnimation("fire", 0, false);
         anim.AddFrame(Block::CANNON_A1);
         anim.AddFrame(Block::CANNON_A2);
         layer.SetAnimation("fire");
@@ -65,7 +65,7 @@ void onInit( CBlob@ this )
 	this.set_u32("fire time", 0);
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
 	if (this.getShape().getVars().customData <= 0)
 		return;
@@ -79,13 +79,12 @@ void onTick( CBlob@ this )
 	if (fireTime + FIRE_RATE - 15 == gameTime)
 	{
 		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-		if (layer !is null)
-			layer.animation.SetFrameIndex(0);
+		if (layer !is null) layer.animation.SetFrameIndex(0);
 
 		directionalSoundPlay( "Charging.ogg", this.getPosition(), 2.0f );
 	}
 
-	if (getNet().isServer())
+	if (isServer())
 	{
 		Island@ isle = getIsland(this.getShape().getVars().customData);
 
@@ -122,12 +121,11 @@ void onTick( CBlob@ this )
 	}
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
   if (cmd == this.getCommandID("fire"))
   {
-		if ( !this.get_bool("fire ready"))
-			return;
+		if (!this.get_bool("fire ready")) return;
 
 		Vec2f pos = this.getPosition();
 
@@ -135,7 +133,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 
 		if (!isClear(this))
 		{
-			directionalSoundPlay( "lightup", pos );
+			directionalSoundPlay("lightup", pos );
 			return;
 		}
 
@@ -205,8 +203,7 @@ void Fire(CBlob@ this, CBlob@ shooter)
 	}
 
 	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-	if (layer !is null)
-		layer.animation.SetFrameIndex(0);
+	if (layer !is null) layer.animation.SetFrameIndex(0);
 
 	shotParticles(pos + aimVector*9, aimVector.Angle());
 
@@ -224,10 +221,11 @@ bool isClear(CBlob@ this)
 
 	HitInfo@[] hitInfos;
 	if (getMap().getHitInfosFromRay(pos, -aimVector.Angle(), PROJECTILE_RANGE/4, this, @hitInfos))
-		for ( uint i = 0; i < hitInfos.length; i++ )
+	{
+		for (uint i = 0; i < hitInfos.length; i++)
 		{
 			CBlob@ b =  hitInfos[i].blob;
-			if (b is null || b is this ) continue;
+			if (b is null || b is this) continue;
 
 			if (b.hasTag("weapon") && b.getTeamNum() == teamNum)//team weaps
 			{
@@ -235,6 +233,7 @@ bool isClear(CBlob@ this)
 				break;
 			}
 		}
+	}
 
 	return clear;
 }

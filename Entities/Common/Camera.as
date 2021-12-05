@@ -77,7 +77,7 @@ void onTick(CBlob@ this)
   		else if (camera.targetDistance < zoom)
 			camera.targetDistance += ZOOM_SPEED;	
 		else if (camera.targetDistance > zoom)
-			camera.targetDistance -= ZOOM_SPEED;	
+			camera.targetDistance -= ZOOM_SPEED;
 	}
 	else if (zoom == 0.5f)
 	{

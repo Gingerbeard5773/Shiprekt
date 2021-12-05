@@ -29,102 +29,91 @@ void onInit( CBlob@ this )
 void onTick(CBlob@ this)
 {
 	if (!isServer()) return;
-	
-	int piercedCount = this.get_u16("pierced count");
-    u32[]@ piercedBlobIDs;
-    this.get("pierced blob IDs", @piercedBlobIDs);
-	bool killed = false;
 
 	Vec2f pos = this.getPosition();
-	Vec2f vel = this.getVelocity();
 	
 	if (isTouchingRock(pos))
 	{
 		this.server_Die();
 		sparks(pos, 15, 2.5f, 20);
-		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1) + ".ogg", pos);
+		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
 	}
+}
 
-	// this gathers HitInfo objects which contain blob or tile hit information
-	HitInfo@[] hitInfos;
-	if (getMap().getHitInfosFromRay( pos, -vel.Angle(), vel.Length(), this, @hitInfos ))
+void onCollision(CBlob@ this, CBlob@ b, bool solid)
+{
+	if (!isServer()) return;
+	
+	int piercedCount = this.get_u16("pierced count");
+    u32[]@ piercedBlobIDs;
+    this.get("pierced blob IDs", @piercedBlobIDs);
+	bool killed = false;
+	
+	if (b is null || b is this) return;
+	
+	u32 bID = b.getNetworkID();
+	
+	if (piercedBlobIDs.find(bID) >= 0) return;
+
+	const int color = b.getShape().getVars().customData;
+	const int blockType = b.getSprite().getFrame();
+	const bool isBlock = b.getName() == "block";
+	const bool sameTeam = b.getTeamNum() == this.getTeamNum();
+	if (color > 0 || !isBlock)
 	{
-		//HitInfo objects are sorted, first come closest hits
-		for (uint i = 0; i < hitInfos.length; i++)
+		if (isBlock)
 		{
-			HitInfo@ hi = hitInfos[i];
-			CBlob@ b = hi.blob;	  
-			if (b is null || b is this) continue;
-			
-			u32 bID = b.getNetworkID();
-			
-			if (piercedBlobIDs.find(bID) >= 0) 
-				continue;
-
-			const int color = b.getShape().getVars().customData;
-			const int blockType = b.getSprite().getFrame();
-			const bool isBlock = b.getName() == "block";
-			const bool sameTeam = b.getTeamNum() == this.getTeamNum();
-			if (color > 0 || !isBlock)
+			if (Block::isSolid(blockType) || blockType == Block::DOOR || ((blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("weapon")) && !sameTeam))
 			{
-				if (isBlock)
-				{
-					if (Block::isSolid(blockType) || blockType == Block::DOOR || ((blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag( "weapon" ) ) && !sameTeam ) )
-					{
-						if (piercedCount >= MAX_PIERCED)
-							killed = true;
-						else
-						{
-							this.push("pierced blob IDs", bID);
-							piercedCount++;
-							this.setVelocity(this.getVelocity() * 0.5f);
-						}
-					}
-					else if (blockType == Block::SEAT)
-					{
-						AttachmentPoint@ seat = b.getAttachmentPoint(0);
-						CBlob@ occupier = seat.getOccupied();
-						if (occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum())
-						{
-							if (piercedCount >= MAX_PIERCED)
-								killed = true;
-							else
-							{
-								this.push("pierced blob IDs", bID );
-								piercedCount++;
-								this.setVelocity( this.getVelocity() * 0.5f);
-							}
-						}
-						else
-							continue;
-					}
-					else
-						continue;
-				}
+				if (piercedCount >= MAX_PIERCED)
+					killed = true;
 				else
 				{
-					if (sameTeam || (b.hasTag("player") && b.isAttached()) || b.hasTag("projectile"))//don't hit
-						continue;
-				}
-				
-				this.set_u16("pierced count", piercedCount);
-				
-				CPlayer@ owner = this.getDamageOwnerPlayer();
-				if (owner !is null)
-				{
-					CBlob@ blob = owner.getBlob();
-					if (blob !is null)
-						damageBooty( owner, blob, b );
-				}
-				
-				this.server_Hit(b, pos, Vec2f_zero, getDamage(this, b, blockType), 0, true);
-				
-				if (killed) 
-				{
-					this.server_Die(); 
-					break;
+					this.push("pierced blob IDs", bID);
+					piercedCount++;
+					this.setVelocity(this.getVelocity() * 0.5f);
 				}
 			}
+			else if (blockType == Block::SEAT)
+			{
+				AttachmentPoint@ seat = b.getAttachmentPoint(0);
+				CBlob@ occupier = seat.getOccupied();
+				if (occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum())
+				{
+					if (piercedCount >= MAX_PIERCED)
+						killed = true;
+					else
+					{
+						this.push("pierced blob IDs", bID );
+						piercedCount++;
+						this.setVelocity( this.getVelocity() * 0.5f);
+					}
+				}
+				else return;
+			}
+			else return;
+		}
+		else
+		{
+			if (sameTeam || (b.hasTag("player") && b.isAttached()) || b.hasTag("projectile"))//don't hit
+				return;
+		}
+		
+		this.set_u16("pierced count", piercedCount);
+		
+		CPlayer@ owner = this.getDamageOwnerPlayer();
+		if (owner !is null)
+		{
+			CBlob@ blob = owner.getBlob();
+			if (blob !is null) damageBooty(owner, blob, b);
+		}
+		
+		this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(this, b, blockType), 0, true);
+		
+		if (killed) 
+		{
+			this.server_Die(); 
+			return;
 		}
 	}
 }
@@ -136,7 +125,7 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob, int blockType)
 	f32 damageFactor = 1.0f;
 	
 	if (piercedCount > 1)
-		damageFactor *= 0.5f;
+		damageFactor *= 0.7f;
 	if (piercedCount > 2)
 		damageFactor *= 0.5f;
 
@@ -178,8 +167,7 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob, int blockType)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {	
-	if (customData == 9)
-		return;
+	if (customData == 9 || damage <= 0.0f) return;
 	
 	const int blockType = hitBlob.getSprite().getFrame();
 	
@@ -187,7 +175,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 
 	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
 	{
-		sparksDirectional(worldPoint, this.getVelocity(), 7);
+		sparksDirectional(worldPoint + this.getVelocity(), this.getVelocity(), 7);
 		directionalSoundPlay("Pierce1.ogg", worldPoint);
 			
 		if (blockType == Block::MOTHERSHIP5)
@@ -201,26 +189,26 @@ void onDie(CBlob@ this)
 	
 	if (this.getTouchingCount() > 0)
 	{
-		sparks(pos, 15, 2.5, 20);
-		directionalSoundPlay( "MetalImpact" +  ( XORRandom(2) + 1 ) + ".ogg", pos );
+		sparks(pos + this.getVelocity(), 15, 2.5, 20);
+		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
 	}
 	else
 	{
-		MakeWaterParticle( pos, Vec2f_zero);
-		directionalSoundPlay( "WaterSplashBall.ogg", pos );
+		MakeWaterParticle(pos, Vec2f_zero);
+		directionalSoundPlay("WaterSplashBall.ogg", pos);
 	}
 		
 	if (!isServer()) return;
 		
 	//splash damage
 	CBlob@[] blobsInRadius;
-	if (getMap().getBlobsInRadius( pos, SPLASH_RADIUS, @blobsInRadius ))
+	if (getMap().getBlobsInRadius(pos, SPLASH_RADIUS, @blobsInRadius))
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
 			CBlob @b = blobsInRadius[i];
-			if ( !b.hasTag( "seat" ) && b.getName() == "block" && b.getShape().getVars().customData > 0 )
-				this.server_Hit( b, Vec2f_zero, Vec2f_zero, SPLASH_DAMAGE, 9, false );
+			if (!b.hasTag("seat") && b.getName() == "block" && b.getShape().getVars().customData > 0)
+				this.server_Hit(b, Vec2f_zero, Vec2f_zero, SPLASH_DAMAGE, 9, false);
 		}
 	}
 }
@@ -240,5 +228,6 @@ void sparksDirectional(Vec2f pos, Vec2f blobVel, int amount)
         p.timeout = 20 + _sprk_r.NextRanged(20);
         p.scale = 1.0f + _sprk_r.NextFloat();
         p.damping = 0.85f;
+		p.Z = 550.0f;
     }
 }
