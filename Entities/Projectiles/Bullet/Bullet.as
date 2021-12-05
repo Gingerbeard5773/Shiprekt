@@ -87,7 +87,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 					sparks(this.getPosition() + this.getVelocity(), 8);
 					directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", this.getPosition(), 0.50f);
 				}
-				else if (blockType == Block::SEAT)
+				else if (b.hasTag("seat") || blockType == Block::FLAK || blockType == Block::HYPERFLAK)
 				{
 					AttachmentPoint@ seat = b.getAttachmentPoint(0);
 					CBlob@ occupier = seat.getOccupied();

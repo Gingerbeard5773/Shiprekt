@@ -972,7 +972,7 @@ void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
 			params.write_u16(netID);
 			params.write_string("pistol");
 			
-			CGridButton@ button = menu.AddButton( "$PISTOL$", "Pistol", this.getCommandID("swap tool"), params );
+			CGridButton@ button = menu.AddButton("$PISTOL$", "Pistol", this.getCommandID("swap tool"), params);
 			
 			if (currentTool == "pistol")
 				button.SetSelected(2);
@@ -981,27 +981,27 @@ void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
 		}
 		{
 			CBitStream params;
-			params.write_u16( netID );
-			params.write_string( "deconstructor" );
+			params.write_u16(netID);
+			params.write_string("deconstructor");
 				
-			CGridButton@ button = menu.AddButton( "$DECONSTRUCTOR$", "Deconstructor", this.getCommandID("swap tool"), params );
+			CGridButton@ button = menu.AddButton("$DECONSTRUCTOR$", "Deconstructor", this.getCommandID("swap tool"), params);
 	
 			if (currentTool == "deconstructor")
 				button.SetSelected(2);
 				
-			button.SetHoverText( "A tool that can reclaim ship parts for booty.");
+			button.SetHoverText("A tool that can reclaim ship parts for booty.");
 		}
 		{
 			CBitStream params;
-			params.write_u16( netID );
-			params.write_string( "reconstructor" );
+			params.write_u16(netID);
+			params.write_string("reconstructor");
 				
-			CGridButton@ button = menu.AddButton( "$RECONSTRUCTOR$", "Reconstructor", this.getCommandID("swap tool"), params );
+			CGridButton@ button = menu.AddButton("$RECONSTRUCTOR$", "Reconstructor", this.getCommandID("swap tool"), params);
 	
 			if (currentTool == "reconstructor")
 				button.SetSelected(2);
 				
-			button.SetHoverText( "A tool that can repair ship parts at the cost of booty. Can repair cores at a rate of 10 booty per 1% health.");
+			button.SetHoverText("A tool that can repair ship parts at the cost of booty. Can repair cores at a rate of 10 booty per 1% health.");
 		}
 	}
 }
@@ -1012,13 +1012,12 @@ void Punch(CBlob@ this)
 	Vec2f aimVector = this.getAimPos() - pos;
 	
     HitInfo@[] hitInfos;
-    if (this.getMap().getHitInfosFromCircle(pos, this.getRadius()*4.0f, this, @hitInfos))
+	if (this.getMap().getHitInfosFromArc(pos, -aimVector.Angle(), 150.0f, 10.0f, this, @hitInfos))
 	{
 		for (uint i = 0; i < hitInfos.length; i++)
 		{
 			CBlob @b = hitInfos[i].blob;
-			if (b is null)
-				continue;
+			if (b is null) continue;
 			//dirty fix: get occupier if seat
 			if (b.hasTag("seat"))
 			{
@@ -1043,10 +1042,9 @@ void Punch(CBlob@ this)
 	this.set_u32("punch time", getGameTime());	
 }
 
-void ShootPistol( CBlob@ this )
+void ShootPistol(CBlob@ this)
 {
-	if (!this.isMyPlayer())
-		return;
+	if (!this.isMyPlayer()) return;
 
 	Vec2f pos = this.getPosition();
 	Vec2f aimVector = this.getAimPos() - pos;
@@ -1057,23 +1055,24 @@ void ShootPistol( CBlob@ this )
 	
 	Vec2f vel = (aimVector * BULLET_SPEED) + offset;
 
-	f32 lifetime = Maths::Min( 0.05f + BULLET_RANGE/BULLET_SPEED/32.0f, 1.35f);
+	f32 lifetime = Maths::Min(0.05f + BULLET_RANGE/BULLET_SPEED/32.0f, 1.35f);
 
 	CBitStream params;
-	params.write_Vec2f( vel );
-	params.write_f32( lifetime );
+	params.write_Vec2f(vel);
+	params.write_f32(lifetime);
 
 	Island@ island = getIsland(this);
-	if (island !is null && island.centerBlock !is null )//relative positioning
+	if (island !is null && island.centerBlock !is null)//relative positioning
 	{
-		params.write_bool( true );
-		Vec2f rPos = ( pos + aimVector*3 ) - island.centerBlock.getPosition();
+		params.write_bool(true);
+		Vec2f rPos = (pos + aimVector*3) - island.centerBlock.getPosition();
 		params.write_Vec2f(rPos);
 		u32 islandColor = island.centerBlock.getShape().getVars().customData;
 		params.write_u32( islandColor );
-	} else//absolute positioning
+	}
+	else//absolute positioning
 	{
-		params.write_bool( false );
+		params.write_bool(false);
 		Vec2f aPos = pos + aimVector*9;
 		params.write_Vec2f(aPos);
 	}
@@ -1243,15 +1242,14 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		shotParticles(pos + Vec2f(0,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle(), true, 0.02f , 0.6f);
 		directionalSoundPlay("Gunshot.ogg", pos, 0.75f );
 	}
-	else if (this.getCommandID("construct") == cmd && canConstruct( this ) )
+	else if (this.getCommandID("construct") == cmd && canConstruct(this))
 	{
 		Vec2f pos = params.read_Vec2f();
 		Vec2f aimPos = params.read_Vec2f();
 		CBlob@ mBlob = getBlobByNetworkID( params.read_netid() );
 		
 		CPlayer@ thisPlayer = this.getPlayer();						
-		if ( thisPlayer is null ) 
-			return;		
+		if (thisPlayer is null) return;		
 		
 		string currentTool = this.get_string( "current tool" );
 		Vec2f aimVector = aimPos - pos;	 
@@ -1367,7 +1365,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							reconstructAmount = initialReclaim - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
 							
-							if (mBlob.getTeamNum() == 255 ) //neutral
+							if (mBlob.getTeamNum() == 255) //neutral
 							{
 								mBlob.server_setTeamNum(this.getTeamNum());
 								mBlob.getSprite().SetFrame(blockType);
@@ -1419,9 +1417,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				this.getSprite().RemoveSpriteLayer("laser");
 				
 				string beamSpriteFilename;
-				if ( currentTool == "deconstructor" )
+				if (currentTool == "deconstructor")
 					beamSpriteFilename = "ReclaimBeam";
-				else if ( currentTool == "reconstructor" )
+				else if (currentTool == "reconstructor")
 					beamSpriteFilename = "RepairBeam";
 					
 				CSpriteLayer@ laser = this.getSprite().addSpriteLayer("laser", beamSpriteFilename + ".png", 32, 16);
@@ -1435,9 +1433,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 					laser.SetVisible(true);
 					f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);						
 					laser.ResetTransform();						
-					laser.ScaleBy( Vec2f(laserLength, 1.0f) );							
-					laser.TranslateBy( Vec2f(laserLength*16.0f, + 0.5f) );
-					laser.RotateBy( offsetAngle, Vec2f());
+					laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+					laser.TranslateBy( Vec2f(laserLength*16.0f, + 0.5f));
+					laser.RotateBy(offsetAngle, Vec2f());
 					laser.setRenderStyle(RenderStyle::light);
 					laser.SetRelativeZ(-1);
 				}
@@ -1446,7 +1444,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
 		this.set_u32("fire time", getGameTime());
 	}
-	else if ( getNet().isServer() && this.getCommandID( "releaseOwnership" ) == cmd )
+	else if (isServer() && this.getCommandID("releaseOwnership") == cmd)
 	{
 		CPlayer@ player = this.getPlayer();
 		CBlob@ seat = getBlobByNetworkID( params.read_u16() );
@@ -1455,70 +1453,73 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 	
 		string owner;
 		seat.get( "playerOwner", owner );
-		if ( owner == player.getUsername() )
+		if (owner == player.getUsername())
 		{
-			print( "$ " + owner + " released seat" );
+			print("$ " + owner + " released seat");
 			owner = "";
-			seat.set( "playerOwner", owner );
-			seat.set_string( "playerOwner", "" );
-			seat.Sync( "playerOwner", true );
+			seat.set("playerOwner", owner);
+			seat.set_string("playerOwner", "");
+			seat.Sync("playerOwner", true);
 		}
 	}
-	else if (isServer() && this.getCommandID("giveBooty") == cmd )//transfer booty
+	else if (isServer() && this.getCommandID("giveBooty") == cmd)//transfer booty
 	{
 		CRules@ rules = getRules();
-		if ( getGameTime() < rules.get_u16( "warmup_time" ) )	return;
+		if (getGameTime() < rules.get_u16("warmup_time")) return;
 			
 		u8 teamNum = this.getTeamNum();
 		CPlayer@ player = this.getPlayer();
-		string cName = getCaptainName( teamNum );		
-		CPlayer@ captain = getPlayerByUsername( cName );
+		string cName = getCaptainName(teamNum);		
+		CPlayer@ captain = getPlayerByUsername(cName);
 		
-		if ( captain is null || player is null ) return;
+		if (captain is null || player is null) return;
 		
-		u16 transfer = rules.get_u16( "booty_transfer" );
-		u16 fee = Maths::Round( transfer * rules.get_f32( "booty_transfer_fee" ) );		
+		u16 transfer = rules.get_u16("booty_transfer");
+		u16 fee = Maths::Round(transfer * rules.get_f32("booty_transfer_fee"));		
 		string pName = player.getUsername();
-		u16 playerBooty = server_getPlayerBooty( pName );
-		if ( playerBooty < transfer + fee )	return;
+		u16 playerBooty = server_getPlayerBooty(pName);
+		if (playerBooty < transfer + fee)	return;
 			
-		if ( player !is captain )
+		if (player !is captain)
 		{
-			print( "$ " + pName + " transfers Booty to captain " + cName );
-			u16 captainBooty = server_getPlayerBooty( cName );
-			server_setPlayerBooty( pName, playerBooty - transfer - fee );
-			server_setPlayerBooty( cName, captainBooty + transfer );
-		} else
+			print("$ " + pName + " transfers Booty to captain " + cName);
+			u16 captainBooty = server_getPlayerBooty(cName);
+			server_setPlayerBooty(pName, playerBooty - transfer - fee);
+			server_setPlayerBooty(cName, captainBooty + transfer);
+		}
+		else
 		{
-			CBlob@ core = getMothership( teamNum );
-			if ( core !is null )
+			CBlob@ core = getMothership(teamNum);
+			if (core !is null)
 			{
 				int coreColor = core.getShape().getVars().customData;
 				CBlob@[] crew;
 				CBlob@[] humans;
-				getBlobsByName( "human", @humans );
+				getBlobsByName("human", @humans);
 				for ( u8 i = 0; i < humans.length; i++ )
-					if ( humans[i].getTeamNum() == teamNum && humans[i] !is this )
-					{
-						CBlob@ islandBlob = getIslandBlob( humans[i] );
-						if ( islandBlob !is null && islandBlob.getShape().getVars().customData == coreColor )
-							crew.push_back( humans[i] );
-					}
-				
-				if ( crew.length > 0 )
 				{
-					print( "$ " + pName + " transfers Booty to crew" );
-					server_setPlayerBooty( pName, playerBooty - transfer - fee );
-					u16 shareBooty = Maths::Floor( transfer/crew.length );
-					for ( u8 i = 0; i < crew.length; i++ )
+					if ( humans[i].getTeamNum() == teamNum && humans[i] !is this)
+					{
+						CBlob@ islandBlob = getIslandBlob(humans[i]);
+						if (islandBlob !is null && islandBlob.getShape().getVars().customData == coreColor)
+							crew.push_back(humans[i]);
+					}
+				}
+				
+				if (crew.length > 0)
+				{
+					print("$ " + pName + " transfers Booty to crew");
+					server_setPlayerBooty( pName, playerBooty - transfer - fee);
+					u16 shareBooty = Maths::Floor(transfer/crew.length);
+					for (u8 i = 0; i < crew.length; i++ )
 					{
 						CPlayer@ crewPlayer = crew[i].getPlayer();						
-						if ( player is null ) continue;
+						if (player is null) continue;
 						
 						string cName = crewPlayer.getUsername();
-						u16 cBooty = server_getPlayerBooty( cName );
+						u16 cBooty = server_getPlayerBooty(cName);
 
-						server_setPlayerBooty( cName, cBooty + shareBooty );
+						server_setPlayerBooty(cName, cBooty + shareBooty);
 					}
 				}
 			}
@@ -1530,15 +1531,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		string tool = params.read_string();
 		CPlayer@ player = this.getPlayer();
 		
-		if ( player is null ) return;
+		if (player is null) return;
 		
-		if (tool == "deconstructor")
-		{
-			this.getSprite().SetEmitSound("/ReclaimSound.ogg");
-			this.getSprite().SetEmitSoundVolume(0.5f);
-			this.getSprite().SetEmitSoundPaused(true);
-		}
-		if (tool == "reconstructor")
+		if (tool == "deconstructor" || tool == "reconstructor")
 		{
 			this.getSprite().SetEmitSound("/ReclaimSound.ogg");
 			this.getSprite().SetEmitSoundVolume(0.5f);
@@ -1570,7 +1565,7 @@ void onDie(CBlob@ this)
 	
 	if (!sprite.getVars().gibbed) 
 	{
-		directionalSoundPlay("SR_ManDeath" + ( XORRandom(4) + 1 ), pos, 0.75f);
+		directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos, 0.75f);
 		sprite.Gib();
 	}
 	
@@ -1627,8 +1622,8 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 				u16 reward = 50;
 				if (getRules().get_bool("whirlpool")) reward *= 3;
 				
-				server_setPlayerBooty( attackerName, server_getPlayerBooty( attackerName ) + reward );
-				server_updateTotalBooty( teamNum, reward );
+				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward );
+				server_updateTotalBooty(teamNum, reward);
 			}
 		}
 	}

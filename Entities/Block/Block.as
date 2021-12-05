@@ -135,7 +135,7 @@ void onTick (CBlob@ this)
 // onCollision: called once from the engine when a collision happens; 
 // blob is null when it is a tilemap collision
 
-void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1 )
+void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
 	if (blob is null || this.hasTag("noCollide") || blob.hasTag("noCollide"))	return;
 
@@ -186,12 +186,12 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f poin
 				CBlob@ block = getBlobByNetworkID(isle_block.blobID);
 				if (block is null) continue;
 				
-				if (block.get_bool( "colliding"))
+				if (block.get_bool("colliding"))
 					shouldCollide = false;
 			}
 			
 			if (shouldCollide)
-				this.set_bool( "colliding", true );		
+				this.set_bool("colliding", true);		
 			
 			if (this.get_bool("colliding"))
 			{
@@ -203,20 +203,20 @@ void onCollision( CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f poin
 		{
 			if (docking)//force island merge
 				getRules().set_bool("dirty islands", true);
-			else if ( blockType == Block::COUPLING || other_blockType == Block::COUPLING )//couplings don't deal damage
+			else if (blockType == Block::COUPLING || other_blockType == Block::COUPLING)//couplings don't deal damage
 			{
-				if ( blockType == Block::COUPLING )
-					Die( this );
+				if (blockType == Block::COUPLING )
+					Die(this);
 				
-				if ( other_blockType == Block::COUPLING )
+				if (other_blockType == Block::COUPLING)
 					Die( blob );
 			}
-			else if ( Block::isRepulsor( blockType ) || Block::isRepulsor( other_blockType ) )//repulsors don't deal damage
+			else if (Block::isRepulsor(blockType) || Block::isRepulsor(other_blockType))//repulsors don't deal damage
 			{
-				if ( Block::isRepulsor( blockType ) )
+				if (Block::isRepulsor(blockType))
 					Die( this );
 				
-				if ( Block::isRepulsor( other_blockType ) )
+				if (Block::isRepulsor(other_blockType))
 					Die( blob );
 			}
 			else

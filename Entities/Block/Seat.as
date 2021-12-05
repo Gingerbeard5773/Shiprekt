@@ -40,7 +40,7 @@ void onInit( CBlob@ this )
 		this.set_u32("lastOwnerUpdate", 0);
 	}
 	
-	this.set_string("seat label", "Steering seat");
+	this.set_string("seat label", "Steering Seat");
 	this.set_bool("canProduceCoupling", false );
 	this.set_u8("seat icon", 7);
 	this.Tag("seat");
@@ -162,21 +162,32 @@ void onTick(CBlob@ this)
 				{
 					CBlob@ c = couplings[i];
 					bool isOwner = c.get_string("playerOwner") == occupierName;
+
 					if (isCaptain)
 					{
 						CButton@ button;
 						bool oldEnough = c.getTickSinceCreated() > CREW_COUPLINGS_LEASE || c.getTeamNum() != occupierTeam;
-						if (isOwner || oldEnough)
+						if ((isOwner || oldEnough))
+						{
 							@button = occupier.CreateGenericButton(isOwner ? 2 : 1, Vec2f_zero, c, c.getCommandID("decouple"), isOwner ? "Decouple" : "Decouple (crew's)");
+						}
 						else
 							@button = occupier.CreateGenericButton(0, Vec2f_zero, c, 0, "Can't decouple yet (crew's)" );
 							
-						if (button !is null) button.enableRadius = 999.0f;
+						if (button !is null) 
+						{
+							button.enableRadius = 999.0f;
+							button.radius = 3.3f; //radius change for engine issue (remove this if engine gets fixed)
+						}
 					} 
 					else if (isOwner)
 					{
 						CButton@ button = occupier.CreateGenericButton( 2, Vec2f_zero, c, c.getCommandID("decouple"), "Decouple" );
-						if (button !is null) button.enableRadius = 999.0f;
+						if (button !is null)
+						{
+							button.enableRadius = 999.0f;
+							button.radius = 3.3f;
+						}
 					}
 				}
 				
@@ -190,7 +201,11 @@ void onTick(CBlob@ this)
 					if (color > 0 && r.isOnScreen() && !r.hasTag("activated") && r.get_string("playerOwner") == occupierName || (isCaptain && seatColor == color))
 					{
 						CButton@ button = occupier.CreateGenericButton(8, Vec2f_zero, r, r.getCommandID("chainReaction"), "Activate");
-						if (button !is null) button.enableRadius = 999.0f;
+						if (button !is null)
+						{
+							button.enableRadius = 999.0f;
+							button.radius = 3.3f;
+						}
 					}
 				}
 				
@@ -203,7 +218,11 @@ void onTick(CBlob@ this)
 						if (f.hasAttached())
 						{
 							CButton@ button = occupier.CreateGenericButton(5, Vec2f_zero, f, f.getCommandID("clear attached"), "Push Crewmate Out" );
-							if (button !is null) button.enableRadius = 999.0f;
+							if (button !is null)
+							{
+								button.enableRadius = 999.0f;
+								button.radius = 3.3f;
+							}
 						}
 					}
 				}
@@ -356,10 +375,10 @@ void onTick(CBlob@ this)
 
 				for (uint i = 0; i < up_propellers.length; ++i)
 				{
-					CBlob@ prop = getBlobByNetworkID( up_propellers[i] );
-					if ( prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
+					CBlob@ prop = getBlobByNetworkID(up_propellers[i]);
+					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 					{
-						prop.set_u32( "onTime", gameTime );
+						prop.set_u32("onTime", gameTime);
 						prop.set_f32("power", up ? power * prop.get_f32("powerFactor") : reverse_power * prop.get_f32("powerFactor"));
 					}
 				}
@@ -376,7 +395,7 @@ void onTick(CBlob@ this)
 			
 			if (left || right)
 			{
-				this.set_bool( "kLR", true );
+				this.set_bool("kLR", true);
 
 				if (!strafe)
 				{
@@ -385,13 +404,13 @@ void onTick(CBlob@ this)
 						CBlob@ prop = getBlobByNetworkID( left_propellers[i] );
 						if (prop !is null && seatColor == prop.getShape().getVars().customData &&  (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						{
-							prop.set_u32( "onTime", gameTime );
+							prop.set_u32("onTime", gameTime);
 							prop.set_f32("power", left ? power * prop.get_f32("powerFactor") : reverse_power * prop.get_f32("powerFactor"));
 						}
 					}
 					for (uint i = 0; i < right_propellers.length; ++i)
 					{
-						CBlob@ prop = getBlobByNetworkID( right_propellers[i] );
+						CBlob@ prop = getBlobByNetworkID(right_propellers[i]);
 						if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						{
 							prop.set_u32("onTime", gameTime);
@@ -466,9 +485,9 @@ void onTick(CBlob@ this)
 					if (fireCannons.length > 0)
 					{
 						u8 index = this.get_u8("cannonFireIndex");
-						CBlob@ weap = fireCannons[ index % fireCannons.length ];
+						CBlob@ weap = fireCannons[index % fireCannons.length];
 						CBitStream bs;
-						bs.write_u16( occupier.getNetworkID());
+						bs.write_u16(occupier.getNetworkID());
 						weap.SendCommand(weap.getCommandID("fire"), bs);
 						this.set_u32("lastCannonFire", gameTime);
 						this.set_u8("cannonFireIndex", index + 1);
@@ -491,33 +510,33 @@ void onAttach( CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint )
 {
 	if (isServer())
 	{
-		this.set_bool( "kUD", true );
-		this.set_bool( "kLR", true );
+		this.set_bool("kUD", true);
+		this.set_bool("kLR", true);
 	}
 }
 
 //keep props alive onDetach
-void onDetach( CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint )
+void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 {
 	if (isServer())
 	{
-		this.set_bool( "kUD", false );
-		this.set_bool( "kLR", false );
+		this.set_bool("kUD", false);
+		this.set_bool("kLR", false);
 	}
 }
 
-void updateArrays( CBlob@ this, Island@ island )
+void updateArrays(CBlob@ this, Island@ island)
 {
-	this.set_bool( "updateArrays", false );
+	this.set_bool("updateArrays", false);
 
 	u16[] left_propellers, strafe_left_propellers, strafe_right_propellers, right_propellers, up_propellers, down_propellers, machineguns, cannons;					
-	for (uint b_iter = 0; b_iter < island.blocks.length; ++b_iter)
+	for (uint i = 0; i < island.blocks.length; ++i)
 	{
-		IslandBlock@ isle_block = island.blocks[b_iter];
-		if(isle_block is null) continue;
+		IslandBlock@ isle_block = island.blocks[i];
+		if (isle_block is null) continue;
 
 		CBlob@ block = getBlobByNetworkID( isle_block.blobID );
-		if(block is null) continue;
+		if (block is null) continue;
 					
 		//machineguns
 		if (block.hasTag("machinegun"))
@@ -539,43 +558,43 @@ void updateArrays( CBlob@ this, Island@ island )
 			const float forceLimit = 0.01f;
 			const float forceLimit_side = 0.2f;
 
-			if ( angleVel < -angleLimit || ( velNorm.y < -forceLimit_side && angleVel < angleLimit ) )
+			if (angleVel < -angleLimit || (velNorm.y < -forceLimit_side && angleVel < angleLimit))
 				right_propellers.push_back(block.getNetworkID());
-			else if ( angleVel > angleLimit || ( velNorm.y > forceLimit_side && angleVel > -angleLimit ) )
+			else if (angleVel > angleLimit || (velNorm.y > forceLimit_side && angleVel > -angleLimit))
 				left_propellers.push_back(block.getNetworkID());
 			
-			if ( Maths::Abs( velNorm.x ) < forceLimit )
+			if (Maths::Abs( velNorm.x ) < forceLimit)
 			{
-				if ( velNorm.y < -forceLimit_side )
+				if (velNorm.y < -forceLimit_side)
 					strafe_right_propellers.push_back(block.getNetworkID());
-				else if ( velNorm.y > forceLimit_side )
+				else if ( velNorm.y > forceLimit_side)
 					strafe_left_propellers.push_back(block.getNetworkID());
 			}
 					
-			if ( velNorm.x > forceLimit )
+			if (velNorm.x > forceLimit)
 				down_propellers.push_back(block.getNetworkID());
-			else if ( velNorm.x < -forceLimit )
+			else if (velNorm.x < -forceLimit)
 				up_propellers.push_back(block.getNetworkID());
 		}
 	}
 	
 	cannons.sortAsc();
 	
-	this.set( "left_propellers", left_propellers );
-	this.set( "strafe_left_propellers", strafe_left_propellers );
-	this.set( "strafe_right_propellers", strafe_right_propellers );
-	this.set( "right_propellers", right_propellers );
-	this.set( "up_propellers", up_propellers );
-	this.set( "down_propellers", down_propellers );
-	this.set( "machineguns", machineguns );
-	this.set( "cannons", cannons );
+	this.set("left_propellers", left_propellers);
+	this.set("strafe_left_propellers", strafe_left_propellers);
+	this.set("strafe_right_propellers", strafe_right_propellers);
+	this.set("right_propellers", right_propellers);
+	this.set("up_propellers", up_propellers);
+	this.set("down_propellers", down_propellers);
+	this.set("machineguns", machineguns);
+	this.set("cannons", cannons);
 }
 
-void server_setOwner( CBlob@ this, string owner )
+void server_setOwner( CBlob@ this, string owner)
 {
 	//print( "" + this.getNetworkID() + " seat setOwner: " + owner );
-	this.set( "playerOwner", owner );
-	this.set_string( "playerOwner", owner );
-	this.Sync( "playerOwner", true );
-	this.set_u32( "lastOwnerUpdate", getGameTime() );
+	this.set("playerOwner", owner);
+	this.set_string("playerOwner", owner);
+	this.Sync("playerOwner", true );
+	this.set_u32("lastOwnerUpdate", getGameTime());
 }

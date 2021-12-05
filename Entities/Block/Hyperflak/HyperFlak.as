@@ -122,7 +122,10 @@ void onTick( CBlob@ this )
 						CButton@ button = occupier.CreateGenericButton( 8, Vec2f(0.0f, 0.0f), r, r.getCommandID("chainReaction"), "Activate" );
 
 						if ( button !is null )
+						{
 							button.enableRadius = 999.0f;
+							button.radius = 3.3f; //engine fix
+						}
 					}
 				}
 			}
@@ -373,7 +376,7 @@ void Rotate( CBlob@ this, Vec2f aimVector )
 
 void GetButtonsFor( CBlob@ this, CBlob@ caller )
 {
-	if ( this.getDistanceTo(caller) > 3 * Block::BUTTON_RADIUS_FLOOR
+	if ( this.getDistanceTo(caller) > Block::BUTTON_RADIUS_FLOOR
 		|| this.getShape().getVars().customData <= 0
 		|| this.hasAttached()
 		|| this.getTeamNum() != caller.getTeamNum() )
@@ -382,7 +385,8 @@ void GetButtonsFor( CBlob@ this, CBlob@ caller )
 	CBitStream params;
 	params.write_u16( caller.getNetworkID() );
 
-	caller.CreateGenericButton( 7, Vec2f(0.0f, 0.0f), this, this.getCommandID("get in seat"), "Control Hyper-Flak", params );
+	CButton@ button = caller.CreateGenericButton( 7, Vec2f(0.0f, 0.0f), this, this.getCommandID("get in seat"), "Control Hyper-Flak", params );
+	if (button !is null) button.radius = 3.3f; //engine fix
 }
 
 void onCommand( CBlob@ this, u8 cmd, CBitStream @params )

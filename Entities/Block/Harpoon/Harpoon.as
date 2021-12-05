@@ -39,6 +39,8 @@ void onInit(CBlob@ this)
 {
 	this.Tag("harpoon");
 	this.Tag("weapon");
+	
+	this.set_string("seat label", "Control Harpoon");
 
 	CSprite@ sprite = this.getSprite();
 	
@@ -48,7 +50,7 @@ void onInit(CBlob@ this)
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
-    	layer.SetLighting( false );
+    	layer.SetLighting(false);
      	Animation@ animFired = layer.addAnimation("fired", FIRE_RATE, false);
         animFired.AddFrame(Block::HARPOON_A2);
 
@@ -203,9 +205,9 @@ void onTick(CBlob@ this)
 			f32 delta = dir.Normalize();
 			bool found = false;
 			const f32 step = map.tilesize * 0.5f;
-			while(delta > 0 && !found) //fake raycast
+			while (delta > 0 && !found) //fake raycast
 			{				
-				if(delta > step)
+				if (delta > step)
 				{
 					harpoon.grapple_pos += dir * step;
 				}
@@ -217,7 +219,7 @@ void onTick(CBlob@ this)
 				CBlob@ b = map.getBlobAtPosition(harpoon.grapple_pos);
 				if (b !is null)
 				{
-					if(b is this || b.getName() == "human")
+					if (b is this || b.getName() == "human")
 					{
 						//can't grapple self if not reeled in
 
@@ -239,7 +241,7 @@ void onTick(CBlob@ this)
 
 			//reel in
 			//TODO: sound
-			if( harpoon.grapple_ratio > 0.2f)
+			if (harpoon.grapple_ratio > 0.2f)
 				harpoon.grapple_ratio -= 1.0f / getTicksASecond();
 
 			//get the force and offset vectors
@@ -250,7 +252,7 @@ void onTick(CBlob@ this)
 				force = harpoon.grapple_pos - this.getPosition();
 				dist = force.Normalize();
 				f32 offdist = dist - harpoon_grapple_range;
-				if(offdist > 0)
+				if (offdist > 0)
 				{
 					offset = force * Maths::Min(8.0f,offdist * harpoon_grapple_stiffness);
 					force *= Maths::Min(harpoon_grapple_force_limit, Maths::Max(0.0f, offdist + harpoon_grapple_slack) * harpoon_grapple_force);
@@ -583,7 +585,7 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 			if (b is this || b.getName() == "human" || (!Block::isSolid(blockType)))
 			{
 				//can't grapple self if not reeled in
-				if(harpoon.grapple_ratio > 0.5f)
+				if (harpoon.grapple_ratio > 0.5f)
 					return false;
 
 				harpoon.grappling = false;
@@ -627,11 +629,6 @@ bool shouldReleaseGrapple(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 	return false;
 }
 
-bool canSend(CBlob@ occupier)
-{
-	return true;
-}
-
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
 {   
 	HarpoonInfo@ harpoon;
@@ -646,5 +643,6 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
     if (harpoon.grapple_id != 0xffff && harpoon.grapple_id != 0 && !layer.isAnimation("set"))
 	{
         CButton@ unhookButton = caller.CreateGenericButton(1, (harpoon.grapple_pos - this.getPosition())*0.5f, this, this.getCommandID("unhook"), "Unhook Harpoon");
+		if (unhookButton !is null) unhookButton.radius = 3.3f; //engine fix
 	}
 }
