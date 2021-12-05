@@ -42,32 +42,31 @@ void onInit( CBlob@ this )
     }
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("buyBlock"))
     {
-		CBlob@ caller = getBlobByNetworkID( params.read_u16() );
-		if ( caller is null )
-			return;
+		CBlob@ caller = getBlobByNetworkID(params.read_u16());
+		if (caller is null) return;
 			
 		string block = params.read_string();
 		if (block != "decoyCore")
-			caller.set_string( "last buy", block );
+			caller.set_string("last buy", block);
 
-		if ( !getNet().isServer() || Human::isHoldingBlocks( caller ) || !this.hasTag( "mothership" ) || this.getTeamNum() != caller.getTeamNum() )
+		if (!isServer() || Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
 			return;
 			
-		BuyBlock( this, caller, block );
+		BuyBlock(this, caller, block);
 	}
-    if (cmd == this.getCommandID("returnBlocks"))
+    else if (cmd == this.getCommandID("returnBlocks"))
 	{
-		CBlob@ caller = getBlobByNetworkID( params.read_u16() );
-		if ( caller !is null )
-			ReturnBlocks( this, caller );
+		CBlob@ caller = getBlobByNetworkID(params.read_u16());
+		if (caller !is null)
+			ReturnBlocks(this, caller);
 	}
 }
 
-void BuyBlock( CBlob@ this, CBlob@ caller, string btype )
+void BuyBlock(CBlob@ this, CBlob@ caller, string btype)
 {
 	CRules@ rules = getRules();
 	Block::Costs@ c = Block::getCosts( rules );
@@ -98,24 +97,22 @@ void BuyBlock( CBlob@ this, CBlob@ caller, string btype )
 		type = Block::PLATFORM;
 		cost = c.wood;
 	}
-	else if ( btype == "solid" )
+	else if (btype == "solid")
 	{
 		type = Block::SOLID;
 		cost = c.solid;
 	}
-
-		else if ( btype == "door" )
+	else if (btype == "door")
 	{
 		type = Block::DOOR;
 		cost = c.door;
 	}
-
-	else if ( btype == "ram" )
+	else if (btype == "ram")
 	{
 		type = Block::RAM;
 		cost = c.ram;
 	}
-	else if ( btype == "fakeram" )
+	else if (btype == "fakeram")
 	{
 		type = Block::FAKERAM;
 		cost = c.fakeram;
@@ -175,9 +172,10 @@ void BuyBlock( CBlob@ this, CBlob@ caller, string btype )
 		cost = c.flak;
 		//Max turrets to avoid lag
 		CBlob@[] turrets;
-		getBlobsByTag( "flak", @turrets );
-		for ( u16 i = 0; i < turrets.length; i++ ) {
-			if ( turrets[i].getTeamNum() == teamNum )
+		getBlobsByTag("flak", @turrets);
+		for (u16 i = 0; i < turrets.length; i++)
+		{
+			if (turrets[i].getTeamNum() == teamNum)
 				teamFlaks++;
 			totalFlaks++;
 		}
@@ -228,39 +226,46 @@ void BuyBlock( CBlob@ this, CBlob@ caller, string btype )
 		cost = c.hyperflak;
 	}
 
-	if ( teamFlaks < MAX_TEAM_FLAKS && totalFlaks < MAX_TOTAL_FLAKS) {
-		if ( getPlayersCount() == 1 || rules.get_bool("freebuild"))
-			ProduceBlock( getRules(), caller, type, ammount );
-		else if ( !coolDown && pBooty >= cost )
+	if (teamFlaks < MAX_TEAM_FLAKS && totalFlaks < MAX_TOTAL_FLAKS)
+	{
+		if (getPlayersCount() == 1 || rules.get_bool("freebuild"))
+			ProduceBlock(getRules(), caller, type, ammount);
+		else if (!coolDown && pBooty >= cost)
 		{
-			server_setPlayerBooty( pName, pBooty - cost );
+			server_setPlayerBooty(pName, pBooty - cost);
 		
-			ProduceBlock( getRules(), caller, type, ammount );
+			ProduceBlock(getRules(), caller, type, ammount);
 				
-			if ( btype == "bomb" )
+			if (btype == "bomb")
 				this.set( "bombCooldown", gameTime + bombCDTime );
 		}
 		//warning for flaks. We dont check block type since teamFlaks and totalFlaks are equals to 0 if type is not a flak.
-		if (MAX_TEAM_FLAKS - teamFlaks <= 3) {
+		if (MAX_TEAM_FLAKS - teamFlaks <= 3)
+		{
 			rules.set_bool("display_flak_team_warn", false);
 			rules.SyncToPlayer("display_flak_team_warn", player);
 			rules.set_bool("display_flak_team_warn", true);
 			rules.SyncToPlayer("display_flak_team_warn", player);
 		}
-		if (MAX_TOTAL_FLAKS - totalFlaks <= 3) {
+		if (MAX_TOTAL_FLAKS - totalFlaks <= 3)
+		{
 				rules.set_bool("display_flak_total_warn", false);
 				rules.Sync("display_flak_total_warn", true);
 				rules.set_bool("display_flak_total_warn", true);
 				rules.Sync("display_flak_total_warn", true);
 		}
-	} else {
-		if (teamFlaks >= MAX_TEAM_FLAKS) {
+	}
+	else
+	{
+		if (teamFlaks >= MAX_TEAM_FLAKS)
+		{
 			rules.set_bool("display_flak_team_max", false);
 			rules.SyncToPlayer("display_flak_team_max", player);
 			rules.set_bool("display_flak_team_max", true);
 			rules.SyncToPlayer("display_flak_team_max", player);
 		}
-		else {
+		else
+		{
 			rules.set_bool("display_flak_total_max", false);
 			rules.SyncToPlayer("display_flak_total_max", player);
 			rules.set_bool("display_flak_total_max", true);
@@ -269,16 +274,16 @@ void BuyBlock( CBlob@ this, CBlob@ caller, string btype )
 	}
 }
 
-void ReturnBlocks( CBlob@ this, CBlob@ caller )
+void ReturnBlocks(CBlob@ this, CBlob@ caller)
 {
 	CRules@ rules = getRules();
 	CBlob@[]@ blocks;
-	if (caller.get( "blocks", @blocks ) && blocks.size() > 0)                 
+	if (caller.get("blocks", @blocks) && blocks.size() > 0)                 
 	{
-		if ( getNet().isServer() )
+		if (isServer())
 		{
 			CPlayer@ player = caller.getPlayer();
-			if ( player !is null )
+			if (player !is null)
 			{
 				string pName = player.getUsername();
 				u16 pBooty = server_getPlayerBooty( pName );
@@ -286,19 +291,20 @@ void ReturnBlocks( CBlob@ this, CBlob@ caller )
 				for (uint i = 0; i < blocks.length; ++i)
 				{
 					int type = Block::getType( blocks[i] );
-					if ( type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1 )
+					if (type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1 )
 						returnBooty += Block::getCost( type );
 				}
 				
-				if ( returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
+				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
 					server_setPlayerBooty( pName, pBooty + returnBooty );
 			}
 		}
 		
 		this.getSprite().PlaySound("join.ogg");
-		Human::clearHeldBlocks( caller );
-		caller.set_bool( "blockPlacementWarn", false );
-	} else
+		Human::clearHeldBlocks(caller);
+		caller.set_bool("blockPlacementWarn", false);
+	}
+	else
 		warn("returnBlocks cmd: no blocks");
 }
 
@@ -323,7 +329,7 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 	}
 	
 	f32 hp = this.getHealth();
-	if ( !this.hasTag( "critical" ) && hp - damage > 0.0f )//assign last team hitter
+	if (!this.hasTag("critical") && hp - damage > 0.0f )//assign last team hitter
 	{
 		if ( thisTeamNum != hitterTeamNum && hitterBlob.getName() != "whirlpool" )
 		{
@@ -333,16 +339,16 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 	}
 	else
 	{
-		if ( !this.hasTag( "critical" ) )//deathHit(once)
+		if (!this.hasTag("critical"))//deathHit(once)
 		{
-			initiateSelfDestruct( this );
+			initiateSelfDestruct(this);
 			
 			//increase captain deaths
-			string defeatedCaptainName = getCaptainName( thisTeamNum );
-			CPlayer@ defeatedCaptain = getPlayerByUsername( defeatedCaptainName );
+			string defeatedCaptainName = getCaptainName(thisTeamNum);
+			CPlayer@ defeatedCaptain = getPlayerByUsername(defeatedCaptainName);
 			if ( defeatedCaptain !is null )
 			{
-				defeatedCaptain.setDeaths( defeatedCaptain.getDeaths() + 1 );
+				defeatedCaptain.setDeaths(defeatedCaptain.getDeaths() + 1);
 				if ( defeatedCaptain.isMyPlayer() )
 					client_AddToChat( "You lost your Mothership! A Core Death was added to your Scoreboard." );
 			}

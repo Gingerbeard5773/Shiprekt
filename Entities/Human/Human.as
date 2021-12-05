@@ -69,7 +69,7 @@ void onInit( CBlob@ this )
 
 void onTick( CBlob@ this )
 {
-	Move( this );
+	Move(this);
 	
 	u32 gameTime = getGameTime();
 
@@ -204,19 +204,19 @@ void Move(CBlob@ this)
 		//tool actions
 		if (shoot && !punch)
 		{
-			if ( currentTool == "pistol" && canShootPistol( this ) ) // shoot
+			if ( currentTool == "pistol" && canShootPistol(this)) // shoot
 			{
-				ShootPistol( this );
+				ShootPistol(this);
 				sprite.SetAnimation("shoot");
 			}
 			else if (currentTool == "deconstructor") //reclaim
 			{
-				Construct( this );
+				Construct(this);
 				sprite.SetAnimation("reclaim");
 			}
 			else if (currentTool == "reconstructor") //repair
 			{
-				Construct( this );
+				Construct(this);
 				sprite.SetAnimation("repair");
 			}
 		}		
@@ -272,19 +272,20 @@ void Move(CBlob@ this)
 			}
 			else
 			{
-				CBlob@ shipBlob = getBlobByNetworkID( this.get_u16( "shipID" ) );
+				CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("shipID"));
 				if (shipBlob !is null)
 				{
-					s8 count = this.get_s8( "stay count" );		
+					s8 count = this.get_s8("stay count");		
 					count--;
-					if (count <= 0){
+					if (count <= 0)
+					{
 						this.set_u16( "shipID", 0 );	
 					}
-					else if ( !Block::isSolid( Block::getType( shipBlob ) ) && !up && !left && !right && !down )
+					else if (!Block::isSolid( Block::getType(shipBlob)) && !up && !left && !right && !down)
 					{
-						Island@ isle = getIsland( shipBlob.getShape().getVars().customData );
-						if ( isle !is null && isle.vel.Length() > 1.0f )
-							this.setPosition( shipBlob.getPosition() );
+						Island@ isle = getIsland( shipBlob.getShape().getVars().customData);
+						if (isle !is null && isle.vel.Length() > 1.0f)
+							this.setPosition( shipBlob.getPosition());
 					}
 					this.set_s8( "stay count", count );		
 				}
@@ -316,12 +317,12 @@ void PlayerControls(CBlob@ this)
 		if (this.isKeyJustPressed(key_use))
 		{
 			CBitStream params;
-			this.SendCommand( this.getCommandID("get out"), params );
+			this.SendCommand(this.getCommandID("get out"), params);
 		}
 
 		// aim cursor
 		hud.SetCursorImage("AimCursor.png", Vec2f(32,32));
-		hud.SetCursorOffset( Vec2f(-32, -32) );		
+		hud.SetCursorOffset(Vec2f(-32, -32));		
 	}
 	else
 	{

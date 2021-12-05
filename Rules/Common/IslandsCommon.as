@@ -43,20 +43,23 @@ shared class IslandBlock
 	f32 angle_offset;
 };
 
-Island@ getIsland( const int colorIndex )
+Island@ getIsland(const int colorIndex)
 {
 	Island[]@ islands;
-	if (getRules().get( "islands", @islands ))
-		if (colorIndex > 0 && colorIndex <= islands.length){
+	if (getRules().get("islands", @islands))
+	{
+		if (colorIndex > 0 && colorIndex <= islands.length)
+		{
 			return islands[colorIndex-1];
 		}
+	}
 	return null;
 }
 
-Island@ getIsland( CBlob@ this )
+Island@ getIsland(CBlob@ this)
 {
 	CBlob@[] blobsInRadius;	   
-	if (getMap().getBlobsInRadius( this.getPosition(), 1.0f, @blobsInRadius )) 
+	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius)) 
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
@@ -71,22 +74,27 @@ Island@ getIsland( CBlob@ this )
     return null;
 }
 
-CBlob@ getIslandBlob( CBlob@ this )
+CBlob@ getIslandBlob(CBlob@ this)
 {
 	CBlob@ b = null;
 	f32 mDist = 9999;
 	CBlob@[] blobsInRadius;	   
-	if (getMap().getBlobsInRadius( this.getPosition(), 1.0f, @blobsInRadius ))//custom getIslandBlob();
+	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius))//custom getIslandBlob();
+	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
+		{
 			if (blobsInRadius[i].getShape().getVars().customData > 0)
 			{
-				f32 dist = this.getDistanceTo( blobsInRadius[i] );
-				if ( dist < mDist )
+				f32 dist = this.getDistanceTo(blobsInRadius[i]);
+				if (dist < mDist)
 				{
 					@b = blobsInRadius[i];
 					mDist = dist;
 				}
 			}
+		}
+	}
+
 	return b;
 }
 
@@ -99,16 +107,16 @@ Vec2f SnapToGrid( Vec2f pos )
     return pos;
 }
 
-void SetNextId( CRules@ this, Island@ island )
+void SetNextId(CRules@ this, Island@ island)
 {
 	island.id = this.get_u32("islands id")+1;
 	this.set_u32("islands id", island.id);
 }
 
-CBlob@ getMothership( const u8 team )
+CBlob@ getMothership(const u8 team)
 {
     CBlob@[] ships;
-    getBlobsByTag( "mothership", @ships );
+    getBlobsByTag("mothership", @ships);
     for (uint i=0; i < ships.length; i++)
     {
         CBlob@ ship = ships[i];  
@@ -118,90 +126,91 @@ CBlob@ getMothership( const u8 team )
     return null;
 }
 
-CBlob@ getMothership( CBlob@ this )
+CBlob@ getMothership(CBlob@ this)
 {
 	CBlob@ core = null;
 	const int color = this.getShape().getVars().customData;
-	if ( color == 0 ) return core;
+	if (color == 0) return core;
 
 	CBlob@[] cores;
-	getBlobsByTag( "mothership", cores );
+	getBlobsByTag("mothership", cores);
 	
-	for ( int i = 0; i < cores.length; i++ )
-		if ( cores[i].getShape().getVars().customData == color )
+	for (int i = 0; i < cores.length; i++)
+	{
+		if (cores[i].getShape().getVars().customData == color)
 			@core = cores[i];
+	}
 	
 	return core;
 }
 
-bool isMothership( CBlob@ this )
+bool isMothership(CBlob@ this)
 {
 	const int color = this.getShape().getVars().customData;
-	if ( color == 0 ) return false;
+	if (color == 0) return false;
 	
-	Island@ island = getIsland( color );
-	if ( island !is null )
+	Island@ island = getIsland(color);
+	if (island !is null)
 		return island.isMothership;
 	else
 		return false;
 }
 
-bool isStation( CBlob@ this )
+bool isStation(CBlob@ this)
 {
 	const int color = this.getShape().getVars().customData;
-	if ( color == 0 ) return false;
+	if (color == 0) return false;
 	
-	Island@ island = getIsland( color );
-	if ( island !is null )
+	Island@ island = getIsland(color);
+	if (island !is null)
 		return island.isStation;
 	else
 		return false;
 }
 
-bool isMiniStation( CBlob@ this )
+bool isMiniStation(CBlob@ this)
 {
 	const int color = this.getShape().getVars().customData;
-	if ( color == 0 ) return false;
+	if (color == 0) return false;
 	
-	Island@ island = getIsland( color );
-	if ( island !is null )
+	Island@ island = getIsland(color);
+	if (island !is null)
 		return island.isMiniStation;
 	else
 		return false;
 }
 
-string getCaptainName( u8 team )
+string getCaptainName(u8 team)
 {
 	CBlob@[] cores;
-	getBlobsByTag( "mothership", @cores );
-	for ( u8 i = 0; i < cores.length; i++ )
+	getBlobsByTag("mothership", @cores);
+	for (u8 i = 0; i < cores.length; i++)
 	{
-		if ( cores[i].getTeamNum() != team )
-			continue;
+		if (cores[i].getTeamNum() != team) continue;
 			
 		Island@ isle = getIsland( cores[i].getShape().getVars().customData );
-		if ( isle !is null && isle.owner != "" )
+		if (isle !is null && isle.owner != "")
 			return isle.owner;
 	}
 	return "";
 }
 
-bool blocksOverlappingIsland( CBlob@[]@ blocks )
+bool blocksOverlappingIsland(CBlob@[]@ blocks)
 {
     bool result = false;
     for (uint i = 0; i < blocks.length; ++i)
     {
         CBlob @block = blocks[i];
-        if (blockOverlappingIsland( block ))
+        if (blockOverlappingIsland(block))
             result = true;
     }
     return result; 
 }
 
-bool blockOverlappingIsland( CBlob@ blob )
+bool blockOverlappingIsland(CBlob@ blob)
 {
     CBlob@[] overlapping;
-    if ( getMap().getBlobsInRadius( blob.getPosition(), 8.0f, @overlapping ) )
+    if ( getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @overlapping))
     {
         for (uint i = 0; i < overlapping.length; i++)
         {
@@ -217,9 +226,9 @@ bool blockOverlappingIsland( CBlob@ blob )
     return false;
 }
 
-bool coreLinkedDirectional( CBlob@ this, u16 token, Vec2f corePos )//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
+bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos )//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
 {
-	if ( this.hasTag( "mothership" ) )
+	if (this.hasTag("mothership"))
 		return true;
 
 	this.set_u16( "checkToken", token );
@@ -227,26 +236,26 @@ bool coreLinkedDirectional( CBlob@ this, u16 token, Vec2f corePos )//checks if t
 	Vec2f thisPos = this.getPosition();
 	
 	CBlob@[] overlapping;
-	if ( this.getOverlapping( @overlapping ) )
+	if (this.getOverlapping(@overlapping))
 	{
 		f32 minDist = 99999.0f;
 		f32 minDist2;
 		CBlob@[] optimal;
-		for ( int i = 0; i < overlapping.length; i++ )
+		for (int i = 0; i < overlapping.length; i++)
 		{
 			CBlob@ b = overlapping[i];
 			Vec2f bPos = b.getPosition();
 			
-			f32 coreDist = ( bPos - corePos ).LengthSquared();
-			if ( b.get_u16( "checkToken" ) != token && ( bPos - thisPos ).LengthSquared() < 78 && !b.hasTag( "removable" ) && b.getName() == "block" )//maybe should do a color > 0 check
+			f32 coreDist = (bPos - corePos).LengthSquared();
+			if (b.get_u16("checkToken") != token && (bPos - thisPos).LengthSquared() < 78 && !b.hasTag("removable") && b.getName() == "block")//maybe should do a color > 0 check
 			{
-				if ( coreDist <= minDist )
+				if (coreDist <= minDist)
 				{
 					optimal.insertAt( 0, b );
 					minDist2 = minDist;	
 					minDist = coreDist;
 				}
-				else	if ( coreDist <= minDist2 )
+				else if (coreDist <= minDist2)
 				{
 					optimal.insertAt( 0, b );
 					minDist2 = coreDist;
@@ -256,10 +265,10 @@ bool coreLinkedDirectional( CBlob@ this, u16 token, Vec2f corePos )//checks if t
 			}
 		}
 		
-		for ( int i = 0; i < optimal.length; i++ )
+		for (int i = 0; i < optimal.length; i++)
 		{
 			//print( ( optimal[i].hasTag( "mothership" ) ? "[>] " : "[o] " ) + optimal[i].getNetworkID() );
-			if ( coreLinkedDirectional( optimal[i], token, corePos ) )
+			if (coreLinkedDirectional(optimal[i], token, corePos))
 			{
 				childsLinked = true;
 				break;
@@ -272,21 +281,21 @@ bool coreLinkedDirectional( CBlob@ this, u16 token, Vec2f corePos )//checks if t
 
 bool coreLinked( CBlob@ this, u16 token )//use directional one
 {
-	if ( this.hasTag( "mothership" ) )
+	if (this.hasTag("mothership"))
 		return true;
 
-	this.set_u16( "checkToken", token );
+	this.set_u16("checkToken", token);
 	bool childsLinked = false;
 	CBlob@[] overlapping;
-	this.getOverlapping( @overlapping );
-	for ( int i = 0; i < overlapping.length; i++ )
+	this.getOverlapping(@overlapping);
+	for (int i = 0; i < overlapping.length; i++)
 	{
 		CBlob@ b = overlapping[i];
 		//if ( !b.hasTag( "removable" ) && b.get_u16( "checkToken" ) != token && b.getName() == "block" && b.getDistanceTo(this) < 8.8  ) print( ( b.hasTag( "mothership" ) ? "[>] " : "[o] " ) + b.getNetworkID() );
-		if ( !b.hasTag( "removable" ) && b.get_u16( "checkToken" ) != token
+		if (!b.hasTag("removable") && b.get_u16("checkToken") != token
             && b.getName() == "block"
             && b.getDistanceTo(this) < 8.8
-			&& coreLinked( b, token ) )
+			&& coreLinked(b, token))
 		{
 			childsLinked = true;
 			break;

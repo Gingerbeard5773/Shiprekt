@@ -1,5 +1,5 @@
-#include "IslandsCommon.as"
-#include "AccurateSoundPlay.as"
+#include "IslandsCommon.as";
+#include "AccurateSoundPlay.as";
 
 const f32 rotate_speed = 30.0f;
 const f32 max_build_distance = 32.0f;
@@ -15,36 +15,35 @@ void onInit( CBlob@ this )
     this.addCommandID("place");
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
     CBlob@[]@ blocks;
-    if (this.get( "blocks", @blocks ) && blocks.size() > 0)
+    if (this.get("blocks", @blocks) && blocks.size() > 0)
     {
 		Vec2f pos = this.getPosition();
 		CMap@ map = getMap();
-		Tile tile = map.getTile( pos );
-		bool onLand = map.isTileBackgroundNonEmpty( tile ) || map.isTileSolid( tile );
+		Tile tile = map.getTile(pos);
+		bool onLand = map.isTileBackgroundNonEmpty(tile) || map.isTileSolid(tile);
 	
-        Island@ island = getIsland( this );
+        Island@ island = getIsland(this);
 		if (island !is null && island.centerBlock !is null)
         {
 			Vec2f islandPos = island.centerBlock.getPosition();
-            f32 blocks_angle = this.get_f32("blocks_angle");//next step angle
-            f32 target_angle = this.get_f32("target_angle");//final angle (after manual rotation)
-            Vec2f aimPos = this.getAimPos();
+			f32 blocks_angle = this.get_f32("blocks_angle");//next step angle
+			f32 target_angle = this.get_f32("target_angle");//final angle (after manual rotation)
+			Vec2f aimPos = this.getAimPos();
 			this.set_Vec2f("aim_pos", aimPos);
 			this.Sync("aim_pos", false);
 			
-			CBlob@ refBlob = getIslandBlob( this );
-					
+			CBlob@ refBlob = getIslandBlob(this);
             if (refBlob is null)
 			{
 				warn("PlaceBlocks: refBlob not found");
                 return;
             }
 
-			if ( getNet().isClient() )
-				PositionBlocks( @blocks, pos, aimPos, blocks_angle, island.centerBlock, refBlob );
+			if (isClient())
+				PositionBlocks(@blocks, pos, aimPos, blocks_angle, island.centerBlock, refBlob);
 
 			CPlayer@ player = this.getPlayer();
             if (player !is null && player.isMyPlayer()) 
@@ -52,53 +51,53 @@ void onTick( CBlob@ this )
 				//checks for canPlace
 				u32 gameTime = getGameTime();
 				CRules@ rules = getRules();
-				bool skipCoreCheck = gameTime > getRules().get_u16( "warmup_time" ) || ( island.isMothership && ( island.owner == "" ||  island.owner == "*" || island.owner == player.getUsername() ) );
+				bool skipCoreCheck = gameTime > getRules().get_u16("warmup_time") || (island.isMothership && (island.owner == "" || island.owner == "*" || island.owner == player.getUsername()));
 				bool cLinked = false;
                 const bool overlappingIsland = blocksOverlappingIsland( @blocks );
 				for (uint i = 0; i < blocks.length; ++i)
 				{
-					if ( overlappingIsland )
+					if (overlappingIsland)
 					{
-						SetDisplay( blocks[i], SColor(255, 255, 0, 0), RenderStyle::additive );
+						SetDisplay(blocks[i], SColor(255, 255, 0, 0), RenderStyle::additive);
 						continue;
 					}
 					
-					if ( skipCoreCheck || blocks[i].hasTag( "coupling" ) || blocks[i].hasTag( "repulsor" ) )
+					if (skipCoreCheck || blocks[i].hasTag("coupling") || blocks[i].hasTag("repulsor"))
 						continue;
 						
-					if ( !cLinked )
+					if (!cLinked)
 					{
 						CBlob@ core = getMothership( this.getTeamNum() );//could get the core properly based on adjacent blocks
-						if ( core !is null )
-							cLinked = coreLinkedDirectional( blocks[i], gameTime, core.getPosition() );
+						if (core !is null)
+							cLinked = coreLinkedDirectional( blocks[i], gameTime, core.getPosition());
 					}
 					
-					if ( cLinked )
-						SetDisplay( blocks[i], SColor(255, 255, 0, 0), RenderStyle::additive );
+					if (cLinked)
+						SetDisplay(blocks[i], SColor(255, 255, 0, 0), RenderStyle::additive);
 				}
 				
 				//can'tPlace heltips
 				bool crewCantPlace = !overlappingIsland && cLinked;
-				if ( crewCantPlace )
+				if (crewCantPlace)
 					crewCantPlaceCounter++;
 				else
 					crewCantPlaceCounter = 0;
 
-				this.set_bool( "blockPlacementWarn", crewCantPlace && crewCantPlaceCounter > 15 );
+				this.set_bool("blockPlacementWarn", crewCantPlace && crewCantPlaceCounter > 15);
 				
                 // place
-                if (this.isKeyJustPressed( key_action1 ) && !getHUD().hasMenus() && !getHUD().hasButtons() )
+                if (this.isKeyJustPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
                 {
-                    if (target_angle == blocks_angle && !overlappingIsland && !cLinked )
+                    if (target_angle == blocks_angle && !overlappingIsland && !cLinked)
                     {
                         CBitStream params;
-                        params.write_netid( island.centerBlock.getNetworkID() );
-                        params.write_netid( refBlob.getNetworkID() );
-                        params.write_Vec2f( pos - islandPos );
-                        params.write_Vec2f( aimPos - islandPos );
-                        params.write_f32( target_angle );
-                        params.write_f32( island.centerBlock.getAngleDegrees() );
-                        this.SendCommand( this.getCommandID("place"), params );
+                        params.write_netid(island.centerBlock.getNetworkID());
+                        params.write_netid(refBlob.getNetworkID());
+                        params.write_Vec2f(pos - islandPos);
+                        params.write_Vec2f(aimPos - islandPos);
+                        params.write_f32(target_angle);
+                        params.write_f32(island.centerBlock.getAngleDegrees());
+                        this.SendCommand(this.getCommandID("place"), params);
                     }
                     else
                     {
@@ -107,10 +106,11 @@ void onTick( CBlob@ this )
                 }
 
                 // rotate
-                if (this.isKeyJustPressed( key_action3 ))
+                if (this.isKeyJustPressed(key_action3))
                 {
                     target_angle += 90.0f;
-                    if (target_angle > 360.0f) {
+                    if (target_angle > 360.0f)
+					{
                         target_angle -= 360.0f;
                         blocks_angle -= 360.0f;
                     }
@@ -129,8 +129,8 @@ void onTick( CBlob@ this )
             // cant place in water
             for (uint i = 0; i < blocks.length; ++i)
             {
-                CBlob @block = blocks[i];
-                SetDisplay( block, SColor(255, 255, 0, 0), RenderStyle::light, -10.0f);
+                CBlob@ block = blocks[i];
+                SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::light, -10.0f);
             }
         }
     }
@@ -153,7 +153,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	
 	//get offset (based on the centerblock) of block we're standing on
 	Vec2f refBOffset = refBlock.getPosition() - island_pos;
-	refBOffset.RotateBy( -refBAngle );
+	refBOffset.RotateBy(-refBAngle);
 	refBOffset.x = refBOffset.x % 8.0f;
 	refBOffset.y = refBOffset.y % 8.0f;
 	//not really necessary
@@ -166,7 +166,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	f32 mouseDist = Maths::Min(mouseAim.Normalize(), max_build_distance);
 	aimPos = pos + mouseAim * mouseDist;//position of the 'buildblock' pointer
 	Vec2f islandAim = aimPos - island_pos;//island to 'buildblock' pointer
-	islandAim.RotateBy(-refBAngle);		islandAim = SnapToGrid( islandAim );		islandAim.RotateBy( refBAngle );
+	islandAim.RotateBy(-refBAngle);	islandAim = SnapToGrid(islandAim); islandAim.RotateBy(refBAngle);
 	Vec2f cursor_pos = island_pos + islandAim;//position of snapped buildblock
 	
 	//rotate and position blocks

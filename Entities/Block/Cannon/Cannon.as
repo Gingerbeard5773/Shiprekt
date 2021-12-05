@@ -184,7 +184,7 @@ void Fire(CBlob@ this, CBlob@ shooter)
 		{
 			Vec2f vel = aimVector * PROJECTILE_SPEED;
 
-			Island@ isle = getIsland( this.getShape().getVars().customData );
+			Island@ isle = getIsland(this.getShape().getVars().customData);
 			if (isle !is null)
 			{
 				vel += isle.vel;
@@ -207,7 +207,7 @@ void Fire(CBlob@ this, CBlob@ shooter)
 
 	shotParticles(pos + aimVector*9, aimVector.Angle());
 
-	directionalSoundPlay( "CannonFire.ogg", pos, 7.0f );
+	directionalSoundPlay("CannonFire.ogg", pos, 7.0f);
 
 	this.set_bool("firing", false);
 }
