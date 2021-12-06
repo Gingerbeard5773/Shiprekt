@@ -35,7 +35,7 @@ void Reseed()
 	}
 }
 
-void MakeBlock( Block::Type type, Vec2f offset, Vec2f pos, CBlob@[]@ list, const uint team )
+void MakeBlock( uint type, Vec2f offset, Vec2f pos, CBlob@[]@ list, const uint team )
 {
 	CBlob@ b = makeBlock( pos + offset*Block::size, 0.0f, type, team );
 	list.push_back(b);

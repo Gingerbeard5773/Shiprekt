@@ -57,7 +57,7 @@ void onInit( CBlob@ this )
 	
 	this.set_u32("menu time", 0);
 	this.set_bool( "build menu open", false );
-	this.set_string("last buy", "coupling");
+	this.set_u8("last buy", Block::COUPLING);
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
@@ -377,7 +377,7 @@ void PlayerControls(CBlob@ this)
 	}
 	
 	//build menu
-	if (this.isKeyJustPressed(key_inventory) && !this.isAttached())
+	if (this.isKeyJustPressed(key_inventory))
 	{
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null && !core.hasTag("critical"))
@@ -387,7 +387,7 @@ void PlayerControls(CBlob@ this)
 							&& ((pIsle.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
 							|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
 
-			if (!Human::isHoldingBlocks(this))
+			if (!Human::isHoldingBlocks(this) && !this.isAttached())
 			{
 				if (!hud.hasButtons())
 				{
@@ -419,15 +419,15 @@ void PlayerControls(CBlob@ this)
 					if (this.get_bool("build menu open"))
 					{
 						CBitStream params;
-						params.write_u16( this.getNetworkID());
-						params.write_string( this.get_string("last buy"));
+						params.write_u16(this.getNetworkID());
+						params.write_u8(this.get_u8("last buy"));
 						
-						core.SendCommand( core.getCommandID("buyBlock"), params);
+						core.SendCommand(core.getCommandID("buyBlock"), params);
 					}
 					this.set_bool("build menu open", false);
 				}
 			}
-			else
+			else if (Human::isHoldingBlocks(this))
 			{
 				CBitStream params;
 				params.write_u16(this.getNetworkID());
@@ -478,15 +478,15 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 		menu.deleteAfterClick = true;
 		
 		u16 netID = this.getNetworkID();
-		string lastBuy = this.get_string("last buy");
+		u8 lastBuy = this.get_u8("last buy");
 		{
 			CBitStream params;
 			params.write_u16(netID);
-			params.write_string("seat");
+			params.write_u8(Block::SEAT);
 			
 			CGridButton@ button = menu.AddButton( "$SEAT$", "Seat $" + c.seat, core.getCommandID("buyBlock"), params );
 
-			const bool select = lastBuy == "seat";
+			const bool select = lastBuy == Block::SEAT;
 			if (select)
 				button.SetSelected(2);
 			
@@ -495,11 +495,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 		{
 			CBitStream params;
 			params.write_u16(netID);
-			params.write_string("propeller");
+			params.write_u8(Block::PROPELLER);
 				
 			CGridButton@ button = menu.AddButton("$PROPELLER$", "Standard Engine $" + c.propeller, core.getCommandID("buyBlock"), params);
 
-			const bool select = lastBuy == "propeller";
+			const bool select = lastBuy == Block::PROPELLER;
 			if (select)
 				button.SetSelected(2);
 				
@@ -508,80 +508,80 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 		{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("ramEngine");
+				params.write_u8(Block::RAMENGINE);
 					
 				CGridButton@ button = menu.AddButton("$RAMENGINE$", "Ram Engine $" + c.ramEngine, core.getCommandID("buyBlock"), params);
 
-				const bool select = lastBuy == "ramEngine";
+				const bool select = lastBuy == Block::RAMENGINE;
 				if (select)
 					button.SetSelected(2);
 					
-				button.SetHoverText( "An engine that trades protection for extra power. Will break on impact with anything!\nWeight: " + w.ramEngine * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("An engine that trades protection for extra power. Will break on impact with anything!\nWeight: " + w.ramEngine * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
 		}
 		{
 			CBitStream params;
-			params.write_u16( netID );
-			params.write_string( "coupling" );
+			params.write_u16(netID);
+			params.write_u8(Block::COUPLING);
 				
-			CGridButton@ button = menu.AddButton( "$COUPLING$", "Coupling $" + c.coupling, core.getCommandID("buyBlock"), params );
+			CGridButton@ button = menu.AddButton("$COUPLING$", "Coupling $" + c.coupling, core.getCommandID("buyBlock"), params);
 			
-			const bool select = lastBuy == "coupling";
+			const bool select = lastBuy == Block::COUPLING;
 			if (select)
 				button.SetSelected(2);
 				
-			button.SetHoverText( "A versatile block used to hold and release other blocks.\nWeight: " + w.coupling * 200 + "rkt\n" + ( select ? repBuyTip : "" ) );
+			button.SetHoverText("A versatile block used to hold and release other blocks.\nWeight: " + w.coupling * 200 + "rkt\n" + (select ? repBuyTip : ""));
 		}	
 
 		if (!isMiniStation)
 		{
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("solid");
+				params.write_u16(netID);
+				params.write_u8(Block::SOLID);
 					
-				CGridButton@ button = menu.AddButton( "$SOLID$", "Wooden Hull $" + c.solid, core.getCommandID("buyBlock"), params );
+				CGridButton@ button = menu.AddButton("$SOLID$", "Wooden Hull $" + c.solid, core.getCommandID("buyBlock"), params);
 		
-				const bool select = lastBuy == "solid";
+				const bool select = lastBuy == Block::SOLID;
 				if (select)
 					button.SetSelected(2);
 					
-				button.SetHoverText( "A very tough block for protecting delicate components. Can effectively negate damage from bullets, flak, and to some extent cannons. \nWeight: " + w.solid * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("A very tough block for protecting delicate components. Can effectively negate damage from bullets, flak, and to some extent cannons. \nWeight: " + w.solid * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
 			}
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("wood");
+				params.write_u8(Block::PLATFORM);
 					
-				CGridButton@ button = menu.AddButton( "$WOOD$", "Wooden Platform $" + c.wood, core.getCommandID("buyBlock"), params );
+				CGridButton@ button = menu.AddButton("$WOOD$", "Wooden Platform $" + c.wood, core.getCommandID("buyBlock"), params);
 
-				const bool select = lastBuy == "wood";
+				const bool select = lastBuy == Block::PLATFORM;
 				if (select)
 					button.SetSelected(2);
 					
-				button.SetHoverText( "A good quality wooden floor panel. Get that deck shining :)\nWeight: " + w.wood * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("A good quality wooden floor panel. Get that deck shining :)\nWeight: " + w.wood * 100 + "rkt\n" + (select ? repBuyTip : ""));
 			}
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("door");
+				params.write_u16(netID);
+				params.write_u8(Block::DOOR);
 					
 				CGridButton@ button = menu.AddButton( "$DOOR$", "Wooden Door $" + c.door, core.getCommandID("buyBlock"), params );
 
-				const bool select = lastBuy == "door";
+				const bool select = lastBuy == Block::DOOR;
 				if (select)
 					button.SetSelected(2);
 					
-				button.SetHoverText( "A wooden door. Useful for ship security, though expensive and heavy.\nWeight: " + w.door * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("A wooden door. Useful for ship security, though expensive and heavy.\nWeight: " + w.door * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
 			}
 			if (!isStation)
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("secondaryCore");
+				params.write_u16(netID);
+				params.write_u8(Block::SECONDARYCORE);
 					
 				CGridButton@ button = menu.AddButton( "$SECONDARYCORE$", "Auxilliary Core $" + c.secondaryCore, core.getCommandID("buyBlock"), params );
 
-				const bool select = lastBuy == "secondaryCore";
+				const bool select = lastBuy == Block::SECONDARYCORE;
 				if (select)
 					button.SetSelected(2);
 					
@@ -597,50 +597,50 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("harvester");
+				params.write_u8(Block::HARVESTER);
 					
-				CGridButton@ button = menu.AddButton( "$HARVESTER$", "Harvester $" + c.harvester, core.getCommandID("buyBlock"), params );
+				CGridButton@ button = menu.AddButton("$HARVESTER$", "Harvester $" + c.harvester, core.getCommandID("buyBlock"), params);
 
-				const bool select = lastBuy == "harvester";
+				const bool select = lastBuy == Block::HARVESTER;
 				if (select)
 					button.SetSelected(2);
 					
-				button.SetHoverText( "An industrial-sized deconstructor that allows you to quickly mine resources from ship debris. Largely ineffective against owned ships. \nWeight: " + w.machinegun * 100 + "rkt \nAmmoCap: infinite\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("An industrial-sized deconstructor that allows you to quickly mine resources from ship debris. Largely ineffective against owned ships. \nWeight: " + w.machinegun * 100 + "rkt \nAmmoCap: infinite\n" + ( select ? repBuyTip : "" ) );
 			}
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string( "patcher" );
+				params.write_u16(netID);
+				params.write_u8(Block::PATCHER);
 					
-				CGridButton@ button = menu.AddButton( "$PATCHER$", "Patcher $" + c.patcher, core.getCommandID("buyBlock"), params );
+				CGridButton@ button = menu.AddButton( "$PATCHER$", "Patcher $" + c.patcher, core.getCommandID("buyBlock"), params);
 			
-				const bool select = lastBuy == "patcher";
+				const bool select = lastBuy == Block::PATCHER;
 				if (select)
 					button.SetSelected(2);
 					
-				button.SetHoverText( "An industrial-sized reconstructor that shoots a green restoration beem through a ship, repairing multiple ship parts concomitantly. \nWeight: " + w.patcher * 100 + "rkt \nAmmoCap: infinite\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("An industrial-sized reconstructor that shoots a green restoration beem through a ship, repairing multiple ship parts concomitantly. \nWeight: " + w.patcher * 100 + "rkt \nAmmoCap: infinite\n" + ( select ? repBuyTip : "" ) );
 			}
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string( "ram" );
+				params.write_u16(netID);
+				params.write_u8(Block::RAM);
 					
-				CGridButton@ button = menu.AddButton( "$RAM$", "Ram Hull $" + c.ram, core.getCommandID("buyBlock"), params );
+				CGridButton@ button = menu.AddButton("$RAM$", "Ram Hull $" + c.ram, core.getCommandID("buyBlock"), params);
 
-				const bool select = lastBuy == "ram";
+				const bool select = lastBuy == Block::RAM;
 				if (select)
 					button.SetSelected(2);
 					
-				button.SetHoverText( "A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits. Can effectively negate damage from bullets, flak, and to some extent cannons. \nWeight: " + w.ram * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits. Can effectively negate damage from bullets, flak, and to some extent cannons. \nWeight: " + w.ram * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
 			}
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("antiram");
+				params.write_u16(netID);
+				params.write_u8(Block::ANTIRAM);
 					
 				CGridButton@ button = menu.AddButton( "$ANTIRAM$", "Anti-Ram Hull $" + c.antiram, core.getCommandID("buyBlock"), params );
 
-				const bool select = lastBuy == "antiram";
+				const bool select = lastBuy == Block::ANTIRAM;
 				if (select)
 					button.SetSelected(2);
 					
@@ -649,11 +649,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("repulsor");
+				params.write_u8(Block::REPULSOR);
 					
 				CGridButton@ button = menu.AddButton( "$REPULSOR$", "Repulsor $" + c.repulsor, core.getCommandID("buyBlock"), params );
 
-				const bool select = lastBuy == "repulsor";
+				const bool select = lastBuy == Block::REPULSOR;
 				if (select)
 					button.SetSelected(2);
 					
@@ -661,12 +661,12 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			}
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("bomb");
+				params.write_u16(netID);
+				params.write_u8(Block::BOMB);
 					
-				CGridButton@ button = menu.AddButton( "$BOMB$", "Bomb $" + c.bomb, core.getCommandID("buyBlock"), params );
+				CGridButton@ button = menu.AddButton("$BOMB$", "Bomb $" + c.bomb, core.getCommandID("buyBlock"), params);
 
-				const bool select = lastBuy == "bomb";
+				const bool select = lastBuy == Block::BOMB;
 				if (select)
 					button.SetSelected(2);
 					
@@ -680,12 +680,12 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			}
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("harpoon");
+				params.write_u16(netID);
+				params.write_u8(Block::HARPOON);
 					
 				CGridButton@ button = menu.AddButton( "$HARPOON$", "Harpoon $" + c.harpoon, core.getCommandID("buyBlock"), params );
 
-				const bool select = lastBuy == "harpoon";
+				const bool select = lastBuy == Block::HARPOON;
 				if (select)
 					button.SetSelected(2);
 					
@@ -696,11 +696,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 		{
 			CBitStream params;
 			params.write_u16(netID);
-			params.write_string("pointDefense");
+			params.write_u8(Block::POINTDEFENSE);
 				
 			CGridButton@ button = menu.AddButton( "$POINTDEFENSE$", "Point Defense $" + c.pointDefense, core.getCommandID("buyBlock"), params );
 
-			const bool select = lastBuy == "pointDefense";
+			const bool select = lastBuy == Block::POINTDEFENSE;
 			if (select)
 				button.SetSelected(2);
 				
@@ -716,16 +716,16 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 		{
 			CBitStream params;
 			params.write_u16(netID);
-			params.write_string("flak");
+			params.write_u8(Block::FLAK);
 				
 			CGridButton@ button = menu.AddButton( "$FLAK$", "Flak Cannon $" + c.flak, core.getCommandID("buyBlock"), params );
 
-			const bool select = lastBuy == "flak";
+			const bool select = lastBuy == Block::FLAK;
 			if (select)
 				button.SetSelected(2);
 				
 			if (gameTime > WARMUP_TIME)
-				button.SetHoverText( "A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nWeight: " + w.flak * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
+				button.SetHoverText("A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nWeight: " + w.flak * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
 			else
 			{
 				button.SetHoverText(warmupText);
@@ -738,11 +738,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("machinegun");
+				params.write_u8(Block::MACHINEGUN);
 					
 				CGridButton@ button = menu.AddButton("$MACHINEGUN$", "Machinegun $" + c.machinegun, core.getCommandID("buyBlock"), params);
 
-				const bool select = lastBuy == "machinegun";
+				const bool select = lastBuy == Block::MACHINEGUN;
 				if (select)
 					button.SetSelected(2);
 					
@@ -757,11 +757,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("cannon");
+				params.write_u8(Block::CANNON);
 					
 				CGridButton@ button = menu.AddButton( "$CANNON$", "AP Cannon $" + c.cannon, core.getCommandID("buyBlock"), params );
 		
-				const bool select = lastBuy == "cannon";
+				const bool select = lastBuy == Block::CANNON;
 				if (select)
 					button.SetSelected(2);
 					
@@ -776,11 +776,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("hyperflak");
+				params.write_u8(Block::HYPERFLAK);
 					
 				CGridButton@ button = menu.AddButton( "$HYPERFLAK$", "Hyper-Flak $" + c.hyperflak, core.getCommandID("buyBlock"), params );
 
-				const bool select = lastBuy == "hyperflak";
+				const bool select = lastBuy == Block::HYPERFLAK;
 				if (select)
 					button.SetSelected(2);
 					
@@ -795,11 +795,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("launcher");
+				params.write_u8(Block::LAUNCHER);
 					
 				CGridButton@ button = menu.AddButton( "$LAUNCHER$", "Missile Launcher $" + c.launcher, core.getCommandID("buyBlock"), params );
 
-				const bool select = lastBuy == "launcher";
+				const bool select = lastBuy == Block::LAUNCHER;
 				if (select)
 					button.SetSelected(2);
 					
@@ -814,11 +814,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{
 				CBitStream params;
 				params.write_u16(netID);
-				params.write_string("fakeram");
+				params.write_u8(Block::FAKERAM);
 				
 				CGridButton@ button = menu.AddButton("$RAM$", "Fake Ram Hull $" + c.fakeram, core.getCommandID("buyBlock"), params);
 
-				const bool select = lastBuy == "fakeram";
+				const bool select = lastBuy == Block::FAKERAM;
 				if (select)
 					button.SetSelected(2);
 					
@@ -826,8 +826,8 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			}
 			{
 				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("decoyCore");
+				params.write_u16(netID);
+				params.write_u8(Block::DECOYCORE);
 				
 				CGridButton@ button = menu.AddButton( "$DECOYCORE$", "Decoy Core $" + c.decoyCore, core.getCommandID("buyBlock"), params);
 
@@ -838,113 +838,6 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 					button.SetEnabled(false);
 					button.SetHoverText("A fake core to fool enemies. \nReached limit of 3 and cannot buy any more.");
 				}
-			}
-		}
-		}
-		else
-		{
-			CGridMenu@ menu = CreateGridMenu( this.getScreenPos() + offset, core, MINI_BUILD_MENU_SIZE, description);
-			u32 gameTime = getGameTime();
-			string repBuyTip = "\nPress the inventory key to buy again.\n";
-			u16 WARMUP_TIME = getPlayersCount() > 1 && !rules.get_bool("freebuild") ? rules.get_u16("warmup_time") : 0;
-			string warmupText = "Weapons are enabled after the warm-up time ends.\n";
-		
-		if (menu !is null) 
-		{
-			menu.deleteAfterClick = true;
-			
-			u16 netID = this.getNetworkID();
-			string lastBuy = this.get_string("last buy");
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_string("coupling");
-					
-				CGridButton@ button = menu.AddButton( "$COUPLING$", "Coupling $" + c.coupling, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == "coupling";
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("A versatile block used to hold and release other blocks.\nWeight: " + w.coupling * 200 + "rkt\n" + (select ? repBuyTip : ""));
-			}
-			{
-				CBitStream params;
-				params.write_u16( netID );
-				params.write_string( "propeller" );
-					
-				CGridButton@ button = menu.AddButton( "$PROPELLER$", "Standard Engine $" + c.propeller, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == "propeller";
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText( "A ship motor with some armor plating for protection. Reliable and resists flak.\nWeight: " + w.propeller * 100 + "rkt\n" + (select ? repBuyTip : ""));
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_string("ramEngine");
-					
-				CGridButton@ button = menu.AddButton("$RAMENGINE$", "Ram Engine $" + c.ramEngine, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == "ramEngine";
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText( "An engine that trades protection for extra power. Will break on impact with anything!\nWeight: " + w.ramEngine * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_string("flak");
-					
-				CGridButton@ button = menu.AddButton( "$FLAK$", "Flak Cannon $" + c.flak, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == "flak";
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText("A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nWeight: " + w.flak * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
-				else
-				{
-					button.SetHoverText(warmupText);
-					button.SetEnabled(false);
-				}
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_string("pointDefense");
-					
-				CGridButton@ button = menu.AddButton( "$POINTDEFENSE$", "Point Defense $" + c.pointDefense, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == "pointDefense";
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText( "A short-ranged automated defensive turret that fires lasers with pin-point accuracy. Able to deter enemy personnel and neutralize incoming projectiles such as flak.\nWeight: " 
-											+ w.pointDefense * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
-				else
-				{
-					button.SetHoverText( warmupText );
-					button.SetEnabled(false);
-				}
-			}
-			{
-				CBitStream params;
-				params.write_u16( netID );
-				params.write_string("seat");
-				
-				CGridButton@ button = menu.AddButton( "$SEAT$", "Seat $" + c.seat, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == "seat";
-				if (select)
-					button.SetSelected(2);
-				
-				button.SetHoverText( "Use it to control your ship. It can also release and produce Couplings. Breaks on impact.\nWeight: " + w.seat * 100 + "rkt\n" + ( select ? repBuyTip : "" ) + ( select ? repBuyTip : "" ) );
 			}
 		}
 	}

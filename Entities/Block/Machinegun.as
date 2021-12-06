@@ -43,35 +43,35 @@ void onInit( CBlob@ this )
 	this.addCommandID("disable");
 	this.set_string("barrel", "left");
 
-	if ( getNet().isServer() )
+	if (isServer())
 	{
 		this.set('ammo', MAX_AMMO);
 		this.set('maxAmmo', MAX_AMMO);
 		this.set_u16('ammo', MAX_AMMO);
 		this.set_u16('maxAmmo', MAX_AMMO);
 		this.set_f32("fire pause",MIN_FIRE_PAUSE);
-		this.set_bool( "mShipDocked", false );
+		this.set_bool("mShipDocked", false);
 
-		this.Sync("fire pause", true );
+		this.Sync("fire pause", true);
 		this.Sync('ammo', true);
 		this.Sync('maxAmmo', true);
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer( "weapon", 16, 16 );
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
     if (layer !is null)
     {
         layer.SetRelativeZ(2);
-        layer.SetLighting( false );
-        Animation@ anim = layer.addAnimation( "fire left", Maths::Round( MIN_FIRE_PAUSE ), false );
+        layer.SetLighting(false);
+        Animation@ anim = layer.addAnimation("fire left", Maths::Round(MIN_FIRE_PAUSE), false);
         anim.AddFrame(Block::MACHINEGUN_A2);
         anim.AddFrame(Block::MACHINEGUN_A1);
 
-		Animation@ anim2 = layer.addAnimation( "fire right", Maths::Round( MIN_FIRE_PAUSE ), false );
+		Animation@ anim2 = layer.addAnimation("fire right", Maths::Round(MIN_FIRE_PAUSE), false);
         anim2.AddFrame(Block::MACHINEGUN_A3);
         anim2.AddFrame(Block::MACHINEGUN_A1);
 
-		Animation@ anim3 = layer.addAnimation( "default", 1, false );
+		Animation@ anim3 = layer.addAnimation("default", 1, false);
 		anim3.AddFrame(Block::MACHINEGUN_A1);
         layer.SetAnimation("default");
     }
@@ -79,15 +79,15 @@ void onInit( CBlob@ this )
 	this.set_u32("fire time", 0);
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
-	if ( this.getShape().getVars().customData <= 0 )//not placed yet
+	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
 
 	u32 gameTime = getGameTime();
 	f32 currentFirePause = this.get_f32("fire pause");
-	if ( currentFirePause > MIN_FIRE_PAUSE )
-		this.set_f32( "fire pause", currentFirePause - FIRE_PAUSE_RATE * this.getCurrentScript().tickFrequency );
+	if (currentFirePause > MIN_FIRE_PAUSE)
+		this.set_f32("fire pause", currentFirePause - FIRE_PAUSE_RATE * this.getCurrentScript().tickFrequency);
 
 	//print( "Fire pause: " + currentFirePause );
 
@@ -95,10 +95,10 @@ void onTick( CBlob@ this )
     CSpriteLayer@ laser = sprite.getSpriteLayer( "laser" );
 
 	//kill laser after a certain time
-	if ( laser !is null && this.get_u32("fire time") + 2.5f < gameTime )
+	if (laser !is null && this.get_u32("fire time") + 2.5f < gameTime)
 		sprite.RemoveSpriteLayer("laser");
 
-	if (getNet().isServer())
+	if (isServer())
 	{
 		Island@ isle = getIsland(this.getShape().getVars().customData);
 
@@ -135,32 +135,32 @@ void onTick( CBlob@ this )
 	}
 
 	//reset the random seed periodically so joining clients see the same bullet paths
-	if ( gameTime % 450 == 0 )
-		_shotspreadrandom.Reset( gameTime );
+	if (gameTime % 450 == 0)
+		_shotspreadrandom.Reset(gameTime);
 }
 
-bool canShoot( CBlob@ this )
+bool canShoot(CBlob@ this)
 {
-	return ( this.get_u32("fire time") + this.get_f32("fire pause") < getGameTime() );
+	return (this.get_u32("fire time") + this.get_f32("fire pause") < getGameTime());
 }
 
-bool canIncreaseFirePause( CBlob@ this )
+bool canIncreaseFirePause(CBlob@ this)
 {
-	return ( MIN_FIRE_PAUSE < getGameTime() );
+	return (MIN_FIRE_PAUSE < getGameTime());
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if ( !canShoot(this) )
+		if (!canShoot(this))
 			return;
 
 		u16 shooterID;
-		if ( !params.saferead_u16(shooterID) )
+		if (!params.saferead_u16(shooterID))
 			return;
 
-		CBlob@ shooter = getBlobByNetworkID( shooterID );
+		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null)
 			return;
 
@@ -168,38 +168,38 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		Vec2f pos = this.getPosition();
 
 		Island@ island = getIsland( this.getShape().getVars().customData );
-		if ( island is null )
+		if (island is null)
 			return;
 
-		if ( canIncreaseFirePause(this) )
+		if (canIncreaseFirePause(this))
 		{
 			f32 currentFirePause = this.get_f32("fire pause");
-			if ( currentFirePause < MAX_FIRE_PAUSE )
-				this.set_f32( "fire pause", currentFirePause + Maths::Sqrt( currentFirePause * ( island.isMothership ? 1.0 : 1.0f ) * FIRE_PAUSE_RATE ) );
+			if (currentFirePause < MAX_FIRE_PAUSE)
+				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * ( island.isMothership ? 1.0 : 1.0f) * FIRE_PAUSE_RATE));
 		}
 
 		this.set_u32("fire time", getGameTime());
 
 		// ammo
-		u16 ammo = this.get_u16( "ammo" );
-		if ( isServer )
-			this.get( "ammo", ammo );
+		u16 ammo = this.get_u16("ammo");
+		if (isServer)
+			this.get("ammo", ammo);
 
-		if ( ammo == 0 )
+		if (ammo <= 0)
 		{
 			directionalSoundPlay( "LoadingTick1", pos, 0.5f );
 			return;
 		}
 
 		ammo--;
-		this.set_u16( "ammo", ammo );
-		if ( isServer )
-			this.set( "ammo", ammo );
+		this.set_u16("ammo", ammo);
+		if (isServer)
+			this.set("ammo", ammo);
 
 		//effects
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.getSpriteLayer( "weapon" );
-		layer.SetAnimation( "default" );
+		CSpriteLayer@ layer = sprite.getSpriteLayer("weapon");
+		layer.SetAnimation("default");
 
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 
@@ -227,12 +227,13 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		bool killed = false;
 		bool blocked = false;
 
-		f32 offsetAngle = ( _shotspreadrandom.NextFloat() - 0.5f ) * BULLET_SPREAD * 2.0f;
+		f32 offsetAngle = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 2.0f;
 		aimVector.RotateBy(offsetAngle);
 
-		f32 rangeOffset = ( _shotspreadrandom.NextFloat() - 0.5f ) * BULLET_SPREAD * 8.0f;
+		f32 rangeOffset = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 8.0f;
 
-		if (map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos ) )
+		if (map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos))
+		{
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
@@ -248,26 +249,26 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				const int blockType = b.getSprite().getFrame();
 				const bool isBlock = b.getName() == "block";
 
-				if (!b.hasTag( "booty" ) && (bColor > 0 || !isBlock))
+				if (!b.hasTag("booty") && (bColor > 0 || !isBlock))
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
 						if (Block::isSolid(blockType) || (b.getTeamNum() != teamNum && ( blockType == Block::MOTHERSHIP5 || blockType == Block::DECOYCORE || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::BOMB)))//hit these and die
 							killed = true;
-						else if ( sameIsland && b.hasTag("weapon") && (b.getTeamNum() == teamNum) ) //team weaps
+						else if (sameIsland && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
 						{
 							killed = true;
 							blocked = true;
 							directionalSoundPlay( "lightup", barrelPos );
 							break;
 						}
-						else if ( blockType == Block::SEAT || blockType == Block::RAMCHAIR )
+						else if (blockType == Block::SEAT || blockType == Block::RAMCHAIR)
 						{
 							AttachmentPoint@ seat = b.getAttachmentPoint(0);
 							if (seat !is null)
 							{
 								CBlob@ occupier = seat.getOccupied();
-								if ( occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum() )
+								if (occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum())
 									killed = true;
 								else
 									continue;
@@ -278,7 +279,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 					}
 					else
 					{
-						if ( b.getTeamNum() == teamNum || ( b.hasTag("player") && b.isAttached() ) )
+						if (b.getTeamNum() == teamNum || (b.hasTag("player") && b.isAttached()))
 							continue;
 					}
 
@@ -313,21 +314,22 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 						f32 damage = getDamage(b, blockType);
 						if (b.hasTag("propeller") && b.getTeamNum() != teamNum && XORRandom(3) == 0 )
 							b.SendCommand(b.getCommandID("off"));
-						this.server_Hit( b, hi.hitpos, Vec2f_zero, damage, 0, true );
+						this.server_Hit(b, hi.hitpos, Vec2f_zero, damage, 0, true);
 					}
 
-					if ( killed ) break;
+					if (killed) break;
 				}
 			}
+		}
 
-		if ( !blocked )
+		if (!blocked)
 		{
 			shotParticles(barrelPos, aimVector.Angle(), false);
-			directionalSoundPlay( "Gunshot" + ( XORRandom(2) + 2 ) + ".ogg", barrelPos );
+			directionalSoundPlay("Gunshot" + (XORRandom(2) + 2), barrelPos);
 			if (this.get_string("barrel") == "left")
 				layer.SetAnimation( "fire left" );
 			if (this.get_string("barrel") == "right")
-				layer.SetAnimation( "fire right" );
+				layer.SetAnimation("fire right");
 		}
 
 		if (!killed)
@@ -361,9 +363,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
     }
 }
 
-f32 getDamage( CBlob@ hitBlob, int blockType )
+f32 getDamage(CBlob@ hitBlob, int blockType)
 {
-	if ( hitBlob.hasTag( "rocket" ) )
+	if ( hitBlob.hasTag( "rocket"))
 		return 1.0f;
 
 	if ( blockType == Block::PROPELLER )

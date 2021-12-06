@@ -1,10 +1,10 @@
-#include "WaterEffects.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
+#include "WaterEffects.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
 
 const f32 SHARK_SPEED = 0.75f;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	//find target to swim towards
 	this.set_Vec2f("target", getTargetVel(this) * 0.5f);
@@ -23,16 +23,17 @@ void onInit( CBlob@ this )
 
 void onTick(CBlob@ this)
 {
-	Vec2f pos = this.getPosition();	
-	CMap@ map = getMap();
-	Tile tile = map.getTile(pos);
-	bool onLand = map.isTileBackgroundNonEmpty(tile) || map.isTileSolid(tile);
-	
-	if (onLand)
-		this.set_bool("retreating", true);
-
 	if (this.getPlayer() is null)
 	{
+		// bot
+		Vec2f pos = this.getPosition();	
+		CMap@ map = getMap();
+		Tile tile = map.getTile(pos);
+		bool onLand = map.isTileBackgroundNonEmpty(tile) || map.isTileSolid(tile);
+	
+		if (onLand)
+		this.set_bool("retreating", true);
+		
 		u32 ticktime = (getGameTime() + this.getNetworkID());
 
 		if (ticktime % 5 == 0 && //check each 5 ticks
@@ -61,16 +62,20 @@ void onTick(CBlob@ this)
 		// player
 		const f32 speed = SHARK_SPEED * 3.75f;
 		Vec2f vel = this.getVelocity();
-		if (this.isKeyPressed(key_up)){
+		if (this.isKeyPressed(key_up))
+		{
 			vel.y -= speed;
 		}
-		if (this.isKeyPressed(key_down)){
+		if (this.isKeyPressed(key_down))
+		{
 			vel.y += speed;
 		}
-		if (this.isKeyPressed(key_left)){
+		if (this.isKeyPressed(key_left))
+		{
 			vel.x -= speed;
 		}
-		if (this.isKeyPressed(key_right)){
+		if (this.isKeyPressed(key_right))
+		{
 			vel.x += speed;
 		}
 		MoveTo(this, vel);
@@ -89,7 +94,6 @@ void onTick(CBlob@ this)
 		}
 		this.getSprite().SetAnimation("default");
 	}
-	
 }
 
 //sprite update
@@ -187,10 +191,9 @@ void onSetPlayer(CBlob@ this, CPlayer@ player)
 	{
 		CCamera@ camera = getCamera();
 		camera.setRotation(0);
-		//camera.mousecamstyle = 1; // follow
-		//camera.targetDistance = 1.0f; // zoom factor
-		//camera.posLag = 5; // lag/smoothen the movement of the camera
-		this.SetMinimapVars("GUI/Minimap/MinimapIcons.png", 0, Vec2f(8,8));
+		camera.mousecamstyle = 1; // follow
+		camera.targetDistance = 1.0f; // zoom factor
+		camera.posLag = 5; // lag/smoothen the movement of the camera
 		client_AddToChat( "You are a shark now." );
 	}
 }

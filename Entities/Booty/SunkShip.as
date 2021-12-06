@@ -16,7 +16,6 @@ void onInit( CBlob@ this )
 	this.Tag( "booty" );
 	this.getCurrentScript().tickFrequency = CHECK_FREQUENCY;
 	this.set_u8( "killtimer", SPACE_HOG_TICKS );
-	this.SetMinimapRenderAlways(true);
 	
 	if ( !isInWater(this.getPosition()) )
 		this.server_Die();

@@ -1,14 +1,13 @@
 #include "BlockCommon.as"
 
-CBlob@ makeBlock( Vec2f pos, f32 angle, u16 blockType, const int team = -1 )
+CBlob@ makeBlock(Vec2f pos, f32 angle, u16 blockType, const int team = -1)
 {
-	CBlob@ block = server_CreateBlob( "block", team, pos );
+	CBlob@ block = server_CreateBlob("block", team, pos);
 	if (block !is null) 
 	{
-		block.getSprite().SetFrame( blockType );
-		block.getSprite().SetZ(Block::isSolid(block.getSprite().getFrame()) ? 510.0f : 490.0f);
-		block.set_f32( "weight", Block::getWeight( block ) );
-		block.setAngleDegrees( angle );
+		block.getSprite().SetFrame(blockType);
+		block.set_f32("weight", Block::getWeight(block));
+		block.setAngleDegrees(angle);
 		
 		switch(blockType)		
 		{
@@ -73,7 +72,7 @@ CBlob@ makeBlock( Vec2f pos, f32 angle, u16 blockType, const int team = -1 )
 		}
 		
 		block.getShape().getVars().customData = 0;
-		block.set_u32( "placedTime", getGameTime() );
+		block.set_u32("placedTime", getGameTime());
 	}
 	return block;
 }

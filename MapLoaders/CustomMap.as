@@ -7,10 +7,7 @@ namespace CMap
 {
 	// tiles
 	const SColor color_water(255, 77, 133, 188);
-	const SColor color_tree(255, 43, 85, 67);
 	// custom land tiles
-	const SColor color_sr_tree_sand(255, 43, 105, 47);
-	const SColor color_sr_tree_grass(255, 43, 205, 67);
 	const SColor color_sand(255, 236, 213, 144);
 	const SColor color_grass(255, 100, 155, 13);
 	const SColor color_rock(255, 161, 161, 161);
@@ -23,10 +20,10 @@ namespace CMap
 	const SColor color_palmtree(255, 0, 150, 0);
 	
 	//
-	void SetupMap( CMap@ map, int width, int height )
+	void SetupMap(CMap@ map, int width, int height)
 	{
-		map.CreateTileMap( width, height, 8.0f, "LandTiles.png" );
-		map.CreateSky( SColor(255, 41, 100, 176) );
+		map.CreateTileMap(width, height, 8.0f, "LandTiles.png");
+		map.CreateSky(SColor(255, 41, 100, 176));
 		map.topBorder = map.bottomBorder = map.rightBorder = map.leftBorder = true;
 	} 
 
@@ -661,7 +658,7 @@ namespace CMap
 			ministationBlob.getSprite().SetFrame( Block::MINISTATION );
 			ministationBlob.AddScript("MiniStation.as"); 
 		}
-				else if (pixel == color_palmtree) 
+		else if (pixel == color_palmtree) 
 		{
 			map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5) );
 			map.AddTileFlag( offset, Tile::LIGHT_PASSES );
@@ -669,21 +666,7 @@ namespace CMap
 			CBlob@ palmtreeBlob = spawnBlob( map, "palmtree", offset, 10, false);	
 			palmtreeBlob.setPosition( palmtreeBlob.getPosition() );
 			palmtreeBlob.AddScript("Palmtree.as"); 
-		}
-		else if (pixel == color_sr_tree_sand) 		
-		{
-			map.SetTile(offset, CMap::sand_inland + map_random.NextRanged(5) );		
-			map.AddTileFlag( offset, Tile::BACKGROUND );
-			map.AddTileFlag( offset, Tile::LIGHT_PASSES );
-			spawnBlob( map, "trees", offset, 3, false);	
-		}
-		else if (pixel == color_sr_tree_grass) 
-		{
-			map.SetTile(offset, CMap::grass_inland );
-			map.AddTileFlag( offset, Tile::BACKGROUND );
-			map.AddTileFlag( offset, Tile::LIGHT_PASSES );
-			spawnBlob( map, "trees", offset, 3, false);	
-		}		
+		}	
 		else if (pixel == color_sand) 
 		{
 			//SAND AND SHOAL BORDERS

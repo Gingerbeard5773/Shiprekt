@@ -49,7 +49,7 @@ void onTick(CBlob@ this)
 		}
 	}
 
-	CameraRotation(angle);//set rotation
+	if (this.getName() != "shark") CameraRotation(angle);//set rotation
 	
 	CControls@ controls = getControls();
 	bool zoomIn = controls.isKeyJustPressed( controls.getActionKeyKey(AK_ZOOMIN));
@@ -134,6 +134,7 @@ void onSetPlayer( CBlob@ this, CPlayer@ player )
 		camera.mousecamstyle = 1;
 		camera.targetDistance = 1.0f; // zoom factor
 		camera.posLag = 1.0f; // lag/smoothen the movement of the camera
+		camera.setRotation(0.0f);
 	}
 }
 

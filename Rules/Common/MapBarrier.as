@@ -28,8 +28,8 @@ void onTick(CRules@ this)
 				Vec2f pos = b.getPosition();
 
 				//determine bounce direction
-				f32 bounceX = dim.x < pos.x ? -3.0f : pos.x < 0.0f ? 3.0f : island.vel.x;
-				f32 bounceY = dim.y < pos.y ? -3.0f : pos.y < 0.0f ? 3.0f : island.vel.y;
+				f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : island.vel.x;
+				f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : island.vel.y;
 				island.vel = Vec2f(bounceX, bounceY);
 
 				server_turnOffPropellers(island);

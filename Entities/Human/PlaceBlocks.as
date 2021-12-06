@@ -67,9 +67,9 @@ void onTick(CBlob@ this)
 						
 					if (!cLinked)
 					{
-						CBlob@ core = getMothership( this.getTeamNum() );//could get the core properly based on adjacent blocks
+						CBlob@ core = getMothership(this.getTeamNum());//could get the core properly based on adjacent blocks
 						if (core !is null)
-							cLinked = coreLinkedDirectional( blocks[i], gameTime, core.getPosition());
+							cLinked = coreLinkedDirectional(blocks[i], gameTime, core.getPosition());
 					}
 					
 					if (cLinked)
@@ -136,7 +136,7 @@ void onTick(CBlob@ this)
     }
 }
 
-void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_angle, CBlob@ centerBlock, CBlob@ refBlock )
+void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_angle, CBlob@ centerBlock, CBlob@ refBlock)
 {
     if (centerBlock is null)
 	{
@@ -148,8 +148,8 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
     f32 angle = centerBlock.getAngleDegrees();
 	f32 refBAngle = refBlock.getAngleDegrees();//reference block angle
 	//current island angle as point of reference
-	while(refBAngle > angle + 45) refBAngle -= 90.0f;
-	while(refBAngle < angle - 45) refBAngle += 90.0f;
+	while (refBAngle > angle + 45) refBAngle -= 90.0f;
+	while (refBAngle < angle - 45) refBAngle += 90.0f;
 	
 	//get offset (based on the centerblock) of block we're standing on
 	Vec2f refBOffset = refBlock.getPosition() - island_pos;
@@ -188,8 +188,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("place"))
     {
-        CBlob@ centerBlock = getBlobByNetworkID( params.read_netid() );
-        CBlob@ refBlock = getBlobByNetworkID( params.read_netid() );
+        CBlob@ centerBlock = getBlobByNetworkID(params.read_netid());
+        CBlob@ refBlock = getBlobByNetworkID(params.read_netid());
         if (centerBlock is null || refBlock is null)
         {
             warn("place cmd: centerBlock not found");
@@ -201,7 +201,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         const f32 target_angle = params.read_f32();
         const f32 island_angle = params.read_f32();
 
-        Island@ island = getIsland( centerBlock.getShape().getVars().customData );
+        Island@ island = getIsland(centerBlock.getShape().getVars().customData);
         if (island is null)
         {
             warn("place cmd: island not found");
@@ -214,49 +214,42 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		bool overlappingIsland = false;
         CBlob@[]@ blocks;
-        if (this.get( "blocks", @blocks ) && blocks.size() > 0)                 
+        if (this.get("blocks", @blocks) && blocks.size() > 0)                 
         {	
-			PositionBlocks( @blocks, islandPos + pos_offset.RotateBy( angleDelta ), islandPos + aimPos_offset.RotateBy( angleDelta ), target_angle, centerBlock, refBlock );
+			PositionBlocks( @blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy( angleDelta ), target_angle, centerBlock, refBlock);
 
-			if ( true )
+			int iColor = centerBlock.getShape().getVars().customData;
+			for (uint i = 0; i < blocks.length; ++i)
 			{
-				int iColor = centerBlock.getShape().getVars().customData;
-				for (uint i = 0; i < blocks.length; ++i)
+				CBlob@ b = blocks[i];
+				if (b !is null)
 				{
-					CBlob@ b = blocks[i];
-					if (b !is null)
+					b.set_u16("ownerID", 0);//so it wont add to owner blocks
+					f32 z = 510.0f;
+					if (b.getSprite().getFrame() == 0)	z = 509.0f;//platforms
+					else if (b.hasTag("weapon"))	z = 511.0f;//weaps
+					SetDisplay(b, color_white, RenderStyle::normal, z);
+					if (!isServer())//add it locally till a sync
 					{
-						b.set_u16("ownerID", 0);//so it wont add to owner blocks
-						f32 z = 510.0f;
-						if ( b.getSprite().getFrame() == 0 )	z = 509.0f;//platforms
-						else if ( b.hasTag( "weapon" ) )	z = 511.0f;//weaps
-						SetDisplay( b, color_white, RenderStyle::normal, z );
-						if ( !getNet().isServer() )//add it locally till a sync
-						{
-							IslandBlock isle_block;
-							isle_block.blobID = b.getNetworkID();
-							isle_block.offset = b.getPosition() - islandPos;
-							isle_block.offset.RotateBy( -islandAngle );
-							isle_block.angle_offset = b.getAngleDegrees() - islandAngle;
-							b.getShape().getVars().customData = iColor;
-							island.blocks.push_back(isle_block);	
-						} else
-							b.getShape().getVars().customData = 0; // push on island  
-						
-						b.set_u32( "placedTime", getGameTime() ); 
+						IslandBlock isle_block;
+						isle_block.blobID = b.getNetworkID();
+						isle_block.offset = b.getPosition() - islandPos;
+						isle_block.offset.RotateBy( -islandAngle );
+						isle_block.angle_offset = b.getAngleDegrees() - islandAngle;
+						b.getShape().getVars().customData = iColor;
+						island.blocks.push_back(isle_block);	
 					}
-					else{
-						warn("place cmd: blob not found");
-					}
+					else
+						b.getShape().getVars().customData = 0; // push on island  
+					
+					b.set_u32( "placedTime", getGameTime() ); 
 				}
-				this.set_u32( "placedTime", getGameTime() );
+				else
+				{
+					warn("place cmd: blob not found");
+				}
 			}
-			else
-			{
-				warn("place cmd: blocks overlapping, cannot place");
-				this.getSprite().PlaySound("Denied.ogg");
-				return;	
-			}
+			this.set_u32("placedTime", getGameTime());
         }
         else
         {
@@ -266,16 +259,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		blocks.clear();//releases the blocks (they are placed)
 		getRules().set_bool("dirty islands", true);
-		directionalSoundPlay( "build_ladder.ogg", this.getPosition() );
+		directionalSoundPlay("build_ladder.ogg", this.getPosition());
     }
 }
 
-void SetDisplay( CBlob@ blob, SColor color, RenderStyle::Style style, f32 Z=-10000)
+void SetDisplay( CBlob@ blob, SColor color, RenderStyle::Style style, f32 Z = -10000)
 {
     CSprite@ sprite = blob.getSprite();
-    sprite.asLayer().SetColor( color );
-    sprite.asLayer().setRenderStyle( style );
-    if (Z>-10000){
+    sprite.asLayer().SetColor(color);
+    sprite.asLayer().setRenderStyle(style);
+    if (Z > -10000)
+	{
         sprite.SetZ(Z);
     }
 }

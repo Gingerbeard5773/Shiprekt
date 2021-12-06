@@ -9,6 +9,7 @@ u8 DAMAGE_FRAMES = 3;
 void onInit( CBlob@ this )
 {
 	CSprite @sprite = this.getSprite();
+	sprite.SetZ(510.0f);
 	CShape @shape = this.getShape();
 	sprite.asLayer().SetLighting(false);
 	shape.getConsts().net_threshold_multiplier = -1.0f;
@@ -24,7 +25,7 @@ void onTick (CBlob@ this)
 		CRules@ rules = getRules();
 		const int blockType = thisSprite.getFrame();
 		
-		u16 cost = Block::getCost( blockType );	
+		u16 cost = Block::getCost(blockType);	
 		if ( blockType == Block::MOTHERSHIP1 || blockType == Block::MOTHERSHIP2 || blockType == Block::MOTHERSHIP3
 				|| blockType == Block::MOTHERSHIP4 || blockType == Block::MOTHERSHIP6
 				|| blockType == Block::MOTHERSHIP7 || blockType == Block::MOTHERSHIP8 || blockType == Block::MOTHERSHIP9
@@ -36,7 +37,7 @@ void onTick (CBlob@ this)
 		this.set_u32("cost", cost);
 		
 		this.set_f32("initial reclaim", this.getHealth());		
-		if ( blockType == Block::STATION || blockType == Block::MINISTATION )
+		if (blockType == Block::STATION || blockType == Block::MINISTATION)
 		{
 			this.set_f32("current reclaim", 0.0f);
 		}
@@ -59,10 +60,10 @@ void onTick (CBlob@ this)
 	
 	//path predicted collisions
 	const int color = this.getShape().getVars().customData;
-	if ( color > 0 )
+	if (color > 0)
 	{
 		Island@ island = getIsland(color);
-		if ( island !is null && !island.isStation && !island.isMiniStation)
+		if (island !is null && !island.isStation && !island.isMiniStation)
 		{
 			Vec2f velnorm = island.vel; 
 			const f32 vellen = velnorm.Normalize();		
@@ -72,13 +73,13 @@ void onTick (CBlob@ this)
 				bool dontHitMore = false;
 			
 				HitInfo@[] hitInfos;
-				if( getMap().getHitInfosFromRay( this.getPosition(), -island.vel.Angle(), island.vel.Length()*2.0f, this, @hitInfos ) )
+				if (getMap().getHitInfosFromRay( this.getPosition(), -island.vel.Angle(), island.vel.Length()*2.0f, this, @hitInfos))
 				{
 					//HitInfo objects are sorted, first come closest hits
-					for ( uint i = 0; i < hitInfos.length; i++ )
+					for (uint i = 0; i < hitInfos.length; i++)
 					{
 						CBlob@ blob =  hitInfos[i].blob;	  
-						if( blob is null || blob is this || dontHitMore ) 
+						if (blob is null || blob is this || dontHitMore) 
 							continue;
 						
 						const int other_color = blob.getShape().getVars().customData;
@@ -97,7 +98,7 @@ void onTick (CBlob@ this)
 								bool docking = (blockType == Block::COUPLING || other_blockType == Block::COUPLING) 
 													&& ((island.isMothership || other_island.isMothership ) || (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
 													&& this.getTeamNum() == blob.getTeamNum()
-													&& ((!island.isMothership && island.owner != "" ) || (!other_island.isMothership && other_island.owner != "" ));
+													&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
 													
 								bool ramming = ( blockType == Block::RAM || other_blockType == Block::RAM
 													|| blockType == Block::FAKERAM || other_blockType == Block::FAKERAM
@@ -393,23 +394,23 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		{
 			Vec2f pos = blob.getPosition();
 			
-			if ( getNet().isClient() && !blob.isAttached() && blob.getName() == "human" && blob.isMyPlayer() )
+			if (isClient() && !blob.isAttached() && blob.getName() == "human" && blob.isMyPlayer())
 			{
 				//kill by impact
 				Island@ island = getIsland(color);
-				if ( island !is null && this.getTeamNum() != blob.getTeamNum() && ( getGameTime() - blob.get_u32( "groundTouch time" ) < 15 )/*longer wasOnGround*/
-					&& ( island.vel.LengthSquared() > 4.0f || Maths::Abs(island.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f ) )
+				if (island !is null && this.getTeamNum() != blob.getTeamNum() && (getGameTime() - blob.get_u32( "groundTouch time" ) < 15)/*longer wasOnGround*/
+					&& (island.vel.LengthSquared() > 4.0f || Maths::Abs(island.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
 				{
 
 					CPlayer@ player = blob.getPlayer();
-					if ( player !is null )
+					if (player !is null)
 					{
 						player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
-						blob.Tag( "dead" );
+						blob.Tag("dead");
 						CSprite@ sprite = blob.getSprite();
-						if ( sprite !is null && !sprite.getVars().gibbed )//to mask the latency a bit
+						if (sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
 						{
-							directionalSoundPlay( "SR_ManDeath" + ( XORRandom(4) + 1 ), pos );
+							directionalSoundPlay( "SR_ManDeath" + (XORRandom(4) + 1), pos);
 							sprite.Gib();
 						}
 					}
@@ -424,10 +425,10 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 
 void CollisionResponse1( Island@ island, Island@ other_island, Vec2f point1, bool docking = false )
 {
-	if ( island is null || other_island is null )
+	if (island is null || other_island is null)
 		return;
 		
-	if ( island.mass <= 0 || other_island.mass <= 0 )
+	if (island.mass <= 0 || other_island.mass <= 0)
 		return;
 	
 	Vec2f velnorm = island.vel; 
@@ -444,19 +445,19 @@ void CollisionResponse1( Island@ island, Island@ other_island, Vec2f point1, boo
 	const f32 veldamp = 1.0f;
 	const f32 dirscale = 1.0f;
 	f32 reactionScale1 = 1.0f;
-	if ( other_island.beached )
+	if (other_island.beached)
 		reactionScale1 *= 2;
 	f32 reactionScale2 = 1.0f;
-	if ( island.beached )
+	if (island.beached )
 		reactionScale2 *= 2;
 	const f32 massratio1 = other_island.mass/(island.mass+other_island.mass);
 	const f32 massratio2 = island.mass/(island.mass+other_island.mass);
 	island.vel *= veldamp;
 	other_island.vel *= veldamp;
 	
-	if ( other_island.isStation || other_island.isMiniStation )
+	if (other_island.isStation || other_island.isMiniStation)
 	{
-		if ( island.beached )
+		if (island.beached)
 			island.vel += colvec1 * -vellen * dirscale * veltransfer - colvec1*1.0f;
 		else
 			island.vel += colvec1 * -vellen * dirscale * veltransfer - colvec1*0.4f;
@@ -511,24 +512,24 @@ void onDie(CBlob@ this)
 	if (this.getShape().getVars().customData > 0)
 		this.getSprite().Gib();
 
-	if ( getNet().isClient() )
+	if (isClient())
 	{
 		//kill humans standing on top. done locally because lag makes server unable to catch the overlapping playerblobs
 		int type = this.getSprite().getFrame();
-		if ( type != Block::COUPLING && !Block::isRepulsor( type ) )
+		if (type != Block::COUPLING && !Block::isRepulsor(type))
 		{
 			CBlob@ localBlob = getLocalPlayerBlob();
-			if ( localBlob !is null && localBlob.get_u16( "shipID" ) == this.getNetworkID() )
+			if (localBlob !is null && localBlob.get_u16("shipID") == this.getNetworkID())
 			{
 				CPlayer@ player = localBlob.getPlayer();
-				if ( player !is null && localBlob.getDistanceTo( this ) < 6.5f )
+				if ( player !is null && localBlob.getDistanceTo(this) < 6.5f)
 				{
 					player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
-					localBlob.Tag( "dead" );
+					localBlob.Tag("dead");
 					CSprite@ sprite = localBlob.getSprite();
-					if ( sprite !is null && !sprite.getVars().gibbed )//to mask the latency a bit
+					if ( sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
 					{
-						directionalSoundPlay( "SR_ManDeath" + ( XORRandom(4) + 1 ), localBlob.getPosition() );
+						directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), localBlob.getPosition());
 						sprite.Gib();
 					}
 				}
@@ -544,7 +545,7 @@ void onDie(CBlob@ this)
 	}
 }
 
-void Die( CBlob@ this )
+void Die(CBlob@ this)
 {
 	if (!isServer()) return;
 	
@@ -553,7 +554,7 @@ void Die( CBlob@ this )
 }
 
 //mothership damage alerts
-f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )
+f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	if (this.getTeamNum() != hitterBlob.getTeamNum() && isMothership(this))
 	{
@@ -569,11 +570,9 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 }
 
 //damage layers
-void onHealthChange( CBlob@ this, f32 oldHealth )
+void onHealthChange(CBlob@ this, f32 oldHealth)
 {
-	if (this.hasTag("mothership")) return;//has own code
-	
-	if (this.hasTag("secondaryCore")) return; // Same
+	if (this.hasTag("mothership") || this.hasTag("secondaryCore")) return; //has own code
 
 	int blockType = this.getSprite().getFrame();
 	const f32 hp = this.getHealth();
@@ -594,9 +593,13 @@ void onHealthChange( CBlob@ this, f32 oldHealth )
 		
 		if (hp < currentStep && hp <= initHealth - step && Block::isSolid(blockType))
 		{
-			if (blockType == Block::RAM)
+			int frame = blockType == Block::RAM ? 9 :
+						blockType == Block::FAKERAM ? 49 :
+						blockType == Block::ANTIRAM ? 46 : 5;
+
+			if (blockType != Block::RAMENGINE && blockType != Block::POINTDEFENSE)
 			{
-				const int frame = (oldHealth > initHealth * 0.5f) ? 9 : 10;	
+				const int frame = (oldHealth > initHealth * 0.5f) ? frame : frame + 1;	
 				CSprite@ sprite = this.getSprite();
 				CSpriteLayer@ layer = sprite.addSpriteLayer( "dmg"+frame );
 				if (layer !is null)
@@ -604,46 +607,7 @@ void onHealthChange( CBlob@ this, f32 oldHealth )
 					layer.SetRelativeZ(1+frame);
 					layer.SetLighting( false );
 					layer.SetFrame(frame);
-					layer.RotateBy( XORRandom(4) * 90, Vec2f_zero );
-				}
-			}
-			else if ( blockType == Block::FAKERAM )
-			{
-				const int frame = (oldHealth > initHealth * 0.5f) ? 49 : 50;
-				CSprite@ sprite = this.getSprite();
-				CSpriteLayer@ layer = sprite.addSpriteLayer( "dmg"+frame );
-				if (layer !is null)
-				{
-					layer.SetRelativeZ(1+frame);
-					layer.SetLighting( false );
-					layer.SetFrame(frame);
-					layer.RotateBy( XORRandom(4) * 90, Vec2f_zero );
-				}
-			}
-			else if ( blockType == Block::ANTIRAM )
-			{
-				const int frame = (hp > initHealth * 0.5f) ? 46 : 47;	
-				CSprite@ sprite = this.getSprite();
-				CSpriteLayer@ layer = sprite.addSpriteLayer( "dmg"+frame );
-				if (layer !is null)
-				{
-					layer.SetRelativeZ(1+frame);
-					layer.SetLighting( false );
-					layer.SetFrame(frame);
-					layer.RotateBy( XORRandom(4) * 90, Vec2f_zero );
-				}
-			}
-			else if ( blockType != Block::RAMENGINE && blockType != Block::POINTDEFENSE )
-			{
-				const int frame = (oldHealth > initHealth * 0.5f) ? 5 : 6;	
-				CSprite@ sprite = this.getSprite();
-				CSpriteLayer@ layer = sprite.addSpriteLayer( "dmg"+frame );
-				if (layer !is null)
-				{
-					layer.SetRelativeZ(1+frame);
-					layer.SetLighting( false );
-					layer.SetFrame(frame);
-					layer.RotateBy( XORRandom(4) * 90, Vec2f_zero );
+					layer.RotateBy(XORRandom(4) * 90, Vec2f_zero);
 				}
 			}
 
@@ -663,18 +627,18 @@ void onHealthChange( CBlob@ this, f32 oldHealth )
 void onGib(CSprite@ this)
 {
 	Vec2f pos = this.getBlob().getPosition();
-	MakeDustParticle( pos, "/DustSmall.png");
-	directionalSoundPlay( "destroy_wood", pos );
+	MakeDustParticle(pos, "/DustSmall.png");
+	directionalSoundPlay("destroy_wood", pos);
 }
 // network
 
-void onSendCreateData( CBlob@ this, CBitStream@ stream)
+void onSendCreateData(CBlob@ this, CBitStream@ stream)
 {
 	stream.write_u8(Block::getType(this));
 	stream.write_netid(this.get_u16("ownerID"));
 }
 
-bool onReceiveCreateData( CBlob@ this, CBitStream@ stream)
+bool onReceiveCreateData(CBlob@ this, CBitStream@ stream)
 {
 	u8 type = 0;
 	u16 ownerID = 0;
@@ -690,12 +654,12 @@ bool onReceiveCreateData( CBlob@ this, CBitStream@ stream)
 		return false;	
 	}
 
-	this.getSprite().SetFrame( type );
+	this.getSprite().SetFrame(type);
 
 	CBlob@ owner = getBlobByNetworkID(ownerID);
 	if (owner !is null)
 	{
-	    owner.push( "blocks", @this );
+	    owner.push("blocks", @this);
 		this.getShape().getVars().customData = -1; // don't push on island
 	}
 

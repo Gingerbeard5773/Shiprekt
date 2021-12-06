@@ -59,9 +59,9 @@ void onRender(CRules@ this)
 	
 	if (showHelp)
 	{
-		CCamera@ camera = getCamera();
-		if (camera is null) return;
-		camera.setRotation(0.0f);//for the the arrows to work
+		//CCamera@ camera = getCamera();
+		//if (camera is null) return;
+		//camera.setRotation(0.0f);//for the the arrows to work
 		
 		SColor tipsColor = SColor(255, 255, 255, 255);
 		f32 sWidth = getScreenWidth();

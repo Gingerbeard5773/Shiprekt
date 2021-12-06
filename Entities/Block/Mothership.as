@@ -8,7 +8,6 @@
 #include "HumanCommon.as"
 #include "AccurateSoundPlay.as"
 
-const u16 bombCDTime = 5 * 20;//cooldown after buying bombs
 const u16 BASE_KILL_REWARD = 275;
 const f32 HEAL_AMMOUNT = 0.1f;
 const f32 HEAL_RADIUS = 16.0f;
@@ -22,7 +21,6 @@ u8 DAMAGE_FRAMES = 3;
 void onInit( CBlob@ this )
 {
 	this.Tag("mothership");
-	this.set( "bombCooldown", 0 );
 	this.addCommandID("buyBlock");
 	this.addCommandID("returnBlocks");
 	this.server_SetHealth( INIT_HEALTH );
@@ -34,10 +32,10 @@ void onInit( CBlob@ this )
     	layer.SetRelativeZ(1);
     	layer.SetLighting( false );
      	Animation@ anim = layer.addAnimation( "state", 0, false );
-        anim.AddFrame( Block::MOTHERSHIP5 );
-        anim.AddFrame( Block::MOTHERSHIP5 + 2 );
-        anim.AddFrame( Block::MOTHERSHIP5 + 3 );
-        anim.AddFrame( Block::MOTHERSHIP5 + 4 );
+        anim.AddFrame(Block::MOTHERSHIP5 );
+        anim.AddFrame(Block::MOTHERSHIP5 + 2);
+        anim.AddFrame(Block::MOTHERSHIP5 + 3);
+        anim.AddFrame(Block::MOTHERSHIP5 + 4);
         layer.SetAnimation("state");    	
     }
 }
@@ -49,9 +47,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CBlob@ caller = getBlobByNetworkID(params.read_u16());
 		if (caller is null) return;
 			
-		string block = params.read_string();
-		if (block != "decoyCore")
-			caller.set_string("last buy", block);
+		u8 block = params.read_u8();
+		if (block != Block::DECOYCORE)
+			caller.set_u8("last buy", block);
 
 		if (!isServer() || Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
 			return;
@@ -66,178 +64,55 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 }
 
-void BuyBlock(CBlob@ this, CBlob@ caller, string btype)
+void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 {
 	CRules@ rules = getRules();
-	Block::Costs@ c = Block::getCosts( rules );
+	Block::Costs@ c = Block::getCosts(rules);
 	
-	if ( c is null )
+	if (c is null)
 	{
-		warn( "** Couldn't get Costs!" );
+		warn("** Couldn't get Costs!");
 		return;
 	}
 
-	u8 teamNum = this.getTeamNum();
-	u32 gameTime = getGameTime();
 	CPlayer@ player = caller.getPlayer();
 	string pName = player !is null ? player.getUsername() : "";
 	u16 pBooty = server_getPlayerBooty( pName );
-	bool weapon = btype == "cannon" || btype == "machinegun" || btype == "flak" || btype == "hyperflak" || btype == "pointDefense" || btype == "launcher" || btype == "bomb";
 	
 	u16 cost = -1;
 	u8 ammount = 1;
 	u8 totalFlaks = 0;
 	u8 teamFlaks = 0;
-	
-	bool coolDown = false;
 
 	Block::Type type;
-	if ( btype == "wood" )
+	cost = Block::getCost(bType);
+
+	if (bType == Block::COUPLING)
 	{
-		type = Block::PLATFORM;
-		cost = c.wood;
+		ammount = 2;
 	}
-	else if (btype == "solid")
+	else if (bType == Block::FLAK)
 	{
-		type = Block::SOLID;
-		cost = c.solid;
-	}
-	else if (btype == "door")
-	{
-		type = Block::DOOR;
-		cost = c.door;
-	}
-	else if (btype == "ram")
-	{
-		type = Block::RAM;
-		cost = c.ram;
-	}
-	else if (btype == "fakeram")
-	{
-		type = Block::FAKERAM;
-		cost = c.fakeram;
-	}
-	else if ( btype == "antiram" )
-	{
-		type = Block::ANTIRAM;
-		cost = c.antiram;
-	}
-	else if ( btype == "propeller" )
-	{
-		type = Block::PROPELLER;
-		cost = c.propeller;
-	}
-	else if ( btype == "ramEngine" )
-	{
-		type = Block::RAMENGINE;
-		cost = c.ramEngine;
-	}
-	else if ( btype == "seat" )
-	{
-		type = Block::SEAT;
-		cost = c.seat;
-	}
-	else if ( btype == "ramChair" )
-	{
-		type = Block::RAMCHAIR;
-		cost = c.ramChair;
-	}
-	else if ( btype == "harvester" )
-	{
-		type = Block::HARVESTER;
-		cost = c.harvester;
-	}
-	else if (btype == "patcher"){
-		type = Block::PATCHER;
-		cost = c.patcher;
-	}
-	else if ( btype == "harpoon" )
-	{
-		type = Block::HARPOON;
-		cost = c.harpoon;
-	}
-	else if ( btype == "machinegun" )
-	{
-		type = Block::MACHINEGUN;
-		cost = c.machinegun;
-	}
-	else if ( btype == "cannon" )
-	{
-		type = Block::CANNON;
-		cost = c.cannon;
-	}
-	else if ( btype == "flak" )
-	{
-		type = Block::FLAK;
-		cost = c.flak;
 		//Max turrets to avoid lag
 		CBlob@[] turrets;
 		getBlobsByTag("flak", @turrets);
 		for (u16 i = 0; i < turrets.length; i++)
 		{
-			if (turrets[i].getTeamNum() == teamNum)
+			if (turrets[i].getTeamNum() == this.getTeamNum())
 				teamFlaks++;
 			totalFlaks++;
 		}
-	}
-	else if ( btype == "pointDefense" )
-	{
-		type = Block::POINTDEFENSE;
-		cost = c.pointDefense;
-	}
-	else if ( btype == "launcher" )
-	{
-		type = Block::LAUNCHER;
-		cost = c.launcher;
-	}
-	else if ( btype == "bomb" )
-	{
-		type = Block::BOMB;
-		cost = c.bomb;
-
-		u32 bombCooldown;
-		this.get( "bombCooldown", bombCooldown );
-		coolDown = gameTime < bombCooldown;
-	}
-	else if ( btype == "coupling" )
-	{
-		type = Block::COUPLING;
-		cost = c.coupling;
-		ammount = 2;
-	}
-	else if ( btype == "repulsor" )
-	{
-		type = Block::REPULSOR;
-		cost = c.repulsor;
-	}
-	else if ( btype == "secondaryCore" )
-	{
-		type = Block::SECONDARYCORE;
-		cost = c.secondaryCore;
-	}
-	else if ( btype == "decoyCore" )
-	{
-		type = Block::DECOYCORE;
-		cost = c.decoyCore;
-	}
-	else if ( btype == "hyperflak" )
-	{
-		type = Block::HYPERFLAK;
-		cost = c.hyperflak;
 	}
 
 	if (teamFlaks < MAX_TEAM_FLAKS && totalFlaks < MAX_TOTAL_FLAKS)
 	{
 		if (getPlayersCount() == 1 || rules.get_bool("freebuild"))
-			ProduceBlock(getRules(), caller, type, ammount);
-		else if (!coolDown && pBooty >= cost)
+			ProduceBlock(getRules(), caller, bType, ammount);
+		else if (pBooty >= cost)
 		{
 			server_setPlayerBooty(pName, pBooty - cost);
 		
-			ProduceBlock(getRules(), caller, type, ammount);
-				
-			if (btype == "bomb")
-				this.set( "bombCooldown", gameTime + bombCDTime );
+			ProduceBlock(getRules(), caller, bType, ammount);
 		}
 		//warning for flaks. We dont check block type since teamFlaks and totalFlaks are equals to 0 if type is not a flak.
 		if (MAX_TEAM_FLAKS - teamFlaks <= 3)
@@ -406,24 +281,25 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 			client_AddToChat( "*** " + rules.getTeam( hitterTeamNum ).getName() + " gets " + ( totalReward + BASE_KILL_REWARD ) + " Booty for destroying " + rules.getTeam( thisTeamNum ).getName() + "! ***" );
 			
 			//give rewards
-			if ( getNet().isServer() )
+			if (isServer())
 			{
-				u16 reward = Maths::Round( totalReward/hitterPlayers );
-				for( u8 i = 0; i < playersCount; i++ )
+				u16 reward = Maths::Round(totalReward/hitterPlayers);
+				for (u8 i = 0; i < playersCount; i++)
 				{
 					CPlayer@ player = getPlayer(i);
 					u8 teamNum = player.getTeamNum();
-					if ( teamNum == hitterTeamNum )//winning tam
+					if (teamNum == hitterTeamNum)//winning tam
 					{
 						string name = player.getUsername();
-						server_setPlayerBooty( name, server_getPlayerBooty( name ) + ( name == captainName ? 2 * reward : reward ) );
-					} else if ( teamNum == thisTeamNum )//losing team consolation money
+						server_setPlayerBooty(name, server_getPlayerBooty(name) + (name == captainName ? 2 * reward : reward));
+					}
+					else if (teamNum == thisTeamNum)//losing team consolation money
 					{
 						string name = player.getUsername();
 						u16 booty = server_getPlayerBooty( name );
-						u16 rewardHalved = Maths::Round( BASE_KILL_REWARD/2 );
-						if ( booty < rewardHalved )
-							server_setPlayerBooty( name,  booty + rewardHalved );
+						u16 rewardHalved = Maths::Round(BASE_KILL_REWARD/2);
+						if (booty < rewardHalved)
+							server_setPlayerBooty(name,  booty + rewardHalved);
 					}
 				}
 				server_updateTotalBooty( hitterTeamNum, totalReward + BASE_KILL_REWARD );
@@ -490,23 +366,23 @@ void onTick( CBlob@ this )
 	} */
 
 	//heal
-	if( getGameTime() % 60 == 0 )
+	if (getGameTime() % 60 == 0)
 	{
 		CRules@ rules = getRules();
 		u8 coreTeam = this.getTeamNum();
 		
-		if ( getNet().isServer() )
+		if (isServer())
 		{
 			CBlob@[] humans;
 			getBlobsByName( "human", humans );
 			int hNum = humans.length();
 
-			for( int i = 0; i < hNum; i++ )
-				if ( humans[i].getTeamNum() == coreTeam && humans[i].getHealth() < humans[i].getInitialHealth() )
+			for(int i = 0; i < hNum; i++)
+				if (humans[i].getTeamNum() == coreTeam && humans[i].getHealth() < humans[i].getInitialHealth())
 				{
-					Island@ hIsle = getIsland( humans[i] );
-					if ( hIsle !is null && hIsle.centerBlock !is null && color1 == hIsle.centerBlock.getShape().getVars().customData )
-						humans[i].server_Heal( HEAL_AMMOUNT );
+					Island@ hIsle = getIsland(humans[i]);
+					if ( hIsle !is null && hIsle.centerBlock !is null && color1 == hIsle.centerBlock.getShape().getVars().customData)
+						humans[i].server_Heal(HEAL_AMMOUNT);
 				}
 		}
 
@@ -526,27 +402,27 @@ void onTick( CBlob@ this )
 	}
 
 	//critical Slowdown, selfDestruct and effects
-	if ( this.hasTag( "critical" ) )
+	if (this.hasTag("critical"))
 	{
 		isle.vel *= 0.8f;
 
-		if ( getNet().isServer() && getGameTime() > this.get_u32( "dieTime" ) )
+		if (isServer() && getGameTime() > this.get_u32("dieTime"))
 			this.server_Die();
 		
 		//particles
 		{
-			CParticle@ p = ParticlePixel( pos, getRandomVelocity(90, 4, 360), getTeamColor( this.getTeamNum() ), true );
-			if(p !is null)
+			CParticle@ p = ParticlePixel(pos, getRandomVelocity(90, 4, 360), getTeamColor( this.getTeamNum() ), true );
+			if (p !is null)
 			{
 				p.Z = 10.0f;
 				p.timeout = XORRandom(3) + 2;
 			}
 		}
 		
-		if ( v_fastrender )
+		if (v_fastrender)
 		{
 			CParticle@ p = ParticlePixel( pos, getRandomVelocity(90, 4, 360), getTeamColor( this.getTeamNum() ), true );
-			if(p !is null)
+			if (p !is null)
 			{
 				p.Z = 10.0f;
 				p.timeout = XORRandom(3) + 2;
@@ -585,11 +461,11 @@ void onTick( CBlob@ this )
 }
 
 //make islandblocks start exploding
-void initiateSelfDestruct( CBlob@ this )
+void initiateSelfDestruct(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	//set timer for selfDestruct sequence
-	this.Tag( "critical" );
+	this.Tag("critical");
 	this.set_u32( "dieTime", getGameTime() + SELF_DESTRUCT_TIME );
 	
 	//effects
@@ -601,63 +477,62 @@ void initiateSelfDestruct( CBlob@ this )
     if ( color == 0 )		return;
 
 	Island@ isle = getIsland(color);
-	if ( isle is null || isle.blocks.length < 10 )		return;
+	if (isle is null || isle.blocks.length < 10 ) return;
 		
-	this.AddScript( "Block_Explode.as" );
+	this.AddScript("Block_Explode.as");
 	u8 teamNum = this.getTeamNum();
-	for ( uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter )
+	for (uint i = 0; i < isle.blocks.length; ++i)
 	{
-		IslandBlock@ isle_block = isle.blocks[b_iter];
+		IslandBlock@ isle_block = isle.blocks[i];
 		CBlob@ b = getBlobByNetworkID( isle_block.blobID );
 		if ( b !is null && teamNum == b.getTeamNum() )
 		{
 			int bType = Block::getType(b);
-			if ( b_iter % 4 == 0 && !Block::isCore( bType ) && bType != Block::COUPLING )
-				b.AddScript( "Block_Explode.as" );
+			if (i % 4 == 0 && !Block::isCore(bType) && bType != Block::COUPLING)
+				b.AddScript( "Block_Explode.as");
 		}
 	}
 }
 
 //kill players, turrets and island
-void selfDestruct( CBlob@ this )
+void selfDestruct(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	
 	//effects
-	directionalSoundPlay( "ShipExplosion", pos );
-	makeWaveRing( pos, 4.5f, 15 );
+	directionalSoundPlay("ShipExplosion", pos);
+	makeWaveRing(pos, 4.5f, 15);
     makeHugeExplosionParticle(pos);
-    ShakeScreen( 90, 80, pos );
-	if ( this.isOnScreen() )
-		SetScreenFlash( 150, 255, 255, 255 );
+    ShakeScreen(90, 80, pos);
+	if (this.isOnScreen())
+		SetScreenFlash(150, 255, 255, 255);
 
-	if ( !getNet().isServer() ) 
-		return;
+	if (!isServer()) return;
 		
 	u8 teamNum = this.getTeamNum();
 	//kill team players
 	CBlob@[] dieBlobs;
-	getBlobsByName( "human", @dieBlobs );
-	for ( u16 i = 0; i < dieBlobs.length; i++ )
-		if ( dieBlobs[i].getTeamNum() == teamNum )
+	getBlobsByName("human", @dieBlobs);
+	for (u16 i = 0; i < dieBlobs.length; i++)
+		if (dieBlobs[i].getTeamNum() == teamNum)
 			dieBlobs[i].server_Die();
 	
 	//turrets go neutral
 	CBlob@[] turrets;
-	getBlobsByTag( "weapon", @turrets );
-	for ( u16 i = 0; i < turrets.length; i++ )
-		if ( turrets[i].getTeamNum() == teamNum )
+	getBlobsByTag("weapon", @turrets);
+	for (u16 i = 0; i < turrets.length; i++)
+		if (turrets[i].getTeamNum() == teamNum)
 			turrets[i].server_setTeamNum(-1);
 			
 	//damage nearby blobs
 	CBlob@[] blastBlobs;
-	getMap().getBlobsInRadius( pos, BLAST_RADIUS, @blastBlobs );
-	for ( u16 i = 0; i < blastBlobs.length; i++ )
-		if ( blastBlobs[i] !is this )
+	getMap().getBlobsInRadius(pos, BLAST_RADIUS, @blastBlobs);
+	for (u16 i = 0; i < blastBlobs.length; i++)
+		if (blastBlobs[i] !is this)
 		{
 			f32 maxHealth = blastBlobs[i].getInitialHealth();
-			f32 damage = 1.5f * maxHealth * ( BLAST_RADIUS - this.getDistanceTo( blastBlobs[i] ) )/BLAST_RADIUS;
-			this.server_Hit( blastBlobs[i], pos, Vec2f_zero, damage, 0, true );
+			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo( blastBlobs[i] ))/BLAST_RADIUS;
+			this.server_Hit(blastBlobs[i], pos, Vec2f_zero, damage, 0, true);
 		}
 
 	//kill island
@@ -665,13 +540,13 @@ void selfDestruct( CBlob@ this )
     if ( color == 0 )		return;
 
 	Island@ isle = getIsland(color);
-	if ( isle is null || isle.blocks.length < 10 )		return;
+	if (isle is null || isle.blocks.length < 10) return;
 
-	for (uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter)
+	for (uint i = 0; i < isle.blocks.length; ++i)
 	{
-		IslandBlock@ isle_block = isle.blocks[b_iter];
+		IslandBlock@ isle_block = isle.blocks[i];
 		CBlob@ b = getBlobByNetworkID( isle_block.blobID );
-		if ( b !is null && b !is this && teamNum == b.getTeamNum() )
+		if (b !is null && b !is this && teamNum == b.getTeamNum())
 			b.server_Die();
 	}
 }

@@ -17,7 +17,7 @@ void onRestart(CRules@ this)
 	}
 }
 
-void ProduceBlock(CRules@ this, CBlob@ blob, Block::Type type, u8 ammount = 1)
+void ProduceBlock(CRules@ this, CBlob@ blob, uint type, u8 ammount = 1)
 {
 	const int blobTeam = blob.getTeamNum();
 
