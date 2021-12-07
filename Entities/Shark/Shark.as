@@ -60,7 +60,7 @@ void onTick(CBlob@ this)
 	else
 	{
 		// player
-		const f32 speed = SHARK_SPEED * 3.75f;
+		const f32 speed = SHARK_SPEED * 3.65f;
 		Vec2f vel = this.getVelocity();
 		if (this.isKeyPressed(key_up))
 		{

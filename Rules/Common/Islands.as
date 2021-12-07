@@ -10,7 +10,7 @@ f32 UPDATE_DELTA_SMOOTHNESS = 32.0f;//~16-64
 
 uint color;
 bool updatedThisTick = false;
-void onInit( CRules@ this )
+void onInit(CRules@ this)
 {
 	Island[] islands;
 	this.set("islands", islands);
@@ -20,16 +20,16 @@ void onInit( CRules@ this )
 	this.set_bool("dirty islands", true);
 }
 
-void onRestart( CRules@ this )
+void onRestart(CRules@ this)
 {
 	this.clear("islands");
 	this.set_bool("dirty islands", true);
 }
 
-void onTick( CRules@ this )
+void onTick(CRules@ this)
 {
 	bool full_sync = false;				
-	if (getNet().isServer())
+	if (isServer())
 	{
 		const int time = getMap().getTimeSinceStart();
 		if (time < 2) // errors are generated when done on first game tick
@@ -44,22 +44,22 @@ void onTick( CRules@ this )
 			full_sync = true;
 		}
 
-		UpdateIslands( this, true, full_sync );
-		Synchronize( this, full_sync );
+		UpdateIslands(this, true, full_sync);
+		Synchronize(this, full_sync );
 	}
 	else
-		UpdateIslands( this );//client-side integrate
+		UpdateIslands(this);//client-side integrate
 		
 	updatedThisTick = false;
 }
 
-void GenerateIslands( CRules@ this )
+void GenerateIslands(CRules@ this)
 {
-	StoreVelocities( this );
+	StoreVelocities(this);
 
 	CBlob@[] blocks;
 	this.clear("islands");
-	if (getBlobsByName( "block", @blocks ))
+	if (getBlobsByName("block", @blocks))
 	{	
 		color = 0;
 		for (uint i = 0; i < blocks.length; ++i)
@@ -209,7 +209,7 @@ void InitIsland( Island @isle )//called for all islands after a block is placed 
 	}
 }
 
-void UpdateIslands( CRules@ this, const bool integrate = true, const bool forceOwnerSearch = false )
+void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOwnerSearch = false)
 {
 	updatedThisTick = true;
 	bool isServer = getNet().isServer();
@@ -226,12 +226,12 @@ void UpdateIslands( CRules@ this, const bool integrate = true, const bool forceO
 		
 		if (!isle.initialized || isle.centerBlock is null)
 		{
-			if ( !isServer ) print ("client: initializing island: " + isle.blocks.length);
-			InitIsland( isle );
+			//if ( !isServer ) print ("client: initializing island: " + isle.blocks.length);
+			InitIsland(isle);
 			isle.initialized = true;
 		}
 
-		if ( integrate && !isle.isStation && !isle.isMiniStation )
+		if (integrate && !isle.isStation && !isle.isMiniStation)
 		{
 			isle.old_pos = isle.pos;
 			isle.old_angle = isle.angle;
@@ -290,7 +290,7 @@ void UpdateIslands( CRules@ this, const bool integrate = true, const bool forceO
 			isle.angle_vel = 0.0f;			
 		}
 
-		if ( !isServer || ( !forceOwnerSearch && ( getGameTime() + isle.id * 33 ) % 45 > 0 ) )//updateIslandBlobs if !isServer OR isServer and not on a 'second tick'
+		if (!isServer || (!forceOwnerSearch && (getGameTime() + isle.id * 33 ) % 45 > 0 ) )//updateIslandBlobs if !isServer OR isServer and not on a 'second tick'
 		{
 			for (uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter)
 			{
@@ -357,7 +357,7 @@ void UpdateIslands( CRules@ this, const bool integrate = true, const bool forceO
 				}
 				else
 				{
-					if ( multiTeams )
+					if (multiTeams)
 						oldestSeatOwner = "*";
 					else
 						for ( int i = 0; i < seatIDs.length; i++ )
@@ -373,11 +373,11 @@ void UpdateIslands( CRules@ this, const bool integrate = true, const bool forceO
 			}
 			
 			//change ship color (only non-motherships that have activated seats)
-			if ( !isle.isMothership && !isle.isStation && !isle.isMiniStation && !multiTeams && oldestSeatOwner != "" && isle.owner != oldestSeatOwner )
+			if (!isle.isMothership && !isle.isStation && !isle.isMiniStation && !multiTeams && oldestSeatOwner != "" && isle.owner != oldestSeatOwner)
 			{
-				CPlayer@ iOwner = getPlayerByUsername( oldestSeatOwner );
-				if ( iOwner !is null )
-					setIsleTeam( isle, iOwner.getTeamNum() );
+				CPlayer@ iOwner = getPlayerByUsername(oldestSeatOwner);
+				if (iOwner !is null)
+					setIsleTeam(isle, iOwner.getTeamNum());
 			}
 			
 			isle.owner = oldestSeatOwner;
@@ -388,40 +388,40 @@ void UpdateIslands( CRules@ this, const bool integrate = true, const bool forceO
 	//calculate carryMass weight
 	CBlob@[] humans;
 	getBlobsByName( "human", @humans );
-	for ( u8 i = 0; i < humans.length; i++ )
+	for (u8 i = 0; i < humans.length; i++)
 	{
 	    CBlob@[]@ blocks;
-		if ( humans[i].get( "blocks", @blocks ) && blocks.size() > 0 )
+		if (humans[i].get( "blocks", @blocks ) && blocks.size() > 0)
 		{
-			Island@ isle = getIsland( humans[i] );
-			if ( isle !is null )
+			Island@ isle = getIsland(humans[i]);
+			if (isle !is null)
 			{
 				//player-carried blocks add to the island mass (with penalty)
-				for ( u8 i = 0; i < blocks.length; i++ )
-					isle.carryMass += 2.5f * blocks[i].get_f32( "weight" );
+				for (u8 i = 0; i < blocks.length; i++)
+					isle.carryMass += 2.5f * blocks[i].get_f32("weight");
 			}
 		}
 	}
 }
 
-void UpdateIslandBlob( CBlob@ blob, Island @isle, IslandBlock@ isle_block )
+void UpdateIslandBlob(CBlob@ blob, Island @isle, IslandBlock@ isle_block)
 {
 	Vec2f offset = isle_block.offset;
-	offset.RotateBy( isle.angle );
+	offset.RotateBy(isle.angle);
  	
- 	blob.setPosition( isle.pos + offset );
- 	blob.setAngleDegrees( isle.angle + isle_block.angle_offset );
+ 	blob.setPosition(isle.pos + offset);
+ 	blob.setAngleDegrees(isle.angle + isle_block.angle_offset);
 
-	blob.setVelocity( Vec2f_zero );
-	blob.setAngularVelocity( 0.0f );
+	blob.setVelocity(Vec2f_zero);
+	blob.setAngularVelocity(0.0f);
 }
 
-void TileCollision( Island@ island, Vec2f tilePos )
+void TileCollision(Island@ island, Vec2f tilePos)
 {
-	if ( island is null )
+	if (island is null)
 		return;
 		
-	if ( island.mass <= 0 )
+	if (island.mass <= 0)
 		return;
 	
 	Vec2f velnorm = island.vel; 
@@ -434,7 +434,7 @@ void TileCollision( Island@ island, Vec2f tilePos )
 	const f32 veldamp = 1.0f;
 	const f32 dirscale = 1.0f;
 	f32 reactionScale2 = 1.0f;
-	if ( island.beached )
+	if (island.beached)
 		reactionScale2 *= 2;
 	island.vel *= veldamp;
 	
@@ -446,71 +446,74 @@ void TileCollision( Island@ island, Vec2f tilePos )
 	directionalSoundPlay( shake > 25 ? "WoodHeavyBump" : "WoodLightBump", tilePos );
 }
 
-void setIsleTeam( Island @isle, u8 teamNum = 255 )
+void setIsleTeam(Island @isle, u8 teamNum = 255)
 {
-	//print (  "setting team for " + isle.owner + "'s " + isle.id + " to " + teamNum );
-	for ( uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter )
+	//print ("setting team for " + isle.owner + "'s " + isle.id + " to " + teamNum);
+	for (uint i = 0; i < isle.blocks.length; ++i)
 	{
-		CBlob@ b = getBlobByNetworkID( isle.blocks[b_iter].blobID );
-		if ( b !is null )
+		CBlob@ b = getBlobByNetworkID(isle.blocks[i].blobID);
+		if (b !is null)
 		{
 			int blockType = b.getSprite().getFrame();
-			b.server_setTeamNum( teamNum );
-			b.getSprite().SetFrame( blockType );
+			b.server_setTeamNum(teamNum);
+			b.getSprite().SetFrame(blockType);
 		}
 	}
 }
 
-void onBlobChangeTeam( CRules@ this, CBlob@ blob, const int oldTeam )//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
+/*void onBlobChangeTeam( CRules@ this, CBlob@ blob, const int oldTeam )//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
 {
 	if ( !getNet().isServer() && blob.getName() == "block" )
 		blob.set_u8( "frame", blob.getSprite().getFrame() );
-}
+}*/
 
-void StoreVelocities( CRules@ this )
+void StoreVelocities(CRules@ this)
 {
 	Island[]@ islands;
-	if (this.get( "islands", @islands ))
+	if (this.get("islands", @islands))
+	{
 		for (uint i = 0; i < islands.length; ++i)
 		{
 			Island @isle = islands[i];
 			
-			if ( !isle.isStation && !isle.isMiniStation )
+			if (!isle.isStation && !isle.isMiniStation)
 			{
-				for (uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter)
+				for (uint q = 0; q < isle.blocks.length; ++q)
 				{
-					CBlob@ b = getBlobByNetworkID( isle.blocks[b_iter].blobID );
+					CBlob@ b = getBlobByNetworkID(isle.blocks[q].blobID);
 					if (b !is null)
 					{
-						b.setVelocity( isle.vel );
-						b.setAngularVelocity( isle.angle_vel );	
+						b.setVelocity(isle.vel);
+						b.setAngularVelocity(isle.angle_vel);	
 					}
 				}
 			}
 		}
+	}
 }
 
-void onBlobDie( CRules@ this, CBlob@ blob )
+void onBlobDie(CRules@ this, CBlob@ blob)
 {
 	// this will leave holes until next full sync
 	if (blob.getShape().getVars().customData > 0)
 	{
 		const u16 id = blob.getNetworkID();
-		Island@ isle = getIsland( blob.getShape().getVars().customData );
+		Island@ isle = getIsland(blob.getShape().getVars().customData);
 		if (isle !is null)
 		{
-			for (uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter)
+			for (uint i = 0; i < isle.blocks.length; ++i)
 			{
-				if (isle.blocks[b_iter].blobID == id){
-					isle.blocks.erase(b_iter); 
+				if (isle.blocks[i].blobID == id){
+					isle.blocks.erase(i); 
 					if (isle.centerBlock is null || isle.centerBlock.getNetworkID() == id)
 					{
 						@isle.centerBlock = null;
 						isle.initialized = false;
 					}
-					b_iter = 0;
+					i = 0;
 
-					if (blob.getSprite().getFrame() == Block::COUPLING){
+					if (blob.getSprite().getFrame() == Block::COUPLING)
+					{
 						this.set_bool("dirty islands", true);		
 						return;
 					}
@@ -525,73 +528,78 @@ void onBlobDie( CRules@ this, CBlob@ blob )
 void setUpdateSeatsArrays()
 {
 	CBlob@[] seats;
-	if ( getBlobsByTag( "seat", @seats ) )
-		for ( uint i = 0; i < seats.length; i++ )
-			seats[i].set_bool( "updateArrays", true );
+	if (getBlobsByTag("seat", @seats))
+	{
+		for (uint i = 0; i < seats.length; i++ )
+		{
+			seats[i].set_bool("updateArrays", true);
+		}
+	}
 }
 
 
 // network
 
-void Synchronize( CRules@ this, bool full_sync, CPlayer@ player = null )
+void Synchronize(CRules@ this, bool full_sync, CPlayer@ player = null)
 {
     CBitStream bs;
-    if (Serialize( this, bs, full_sync ))
+    if (Serialize(this, bs, full_sync))
     {
         if (player == @null)
         {
             for (u16 i = 0; i < getPlayerCount(); i++)
             {
-                this.SendCommand( full_sync ? this.getCommandID("islands sync") : this.getCommandID("islands update"), bs, getPlayer(i));
+                this.SendCommand(full_sync ? this.getCommandID("islands sync") : this.getCommandID("islands update"), bs, getPlayer(i));
             }
         }
         else
         {
-            this.SendCommand( full_sync ? this.getCommandID("islands sync") : this.getCommandID("islands update"), bs, player);
+            this.SendCommand(full_sync ? this.getCommandID("islands sync") : this.getCommandID("islands update"), bs, player);
         }
     }
 }
 
-bool Serialize( CRules@ this, CBitStream@ stream, const bool full_sync )
+// this looks really suspicious
+bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 {
 	Island[]@ islands;
-	if (this.get( "islands", @islands ))
+	if (this.get("islands", @islands))
 	{
-		stream.write_u16( islands.length );
+		stream.write_u16(islands.length);
 		bool atLeastOne = false;
 		for (uint i = 0; i < islands.length; ++i)
 		{
 			Island @isle = islands[i];
 			if (full_sync)
 			{
-				stream.write_Vec2f( isle.pos );
-				CPlayer@ owner = getPlayerByUsername( isle.owner );
-				stream.write_u16( owner !is null ? owner.getNetworkID() : 0 );
-				stream.write_u16( isle.centerBlock !is null ? isle.centerBlock.getNetworkID() : 0 );
-				stream.write_Vec2f( isle.vel );
-				stream.write_f32( isle.angle );
-				stream.write_f32( isle.angle_vel );			
-				stream.write_f32( isle.mass );
-				stream.write_bool( isle.isMothership );
-				stream.write_bool( isle.isStation );
-				stream.write_bool( isle.isMiniStation );
-				stream.write_bool( isle.isSecondaryCore );
-				stream.write_u16( isle.blocks.length );
+				stream.write_Vec2f(isle.pos);
+				CPlayer@ owner = getPlayerByUsername(isle.owner);
+				stream.write_u16(owner !is null ? owner.getNetworkID() : 0);
+				stream.write_u16(isle.centerBlock !is null ? isle.centerBlock.getNetworkID() : 0);
+				stream.write_Vec2f(isle.vel);
+				stream.write_f32(isle.angle);
+				stream.write_f32(isle.angle_vel);			
+				stream.write_f32(isle.mass);
+				stream.write_bool(isle.isMothership);
+				stream.write_bool(isle.isStation);
+				stream.write_bool(isle.isMiniStation);
+				stream.write_bool(isle.isSecondaryCore);
+				stream.write_u16(isle.blocks.length);
 				for (uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter)
 				{
 					IslandBlock@ isle_block = isle.blocks[b_iter];
-					CBlob@ b = getBlobByNetworkID( isle_block.blobID );
+					CBlob@ b = getBlobByNetworkID( isle_block.blobID);
 					if (b !is null)
 					{
-						stream.write_netid( b.getNetworkID() );	
-						stream.write_Vec2f( isle_block.offset );
-						stream.write_f32( isle_block.angle_offset );
+						stream.write_netid(b.getNetworkID());	
+						stream.write_Vec2f(isle_block.offset);
+						stream.write_f32(isle_block.angle_offset);
 					}
 					else
 					{
-						stream.write_netid( 0 );	
-						stream.write_Vec2f( Vec2f_zero );
-						stream.write_f32( 0.0f );
+						stream.write_netid(0);	
+						stream.write_Vec2f(Vec2f_zero);
+						stream.write_f32(0.0f);
 					}
 				}
 				isle.net_pos = isle.pos;		
@@ -603,44 +611,48 @@ bool Serialize( CRules@ this, CBitStream@ stream, const bool full_sync )
 			else
 			{
 				const f32 thresh = 0.005f;
-				if ((getGameTime()+i) % FORCE_UPDATE_TICKS == 0 || isIslandChanged( isle ))				
+				if ((getGameTime()+i) % FORCE_UPDATE_TICKS == 0 || isIslandChanged(isle))				
 				{
-					stream.write_bool( true );
-					CPlayer@ owner = getPlayerByUsername( isle.owner );
-					stream.write_u16( owner !is null ? owner.getNetworkID() : 0 );			
-					if ((isle.net_pos - isle.pos).LengthSquared() > thresh){
+					stream.write_bool(true);
+					CPlayer@ owner = getPlayerByUsername(isle.owner);
+					stream.write_u16( owner !is null ? owner.getNetworkID() : 0);			
+					if ((isle.net_pos - isle.pos).LengthSquared() > thresh)
+					{
 						stream.write_bool( true );
 						stream.write_Vec2f( isle.pos );
 						isle.net_pos = isle.pos;
 					}
-					else stream.write_bool( false );
+					else stream.write_bool(false);
 
 					
-					if ((isle.net_vel - isle.vel).LengthSquared() > thresh){
-						stream.write_bool( true );
-						stream.write_Vec2f( isle.vel );
+					if ((isle.net_vel - isle.vel).LengthSquared() > thresh)
+					{
+						stream.write_bool(true);
+						stream.write_Vec2f(isle.vel);
 						isle.net_vel = isle.vel;
 					}
-					else stream.write_bool( false );
+					else stream.write_bool(false);
 					
-					if (Maths::Abs(isle.net_angle - isle.angle) > thresh){
-						stream.write_bool( true );
+					if (Maths::Abs(isle.net_angle - isle.angle) > thresh)
+					{
+						stream.write_bool(true);
 						stream.write_f32( isle.angle );
 						isle.net_angle = isle.angle;
 					}
-					else stream.write_bool( false );
+					else stream.write_bool(false);
 
-					if (Maths::Abs(isle.net_angle_vel - isle.angle_vel) > thresh){
-						stream.write_bool( true );
-						stream.write_f32( isle.angle_vel );
+					if (Maths::Abs(isle.net_angle_vel - isle.angle_vel) > thresh)
+					{
+						stream.write_bool(true);
+						stream.write_f32(isle.angle_vel);
 						isle.net_angle_vel = isle.angle_vel;
 					}
-					else stream.write_bool( false );
+					else stream.write_bool(false);
 
 					atLeastOne = true;		
 				}
 				else
-					stream.write_bool( false );
+					stream.write_bool(false);
 			}
 		}
 		return atLeastOne;
@@ -650,30 +662,30 @@ bool Serialize( CRules@ this, CBitStream@ stream, const bool full_sync )
 	return false;
 }
 
-void onCommand( CRules@ this, u8 cmd, CBitStream @params )
+void onCommand( CRules@ this, u8 cmd, CBitStream @params)
 {
-	if (getNet().isServer())
-		return;
+	if (isServer()) return;
 
 	if (cmd == this.getCommandID("islands sync"))
 	{
 		Island[]@ islands;
-		if (this.get( "islands", @islands ))
+		if (this.get("islands", @islands))
 		{
 			islands.clear();
 			const u16 count = params.read_u16();
 			for (uint i = 0; i < count; ++i)
 			{
 				Island isle;
-				if (!params.saferead_Vec2f(isle.pos)){
+				if (!params.saferead_Vec2f(isle.pos))
+				{
 					warn("islands sync: isle.pos not found");
 					return;
 				}
 				u16 ownerID = params.read_u16();
-				CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId( ownerID ) : null;
+				CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
 				isle.owner = owner !is null ? owner.getUsername() : "";
 				u16 centerBlockID = params.read_u16();
-				@isle.centerBlock = centerBlockID != 0 ? getBlobByNetworkID( centerBlockID ) : null;
+				@isle.centerBlock = centerBlockID != 0 ? getBlobByNetworkID(centerBlockID) : null;
 				isle.vel = params.read_Vec2f();
 				isle.angle = params.read_f32();
 				isle.angle_vel = params.read_f32();
@@ -682,10 +694,10 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 				isle.isStation = params.read_bool();
 				isle.isMiniStation = params.read_bool();
 				isle.isSecondaryCore = params.read_bool();
-				if ( isle.centerBlock !is null )
+				if (isle.centerBlock !is null)
 				{
 					isle.initialized = true;
-					if ( isle.vel.LengthSquared() > 0.01f )//try to use local values to smoother sync
+					if (isle.vel.LengthSquared() > 0.01f)//try to use local values to smoother sync
 					{
 						isle.pos = isle.centerBlock.getPosition();
 						isle.angle = isle.centerBlock.getAngleDegrees();
@@ -703,7 +715,7 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 						warn("islands sync: netid not found");
 						return;
 					}
-					CBlob@ b = getBlobByNetworkID( netid );
+					CBlob@ b = getBlobByNetworkID(netid);
 					Vec2f pos = params.read_Vec2f();
 					f32 angle = params.read_f32();
 					if (b !is null)
@@ -726,7 +738,7 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 				islands.push_back(isle);
 			}
 
-			UpdateIslands( this, false );
+			UpdateIslands(this, false);
 		}
 		else
 		{
@@ -773,11 +785,11 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 					if (params.read_bool())
 					{
 						f32 aDelta =  params.read_f32() - isle.angle;
-						if ( aDelta > 180 )	aDelta -= 360;
-						if ( aDelta < -180 )	aDelta += 360;
+						if (aDelta > 180)	aDelta -= 360;
+						if (aDelta < -180)	aDelta += 360;
 						isle.angle = isle.angle + aDelta/UPDATE_DELTA_SMOOTHNESS;
-						while ( isle.angle < 0.0f )	isle.angle += 360.0f;
-						while ( isle.angle > 360.0f )	isle.angle -= 360.0f;
+						while (isle.angle < 0.0f)	isle.angle += 360.0f;
+						while (isle.angle > 360.0f)	isle.angle -= 360.0f;
 					}
 					if (params.read_bool())
 					{
@@ -795,45 +807,45 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 	}
 }
 
-void onNewPlayerJoin( CRules@ this, CPlayer@ player )
+void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
 	if (!player.isMyPlayer())
-		Synchronize( this, true, player ); // will set old values
+		Synchronize(this, true, player); // will set old values
 }
 
-bool isIslandChanged( Island@ isle )
+bool isIslandChanged(Island@ isle)
 {
 	const f32 thresh = 0.01f;
 	return ((isle.pos - isle.old_pos).LengthSquared() > thresh || Maths::Abs(isle.angle - isle.old_angle) > thresh);
 }
 
 bool candy = false;
-bool onClientProcessChat( CRules@ this, const string &in textIn, string &out textOut, CPlayer@ player )
+bool onClientProcessChat(CRules@ this, const string &in textIn, string &out textOut, CPlayer@ player )
 {	
-	if (  player !is null )
+	if (player !is null)
 	{
 		bool myPlayer = player.isMyPlayer();
-		if ( myPlayer && textIn == "!candy" )
+		if (myPlayer && textIn == "!candy")
 		{
 			candy = !candy;
 			return false;
 		}
 		
-		if (textIn.substr(0,1) == "!" )
+		if (textIn.substr(0,1) == "!")
 		{
 			string[]@ tokens = textIn.split(" ");
 
 			if (tokens[0] == "!ds")
 			{
-				if ( myPlayer )
+				if (myPlayer)
 				{
 					if (tokens.length > 1)
 					{
 						UPDATE_DELTA_SMOOTHNESS = Maths::Max( 1.0f, parseFloat( tokens[1] ) );
-						client_AddToChat( "Delta smoothness set to " + UPDATE_DELTA_SMOOTHNESS );
+						client_AddToChat("Delta smoothness set to " + UPDATE_DELTA_SMOOTHNESS );
 					}
 					else
-						client_AddToChat( "Delta smoothness: " + UPDATE_DELTA_SMOOTHNESS );
+						client_AddToChat("Delta smoothness: " + UPDATE_DELTA_SMOOTHNESS );
 				}
 				return false;
 			}
@@ -843,19 +855,20 @@ bool onClientProcessChat( CRules@ this, const string &in textIn, string &out tex
 	return true;
 }
 
-void onRender( CRules@ this )
+void onRender(CRules@ this)
 {
 	if (g_debug == 1 || candy)
 	{
 		CCamera@ camera = getCamera();
-		if ( camera is null ) return;
+		if (camera is null) return;
 		f32 camRotation = camera.getRotation();
 		Island[]@ islands;
-		if (this.get( "islands", @islands ))
+		if (this.get("islands", @islands))
+		{
 			for (uint i = 0; i < islands.length; ++i)
 			{
 				Island @isle = islands[i];
-				if ( isle.centerBlock !is null )
+				if (isle.centerBlock !is null)
 				{
 					Vec2f cbPos = getDriver().getScreenPosFromWorldPos( isle.centerBlock.getPosition() );
 					Vec2f iVel = isle.vel * 20;
@@ -867,15 +880,16 @@ void onRender( CRules@ this )
 				for (uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter)
 				{
 					IslandBlock@ isle_block = isle.blocks[b_iter];
-					CBlob@ b = getBlobByNetworkID( isle_block.blobID );
+					CBlob@ b = getBlobByNetworkID(isle_block.blobID);
 					if (b !is null)
 					{
 						int c = b.getShape().getVars().customData;
-						GUI::DrawRectangle( getDriver().getScreenPosFromWorldPos(b.getPosition() - Vec2f(4, 4).RotateBy( camRotation ) )
-						, getDriver().getScreenPosFromWorldPos(b.getPosition() + Vec2f(4, 4).RotateBy( camRotation ) ), SColor( 100, c*50, -c*90, 93*c ) );
-						GUI::DrawText( "" + isle_block.blobID, getDriver().getScreenPosFromWorldPos(b.getPosition()), SColor( 255,255,255,255 ));
+						GUI::DrawRectangle(getDriver().getScreenPosFromWorldPos(b.getPosition() - Vec2f(4, 4).RotateBy(camRotation))
+						, getDriver().getScreenPosFromWorldPos(b.getPosition() + Vec2f(4, 4).RotateBy(camRotation)), SColor( 100, c*50, -c*90, 93*c));
+						GUI::DrawText("" + isle_block.blobID, getDriver().getScreenPosFromWorldPos(b.getPosition()), SColor( 255,255,255,255 ));
 					}
 				}
 			}
+		}
 	}
 }

@@ -77,17 +77,14 @@ void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 
 	CPlayer@ player = caller.getPlayer();
 	string pName = player !is null ? player.getUsername() : "";
-	u16 pBooty = server_getPlayerBooty( pName );
+	u16 pBooty = server_getPlayerBooty(pName);
 	
-	u16 cost = -1;
+	u16 cost = Block::getCost(bType);
 	u8 ammount = 1;
 	u8 totalFlaks = 0;
 	u8 teamFlaks = 0;
 
-	Block::Type type;
-	cost = Block::getCost(bType);
-
-	if (bType == Block::COUPLING)
+	if (bType == Block::COUPLING) //coupling gives two blocks
 	{
 		ammount = 2;
 	}
@@ -161,17 +158,17 @@ void ReturnBlocks(CBlob@ this, CBlob@ caller)
 			if (player !is null)
 			{
 				string pName = player.getUsername();
-				u16 pBooty = server_getPlayerBooty( pName );
+				u16 pBooty = server_getPlayerBooty(pName);
 				u16 returnBooty = 0;
 				for (uint i = 0; i < blocks.length; ++i)
 				{
-					int type = Block::getType( blocks[i] );
-					if (type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1 )
-						returnBooty += Block::getCost( type );
+					int type = Block::getType(blocks[i]);
+					if (type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1)
+						returnBooty += Block::getCost(type);
 				}
 				
 				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
-					server_setPlayerBooty( pName, pBooty + returnBooty );
+					server_setPlayerBooty(pName, pBooty + returnBooty);
 			}
 		}
 		
@@ -183,33 +180,33 @@ void ReturnBlocks(CBlob@ this, CBlob@ caller)
 		warn("returnBlocks cmd: no blocks");
 }
 
-f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )
+f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
-	if ( hitterBlob is null ) return damage;
+	if (hitterBlob is null) return damage;
 	
 	u8 thisTeamNum = this.getTeamNum();
 	u8 hitterTeamNum = hitterBlob.getTeamNum();
 	
-	if ( thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900 && hitterBlob.getName() == "block" )
+	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900 && hitterBlob.getName() == "block")
 	{
 		CPlayer@ player = getLocalPlayer();
-		if ( player !is null && player.isMod() && !getRules().isGameOver() )
+		if (player !is null && player.isMod() && !getRules().isGameOver())
 		{
-			CPlayer@ owner = getPlayerByNetworkId( hitterBlob.get_u16( "playerID" ) );
-			if ( owner !is null )
-				error( ">Core teamHit (" + hitterTeamNum+ "): " + owner.getUsername() ); 
+			CPlayer@ owner = getPlayerByNetworkId(hitterBlob.get_u16("playerID"));
+			if (owner !is null)
+				error(">Core teamHit (" + hitterTeamNum+ "): " + owner.getUsername()); 
 		}
 		
 		damage /= 2;
 	}
 	
 	f32 hp = this.getHealth();
-	if (!this.hasTag("critical") && hp - damage > 0.0f )//assign last team hitter
+	if (!this.hasTag("critical") && hp - damage > 0.0f)//assign last team hitter
 	{
-		if ( thisTeamNum != hitterTeamNum && hitterBlob.getName() != "whirlpool" )
+		if (thisTeamNum != hitterTeamNum && hitterBlob.getName() != "whirlpool")
 		{
-			this.set_u8( "lastHitterTeam", hitterTeamNum );
-			this.set_u32( "lastHitterTime", getGameTime() );
+			this.set_u8("lastHitterTeam", hitterTeamNum);
+			this.set_u32("lastHitterTime", getGameTime());
 		}
 	}
 	else
@@ -221,18 +218,18 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 			//increase captain deaths
 			string defeatedCaptainName = getCaptainName(thisTeamNum);
 			CPlayer@ defeatedCaptain = getPlayerByUsername(defeatedCaptainName);
-			if ( defeatedCaptain !is null )
+			if (defeatedCaptain !is null)
 			{
 				defeatedCaptain.setDeaths(defeatedCaptain.getDeaths() + 1);
-				if ( defeatedCaptain.isMyPlayer() )
-					client_AddToChat( "You lost your Mothership! A Core Death was added to your Scoreboard." );
+				if (defeatedCaptain.isMyPlayer())
+					client_AddToChat("You lost your Mothership! A Core Death was added to your Scoreboard.");
 			}
 			
 			//rewards if they apply
 			CRules@ rules = getRules();
-			if ( thisTeamNum == hitterTeamNum || hitterBlob.getName() == "whirlpool" || hitterBlob.hasTag( "mothership" ) )//suicide. try with last good hitterTeam
-				if ( getGameTime() - this.get_u32( "lastHitterTime" ) < 450 )//15 seconds lease
-					hitterTeamNum = this.get_u8( "lastHitterTeam" );
+			if (thisTeamNum == hitterTeamNum || hitterBlob.getName() == "whirlpool" || hitterBlob.hasTag("mothership"))//suicide. try with last good hitterTeam
+				if (getGameTime() - this.get_u32("lastHitterTime") < 450)//15 seconds lease
+					hitterTeamNum = this.get_u8("lastHitterTeam");
 				else
 					return Maths::Max( 0.0f, hp - 1.0f );//no rewards
 					
@@ -240,45 +237,45 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 			u8 thisPlayers = 0;
 			u8 hitterPlayers = 0;
 			u8 playersCount = getPlayersCount();
-			for( u8 i = 0; i < playersCount; i++ )
+			for (u8 i = 0; i < playersCount; i++)
 			{
 				u8 pteam = getPlayer(i).getTeamNum();
-				if( pteam == thisTeamNum )
+				if (pteam == thisTeamNum)
 					thisPlayers++;
-				else if ( pteam == hitterTeamNum )
+				else if (pteam == hitterTeamNum)
 					hitterPlayers++;
 			}
 							
-			CBlob@ hitterCore = getMothership( hitterTeamNum );
-			if ( hitterPlayers == 0 || hitterCore is null )//in case of suicide against leftover/empty team ship
+			CBlob@ hitterCore = getMothership(hitterTeamNum);
+			if (hitterPlayers == 0 || hitterCore is null)//in case of suicide against leftover/empty team ship
 				return Maths::Max( 0.0f, hp - 1.0f );//no rewards
 
 			//got a winner team
-			this.Tag( "cleanDeath" );	
+			this.Tag("cleanDeath");	
 			
 			//winSound
 			CPlayer@ myPlayer = getLocalPlayer();
-			if ( myPlayer !is null && myPlayer.getTeamNum() == hitterTeamNum )
+			if (myPlayer !is null && myPlayer.getTeamNum() == hitterTeamNum)
 			{
-				Sound::Play( "KAGWorldQuickOut.ogg" );
-				Sound::Play( "ResearchComplete.ogg" );
+				Sound::Play("KAGWorldQuickOut.ogg");
+				Sound::Play("ResearchComplete.ogg");
 			}
 			
 			//increase winner captain kills
-			string captainName = getCaptainName( hitterTeamNum );
-			CPlayer@ captain = getPlayerByUsername( captainName );
-			if ( captain !is null )
+			string captainName = getCaptainName(hitterTeamNum);
+			CPlayer@ captain = getPlayerByUsername(captainName);
+			if (captain !is null)
 			{
-				captain.setKills( captain.getKills() + 1 );
-				if ( captain.isMyPlayer() )
-					client_AddToChat( "Congratulations! A Core Kill was added to your Scoreboard." );
+				captain.setKills(captain.getKills() + 1);
+				if (captain.isMyPlayer())
+					client_AddToChat("Congratulations! A Core Kill was added to your Scoreboard.");
 			}
 			
-			f32 ratio = Maths::Max( 0.25f, Maths::Min( 1.75f,
-							float( rules.get_u16( "bootyTeam_total" + thisTeamNum ) )/float( rules.get_u32( "bootyTeam_median" ) + 1.0f ) ) ); //I added 1.0f as a safety measure against dividing by 0
+			f32 ratio = Maths::Max(0.25f, Maths::Min(1.75f,
+							float(rules.get_u16("bootyTeam_total" + thisTeamNum))/float(rules.get_u32("bootyTeam_median") + 1.0f ))); //I added 1.0f as a safety measure against dividing by 0
 			
-			u16 totalReward = ( thisPlayers + 1 ) * BASE_KILL_REWARD * ratio;
-			client_AddToChat( "*** " + rules.getTeam( hitterTeamNum ).getName() + " gets " + ( totalReward + BASE_KILL_REWARD ) + " Booty for destroying " + rules.getTeam( thisTeamNum ).getName() + "! ***" );
+			u16 totalReward = (thisPlayers + 1) * BASE_KILL_REWARD * ratio;
+			client_AddToChat("*** " + rules.getTeam(hitterTeamNum).getName() + " gets " + (totalReward + BASE_KILL_REWARD) + " Booty for destroying " + rules.getTeam(thisTeamNum).getName() + "! ***");
 			
 			//give rewards
 			if (isServer())
@@ -296,38 +293,38 @@ f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hit
 					else if (teamNum == thisTeamNum)//losing team consolation money
 					{
 						string name = player.getUsername();
-						u16 booty = server_getPlayerBooty( name );
+						u16 booty = server_getPlayerBooty(name);
 						u16 rewardHalved = Maths::Round(BASE_KILL_REWARD/2);
 						if (booty < rewardHalved)
 							server_setPlayerBooty(name,  booty + rewardHalved);
 					}
 				}
-				server_updateTotalBooty( hitterTeamNum, totalReward + BASE_KILL_REWARD );
+				server_updateTotalBooty(hitterTeamNum, totalReward + BASE_KILL_REWARD);
 				//print ( "MothershipKill: " + thisPlayers + " players; " + ( ( thisPlayers + 1 ) * BASE_KILL_REWARD ) + " to " + rules.getTeam( hitterTeamNum ).getName() );
 			}
 		}
 
-		return Maths::Max( 0.0f, hp - 1.0f );
+		return Maths::Max(0.0f, hp - 1.0f);
 	}
 		
 	return damage;
 }
 
-void onDie( CBlob@ this )
+void onDie(CBlob@ this)
 {
-	selfDestruct( this );
+	selfDestruct(this);
 
-	if ( !this.hasTag( "cleanDeath" ) )
-		client_AddToChat( "*** " + getRules().getTeam( this.getTeamNum() ).getName() + " had their core bombed - instant death! ***" );
+	if (!this.hasTag("cleanDeath"))
+		client_AddToChat( "*** " + getRules().getTeam(this.getTeamNum()).getName() + " had their core bombed - instant death! ***");
 }
 
 //healing, repelling, dmgmanaging, selfDestruct, damagesprite
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
 	f32 hp = this.getHealth();
 	Vec2f pos = this.getPosition();
 	int color1 = this.getShape().getVars().customData;
-	Island@ isle = getIsland( color1 );
+	Island@ isle = getIsland(color1);
 	CRules@ rules = getRules();
 	
 	//repel
@@ -374,29 +371,31 @@ void onTick( CBlob@ this )
 		if (isServer())
 		{
 			CBlob@[] humans;
-			getBlobsByName( "human", humans );
+			getBlobsByName("human", humans);
 			int hNum = humans.length();
 
-			for(int i = 0; i < hNum; i++)
+			for (int i = 0; i < hNum; i++)
+			{
 				if (humans[i].getTeamNum() == coreTeam && humans[i].getHealth() < humans[i].getInitialHealth())
 				{
 					Island@ hIsle = getIsland(humans[i]);
-					if ( hIsle !is null && hIsle.centerBlock !is null && color1 == hIsle.centerBlock.getShape().getVars().customData)
+					if (hIsle !is null && hIsle.centerBlock !is null && color1 == hIsle.centerBlock.getShape().getVars().customData)
 						humans[i].server_Heal(HEAL_AMMOUNT);
 				}
+			}
 		}
 
 		//dmgmanaging
-		f32 msDMG = rules.get_f32( "msDMG" + coreTeam );
-		if ( msDMG > 0 )
-			rules.set_f32( "msDMG" + coreTeam, Maths::Max( msDMG - 0.75f, 0.0f ) );
+		f32 msDMG = rules.get_f32("msDMG" + coreTeam);
+		if (msDMG > 0)
+			rules.set_f32("msDMG" + coreTeam, Maths::Max(msDMG - 0.75f, 0.0f));
 			
 		//damage Sprite (set here so joining clients are updated)
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ dmg = sprite.getSpriteLayer( "damage" );
+		CSpriteLayer@ dmg = sprite.getSpriteLayer("damage");
 		if ( dmg !is null )
 		{
-			u8 frame = Maths::Floor( ( INIT_HEALTH - hp ) / ( INIT_HEALTH / dmg.animation.getFramesCount() ) );
+			u8 frame = Maths::Floor((INIT_HEALTH - hp) / (INIT_HEALTH / dmg.animation.getFramesCount()));
 			dmg.animation.frame = frame;
 		}
 	}
@@ -430,30 +429,36 @@ void onTick( CBlob@ this )
 		}
 	}
 	//flaks warnings
-	if (rules.get_bool("display_flak_team_warn")) {
+	if (rules.get_bool("display_flak_team_warn"))
+	{
 		client_AddToChat("Beware! You almost reached the limit of flaks allowed for a team.");
 		rules.set_bool("display_flak_team_warn", false);
 	}
-	if (rules.get_bool("display_flak_total_warn")) {
+	if (rules.get_bool("display_flak_total_warn"))
+	{
 		client_AddToChat("Beware! You almost reached the limit of flaks active at the same time on the server (all teams together).");
 		rules.set_bool("display_flak_total_warn", false);
 	}
 	
 	//displayed by ShiprektHUD.as
-	if (rules.get_bool("display_flak_team_max")) {
+	if (rules.get_bool("display_flak_team_max"))
+	{
 		rules.set_u8("flak_team_max_timer", rules.get_u8("flak_team_max_timer")+1);
 		if (rules.get_u8("flak_team_max_timer") == 2)
 			client_AddToChat("Sorry but you reached the limit of flaks allowed for a team.");
-		if (rules.get_u8("flak_team_max_timer") >= 30*5) {
+		if (rules.get_u8("flak_team_max_timer") >= 30*5)
+		{
 			rules.set_bool("display_flak_team_max", false);
 			rules.set_u8("flak_team_max_timer", 0);
 		}
 	}
-	if (rules.get_bool("display_flak_total_max")) {
+	if (rules.get_bool("display_flak_total_max"))
+	{
 		rules.set_u8("flak_total_max_timer", rules.get_u8("flak_total_max_timer")+1);
 		if (rules.get_u8("display_flak_total_max") == 2)
 			client_AddToChat("Sorry but the limit of active flaks on the server is reached. Try destroying some of them first.");
-		if (rules.get_u8("flak_total_max_timer") >= 30*5) {
+		if (rules.get_u8("flak_total_max_timer") >= 30*5)
+		{
 			rules.set_bool("display_flak_total_max", false);
 			rules.set_u8("flak_total_max_timer", 0);
 		}
@@ -466,30 +471,30 @@ void initiateSelfDestruct(CBlob@ this)
 	Vec2f pos = this.getPosition();
 	//set timer for selfDestruct sequence
 	this.Tag("critical");
-	this.set_u32( "dieTime", getGameTime() + SELF_DESTRUCT_TIME );
+	this.set_u32("dieTime", getGameTime() + SELF_DESTRUCT_TIME);
 	
 	//effects
-	directionalSoundPlay( "ShipExplosion.ogg", pos );
-    makeLargeExplosionParticle( pos );
+	directionalSoundPlay("ShipExplosion.ogg", pos);
+    makeLargeExplosionParticle(pos);
 
 	//add block explosion scripts
 	const int color = this.getShape().getVars().customData;
-    if ( color == 0 )		return;
+    if (color == 0) return;
 
 	Island@ isle = getIsland(color);
-	if (isle is null || isle.blocks.length < 10 ) return;
+	if (isle is null || isle.blocks.length < 10) return;
 		
 	this.AddScript("Block_Explode.as");
 	u8 teamNum = this.getTeamNum();
 	for (uint i = 0; i < isle.blocks.length; ++i)
 	{
 		IslandBlock@ isle_block = isle.blocks[i];
-		CBlob@ b = getBlobByNetworkID( isle_block.blobID );
-		if ( b !is null && teamNum == b.getTeamNum() )
+		CBlob@ b = getBlobByNetworkID( isle_block.blobID);
+		if (b !is null && teamNum == b.getTeamNum())
 		{
 			int bType = Block::getType(b);
 			if (i % 4 == 0 && !Block::isCore(bType) && bType != Block::COUPLING)
-				b.AddScript( "Block_Explode.as");
+				b.AddScript("Block_Explode.as");
 		}
 	}
 }
@@ -537,7 +542,7 @@ void selfDestruct(CBlob@ this)
 
 	//kill island
 	const int color = this.getShape().getVars().customData;
-    if ( color == 0 )		return;
+    if (color == 0)		return;
 
 	Island@ isle = getIsland(color);
 	if (isle is null || isle.blocks.length < 10) return;

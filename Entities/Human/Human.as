@@ -394,9 +394,7 @@ void PlayerControls(CBlob@ this)
 					if (canShop)
 					{
 						this.set_bool("build menu open", true);
-					
-						CBitStream params;
-						params.write_u16(core.getNetworkID());
+
 						u32 gameTime = getGameTime();
 						
 						if (gameTime - this.get_u32("menu time") > BUILD_MENU_COOLDOWN)
@@ -421,7 +419,6 @@ void PlayerControls(CBlob@ this)
 						CBitStream params;
 						params.write_u16(this.getNetworkID());
 						params.write_u8(this.get_u8("last buy"));
-						
 						core.SendCommand(core.getCommandID("buyBlock"), params);
 					}
 					this.set_bool("build menu open", false);
@@ -441,13 +438,10 @@ void PlayerControls(CBlob@ this)
 	{
 		if (!hud.hasButtons())
 		{	
-			this.set_bool( "build menu open", false );
-		
-			CBitStream params;
-			params.write_u16( this.getNetworkID() );
+			this.set_bool("build menu open", false);
 			
 			Sound::Play("buttonclick.ogg");
-			BuildToolsMenu( this, "Tools Menu", Vec2f(0,0) );
+			BuildToolsMenu(this, "Tools Menu", Vec2f(0,0));
 			
 		} 
 		else if (hud.hasMenus())
@@ -458,386 +452,137 @@ void PlayerControls(CBlob@ this)
 	}
 }
 
+void AddBlock(CBlob@ this, CGridMenu@ menu, u8 block, string icon, string bname, string desc, CBlob@ core, bool isWeapon = false)
+{
+	//add a block to the build menu
+	CBitStream params;
+	params.write_u16(this.getNetworkID());
+	params.write_u8(block);
+			
+	CGridButton@ button = menu.AddButton(icon, bname + " $" + Block::getCost(block), core.getCommandID("buyBlock"), params);
+
+	const bool selected = this.get_u8("last buy") == block;
+	if (selected) button.SetSelected(2);
+			
+	button.SetHoverText(isWeapon ? "Weapons are enabled after the warm-up time ends.\n" :
+						desc + "\nWeight: " + Block::getWeight(block) * 100 + "rkt\n" + (selected ? "\nPress the inventory key to buy again.\n" : ""));
+	button.SetEnabled(!isWeapon);
+}
+
 void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, bool isStation = false, bool isMiniStation = false)
 {
 	CRules@ rules = getRules();
 	Block::Costs@ c = Block::getCosts(rules);
 	Block::Weights@ w = Block::getWeights(rules);
 	
-	if (c is null || w is null)
-		return;
+	if (c is null || w is null) return;
 		
-	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : BUILD_MENU_SIZE, description );
+	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : BUILD_MENU_SIZE, description);
 	u32 gameTime = getGameTime();
-	string repBuyTip = "\nPress the inventory key to buy again.\n";
-	u16 WARMUP_TIME = getPlayersCount() > 1 && !rules.get_bool("freebuild") ? rules.get_u16( "warmup_time" ) : 0;
-	string warmupText = "Weapons are enabled after the warm-up time ends.\n";
+	u16 WARMUP_TIME = getPlayersCount() > 1 && !rules.get_bool("freebuild") ? rules.get_u16("warmup_time") : 0;
 	
 	if (menu !is null) 
 	{
 		menu.deleteAfterClick = true;
 		
-		u16 netID = this.getNetworkID();
-		u8 lastBuy = this.get_u8("last buy");
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_u8(Block::SEAT);
-			
-			CGridButton@ button = menu.AddButton( "$SEAT$", "Seat $" + c.seat, core.getCommandID("buyBlock"), params );
-
-			const bool select = lastBuy == Block::SEAT;
-			if (select)
-				button.SetSelected(2);
-			
-			button.SetHoverText("Use it to control your ship. It can also release and produce Couplings. Breaks on impact.\nWeight: " + w.seat * 100 + "rkt\n" + ( select ? repBuyTip : "" ) + ( select ? repBuyTip : "" ) );
+		string description;
+		{ //Seat
+			description = "Use it to control your ship. It can also release and produce Couplings. Breaks on impact.";
+			AddBlock(this, menu, Block::SEAT, "$SEAT$", "Seat", description, core);
 		}
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_u8(Block::PROPELLER);
-				
-			CGridButton@ button = menu.AddButton("$PROPELLER$", "Standard Engine $" + c.propeller, core.getCommandID("buyBlock"), params);
-
-			const bool select = lastBuy == Block::PROPELLER;
-			if (select)
-				button.SetSelected(2);
-				
-			button.SetHoverText( "A ship motor with some armor plating for protection. Reliable and resists flak.\nWeight: " + w.propeller * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+		{ //Propeller
+			description = "A ship motor with some armor plating for protection. Reliable and resists flak.";
+			AddBlock(this, menu, Block::PROPELLER, "$PROPELLER$", "Standard Engine", description, core);
 		}
-		{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::RAMENGINE);
-					
-				CGridButton@ button = menu.AddButton("$RAMENGINE$", "Ram Engine $" + c.ramEngine, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == Block::RAMENGINE;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("An engine that trades protection for extra power. Will break on impact with anything!\nWeight: " + w.ramEngine * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+		{ //Ram Engine
+			description = "An engine that trades protection for extra power. Will break on impact with anything!";
+			AddBlock(this, menu, Block::RAMENGINE, "$RAMENGINE$", "Ram Engine", description, core);
 		}
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_u8(Block::COUPLING);
-				
-			CGridButton@ button = menu.AddButton("$COUPLING$", "Coupling $" + c.coupling, core.getCommandID("buyBlock"), params);
-			
-			const bool select = lastBuy == Block::COUPLING;
-			if (select)
-				button.SetSelected(2);
-				
-			button.SetHoverText("A versatile block used to hold and release other blocks.\nWeight: " + w.coupling * 200 + "rkt\n" + (select ? repBuyTip : ""));
-		}	
+		{ //Coupling
+			description = "A versatile block used to hold and release other blocks.";
+			AddBlock(this, menu, Block::COUPLING, "$COUPLING$", "Coupling", description, core);
+		}
 
 		if (!isMiniStation)
 		{
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::SOLID);
-					
-				CGridButton@ button = menu.AddButton("$SOLID$", "Wooden Hull $" + c.solid, core.getCommandID("buyBlock"), params);
-		
-				const bool select = lastBuy == Block::SOLID;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("A very tough block for protecting delicate components. Can effectively negate damage from bullets, flak, and to some extent cannons. \nWeight: " + w.solid * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+			{ //Wooden Hull
+				description = "A very tough block for protecting delicate components. Can effectively negate damage from bullets, flak, and to some extent cannons.";
+				AddBlock(this, menu, Block::SOLID, "$SOLID$", "Wooden Hull", description, core);
 			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::PLATFORM);
-					
-				CGridButton@ button = menu.AddButton("$WOOD$", "Wooden Platform $" + c.wood, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == Block::PLATFORM;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("A good quality wooden floor panel. Get that deck shining :)\nWeight: " + w.wood * 100 + "rkt\n" + (select ? repBuyTip : ""));
+			{ //Wooden Platform
+				description = "A good quality wooden floor panel. Get that deck shining.";
+				AddBlock(this, menu, Block::PLATFORM, "$WOOD$", "Wooden Hull", description, core);
 			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::DOOR);
-					
-				CGridButton@ button = menu.AddButton( "$DOOR$", "Wooden Door $" + c.door, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == Block::DOOR;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("A wooden door. Useful for ship security, though expensive and heavy.\nWeight: " + w.door * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
+			{ //Wooden Door
+				description = "A wooden door. Useful for ship security, though expensive and heavy.";
+				AddBlock(this, menu, Block::DOOR, "$DOOR$", "Wooden Door", description, core);
+			}
+			{ //Harpoon
+				description = "A manual-fire harpoon launcher. Can be used for grabbing, towing, or water skiing!";
+				AddBlock(this, menu, Block::HARPOON, "$HARPOON$", "Harpoon", description, core);
+			}
+			{ //Harvester
+				description = "An industrial-sized deconstructor that allows you to quickly mine resources from ship debris. Largely ineffective against owned ships.\nAmmoCap: infinite";
+				AddBlock(this, menu, Block::HARVESTER, "$HARVESTER$", "Harvester", description, core);
+			}
+			{ //Patcher
+				description = "An industrial-sized reconstructor that shoots a green restoration beem through a ship, repairing multiple ship parts concomitantly.\nAmmoCap: infinite";
+				AddBlock(this, menu, Block::PATCHER, "$PATCHER$", "Patcher", description, core);
+			}
+			{ //Ram Hull
+				description = "A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits. Can effectively negate damage from bullets, flak, and to some extent cannons.";
+				AddBlock(this, menu, Block::RAM, "$RAM$", "Ram Hull", description, core);
+			}
+			{ //Anti Ram Hull
+				description = "An excellent defence against enemy rammers. Can absorb multiple ram components. Partially weaker against gunfire than Wood Hull.";
+				AddBlock(this, menu, Block::ANTIRAM, "$ANTIRAM$", "Anti-Ram Hull", description, core);
 			}
 			if (!isStation)
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::SECONDARYCORE);
-					
-				CGridButton@ button = menu.AddButton( "$SECONDARYCORE$", "Auxilliary Core $" + c.secondaryCore, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == Block::SECONDARYCORE;
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText( "Similar to the Mothership core. Very powerful - gives greater independence to support ships. Can be improvised into a mega-yield explosive. \nWeight: " + w.secondaryCore * 100 + "rkt" );
-				else
-				{
-					button.SetHoverText(warmupText);
-					button.SetEnabled(false);
-				}
+			{ //Auxilliary Core
+				description = "Similar to the Mothership core. Very powerful - gives greater independence to support ships. Can be improvised into a mega-yield explosive.";
+				AddBlock(this, menu, Block::SECONDARYCORE, "$SECONDARYCORE$", "Auxilliary Core", description, core, gameTime < WARMUP_TIME);
 			}
-			//TOOLS
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::HARVESTER);
-					
-				CGridButton@ button = menu.AddButton("$HARVESTER$", "Harvester $" + c.harvester, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == Block::HARVESTER;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("An industrial-sized deconstructor that allows you to quickly mine resources from ship debris. Largely ineffective against owned ships. \nWeight: " + w.machinegun * 100 + "rkt \nAmmoCap: infinite\n" + ( select ? repBuyTip : "" ) );
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::PATCHER);
-					
-				CGridButton@ button = menu.AddButton( "$PATCHER$", "Patcher $" + c.patcher, core.getCommandID("buyBlock"), params);
-			
-				const bool select = lastBuy == Block::PATCHER;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("An industrial-sized reconstructor that shoots a green restoration beem through a ship, repairing multiple ship parts concomitantly. \nWeight: " + w.patcher * 100 + "rkt \nAmmoCap: infinite\n" + ( select ? repBuyTip : "" ) );
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::RAM);
-					
-				CGridButton@ button = menu.AddButton("$RAM$", "Ram Hull $" + c.ram, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == Block::RAM;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits. Can effectively negate damage from bullets, flak, and to some extent cannons. \nWeight: " + w.ram * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::ANTIRAM);
-					
-				CGridButton@ button = menu.AddButton( "$ANTIRAM$", "Anti-Ram Hull $" + c.antiram, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == Block::ANTIRAM;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("An excellent defence against enemy rammers. Can absorb multiple ram components. Partially weaker against gunfire than Wood Hull. \nWeight: " + w.antiram * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::REPULSOR);
-					
-				CGridButton@ button = menu.AddButton( "$REPULSOR$", "Repulsor $" + c.repulsor, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == Block::REPULSOR;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("Explodes pushing ships away. Can be triggered remotely or by impact. Activates in a chain.\nWeight: " + w.repulsor * 200 + "rkt\n" + ( select ? repBuyTip : "" ) );
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::BOMB);
-					
-				CGridButton@ button = menu.AddButton("$BOMB$", "Bomb $" + c.bomb, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == Block::BOMB;
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText("Explodes on contact. Very useful against Solid blocks. (has buy-cooldown time).\nWeight: " + w.bomb * 100 + "rkt\n" + ( select ? repBuyTip : "" ) );
-				else
-				{
-					button.SetHoverText(warmupText);
-					button.SetEnabled(false);
-				}
-			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::HARPOON);
-					
-				CGridButton@ button = menu.AddButton( "$HARPOON$", "Harpoon $" + c.harpoon, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == Block::HARPOON;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText( "A manual-fire harpoon launcher. Can be used for grabbing, towing, or water skiing!.\nWeight: " + w.harpoon * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );	
-			}			
-			//WEAPONS
-		}
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_u8(Block::POINTDEFENSE);
-				
-			CGridButton@ button = menu.AddButton( "$POINTDEFENSE$", "Point Defense $" + c.pointDefense, core.getCommandID("buyBlock"), params );
-
-			const bool select = lastBuy == Block::POINTDEFENSE;
-			if (select)
-				button.SetSelected(2);
-				
-			if (gameTime > WARMUP_TIME)
-				button.SetHoverText( "A short-ranged automated defensive turret that fires lasers with pin-point accuracy. Able to deter enemy personnel and neutralize incoming projectiles such as flak.\nWeight: " 
-										+ w.pointDefense * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
-			else
-			{
-				button.SetHoverText(warmupText);
-				button.SetEnabled(false);
+			{ //Bomb
+				description = "Explodes on contact. Very useful against Solid blocks.";
+				AddBlock(this, menu, Block::BOMB, "$BOMB$", "Bomb", description, core, gameTime < WARMUP_TIME);
 			}
 		}
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_u8(Block::FLAK);
-				
-			CGridButton@ button = menu.AddButton( "$FLAK$", "Flak Cannon $" + c.flak, core.getCommandID("buyBlock"), params );
-
-			const bool select = lastBuy == Block::FLAK;
-			if (select)
-				button.SetSelected(2);
-				
-			if (gameTime > WARMUP_TIME)
-				button.SetHoverText("A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nWeight: " + w.flak * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
-			else
-			{
-				button.SetHoverText(warmupText);
-				button.SetEnabled(false);
-			}
+		{ //Point Defense
+			description = "A short-ranged automated defensive turret that fires lasers with pin-point accuracy. Able to deter enemy personnel and neutralize incoming projectiles such as flak.\nAmmoCap: medium";
+			AddBlock(this, menu, Block::POINTDEFENSE, "$POINTDEFENSE$", "Point Defense", description, core, gameTime < WARMUP_TIME);
+		}
+		{ //Flak
+			description = "A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nAmmoCap: medium";
+			AddBlock(this, menu, Block::FLAK, "$FLAK$", "Flak Cannon", description, core, gameTime < WARMUP_TIME);
 		}
 
 		if (!isMiniStation)
 		{
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::MACHINEGUN);
-					
-				CGridButton@ button = menu.AddButton("$MACHINEGUN$", "Machinegun $" + c.machinegun, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == Block::MACHINEGUN;
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText( "A fixed rapid-fire, lightweight, machinegun that fires high-velocity projectiles uncounterable by point defense. Effective against engines, flak cannons, and other weapons. However ineffectual against armour. \nWeight: " + w.machinegun * 100 + "rkt \nAmmoCap: high\n" + (select ? repBuyTip : ""));
-				else
-				{
-					button.SetHoverText(warmupText);
-					button.SetEnabled(false);
-				}
+			{ //Machinegun
+				description = "A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nAmmoCap: medium";
+				AddBlock(this, menu, Block::MACHINEGUN, "$MACHINEGUN$", "Machinegun", description, core, gameTime < WARMUP_TIME);
 			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::CANNON);
-					
-				CGridButton@ button = menu.AddButton( "$CANNON$", "AP Cannon $" + c.cannon, core.getCommandID("buyBlock"), params );
-		
-				const bool select = lastBuy == Block::CANNON;
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText( "A fixed cannon that fires momentum-bearing armor-piercing shells. Can penetrate up to 2 solid blocks, but deals less damage after each penetration. Effective against engines, flak cannons, and other weapons.\nWeight: " + w.cannon * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
-				else
-				{
-					button.SetHoverText(warmupText);
-					button.SetEnabled(false);
-				}
+			{ //AP Cannon
+				description = "A fixed cannon that fires momentum-bearing armor-piercing shells. Can penetrate up to 2 solid blocks, but deals less damage after each penetration. Effective against engines, flak cannons, and other weapons.\nAmmoCap: medium";
+				AddBlock(this, menu, Block::CANNON, "$CANNON$", "AP Cannon", description, core, gameTime < WARMUP_TIME);
 			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::HYPERFLAK);
-					
-				CGridButton@ button = menu.AddButton( "$HYPERFLAK$", "Hyper-Flak $" + c.hyperflak, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == Block::HYPERFLAK;
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText("A flak cannon built to aggressive specifications. An advanced weapons system that must be manned. Comes standard with 2 ammunition types: Bulk-grade fragmentation shells ideal for engines and equipment OR Titanium break-wedge bombs to plough through ship armour. \nWeight: " + w.hyperflak * 100 + "rkt \nAmmoCap: medium\n" + ( select ? repBuyTip : "" ) );
-				else
-				{
-					button.SetHoverText(warmupText);
-					button.SetEnabled(false);
-				}
+			{ //Hyper Flak
+				description = "A flak cannon built to aggressive specifications. An advanced weapons system that must be manned. Comes standard with 2 ammunition types: Bulk-grade fragmentation shells ideal for engines and equipment OR Titanium break-wedge bombs to plough through ship armour.\nAmmoCap: medium";
+				AddBlock(this, menu, Block::HYPERFLAK, "$HYPERFLAK$", "Hyper-Flak", description, core, gameTime < WARMUP_TIME);
 			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::LAUNCHER);
-					
-				CGridButton@ button = menu.AddButton( "$LAUNCHER$", "Missile Launcher $" + c.launcher, core.getCommandID("buyBlock"), params );
-
-				const bool select = lastBuy == Block::LAUNCHER;
-				if (select)
-					button.SetSelected(2);
-					
-				if (gameTime > WARMUP_TIME)
-					button.SetHoverText( "A fixed tube that fires a slow missile with short-ranged guidance. Best used for close-ranged bombing, but can be used at range. Very effective against armored ships.\nWeight: " + w.launcher * 100 + "rkt \nAmmoCap: low\n" + ( select ? repBuyTip : "" ) );
-				else
-				{
-					button.SetHoverText(warmupText);
-					button.SetEnabled(false);
-				}
+			{ //Missile Launcher
+				description = "A fixed tube that fires a slow missile with short-ranged guidance. Best used for close-ranged bombing, but can be used at range. Very effective against armored ships.\nAmmoCap: low";
+				AddBlock(this, menu, Block::LAUNCHER, "$LAUNCHER$", "Missile Launcher", description, core, gameTime < WARMUP_TIME);
 			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::FAKERAM);
-				
-				CGridButton@ button = menu.AddButton("$RAM$", "Fake Ram Hull $" + c.fakeram, core.getCommandID("buyBlock"), params);
-
-				const bool select = lastBuy == Block::FAKERAM;
-				if (select)
-					button.SetSelected(2);
-					
-				button.SetHoverText("Sometimes the threat of ramming is an effective tool. \nWeight: " + w.fakeram * 100 + "rkt\n" + (select ? repBuyTip : ""));
+			{ //Fake Ram Hull
+				description = "Sometimes the threat of ramming is an effective tool.";
+				AddBlock(this, menu, Block::FAKERAM, "$RAM$", "Fake Ram Hull", description, core);
 			}
-			{
-				CBitStream params;
-				params.write_u16(netID);
-				params.write_u8(Block::DECOYCORE);
-				
-				CGridButton@ button = menu.AddButton( "$DECOYCORE$", "Decoy Core $" + c.decoyCore, core.getCommandID("buyBlock"), params);
 
-				button.SetHoverText("A fake core to fool enemies. \nWeight: " + w.decoyCore * 100 + "rkt\n" + "\nLimit of 3 per team per match. Currently bought: " + rules.get_u8("decoyCoreCount" + this.getTeamNum()) + "/3" );
-
-				if (rules.get_u8("decoyCoreCount" + this.getTeamNum()) >= 3)
-				{
-					button.SetEnabled(false);
-					button.SetHoverText("A fake core to fool enemies. \nReached limit of 3 and cannot buy any more.");
-				}
+			if (rules.get_u8("decoyCoreCount" + this.getTeamNum()) < 3)
+			{ //Decoy Core
+				description = "A fake core to fool enemies.\nLimit of 3 per team per match. Currently bought: " + rules.get_u8("decoyCoreCount" + this.getTeamNum()) + "/3";
+				AddBlock(this, menu, Block::DECOYCORE, "$DECOYCORE$", "Decoy Core", description, core);
 			}
 		}
 	}
@@ -855,7 +600,7 @@ void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, this, TOOLS_MENU_SIZE, description);
 	u32 gameTime = getGameTime();
 	
-	if ( menu !is null ) 
+	if (menu !is null) 
 	{
 		menu.deleteAfterClick = true;
 		
@@ -871,7 +616,7 @@ void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
 			if (currentTool == "pistol")
 				button.SetSelected(2);
 			
-			button.SetHoverText( "A basic, ranged, personal defence weapon.");
+			button.SetHoverText("A basic, ranged, personal defence weapon.");
 		}
 		{
 			CBitStream params;
@@ -962,7 +707,7 @@ void ShootPistol(CBlob@ this)
 		Vec2f rPos = (pos + aimVector*3) - island.centerBlock.getPosition();
 		params.write_Vec2f(rPos);
 		u32 islandColor = island.centerBlock.getShape().getVars().customData;
-		params.write_u32( islandColor );
+		params.write_u32(islandColor);
 	}
 	else//absolute positioning
 	{
@@ -971,7 +716,7 @@ void ShootPistol(CBlob@ this)
 		params.write_Vec2f(aPos);
 	}
 	
-	this.SendCommand( this.getCommandID("shoot"), params );
+	this.SendCommand(this.getCommandID("shoot"), params);
 }
 
 void Construct(CBlob@ this)
@@ -985,21 +730,21 @@ void Construct(CBlob@ this)
 	offset.RotateBy(_shotspreadrandom.NextFloat() * 360.0f, Vec2f());
 	CSprite@ sprite = this.getSprite();
 	
-	string currentTool = this.get_string( "current tool" );
+	string currentTool = this.get_string("current tool");
 
 	if (mBlob !is null && aimVector.getLength() <= CONSTRUCT_RANGE)
 	{
 		if (this.isMyPlayer())
 		{
 			CBitStream params;
-			params.write_Vec2f( pos );
-			params.write_Vec2f( aimPos );
-			params.write_netid( mBlob.getNetworkID() );
+			params.write_Vec2f(pos);
+			params.write_Vec2f(aimPos);
+			params.write_netid(mBlob.getNetworkID());
 			
-			this.SendCommand( this.getCommandID("construct"), params );
+			this.SendCommand(this.getCommandID("construct"), params);
 		}
 		
-		if (isClient() )//effects
+		if (isClient())//effects
 		{
 			Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
 			f32 offsetAngle = aimVector.Angle() - (mBlob.getPosition() - pos).Angle(); 
@@ -1010,9 +755,9 @@ void Construct(CBlob@ this)
 				laser.SetVisible(true);
 				f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);						
 				laser.ResetTransform();						
-				laser.ScaleBy( Vec2f(laserLength, 1.0f) );							
-				laser.TranslateBy( Vec2f(laserLength*16.0f, + 0.5f) );
-				laser.RotateBy( offsetAngle, Vec2f());
+				laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+				laser.TranslateBy(Vec2f(laserLength*16.0f, + 0.5f));
+				laser.RotateBy(offsetAngle, Vec2f());
 				laser.setRenderStyle(RenderStyle::light);
 			}
 		}
@@ -1023,7 +768,7 @@ void Construct(CBlob@ this)
 	}
 	else
 	{
-		if (isClient() )//effects
+		if (isClient())//effects
 		{
 			sprite.RemoveSpriteLayer("laser");
 			
@@ -1057,7 +802,7 @@ void Construct(CBlob@ this)
 	}
 }
 
-bool canPunch( CBlob@ this )
+bool canPunch(CBlob@ this)
 {
 	return !this.hasTag("dead") && this.get_u32("punch time") + PUNCH_RATE < getGameTime();
 }
@@ -1067,13 +812,13 @@ bool canShootPistol(CBlob@ this)
 	return !this.hasTag("dead") && this.get_string("current tool") == "pistol" && this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-bool canConstruct( CBlob@ this )
+bool canConstruct(CBlob@ this)
 {
-	return !this.hasTag("dead") && (this.get_string( "current tool" ) == "deconstructor" || this.get_string("current tool") == "reconstructor")
+	return !this.hasTag("dead") && (this.get_string("current tool") == "deconstructor" || this.get_string("current tool") == "reconstructor")
 				&& this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime();
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
 	if (isServer() && this.getCommandID("get out") == cmd)
 	{
@@ -1090,7 +835,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			ParticleBloodSplat(pos, false);
 
 			if (isServer())
-				this.server_Hit( b, pos, Vec2f_zero, 0.25f, Hitters::muscles, false );
+				this.server_Hit(b, pos, Vec2f_zero, 0.25f, Hitters::muscles, false );
 		}
 	}
 	else if (this.getCommandID("shoot") == cmd && canShootPistol(this))
@@ -1134,18 +879,18 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		
 		this.set_u32("fire time", getGameTime());	
 		shotParticles(pos + Vec2f(0,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle(), true, 0.02f , 0.6f);
-		directionalSoundPlay("Gunshot.ogg", pos, 0.75f );
+		directionalSoundPlay("Gunshot.ogg", pos, 0.75f);
 	}
 	else if (this.getCommandID("construct") == cmd && canConstruct(this))
 	{
 		Vec2f pos = params.read_Vec2f();
 		Vec2f aimPos = params.read_Vec2f();
-		CBlob@ mBlob = getBlobByNetworkID( params.read_netid() );
+		CBlob@ mBlob = getBlobByNetworkID( params.read_netid());
 		
 		CPlayer@ thisPlayer = this.getPlayer();						
 		if (thisPlayer is null) return;		
 		
-		string currentTool = this.get_string( "current tool" );
+		string currentTool = this.get_string("current tool");
 		Vec2f aimVector = aimPos - pos;	 
 		
 		if (mBlob !is null)
@@ -1163,7 +908,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			f32 fullConstructAmount;
 			if (mBlobCost > 0)
 				fullConstructAmount = (CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
-			else if ( blockType == Block::MOTHERSHIP5 )
+			else if (blockType == Block::MOTHERSHIP5)
 				fullConstructAmount = (0.01f)*mBlobInitHealth;
 			else
 				fullConstructAmount = 0.0f;
@@ -1343,7 +1088,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		CPlayer@ player = this.getPlayer();
 		CBlob@ seat = getBlobByNetworkID( params.read_u16() );
 		
-		if ( player is null || seat is null ) return;
+		if (player is null || seat is null) return;
 	
 		string owner;
 		seat.get( "playerOwner", owner );
@@ -1390,9 +1135,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				CBlob@[] crew;
 				CBlob@[] humans;
 				getBlobsByName("human", @humans);
-				for ( u8 i = 0; i < humans.length; i++ )
+				for (u8 i = 0; i < humans.length; i++)
 				{
-					if ( humans[i].getTeamNum() == teamNum && humans[i] !is this)
+					if (humans[i].getTeamNum() == teamNum && humans[i] !is this)
 					{
 						CBlob@ islandBlob = getIslandBlob(humans[i]);
 						if (islandBlob !is null && islandBlob.getShape().getVars().customData == coreColor)
@@ -1438,15 +1183,15 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 	}
 }
 
-void onAttached( CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint )
+void onAttached(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 {
 	this.ClearMenus();
 }
 
-void onDetach( CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint )
+void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
 {
-	this.set_u16( "shipID", detached.getNetworkID() );
-	this.set_s8( "stay count", 3 );
+	this.set_u16("shipID", detached.getNetworkID());
+	this.set_s8("stay count", 3);
 }
 
 void onDie(CBlob@ this)
@@ -1502,13 +1247,13 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	//when killed: reward hitterBlob if this was boarding his mothership
 	if (hitterBlob.getName() == "human" && hitterBlob !is this && this.getHealth() - damage <= 0)
 	{
-		Island@ pIsle = getIsland( this );
+		Island@ pIsle = getIsland(this);
 		CPlayer@ hitterPlayer = hitterBlob.getPlayer();
 		u8 teamNum = hitterBlob.getTeamNum();
 		if (hitterPlayer !is null && pIsle !is null && pIsle.isMothership && pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum)
 		{
-			if ( hitterPlayer.isMyPlayer() )
-				Sound::Play( "snes_coin.ogg" );
+			if (hitterPlayer.isMyPlayer())
+				Sound::Play("snes_coin.ogg");
 
 			if (isServer())
 			{
@@ -1530,6 +1275,6 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 
 void onHealthChange(CBlob@ this, f32 oldHealth)
 {
-	if ( this.getHealth() > oldHealth )
-		directionalSoundPlay( "Heal.ogg", this.getPosition(), 2.0f );
+	if (this.getHealth() > oldHealth)
+		directionalSoundPlay("Heal.ogg", this.getPosition(), 2.0f);
 }

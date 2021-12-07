@@ -1,6 +1,7 @@
 #define SERVER_ONLY
 #include "TileCommon.as"
-//Spawn booty randomly
+//Spawn treasure randomly
+
 const u16 FREQUENCY = 2*30;//30 = 1 second
 const f32 CLEAR_RADIUS_FACTOR = 2.5f;
 const f32 MAX_CLEAR_RADIUS = 700.0f;
@@ -15,14 +16,10 @@ void onTick(CRules@ this)
 	f32 mWidth = map.tilemapwidth * map.tilesize;
 	f32 mHeight = map.tilemapheight * map.tilesize;
 	Vec2f center = Vec2f( mWidth/2, mHeight/2 );
-	u16 totalB = totalBooty();
 	f32 timePenalty = Maths::Max(0.0f, 1.0f - getGameTime()/MAX_PENALTY_TIME);
-	u16 MAX_AMMOUNT = this.get_u16("booty_x_max");
-	u16 MIN_AMMOUNT = this.get_u16("booty_x_min");
-	f32 PER_PLAYER_AMMONT = 2.5f * MAX_AMMOUNT;
 	//print( "<> " + getGameTime()/30/60 + " minutes penalty%: " + timePenalty );
 
-	if (totalB < getPlayersCount() * PER_PLAYER_AMMONT)
+	if (getTreasureCount() < 1)
 	{
 		for (u8 tries = 0; tries < 5; tries++)
 		{
@@ -30,62 +27,52 @@ void onTick(CRules@ this)
 											center.y + 0.4f * (XORRandom(2) == 0 ? -1 : 1 ) * XORRandom(center.y - PADDING));
 			if (zoneClear( map, spot, timePenalty < 0.2f))
 			{
-				f32 centerDist = (center - spot).Length();
-				u16 ammount = Maths::Max(MIN_AMMOUNT, (1.0f - centerDist/Maths::Min(mWidth, mHeight)) * MAX_AMMOUNT);
-				createBooty(spot, ammount);
+				createTreasure(spot);
 				return;
 			}
 		}
 		
 		if (timePenalty > 0.4f)
+		{
 			for (u8 tries = 0; tries < 10; tries++)
 			{
 				Vec2f spot = Vec2f ( center.x + timePenalty * ( XORRandom(2) == 0 ? -1 : 1 ) * XORRandom(center.x - PADDING),
 												center.y + timePenalty * ( XORRandom(2) == 0 ? -1 : 1 ) * XORRandom(center.y - PADDING));
 				if (zoneClear(map, spot))
 				{
-					f32 centerDist = (center - spot).Length();
-					u16 ammount = Maths::Max(MIN_AMMOUNT, (1.0f - centerDist/Maths::Min( mWidth, mHeight )) * MAX_AMMOUNT);
-					createBooty(spot, ammount);
+					createTreasure(spot);
 					break;
 				}
 			}
+		}
 	}
 }
 
-void createBooty(Vec2f pos, u16 ammount)
+void createTreasure(Vec2f pos)
 {
-    CBlob@ booty = server_CreateBlobNoInit("treasure");
-    if (booty !is null)
+    CBlob@ treasure = server_CreateBlobNoInit("treasure");
+    if (treasure !is null)
 	{
-	    booty.set_u16("ammount", ammount);
-	    booty.set_u16("prevAmmount", ammount);
-		booty.server_setTeamNum(-1);
-		booty.setPosition( pos );
-		booty.Init();
+		treasure.server_setTeamNum(-1);
+		treasure.setPosition(pos);
+		treasure.Init();
 	}
 }
 
-int totalBooty()
+int getTreasureCount()
 {
-	CBlob@[] booty;
-	getBlobsByName("treasure", @booty);
-	u16 totalBooty = 0;
+	CBlob@[] treasure;
+	getBlobsByName("treasure", @treasure);
 
-	for (int b = 0; b < booty.length(); b++)
-	{
-		totalBooty += booty[b].get_u16( "ammount" );
-	}
-
-	return totalBooty;
+	return treasure.length;
 }
 
-bool zoneClear(CMap@ map, Vec2f spot, bool onlyBooty = false)
+bool zoneClear(CMap@ map, Vec2f spot, bool onlyTreasure = false)
 {
 	f32 clearRadius = Maths::Min(Maths::Sqrt(map.tilemapwidth * map.tilemapheight) * CLEAR_RADIUS_FACTOR, MAX_CLEAR_RADIUS);
 	
 	bool mothership = map.isBlobWithTagInRadius("mothership", spot, clearRadius * 0.5f);
-	bool booty = map.isBlobWithTagInRadius("treasure", spot, clearRadius);
+	bool treasure = map.isBlobWithTagInRadius("treasure", spot, clearRadius);
 
-	return !booty && isTouchingLand(spot) && (onlyBooty || !mothership);
+	return !treasure && isTouchingLand(spot) && (onlyTreasure || !mothership);
 }

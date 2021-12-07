@@ -125,12 +125,12 @@ void onTick (CBlob@ this)
  	// push merged ships away from each other
 	if (this.get_bool("colliding")) this.set_bool("colliding", false); 
 
-	if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on islands.as)
+	/*if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on islands.as)
 	{
 		u8 frame = this.get_u8("frame");
 		if (thisSprite.getFrame() == 0 && frame != 0)
 			thisSprite.SetFrame(frame);
-	}
+	}*/
 }
 
 // onCollision: called once from the engine when a collision happens; 
@@ -593,13 +593,13 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 		
 		if (hp < currentStep && hp <= initHealth - step && Block::isSolid(blockType))
 		{
-			int frame = blockType == Block::RAM ? 9 :
+			int bFrame = blockType == Block::RAM ? 9 :
 						blockType == Block::FAKERAM ? 49 :
 						blockType == Block::ANTIRAM ? 46 : 5;
 
 			if (blockType != Block::RAMENGINE && blockType != Block::POINTDEFENSE)
 			{
-				const int frame = (oldHealth > initHealth * 0.5f) ? frame : frame + 1;	
+				const int frame = (oldHealth > initHealth * 0.5f) ? bFrame : bFrame + 1;	
 				CSprite@ sprite = this.getSprite();
 				CSpriteLayer@ layer = sprite.addSpriteLayer( "dmg"+frame );
 				if (layer !is null)

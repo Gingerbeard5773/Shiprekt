@@ -66,12 +66,12 @@ void onInit(CRules@ this)
 void onReload(CRules@ this)
 {
     this.clear("respawns"); 
-	this.set_u8( "endCount", 0 );	
+	this.set_u8("endCount", 0);	
     for (int i = 0; i < getPlayerCount(); i++)
     {
         CPlayer@ player = getPlayer(i);
-        if ( player.getTeamNum() == this.getSpectatorTeamNum() )
-			player.server_setTeamNum( this.getSpectatorTeamNum() );
+        if (player.getTeamNum() == this.getSpectatorTeamNum())
+			player.server_setTeamNum( this.getSpectatorTeamNum());
         else if (player.getBlob() is null)
         {
             Respawn r(player.getUsername(), getGameTime());
@@ -217,12 +217,12 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 			//print ( "SpawnPlayer: reasigning " + player.getUsername() );
 			//reasign to a team with alive core
         	team = getRandomMinimumTeam(this);
-        	@ship = getMothership( team );
+        	@ship = getMothership(team);
         	int count = 0;
         	while (ship is null && count <= 3*teamsCount)
         	{
         		team = getRandomMinimumTeam(this, count%teamsCount);
-        		@ship = getMothership( team );
+        		@ship = getMothership(team);
         		count++;
         	}
 

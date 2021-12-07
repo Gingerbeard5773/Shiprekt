@@ -350,6 +350,17 @@ bool onServerProcessChat( CRules@ this, const string& in text_in, string& out te
 						}
 					return false;
 				}
+				else if (tokens[0] == "!findtreasure")
+				{
+					CBlob@ pBlob = player.getBlob();
+					if (pBlob is null) return false;
+					
+					CBlob@[] treasure;
+					getBlobsByName("treasure", @treasure);
+					
+					if (treasure.length > 0)
+						pBlob.setPosition(treasure[0].getPosition()); //tp player to treasure
+				}
 				else if (tokens[0] == "!booty" && isSuperAdmin(player))
 				{
 					server_setPlayerBooty( player.getUsername(), 800 );
