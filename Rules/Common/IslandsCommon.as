@@ -21,7 +21,8 @@ shared class Island
 	Vec2f net_pos, net_vel;
 	f32 net_angle, net_angle_vel;
 
-	Island(){
+	Island()
+	{
 		angle = angle_vel = old_angle = mass = carryMass = 0.0f;
 		initialized = false;
 		isMothership = false;
@@ -98,7 +99,7 @@ CBlob@ getIslandBlob(CBlob@ this)
 	return b;
 }
 
-Vec2f SnapToGrid( Vec2f pos )
+Vec2f SnapToGrid(Vec2f pos)
 {
     pos.x = Maths::Round(pos.x / 8.0f);
     pos.y = Maths::Round(pos.y / 8.0f);
@@ -210,7 +211,7 @@ bool blocksOverlappingIsland(CBlob@[]@ blocks)
 bool blockOverlappingIsland(CBlob@ blob)
 {
     CBlob@[] overlapping;
-    if ( getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @overlapping))
+    if (getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @overlapping))
     {
         for (uint i = 0; i < overlapping.length; i++)
         {
@@ -279,7 +280,7 @@ bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos )//checks if th
 	return childsLinked;
 }
 
-bool coreLinked( CBlob@ this, u16 token )//use directional one
+bool coreLinked(CBlob@ this, u16 token)//use directional one
 {
 	if (this.hasTag("mothership"))
 		return true;
