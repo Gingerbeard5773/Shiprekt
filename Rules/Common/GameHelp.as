@@ -105,16 +105,16 @@ void onRender(CRules@ this)
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Shiprekt Version 1.38\n"
+		string lastChangesInfo = "Shiprekt Version 1.39\n"
 		
 		+ "Last changes :\n"
 		+ "- 11-30-2021 - By Gingerbeard\n"
 		+ "  * Mini-station takes half as much time to capture.\n"
 		+ "  * Explosives can now be deconstructed properly without detonating.\n"
 		+ "  * Auxillary Core can only be created at your mothership.\n"
-		+ "  * Player sharks can kill humans without dying.\n"
-		+ "  * Fixed that terrible button issue.\n"
-		+ "  * Many other small changes and bug fixes.\n";
+		+ "  * Many other small changes and bug fixes.\n"
+		+ "- 12-7-2021 -\n"
+		+ "  * Various bugs fixed from previous update\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
