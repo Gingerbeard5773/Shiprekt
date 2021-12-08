@@ -5,7 +5,7 @@ const f32 rotate_speed = 30.0f;
 const f32 max_build_distance = 32.0f;
 u16 crewCantPlaceCounter = 0;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
     CBlob@[] blocks;
     this.set("blocks", blocks);
@@ -216,7 +216,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         CBlob@[]@ blocks;
         if (this.get("blocks", @blocks) && blocks.size() > 0)                 
         {	
-			PositionBlocks( @blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy( angleDelta ), target_angle, centerBlock, refBlock);
+			PositionBlocks(@blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy( angleDelta ), target_angle, centerBlock, refBlock);
 
 			int iColor = centerBlock.getShape().getVars().customData;
 			for (uint i = 0; i < blocks.length; ++i)

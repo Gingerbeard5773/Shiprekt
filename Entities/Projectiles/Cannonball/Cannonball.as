@@ -187,7 +187,7 @@ void onDie(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	
-	if (this.getTouchingCount() > 0)
+	if (this.getTouchingCount() > 0 || isTouchingLand(pos) || isTouchingRock(pos))
 	{
 		sparks(pos + this.getVelocity(), 15, 2.5, 20);
 		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);

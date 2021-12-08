@@ -105,7 +105,7 @@ void onRender(CRules@ this)
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Shiprekt Version 1.39\n"
+		string lastChangesInfo = "Shiprekt Version 1.40\n"
 		
 		+ "Last changes :\n"
 		+ "- 11-30-2021 - By Gingerbeard\n"

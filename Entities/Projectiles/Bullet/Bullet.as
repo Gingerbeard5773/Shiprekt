@@ -129,8 +129,14 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 
 void onDie(CBlob@ this)
 {
-	if (isInWater(this.getPosition()) && this.getTouchingCount() <= 0)
+	Vec2f pos = this.getPosition();
+	if (this.getTouchingCount() > 0 || isTouchingLand(pos) || isTouchingRock(pos))
 	{
-		MakeWaterParticle(this.getPosition(), Vec2f_zero);
+		sparks(pos + this.getVelocity(), 8);
+		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", pos, 0.50f);
+	}
+	else
+	{
+		MakeWaterParticle(pos, Vec2f_zero);
 	}
 }

@@ -60,7 +60,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	{
 		CBlob@ caller = getBlobByNetworkID(params.read_u16());
 		if (caller !is null)
-			ReturnBlocks(this, caller);
+			ReturnBlocks(caller);
 	}
 }
 
@@ -80,13 +80,13 @@ void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 	u16 pBooty = server_getPlayerBooty(pName);
 	
 	u16 cost = Block::getCost(bType);
-	u8 ammount = 1;
+	u8 amount = 1;
 	u8 totalFlaks = 0;
 	u8 teamFlaks = 0;
 
 	if (bType == Block::COUPLING) //coupling gives two blocks
 	{
-		ammount = 2;
+		amount = 2;
 	}
 	else if (bType == Block::FLAK)
 	{
@@ -104,12 +104,12 @@ void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 	if (teamFlaks < MAX_TEAM_FLAKS && totalFlaks < MAX_TOTAL_FLAKS)
 	{
 		if (getPlayersCount() == 1 || rules.get_bool("freebuild"))
-			ProduceBlock(getRules(), caller, bType, ammount);
+			ProduceBlock(getRules(), caller, bType, amount);
 		else if (pBooty >= cost)
 		{
 			server_setPlayerBooty(pName, pBooty - cost);
 		
-			ProduceBlock(getRules(), caller, bType, ammount);
+			ProduceBlock(getRules(), caller, bType, amount);
 		}
 		//warning for flaks. We dont check block type since teamFlaks and totalFlaks are equals to 0 if type is not a flak.
 		if (MAX_TEAM_FLAKS - teamFlaks <= 3)
@@ -146,15 +146,15 @@ void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 	}
 }
 
-void ReturnBlocks(CBlob@ this, CBlob@ caller)
+void ReturnBlocks(CBlob@ this)
 {
 	CRules@ rules = getRules();
 	CBlob@[]@ blocks;
-	if (caller.get("blocks", @blocks) && blocks.size() > 0)                 
+	if (this.get("blocks", @blocks) && blocks.size() > 0)                 
 	{
 		if (isServer())
 		{
-			CPlayer@ player = caller.getPlayer();
+			CPlayer@ player = this.getPlayer();
 			if (player !is null)
 			{
 				string pName = player.getUsername();
@@ -173,8 +173,8 @@ void ReturnBlocks(CBlob@ this, CBlob@ caller)
 		}
 		
 		this.getSprite().PlaySound("join.ogg");
-		Human::clearHeldBlocks(caller);
-		caller.set_bool("blockPlacementWarn", false);
+		Human::clearHeldBlocks(this);
+		this.set_bool("blockPlacementWarn", false);
 	}
 	else
 		warn("returnBlocks cmd: no blocks");
@@ -192,9 +192,13 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		CPlayer@ player = getLocalPlayer();
 		if (player !is null && player.isMod() && !getRules().isGameOver())
 		{
-			CPlayer@ owner = getPlayerByNetworkId(hitterBlob.get_u16("playerID"));
-			if (owner !is null)
-				error(">Core teamHit (" + hitterTeamNum+ "): " + owner.getUsername()); 
+			CBlob@ BlobID = getBlobByNetworkID(hitterBlob.get_u16("ownerID"));
+			if (BlobID !is null)
+			{
+				CPlayer@ owner = getPlayerByNetworkId(BlobID.getPlayer().getNetworkID());
+				if (owner !is null)
+					error(">Core teamHit (" + hitterTeamNum+ "): " + owner.getUsername()); 
+			}
 		}
 		
 		damage /= 2;

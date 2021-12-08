@@ -1,22 +1,13 @@
 //trap block script for devious builders
-#include "IslandsCommon.as"
-#include "HumanCommon.as"
-#include "BlockCommon.as"
-#include "BlockProduction.as"
-#include "Hitters.as"
-#include "MapFlags.as"
-#include "DoorCommon.as"
+#include "BlockCommon.as";
 
-
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
-    this.set_bool("open", false);  
     this.getShape().SetRotationsAllowed(false);
-	this.Tag("door");
 	this.getShape().getConsts().collidable = true;
 
 	CSprite@ sprite = this.getSprite();
-    if(sprite !is null)
+    if (sprite !is null)
     {
         //default
         {
@@ -26,27 +17,24 @@ void onInit( CBlob@ this )
         //folding
         {
             Animation@ anim = sprite.addAnimation("open", 2, false);
-
-            int[] frames = { Block::DOOR, Block::DOOR+1, Block::DOOR+2 };
-
+            int[] frames = {Block::DOOR, Block::DOOR+1, Block::DOOR+2};
             anim.AddFrames(frames);
         }
     }
 }
 
-
-bool isOpen( CBlob@ this )
+bool isOpen(CBlob@ this)
 {
 	return !this.getShape().getConsts().collidable;
 }
 
-void setOpen( CBlob@ this, bool open, bool faceLeft = false)
+void setOpen(CBlob@ this, bool open, bool faceLeft = false)
 {
 	CSprite@ sprite = this.getSprite();
 
 	if (open)
 	{
-       sprite.SetAnimation( "open" );//update sprite
+        sprite.SetAnimation("open");//update sprite
 		this.getCurrentScript().tickFrequency = 3;
 		this.getShape().getConsts().collidable = false;
 		sprite.SetFacingLeft(faceLeft);   // swing left or right
@@ -54,16 +42,12 @@ void setOpen( CBlob@ this, bool open, bool faceLeft = false)
 	}
 	else
 	{
-       sprite.SetAnimation( "default" );//update sprite
+        sprite.SetAnimation("default");//update sprite
 		this.getCurrentScript().tickFrequency = 0;
 		this.getShape().getConsts().collidable = true;
 		Sound::Play("/DoorClose.ogg", this.getPosition());
 	}
-	
 }
-
-
-
 
 bool canClose(CBlob@ this)
 {
@@ -103,24 +87,18 @@ void onEndCollision(CBlob@ this, CBlob@ blob)
 	}
 }
 
-
-bool canBePickedUp(CBlob@ this, CBlob@ byBlob)
-{
-	return false;
-}
-
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
 	if (isOpen(this))
 		return false;
 
-	if (canOpenDoor(this, blob))
+	if (blob.getShape().getConsts().collidable && //can collide
+		this.getTeamNum() == blob.getTeamNum() && //is same team
+		blob.hasTag("player"))                    //is human
 	{
-		Vec2f pos = this.getPosition();
-		Vec2f other_pos = blob.getPosition();
 		Vec2f direction = Vec2f(1, 0);
 		direction.RotateBy(this.getAngleDegrees());
-		setOpen(this, true, ((pos - other_pos) * direction) < 0.0f);
+		setOpen(this, true, ((this.getPosition() - blob.getPosition()) * direction) < 0.0f);
 		return false;
 	}
 	return true;

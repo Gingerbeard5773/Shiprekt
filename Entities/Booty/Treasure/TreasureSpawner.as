@@ -13,9 +13,8 @@ void onTick(CRules@ this)
 	if (getGameTime() % FREQUENCY > 0 || getRules().get_bool("whirlpool")) return;	
 	
 	CMap@ map = getMap();
-	f32 mWidth = map.tilemapwidth * map.tilesize;
-	f32 mHeight = map.tilemapheight * map.tilesize;
-	Vec2f center = Vec2f( mWidth/2, mHeight/2 );
+	Vec2f mapDim = map.getMapDimensions();
+	Vec2f center = Vec2f(mapDim.x/2, mapDim.y/2);
 	f32 timePenalty = Maths::Max(0.0f, 1.0f - getGameTime()/MAX_PENALTY_TIME);
 	//print( "<> " + getGameTime()/30/60 + " minutes penalty%: " + timePenalty );
 
@@ -24,8 +23,8 @@ void onTick(CRules@ this)
 		for (u8 tries = 0; tries < 5; tries++)
 		{
 			Vec2f spot = Vec2f (center.x + 0.4f * (XORRandom(2) == 0 ? -1 : 1) * XORRandom(center.x - PADDING),
-											center.y + 0.4f * (XORRandom(2) == 0 ? -1 : 1 ) * XORRandom(center.y - PADDING));
-			if (zoneClear( map, spot, timePenalty < 0.2f))
+											center.y + 0.4f * (XORRandom(2) == 0 ? -1 : 1) * XORRandom(center.y - PADDING));
+			if (zoneClear(map, spot, timePenalty < 0.2f))
 			{
 				createTreasure(spot);
 				return;
@@ -36,8 +35,8 @@ void onTick(CRules@ this)
 		{
 			for (u8 tries = 0; tries < 10; tries++)
 			{
-				Vec2f spot = Vec2f ( center.x + timePenalty * ( XORRandom(2) == 0 ? -1 : 1 ) * XORRandom(center.x - PADDING),
-												center.y + timePenalty * ( XORRandom(2) == 0 ? -1 : 1 ) * XORRandom(center.y - PADDING));
+				Vec2f spot = Vec2f (center.x + timePenalty * (XORRandom(2) == 0 ? -1 : 1) * XORRandom(center.x - PADDING),
+												center.y + timePenalty * (XORRandom(2) == 0 ? -1 : 1) * XORRandom(center.y - PADDING));
 				if (zoneClear(map, spot))
 				{
 					createTreasure(spot);
@@ -72,7 +71,6 @@ bool zoneClear(CMap@ map, Vec2f spot, bool onlyTreasure = false)
 	f32 clearRadius = Maths::Min(Maths::Sqrt(map.tilemapwidth * map.tilemapheight) * CLEAR_RADIUS_FACTOR, MAX_CLEAR_RADIUS);
 	
 	bool mothership = map.isBlobWithTagInRadius("mothership", spot, clearRadius * 0.5f);
-	bool treasure = map.isBlobWithTagInRadius("treasure", spot, clearRadius);
 
-	return !treasure && isTouchingLand(spot) && (onlyTreasure || !mothership);
+	return isTouchingLand(spot) && (onlyTreasure || !mothership);
 }

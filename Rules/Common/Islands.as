@@ -160,7 +160,7 @@ void InitIsland( Island @isle )//called for all islands after a block is placed 
 					@isle.centerBlock = b;
 				}
 				//mass calculation
-				totalMass += b.get_f32( "weight" );
+				totalMass += Block::getWeight(b);
 				
 				if (b.hasTag("mothership"))
 					isle.isMothership = true;
@@ -399,7 +399,7 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 			{
 				//player-carried blocks add to the island mass (with penalty)
 				for (u8 i = 0; i < blocks.length; i++)
-					isle.carryMass += 2.5f * blocks[i].get_f32("weight");
+					isle.carryMass += 2.5f * Block::getWeight(blocks[i]);
 			}
 		}
 	}

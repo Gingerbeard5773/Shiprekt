@@ -37,7 +37,7 @@ void onInit( CBlob@ this )
 {
 	this.Tag("weapon");
 	this.Tag("usesAmmo");
-	this.Tag("machinegun");
+	this.Tag("machinegun"); //for seat.as
 	this.addCommandID("fire");
 	this.addCommandID("disable");
 	this.set_bool( "mShipDocked", false );

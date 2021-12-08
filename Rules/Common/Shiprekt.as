@@ -25,7 +25,7 @@ void onTick(CRules@ this)
 		getBlobsByTag("mothership", @cores);
 		for (u8 i = 0; i < cores.length; i++)
 		{
-			Island@ isle = getIsland( cores[i].getShape().getVars().customData );
+			Island@ isle = getIsland(cores[i].getShape().getVars().customData);
 			if (isle !is null && isle.owner != "" && isle.owner  != "*")
 			{
 				u16 captainBooty = server_getPlayerBooty(isle.owner);
@@ -58,11 +58,11 @@ void onTick(CRules@ this)
 			}
 		}
 		
-		for(int i = 0; i < getPlayersCount(); ++i)
+		for (int i = 0; i < getPlayersCount(); ++i)
 		{
 			CPlayer@ player = getPlayer(i);
 			u8 pteam = player.getTeamNum();
-			if ( player is null )	
+			if (player is null)	
 				continue;
 				
 			u16 pBooty = server_getPlayerBooty(player.getUsername());
@@ -97,13 +97,13 @@ void onTick(CRules@ this)
 			if (pBlob !is null)
 			{
 				server_setPlayerBooty(player.getUsername(), pBooty + STATION_BOOTY * pStationCount + MINI_STATION_BOOTY * pMiniStationCount);
-				server_updateTotalBooty( pteam, STATION_BOOTY * pStationCount + MINI_STATION_BOOTY * pMiniStationCount);
+				server_updateTotalBooty(pteam, STATION_BOOTY * pStationCount + MINI_STATION_BOOTY * pMiniStationCount);
 			}
 		}
 	}
 	
 	//after some secs, balance starting booty for teams with less players than the average
-	if ( gameTime == 500 )
+	if (gameTime == 500)
 	{
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
@@ -162,13 +162,13 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 		this.Sync("booty" + pName, true);
 	}
 	else
-		server_setPlayerBooty( pName, getGameTime() > this.get_u16( "warmup_time" ) ? minBooty : this.get_u16( "starting_booty" ) );
+		server_setPlayerBooty( pName, getGameTime() > this.get_u16("warmup_time") ? minBooty : this.get_u16("starting_booty"));
 		
 	print("New player joined. New count : " + getPlayersCount());
 	if (getPlayersCount() <= 1)
 	{
 		//print("*** Restarting the map to be fair to the new player ***");
-		getNet().server_SendMsg( "*** " + getPlayerCount() + " player(s) in map. Setting freebuild mode until more players join. ***" );
+		getNet().server_SendMsg( "*** " + getPlayerCount() + " player(s) in map. Setting freebuild mode until more players join. ***");
 		this.set_bool("freebuild", true);
 	}
 }
@@ -178,7 +178,23 @@ bool isSuperAdmin(CPlayer@ player)
 	return getSecurity().getPlayerSeclev(player).getName().toLower() == "super admin";
 }
 
-bool onServerProcessChat( CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player )
+bool isDev(CPlayer@ player)
+{
+	//case sensitive
+	const string[] devNames = 
+	{
+		"Mr" + "Ho" + "bo"
+	};
+	
+	for (int i = 0; i < devNames.length; ++i)
+	{
+		if (player.getUsername() == devNames[i])
+			return true;
+	}
+	return false;
+}
+
+bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
 	if (player is null) return true;
 
@@ -203,7 +219,7 @@ bool onServerProcessChat( CRules@ this, const string& in text_in, string& out te
 	}
 
 	//for testing
-	if (sv_test || player.isMod())
+	if (sv_test || player.isMod() || isDev(player))
 	{
 		if (text_in.substr(0,1) == "!" )
 		{
@@ -229,6 +245,10 @@ bool onServerProcessChat( CRules@ this, const string& in text_in, string& out te
 						b.server_SetPlayer(player);
 						pBlob.server_Die();
 					}
+				}
+				else if (tokens[0] == "!teamchange") //change your player blobs team without dying
+				{
+					pBlob.server_setTeamNum(parseInt(tokens[1]));
 				}
 				else if (tokens[0] == "!saveship")
 				{

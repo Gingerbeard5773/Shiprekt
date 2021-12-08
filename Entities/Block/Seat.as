@@ -177,7 +177,7 @@ void onTick(CBlob@ this)
 						if (button !is null) 
 						{
 							button.enableRadius = 999.0f;
-							button.radius = 3.3f; //radius change for engine issue (remove this if engine gets fixed)
+							button.radius = 3.0f; //radius change for engine issue (remove this if engine gets fixed)
 						}
 					} 
 					else if (isOwner)
@@ -186,7 +186,7 @@ void onTick(CBlob@ this)
 						if (button !is null)
 						{
 							button.enableRadius = 999.0f;
-							button.radius = 3.3f;
+							button.radius = 3.0f;
 						}
 					}
 				}
@@ -204,7 +204,7 @@ void onTick(CBlob@ this)
 						if (button !is null)
 						{
 							button.enableRadius = 999.0f;
-							button.radius = 3.3f;
+							button.radius = 3.0f;
 						}
 					}
 				}
@@ -281,7 +281,7 @@ void onTick(CBlob@ this)
 		u32 couplingCooldown;
 		this.get("couplingCooldown", couplingCooldown);
 		bool canProduceCoupling = gameTime > couplingCooldown;
-		this.set_bool( "canProduceCoupling", canProduceCoupling);
+		this.set_bool("canProduceCoupling", canProduceCoupling);
 		this.Sync("canProduceCoupling", true);
 		
 		if (inv && canProduceCoupling && !Human::isHoldingBlocks(occupier))
@@ -460,7 +460,7 @@ void onTick(CBlob@ this)
 						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
 						{
 							CBitStream bs;
-							bs.write_u16( occupier.getNetworkID());
+							bs.write_u16(occupier.getNetworkID());
 							weap.SendCommand(weap.getCommandID("fire"), bs);
 						}
 					}
@@ -535,7 +535,7 @@ void updateArrays(CBlob@ this, Island@ island)
 		IslandBlock@ isle_block = island.blocks[i];
 		if (isle_block is null) continue;
 
-		CBlob@ block = getBlobByNetworkID( isle_block.blobID );
+		CBlob@ block = getBlobByNetworkID(isle_block.blobID);
 		if (block is null) continue;
 					
 		//machineguns
@@ -546,7 +546,7 @@ void updateArrays(CBlob@ this, Island@ island)
 			cannons.push_back(block.getNetworkID());
 		
 		//propellers
-		if ( block.hasTag("propeller") )
+		if (block.hasTag("propeller"))
 		{
 			Vec2f _veltemp, velNorm;
 			float angleVel;
@@ -590,11 +590,11 @@ void updateArrays(CBlob@ this, Island@ island)
 	this.set("cannons", cannons);
 }
 
-void server_setOwner( CBlob@ this, string owner)
+void server_setOwner(CBlob@ this, string owner)
 {
 	//print( "" + this.getNetworkID() + " seat setOwner: " + owner );
 	this.set("playerOwner", owner);
 	this.set_string("playerOwner", owner);
-	this.Sync("playerOwner", true );
+	this.Sync("playerOwner", true);
 	this.set_u32("lastOwnerUpdate", getGameTime());
 }
