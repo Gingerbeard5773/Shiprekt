@@ -6,14 +6,14 @@
 u8 DAMAGE_FRAMES = 3;
 // onInit: called from engine after blob is created with server_CreateBlob()
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	CSprite @sprite = this.getSprite();
 	sprite.SetZ(510.0f);
 	CShape @shape = this.getShape();
 	sprite.asLayer().SetLighting(false);
 	shape.getConsts().net_threshold_multiplier = -1.0f;
-	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath) );
+	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
 }
 
 void onTick (CBlob@ this)
@@ -24,17 +24,6 @@ void onTick (CBlob@ this)
 	{
 		CRules@ rules = getRules();
 		const int blockType = thisSprite.getFrame();
-		
-		u16 cost = Block::getCost(blockType);	
-		if ( blockType == Block::MOTHERSHIP1 || blockType == Block::MOTHERSHIP2 || blockType == Block::MOTHERSHIP3
-				|| blockType == Block::MOTHERSHIP4 || blockType == Block::MOTHERSHIP6
-				|| blockType == Block::MOTHERSHIP7 || blockType == Block::MOTHERSHIP8 || blockType == Block::MOTHERSHIP9
-				|| blockType == Block::PLATFORM2 )
-		{
-			cost = 15;
-		}
-		
-		this.set_u32("cost", cost);
 		
 		this.set_f32("initial reclaim", this.getHealth());		
 		if (blockType == Block::STATION || blockType == Block::MINISTATION)
@@ -53,7 +42,7 @@ void onTick (CBlob@ this)
 			if (owner !is null)
 			{
 				this.set_string("playerOwner", owner.getPlayer().getUsername());
-				this.Sync("playerOwner", true );
+				this.Sync("playerOwner", true);
 			}
 		}
 	}
@@ -73,7 +62,7 @@ void onTick (CBlob@ this)
 				bool dontHitMore = false;
 			
 				HitInfo@[] hitInfos;
-				if (getMap().getHitInfosFromRay( this.getPosition(), -island.vel.Angle(), island.vel.Length()*2.0f, this, @hitInfos))
+				if (getMap().getHitInfosFromRay(this.getPosition(), -island.vel.Angle(), island.vel.Length()*2.0f, this, @hitInfos))
 				{
 					//HitInfo objects are sorted, first come closest hits
 					for (uint i = 0; i < hitInfos.length; i++)
@@ -96,7 +85,7 @@ void onTick (CBlob@ this)
 								const int other_blockType = blob.getSprite().getFrame();
 								
 								bool docking = (blockType == Block::COUPLING || other_blockType == Block::COUPLING) 
-													&& ((island.isMothership || other_island.isMothership ) || (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
+													&& ((island.isMothership || other_island.isMothership) || (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
 													&& this.getTeamNum() == blob.getTeamNum()
 													&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
 													
@@ -135,17 +124,15 @@ void onTick (CBlob@ this)
 
 // onCollision: called once from the engine when a collision happens; 
 // blob is null when it is a tilemap collision
+// needs to be redone!!
 
 void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
 	if (blob is null || this.hasTag("noCollide") || blob.hasTag("noCollide"))	return;
 
-	f32 this_health = this.getHealth();
-	f32 other_health = blob.getHealth();
-	f32 this_initialHealth = this.getInitialHealth();
-	f32 other_initialHealth = blob.getInitialHealth();
 	const int color = this.getShape().getVars().customData;
 	const int other_color = blob.getShape().getVars().customData;
+
 	if (color > 0 && other_color > 0 && color != other_color) // block vs block
 	{
 		Island@ island = getIsland(color);
@@ -210,15 +197,15 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					Die(this);
 				
 				if (other_blockType == Block::COUPLING)
-					Die( blob );
+					Die(blob);
 			}
 			else if (Block::isRepulsor(blockType) || Block::isRepulsor(other_blockType))//repulsors don't deal damage
 			{
 				if (Block::isRepulsor(blockType))
-					Die( this );
+					Die(this);
 				
 				if (Block::isRepulsor(other_blockType))
-					Die( blob );
+					Die(blob);
 			}
 			else
 			{
@@ -269,116 +256,87 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					}
 				}
 				
-				if ( blockType == Block::RAM )//Ram vs all
+				if (blockType == Block::RAM )//Ram vs all
 				{
-					if ( other_blockType == Block::MOTHERSHIP5 || other_blockType == Block::SECONDARYCORE || other_blockType == Block::DECOYCORE )
+					if (other_blockType == Block::MOTHERSHIP5 || other_blockType == Block::SECONDARYCORE || other_blockType == Block::DECOYCORE )
 					{
 						blob.server_Hit( this, point1, Vec2f_zero, other_solid ? 0.75f : 0.37f, 0, true );
-						Die( this );
+						Die(this);
 					}
-					else if ( other_blockType == Block::PROPELLER )
+					else if (other_blockType == Block::PROPELLER)
 					{
-						this.server_Hit( this, point1, Vec2f_zero, 2.2f, 0, true );
-						Die( blob );
+						this.server_Hit( this, point1, Vec2f_zero, 2.2f, 0, true);
+						Die(blob);
 					}
-					else if ( other_blockType == Block::RAMENGINE )
+					else if (other_blockType == Block::RAMENGINE)
 					{
-						this.server_Hit( this, point1, Vec2f_zero, 1.1f, 0, true );
-						Die( blob );
+						this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
+						Die(blob);
 					}
-					else if ( other_blockType == Block::SOLID || other_blockType == Block::RAM )
+					else if (other_blockType == Block::SOLID || other_blockType == Block::RAM)
 					{
-						Die( this );
-						Die( blob );
+						Die(this);
+						Die(blob);
 					}
-					else if ( other_blockType == Block::ANTIRAM)
+					else if (other_blockType == Block::ANTIRAM)
 					{
-						this.server_Hit( blob, point1, Vec2f_zero, 1.0f, 0, true );
-						Die( this );
+						this.server_Hit(blob, point1, Vec2f_zero, 1.0f, 0, true);
+						Die(this);
 					}
-					else if ( blob.hasTag( "weapon" ) )
+					else if (blob.hasTag("weapon"))
 					{
-						if ( other_health >= this_health )
+						if (blob.getHealth() >= this.getHealth())
 						{
-							Die( this );
-							this.server_Hit( blob, point1, Vec2f_zero, solid ? this_health : this_health/2.0f, 0, true );
+							Die(this);
+							this.server_Hit(blob, point1, Vec2f_zero, solid ? this.getHealth() : this.getHealth()/2.0f, 0, true);
 						}
 						else
 						{
-							Die( blob );
-							blob.server_Hit( this, point1, Vec2f_zero, 2.0f, 0, true );
+							Die(blob);
+							blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
 						}
 					}
 					else if (!other_solid && other_island !is null)
 					{
-						this.server_Hit( this, point1, Vec2f_zero, 1.1f, 0, true );
-						Die( blob );
+						this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
+						Die(blob);
 					}
 					else 
-						Die( blob );
+						Die(blob);
 				}
-				if ( blockType == Block::FAKERAM )
+				if (blockType == Block::FAKERAM)
 				{
-					Die( this );
+					Die(this);
 				}
-				if ( blockType == Block::ANTIRAM )//Anti Ram
+				if (blockType == Block::ANTIRAM)//Anti Ram
 				{
-					if ( other_blockType == Block::MOTHERSHIP5 || other_blockType == Block::SECONDARYCORE || other_blockType == Block::DECOYCORE )
+					if (other_blockType == Block::MOTHERSHIP5 || 
+						other_blockType == Block::SECONDARYCORE || 
+						other_blockType == Block::DECOYCORE || 
+						other_blockType == Block::PROPELLER ||
+						other_blockType == Block::ANTIRAM || 
+						other_blockType == Block::SOLID || 
+						other_blockType == Block::DOOR ||
+						blob.hasTag("weapon") ||
+						!other_solid && other_island !is null)
 					{
 						//blob.server_Hit( this, point1, Vec2f_zero, other_solid ? 0.5f : 0.2f, 0, true );
 						//Die( this );
 					}
-					else if ( other_blockType == Block::PROPELLER )
+					else if (other_blockType == Block::RAMENGINE)
 					{
-						//this.server_Hit( this, point1, Vec2f_zero, 0.4f, 0, true );
-						//Die( blob );
-					}
-					else if ( other_blockType == Block::RAMENGINE )
-					{
-						this.server_Hit( this, point1, Vec2f_zero, 0.5f, 0, true );//DASKEW
+						this.server_Hit(this, point1, Vec2f_zero, 0.5f, 0, true);//DASKEW
 						Die( blob );
 					}
-					else if ( other_blockType == Block::RAM )
+					else if (other_blockType == Block::RAM)
 					{
-						this.server_Hit( this, point1, Vec2f_zero, 1.0f, 0, true );
-						Die( blob );
+						this.server_Hit(this, point1, Vec2f_zero, 1.0f, 0, true);
+						Die(blob);
 					}
-					else if ( other_blockType == Block::SEAT )//seats don't deal damage
+					else if (other_blockType == Block::SEAT)//seats don't deal damage
 					{
-						this.server_Hit( this, point1, Vec2f_zero, 0.2f, 0, true );
-						Die( blob );
-					}
-					else if ( other_blockType == Block::ANTIRAM )//seats don't deal damage
-					{
-						
-					}
-					else if ( other_blockType == Block::DOOR )
-					{
-						//this.server_Hit( this, point1, Vec2f_zero, 1.1f, 0, true );
-						//Die( blob );
-					}
-					else if ( other_blockType == Block::SOLID )
-					{
-						//this.server_Hit( this, point1, Vec2f_zero, 1.8f, 0, true );
-						//blob.server_Hit( this, point1, Vec2f_zero, 2.0f, 0, true );
-					}
-					else if ( blob.hasTag( "weapon" ) )
-					{
-						if ( other_health >= this_health )
-						{
-							//Die( this );
-							//this.server_Hit( blob, point1, Vec2f_zero, solid ? this_health : this_health/2.0f, 0, true );
-						}
-						else
-						{
-							//Die( blob );
-							//blob.server_Hit( this, point1, Vec2f_zero, 2.0f, 0, true );
-						}
-					}
-					else if (!other_solid && other_island !is null)
-					{
-						//this.server_Hit( this, point1, Vec2f_zero, 1.1f, 0, true );
-						//Die( blob );
+						this.server_Hit( this, point1, Vec2f_zero, 0.2f, 0, true);
+						Die(blob);
 					}
 					else 
 						blob.server_Hit( blob, point1, Vec2f_zero, 1.1f, 0, true );
@@ -410,20 +368,20 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 						CSprite@ sprite = blob.getSprite();
 						if (sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
 						{
-							directionalSoundPlay( "SR_ManDeath" + (XORRandom(4) + 1), pos);
+							directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos);
 							sprite.Gib();
 						}
 					}
 				}
 				
 				//set position collision
-				blob.setPosition( pos + normal * -blob.getRadius() * 0.55f );
+				blob.setPosition(pos + normal * -blob.getRadius() * 0.55f);
 			}
 		}
 	}
 }
 
-void CollisionResponse1( Island@ island, Island@ other_island, Vec2f point1, bool docking = false )
+void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool docking = false)
 {
 	if (island is null || other_island is null)
 		return;
@@ -588,8 +546,8 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 		}
 	
 		//add damage layers
-		f32 step = initHealth / ( DAMAGE_FRAMES + 1 );
-		f32 currentStep = Maths::Floor( oldHealth/step ) * step;
+		f32 step = initHealth / (DAMAGE_FRAMES + 1);
+		f32 currentStep = Maths::Floor(oldHealth/step) * step;
 		
 		if (hp < currentStep && hp <= initHealth - step && Block::isSolid(blockType))
 		{
@@ -601,19 +559,19 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 			{
 				const int frame = (oldHealth > initHealth * 0.5f) ? bFrame : bFrame + 1;	
 				CSprite@ sprite = this.getSprite();
-				CSpriteLayer@ layer = sprite.addSpriteLayer( "dmg"+frame );
+				CSpriteLayer@ layer = sprite.addSpriteLayer("dmg"+frame);
 				if (layer !is null)
 				{
 					layer.SetRelativeZ(1+frame);
-					layer.SetLighting( false );
+					layer.SetLighting(false);
 					layer.SetFrame(frame);
 					layer.RotateBy(XORRandom(4) * 90, Vec2f_zero);
 				}
 			}
 
-		    MakeDustParticle( this.getPosition(), "/dust2.png");
+		    MakeDustParticle(this.getPosition(), "/dust2.png");
 	    }
-		if (oldHealth >= initHealth*0.80f)
+		else if (oldHealth >= initHealth * 0.80f && (hp > oldHealth))
 		{
 			CSprite@ sprite = this.getSprite();
 			for (uint frame = 0; frame < 11; ++frame)

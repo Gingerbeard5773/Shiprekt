@@ -32,8 +32,6 @@ void onTick(CBlob@ this)
 			f32 blocks_angle = this.get_f32("blocks_angle");//next step angle
 			f32 target_angle = this.get_f32("target_angle");//final angle (after manual rotation)
 			Vec2f aimPos = this.getAimPos();
-			this.set_Vec2f("aim_pos", aimPos);
-			this.Sync("aim_pos", false);
 			
 			CBlob@ refBlob = getIslandBlob(this);
             if (refBlob is null)
@@ -178,7 +176,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 		offset.RotateBy(refBAngle);                
   
 		block.setPosition(cursor_pos + offset);//align to island grid
-		block.setAngleDegrees((refBAngle + blocks_angle) % 360.0f);//set angle: reference angle + rotation angle
+		block.setAngleDegrees((refBAngle + blocks_angle + (block.hasTag("propeller") ? 90.0f : 0.0f)) % 360.0f);//set angle: reference angle + rotation angle
 
 		SetDisplay(block, color_white, RenderStyle::additive, 560.0f);
 	}
@@ -227,7 +225,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					b.set_u16("ownerID", 0);//so it wont add to owner blocks
 					f32 z = 510.0f;
 					if (b.getSprite().getFrame() == 0)	z = 509.0f;//platforms
-					else if (b.hasTag("weapon"))	z = 511.0f;//weaps
+					else if (b.hasTag("weapon")) z = 511.0f;//weaps
 					SetDisplay(b, color_white, RenderStyle::normal, z);
 					if (!isServer())//add it locally till a sync
 					{
@@ -263,7 +261,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
     }
 }
 
-void SetDisplay( CBlob@ blob, SColor color, RenderStyle::Style style, f32 Z = -10000)
+void SetDisplay(CBlob@ blob, SColor color, RenderStyle::Style style, f32 Z = -10000)
 {
     CSprite@ sprite = blob.getSprite();
     sprite.asLayer().SetColor(color);

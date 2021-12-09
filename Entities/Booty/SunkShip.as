@@ -184,6 +184,7 @@ void server_giveBooty( string name, u16 ammount )
 
 void onTick(CSprite@ this)
 {
+	this.RotateBy(1, Vec2f_zero);
 	if ( this.animation.name == "default" && this.animation.ended() )
 		this.SetAnimation( "pulse" );
 

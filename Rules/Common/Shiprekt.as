@@ -312,7 +312,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						return false;
 					
 					Vec2f playerPos = pBlob.getPosition();
-					Island@ isle = getIsland( player.getBlob());
+					Island@ isle = getIsland(player.getBlob());
 					int numBlocks = isle.blocks.length;
 					if (isServer()) 
 					{
@@ -321,14 +321,14 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 							IslandBlock@ isle_block = isle.blocks[i];
 							if (isle_block is null) continue;
 
-							CBlob@ block = getBlobByNetworkID( isle_block.blobID );
+							CBlob@ block = getBlobByNetworkID(isle_block.blobID);
 							if (block is null) continue;
 							
 							const int blockType = block.getSprite().getFrame();
 							
-							if ( !block.hasTag("mothership") )
+							if (!block.hasTag("mothership"))
 							{
-								block.Tag( "noCollide" );
+								block.Tag("noCollide");
 								block.server_Die();
 							}
 						}
@@ -337,7 +337,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!clearmap")
 				{
 					CBlob@[] blocks;
-					if (getBlobsByName("block", @blocks ))
+					if (getBlobsByName("block", @blocks))
 					{							
 						int numBlocks = blocks.length;
 						if (isServer()) 

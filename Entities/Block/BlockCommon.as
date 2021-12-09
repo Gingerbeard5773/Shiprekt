@@ -40,11 +40,9 @@ namespace Block
 		
 		HARVESTER = 42,
 		HARVESTER_A1 = 67,
-		HARVESTER_A2 = 68,
 
 		PATCHER = 51,
 		PATCHER_A1 = 69,
-		PATCHER_A2 = 70,
 		
 		HARPOON = 43,
 		HARPOON_A1 = 75,
@@ -57,8 +55,6 @@ namespace Block
 		
 		LAUNCHER = 36,
 		LAUNCHER1 = 51,
-		LAUNCHER2 = 52,
-		LAUNCHER3 = 53,
 
 		CANNON = 7,
 		CANNON_A1 = 30,
@@ -128,43 +124,43 @@ namespace Block
 		print( "** Getting Weights from cfg" );
 		Block::Weights w;
 
-		w.mothership = cfg.read_f32( "w_mothership" );
-		w.wood = cfg.read_f32( "w_wood" );
-		w.ram = cfg.read_f32( "w_ram" );
-		w.fakeram = cfg.read_f32( "w_fakeram" );
-		w.antiram = cfg.read_f32( "w_antiram" );
-		w.solid = cfg.read_f32( "w_solid" );
-		w.door = cfg.read_f32( "w_door" );
-		w.propeller = cfg.read_f32( "w_propeller" );
-		w.ramEngine = cfg.read_f32( "w_ramEngine" );
-		w.seat = cfg.read_f32( "w_seat" );
-		w.ramChair = cfg.read_f32( "w_ramChair" );
-		w.cannon = cfg.read_f32( "w_cannon" );
-		w.harvester = cfg.read_f32( "w_harvester" );
+		w.mothership = cfg.read_f32("w_mothership");
+		w.wood = cfg.read_f32("w_wood");
+		w.ram = cfg.read_f32("w_ram");
+		w.fakeram = cfg.read_f32("w_fakeram");
+		w.antiram = cfg.read_f32("w_antiram");
+		w.solid = cfg.read_f32("w_solid");
+		w.door = cfg.read_f32("w_door");
+		w.propeller = cfg.read_f32("w_propeller");
+		w.ramEngine = cfg.read_f32("w_ramEngine");
+		w.seat = cfg.read_f32("w_seat");
+		w.ramChair = cfg.read_f32("w_ramChair");
+		w.cannon = cfg.read_f32("w_cannon");
+		w.harvester = cfg.read_f32("w_harvester");
 		w.patcher = cfg.read_f32("w_patcher");
-		w.harpoon = cfg.read_f32( "w_harpoon" );
-		w.machinegun = cfg.read_f32( "w_machinegun" );
-		w.flak = cfg.read_f32( "w_flak" );
-		w.hyperflak = cfg.read_f32( "w_hyperflak" );
-		w.pointDefense = cfg.read_f32( "w_pointDefense" );
-		w.launcher = cfg.read_f32( "w_launcher" );
-		w.bomb = cfg.read_f32( "w_bomb" );
-		w.coupling = cfg.read_f32( "w_coupling" );
-		w.repulsor = cfg.read_f32( "w_repulsor" );
-		w.secondaryCore = cfg.read_f32( "w_secondaryCore" );
-		w.decoyCore = cfg.read_f32( "w_decoyCore" );
+		w.harpoon = cfg.read_f32("w_harpoon");
+		w.machinegun = cfg.read_f32("w_machinegun");
+		w.flak = cfg.read_f32("w_flak");
+		w.hyperflak = cfg.read_f32("w_hyperflak");
+		w.pointDefense = cfg.read_f32("w_pointDefense");
+		w.launcher = cfg.read_f32("w_launcher");
+		w.bomb = cfg.read_f32("w_bomb");
+		w.coupling = cfg.read_f32("w_coupling");
+		w.repulsor = cfg.read_f32("w_repulsor");
+		w.secondaryCore = cfg.read_f32("w_secondaryCore");
+		w.decoyCore = cfg.read_f32("w_decoyCore");
 
-		this.set( "weights", w );
+		this.set("weights", w);
 		return @w;
 	}
 	
-	Weights@ getWeights( CRules@ this )
+	Weights@ getWeights(CRules@ this)
 	{
 		Block::Weights@ w;
-		this.get( "weights", @w );
+		this.get("weights", @w);
 		
-		if ( w is null )
-			@w = Block::queryWeights( this );
+		if (w is null)
+			@w = Block::queryWeights(this);
 
 		return w;
 	}
@@ -199,101 +195,101 @@ namespace Block
 		u16 decoyCore;
 	}
 	
-	Costs@ queryCosts( CRules@ this )
+	Costs@ queryCosts(CRules@ this)
 	{
 		ConfigFile cfg;
-		if ( !cfg.loadFile( "SHRKTVars.cfg" ) ) 
+		if (!cfg.loadFile("SHRKTVars.cfg")) 
 			return null;
 		
-		print( "** Getting Costs from cfg" );
+		print("** Getting Costs from cfg");
 		Block::Costs c;
 		
 		c.station = 100;
 		c.ministation = 40;
-		c.wood = cfg.read_u16( "cost_wood" );
-		c.ram = cfg.read_u16( "cost_ram" );
-		c.fakeram = cfg.read_u16( "cost_fakeram" );
-		c.antiram = cfg.read_u16( "cost_antiram" );
-		c.solid = cfg.read_u16( "cost_solid" );
-		c.door = cfg.read_u16( "cost_door" );
-		c.propeller = cfg.read_u16( "cost_propeller" );
-		c.ramEngine = cfg.read_u16( "cost_ramEngine" );
-		c.seat = cfg.read_u16( "cost_seat" );
-		c.ramChair = cfg.read_u16( "cost_ramChair" );
-		c.cannon = cfg.read_u16( "cost_cannon" );
-		c.harvester = cfg.read_u16( "cost_harvester" );
+		c.wood = cfg.read_u16("cost_wood");
+		c.ram = cfg.read_u16("cost_ram");
+		c.fakeram = cfg.read_u16("cost_fakeram");
+		c.antiram = cfg.read_u16("cost_antiram");
+		c.solid = cfg.read_u16("cost_solid");
+		c.door = cfg.read_u16("cost_door");
+		c.propeller = cfg.read_u16("cost_propeller");
+		c.ramEngine = cfg.read_u16("cost_ramEngine");
+		c.seat = cfg.read_u16("cost_seat");
+		c.ramChair = cfg.read_u16("cost_ramChair");
+		c.cannon = cfg.read_u16("cost_cannon");
+		c.harvester = cfg.read_u16("cost_harvester");
 		c.patcher = cfg.read_u16("cost_patcher");
-		c.harpoon = cfg.read_u16( "cost_harpoon" );
-		c.machinegun = cfg.read_u16( "cost_machinegun" );
-		c.flak = cfg.read_u16( "cost_flak" );
-		c.hyperflak = cfg.read_u16( "cost_hyperflak" );
-		c.pointDefense = cfg.read_u16( "cost_pointDefense" );
-		c.launcher = cfg.read_u16( "cost_launcher" );
-		c.bomb = cfg.read_u16( "cost_bomb" );
-		c.coupling = cfg.read_u16( "cost_coupling" );
-		c.repulsor = cfg.read_u16( "cost_repulsor" );
-		c.secondaryCore = cfg.read_u16( "cost_secondaryCore" );
-		c.decoyCore = cfg.read_u16( "cost_decoyCore" );
+		c.harpoon = cfg.read_u16("cost_harpoon");
+		c.machinegun = cfg.read_u16("cost_machinegun");
+		c.flak = cfg.read_u16("cost_flak");
+		c.hyperflak = cfg.read_u16("cost_hyperflak");
+		c.pointDefense = cfg.read_u16("cost_pointDefense");
+		c.launcher = cfg.read_u16("cost_launcher");
+		c.bomb = cfg.read_u16("cost_bomb");
+		c.coupling = cfg.read_u16("cost_coupling");
+		c.repulsor = cfg.read_u16("cost_repulsor");
+		c.secondaryCore = cfg.read_u16("cost_secondaryCore");
+		c.decoyCore = cfg.read_u16("cost_decoyCore");
 
-		this.set( "costs", c );
+		this.set("costs", c);
 		return @c;
 	}
 	
-	Costs@ getCosts( CRules@ this )
+	Costs@ getCosts(CRules@ this)
 	{
 		Block::Costs@ c;
-		this.get( "costs", @c );
+		this.get("costs", @c);
 		
-		if ( c is null )
-			@c = Block::queryCosts( this );
+		if (c is null)
+			@c = Block::queryCosts(this);
 			
 		return c;
 	}
 	
-	bool isSolid( const uint blockType )
+	bool isSolid(const uint blockType)
 	{
 		return (blockType == Block::SOLID || blockType == Block::PROPELLER || blockType == Block::RAMENGINE || blockType == Block::RAM || blockType == Block::FAKERAM || blockType == Block::ANTIRAM || blockType == Block::POINTDEFENSE);
 	}
 
-	bool isCore( const uint blockType )
+	bool isCore(const uint blockType)
 	{
 		return (blockType >= Block::MOTHERSHIP1 && blockType <= Block::MOTHERSHIP9);
 	}
 
-	bool isDoor( const uint blockType )
+	bool isDoor(const uint blockType)
 	{ 
 		return (blockType == Block::DOOR);
 	}
 
-	bool isBomb( const uint blockType )
+	bool isBomb(const uint blockType)
 	{
 		return (blockType >= 19 && blockType <= 21);
 	}
 	
-	bool isRepulsor( const uint blockType )
+	bool isRepulsor(const uint blockType)
 	{
 		return (blockType >= 28 && blockType <= 30);
 	}
 
-	bool isType( CBlob@ blob, const uint blockType )
+	bool isType(CBlob@ blob, const uint blockType)
 	{
 		return (blob.getSprite().getFrame() == blockType);
 	}
 
-	uint getType( CBlob@ blob )
+	uint getType(CBlob@ blob)
 	{
 		return blob.getSprite().getFrame();
 	}
 
-	f32 getWeight ( const uint blockType )
+	f32 getWeight (const uint blockType)
 	{
 		CRules@ rules = getRules();
 		
-		Weights@ w = Block::getWeights( rules );
+		Weights@ w = Block::getWeights(rules);
 
-		if ( w is null )
+		if (w is null)
 		{
-			warn( "** Couldn't get Weights!" );
+			warn("** Couldn't get Weights!");
 			return 0;
 		}
 		

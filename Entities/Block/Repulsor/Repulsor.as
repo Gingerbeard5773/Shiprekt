@@ -20,18 +20,18 @@ void onInit( CBlob@ this )
 	this.server_SetHealth( 2.0f );
 
 	//Set Owner
-	if ( getNet().isServer() )
+	if (isServer())
 	{
-		CBlob@ owner = getBlobByNetworkID( this.get_u16( "ownerID" ) );    
-		if ( owner !is null )
+		CBlob@ owner = getBlobByNetworkID(this.get_u16("ownerID"));    
+		if (owner !is null)
 		{
-			this.set_string( "playerOwner", owner.getPlayer().getUsername() );
-			this.Sync( "playerOwner", true );
+			this.set_string( "playerOwner", owner.getPlayer().getUsername());
+			this.Sync("playerOwner", true);
 		}
 	}
 
     CSprite@ sprite = this.getSprite();
-    if(sprite !is null)
+    if (sprite !is null)
     {
         //default animation
         {
@@ -42,13 +42,13 @@ void onInit( CBlob@ this )
         {
             Animation@ anim = sprite.addAnimation("activated", FUSE_TIME/3, false);
 
-            int[] frames = { Block::REPULSOR, Block::REPULSOR_A1, Block::REPULSOR_A2, Block::REPULSOR_A2, Block::REPULSOR_A2, };
+            int[] frames = {Block::REPULSOR, Block::REPULSOR_A1, Block::REPULSOR_A2, Block::REPULSOR_A2, Block::REPULSOR_A2};
             anim.AddFrames(frames);
         }
     }
 }
 
-void Repulse( CBlob@ this )
+void Repulse(CBlob@ this)
 {
     Vec2f pos = this.getPosition();
 	directionalSoundPlay( "Repulse2.ogg", pos, 2.5f );
@@ -80,7 +80,7 @@ void Repulse( CBlob@ this )
 		}
 		
 		//turn on props
-		if ( getNet().isServer() && b.hasTag( "propeller" )  && isle.owner == "" )
+		if (isServer() && b.hasTag("propeller") && isle.owner == "")
 		{
 			b.set_u32( "onTime", getGameTime() );
 			b.set_f32( "power", -1.0f );
@@ -103,10 +103,10 @@ void Repulse( CBlob@ this )
 
 void onTick( CBlob@ this )
 {
-	if ( this.hasTag( "activated" ) )
+	if (this.hasTag("activated"))
 	{
 		u32 gameTime = getGameTime();
-		if ( getNet().isServer() && gameTime == this.get_u32( "detonationTime" ) - 1 )
+		if (isServer() && gameTime == this.get_u32( "detonationTime" ) - 1 )
 		{
 			this.getShape().getVars().customData = -1;
 			getRules().set_bool( "dirty islands", true );

@@ -1,18 +1,23 @@
+#include "TileCommon.as";
 Random _waterparticlerandom(0x1a73a);
 
 CParticle@ MakeWaterParticle(Vec2f pos, Vec2f vel )
 {
-	CParticle@ p = ParticleAnimated( "Sprites/water_splash.png",
-											  pos, vel,
-											  _waterparticlerandom.NextFloat() * 360.0f, //angle
-											  0.5f+_waterparticlerandom.NextFloat() * 0.5f, //scale
-											  5, //animtime
-											  0.0f, //gravity
-											  true ); //selflit
-	if(p !is null)
-		p.Z = 100.0f;
+	if (!isTouchingLand(pos))
+	{
+		CParticle@ p = ParticleAnimated( "Sprites/water_splash.png",
+												  pos, vel,
+												  _waterparticlerandom.NextFloat() * 360.0f, //angle
+												  0.5f+_waterparticlerandom.NextFloat() * 0.5f, //scale
+												  5, //animtime
+												  0.0f, //gravity
+												  true ); //selflit
+		if(p !is null)
+			p.Z = 100.0f;
 
-	return p;
+		return p;
+	}
+	return null;
 }
 
 CParticle@ MakeWaterWave(Vec2f pos, Vec2f vel, float angle)

@@ -3,6 +3,7 @@
 #include "IslandsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
+#include "TileCommon.as";
 #include "ParticleSparks.as";
  
 const f32 BULLET_RANGE = 100.0f;
@@ -12,7 +13,7 @@ const int NUM_HEALS = 5;
 
 Random _shotspreadrandom(0x11598); //clientside
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.getCurrentScript().tickFrequency = 2;
 
@@ -23,18 +24,12 @@ void onInit( CBlob@ this )
 	this.addCommandID("disable");
    
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer( "weapon", 16, 16 );
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
     if (layer !is null)
     {
         layer.SetRelativeZ(2);
-        layer.SetLighting( false );
-        Animation@ anim = layer.addAnimation( "fire", Maths::Round( CONSTRUCT_RATE ), false );
-        anim.AddFrame(Block::PATCHER_A2);
-        anim.AddFrame(Block::PATCHER_A1);
-               
-		Animation@ anim3 = layer.addAnimation( "default", 1, false );
-		anim3.AddFrame(Block::PATCHER_A1);
-        layer.SetAnimation("default");  
+        layer.SetLighting(false);
+        layer.SetFrame(Block::PATCHER_A1);  
     }
 	
 	sprite.SetEmitSound("/ReclaimSound.ogg");
@@ -44,20 +39,20 @@ void onInit( CBlob@ this )
 	this.set_u32("fire time", 0);
 }
  
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
-	if ( this.getShape().getVars().customData <= 0 )//not placed yet
+	if (this.getShape().getVars().customData <= 0 )//not placed yet
 		return;
 		
 	u32 gameTime = getGameTime();
 	
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer( "laser" );
+    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 	
 	//kill laser after a certain time
-	if ( laser !is null && this.get_u32("fire time") + CONSTRUCT_RATE < gameTime )
+	if (laser !is null && this.get_u32("fire time") + CONSTRUCT_RATE < gameTime)
 	{
-		if ( sprite.getEmitSoundPaused() == false )
+		if (!sprite.getEmitSoundPaused())
 		{
 			sprite.SetEmitSoundPaused(true);
 		}	
@@ -67,56 +62,45 @@ void onTick( CBlob@ this )
 	//don't shoot if docked on mothership
 	if (isServer() && (gameTime + this.getNetworkID() * 33) % 15 == 0)//every 1 sec
 	{	
-		Island@ isle = getIsland( this.getShape().getVars().customData );
-		if ( isle !is null )
+		Island@ isle = getIsland(this.getShape().getVars().customData);
+		if (isle !is null)
 		{
-			if ( isle.isMothership )
-			{			
-				//don't shoot if docked on mothership
-				//CBlob@ core = getMothership( this.getTeamNum() );
-				//if ( core !is null )
-				//	this.set_bool( "mShipDocked", !coreLinkedDirectional( this, gameTime, core.getPosition() ) ); //very buggy
-				this.set_bool( "mShipDocked", false );
-			} 
-			else
-				this.set_bool( "mShipDocked", false );
+				this.set_bool("mShipDocked", false);
 		}
 	}
 }
  
-bool canShoot( CBlob@ this )
+bool canShoot(CBlob@ this)
 {
-	return ( this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime() );
+	return (this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime());
 }
  
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if ( !canShoot(this) )
+		if (!canShoot(this))
 			return;
 		
 		u16 shooterID;
-		if ( !params.saferead_u16(shooterID) )
+		if (!params.saferead_u16(shooterID))
 			return;
 			
-		CBlob@ shooter = getBlobByNetworkID( shooterID );
+		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null)
 			return;
 		
 		bool isServer = getNet().isServer();
 		Vec2f pos = this.getPosition();
 		
-		Island@ island = getIsland( this.getShape().getVars().customData );
-		if ( island is null )
+		Island@ island = getIsland(this.getShape().getVars().customData);
+		if (island is null)
 			return;
 
 		this.set_u32("fire time", getGameTime());
 			
 		//effects
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.getSpriteLayer( "weapon" );
-		layer.SetAnimation( "default" );
 	   
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 		   		
@@ -142,9 +126,9 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				const bool isBlock = b.getName() == "block";
 
 
-				if ( isBlock )
+				if (isBlock)
 				{					
-					if ( getNet().isClient() )//effects
+					if (isClient())//effects
 					{
 						sprite.RemoveSpriteLayer("laser");
 						CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "RepairBeam.png", 16, 16);
@@ -163,13 +147,13 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							laser.SetRelativeZ(1);
 						}
 
-						hitEffects(b, hi.hitpos);
+						sparks(hi.hitpos, 4);
 					}			
 
-					if(count >= NUM_HEALS) continue;
+					if (count >= NUM_HEALS) continue;
 								
 					CPlayer@ thisPlayer = shooter.getPlayer();						
-					if ( thisPlayer is null ) 
+					if (thisPlayer is null) 
 						return;		
 					
 					Island@ otherIsland = getIsland(color);
@@ -187,22 +171,22 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 					f32 currentReclaim = b.get_f32("current reclaim");
 
 					f32 fullConstructAmount;
-					if ( mBlobCost > 0 )
+					if (mBlobCost > 0)
 						fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
-					else if ( blockType == Block::MOTHERSHIP5 )
+					else if (blockType == Block::MOTHERSHIP5)
 						fullConstructAmount = (0.01f)*mMaxHealth;
 					else
 						fullConstructAmount = 0.0f;
 					
-					if ( blockType == Block::MOTHERSHIP5 )
+					if (blockType == Block::MOTHERSHIP5)
 					{
 						const f32 motherInitHealth = 8.0f;
-						if ( (mBlobHealth + reconstructAmount) <= motherInitHealth  )
+						if ((mBlobHealth + reconstructAmount) <= motherInitHealth)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ( (mBlobHealth + reconstructAmount) > motherInitHealth  )
+						else if ((mBlobHealth + reconstructAmount) > motherInitHealth)
 						{
 							reconstructAmount = motherInitHealth - mBlobHealth;
 							reconstructCost = (CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount));
@@ -213,20 +197,20 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 						else
 							reconstructCost = 0;
 
-						if ( cBooty >= reconstructCost && mBlobHealth < motherInitHealth )
+						if (cBooty >= reconstructCost && mBlobHealth < motherInitHealth)
 						{
-							b.server_SetHealth( mBlobHealth + reconstructAmount );
-							server_setPlayerBooty( cName, cBooty - reconstructCost );
+							b.server_SetHealth(mBlobHealth + reconstructAmount);
+							server_setPlayerBooty(cName, cBooty - reconstructCost);
 						}
 					}
-					else if ( blockType == Block::STATION )
+					else if (blockType == Block::STATION || blockType == Block::MINISTATION)
 					{							
-						if ( (currentReclaim + reconstructAmount) <= initialReclaim )
+						if ((currentReclaim + reconstructAmount) <= initialReclaim)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ( (currentReclaim + reconstructAmount) > initialReclaim  )
+						else if ((currentReclaim + reconstructAmount) > initialReclaim)
 						{
 							reconstructAmount = initialReclaim - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
@@ -236,49 +220,23 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							else
 								reconstructCost = 0;
 
-							if ( b.getTeamNum() == 255 ) //neutral
+							if (b.getTeamNum() == 255) //neutral
 							{
-								b.server_setTeamNum( this.getTeamNum() );
-								b.getSprite().SetFrame( Block::STATION );
+								b.server_setTeamNum(this.getTeamNum());
+								b.getSprite().SetFrame(blockType);
 							}
 						}
 						
 						b.set_f32("current reclaim", Maths::Min( mMaxHealth, currentReclaim + reconstructAmount));
 					}
-					else if ( blockType == Block::MINISTATION )
-					{							
-						if ( (currentReclaim + reconstructAmount) <= initialReclaim )
-						{
-							reconstructAmount = fullConstructAmount;
-							reconstructCost = CONSTRUCT_VALUE;
-						}
-						else if ( (currentReclaim + reconstructAmount) > initialReclaim  )
-						{
-							reconstructAmount = initialReclaim - currentReclaim;
-							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
-							
-							if (mBlobHealth < mMaxHealth)
-								reconstructCost *= isMyShip ? 1.0f : 0.20f;
-							else
-								reconstructCost = 0;
-
-							if ( b.getTeamNum() == 255 ) //neutral
-							{
-								b.server_setTeamNum( this.getTeamNum() );
-								b.getSprite().SetFrame( Block::MINISTATION );
-							}
-						}
-						
-						b.set_f32("current reclaim", Maths::Min( mMaxHealth, currentReclaim + reconstructAmount));
-					}
-					else if ( currentReclaim < initialReclaim )
+					else if (currentReclaim < initialReclaim )
 					{					
-						if ( (currentReclaim + reconstructAmount) <= initialReclaim )
+						if ((currentReclaim + reconstructAmount) <= initialReclaim)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ( (currentReclaim + reconstructAmount) > initialReclaim  )
+						else if ((currentReclaim + reconstructAmount) > initialReclaim)
 						{
 							reconstructAmount = initialReclaim - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
@@ -300,7 +258,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							b.set_f32("current reclaim", Maths::Min( mMaxHealth, currentReclaim + reconstructAmount));
 					}
 					
-					if ( currentReclaim >= initialReclaim*0.75f )	//visually repair block
+					if (currentReclaim >= initialReclaim*0.75f)	//visually repair block
 					{
 						CSprite@ mBlobSprite = b.getSprite();
 						for (uint frame = 0; frame < 11; ++frame)
@@ -319,7 +277,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			}
 		}
 		
-		if ( !killed && getNet().isClient() )//full length 'laser'
+		if (!killed && isClient())//full length 'laser'
 		{
 			sprite.RemoveSpriteLayer("laser");
 			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "repairBeam.png", 16, 16);
@@ -331,22 +289,12 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				laser.SetVisible(true);
 				f32 laserLength = Maths::Max(0.1f, (aimVector * (BULLET_RANGE)).getLength() / 16.0f);						
 				laser.ResetTransform();						
-				laser.ScaleBy( Vec2f(laserLength, 1.0f) );							
-				laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f) );								
-				laser.RotateBy( 0.0f, Vec2f());
+				laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+				laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));								
+				laser.RotateBy(0.0f, Vec2f());
 				laser.setRenderStyle(RenderStyle::light);
 				laser.SetRelativeZ(1);
 			}
-			
-			MakeWaterParticle( barrelPos + aimVector * (BULLET_RANGE), Vec2f_zero );
 		}
     }
-}
-
-void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
-{
-	CSprite@ sprite = hitBlob.getSprite();
-	const int blockType = sprite.getFrame();
-
-	sparks(worldPoint, 4);
 }

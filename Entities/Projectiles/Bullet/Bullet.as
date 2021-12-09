@@ -5,6 +5,7 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
+#include "MakeDustParticle";
 
 void onInit(CBlob@ this)
 {
@@ -130,9 +131,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 void onDie(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
-	if (this.getTouchingCount() > 0 || isTouchingLand(pos) || isTouchingRock(pos))
+	if (isTouchingLand(pos) || isTouchingRock(pos))
 	{
-		sparks(pos + this.getVelocity(), 8);
+		AngledDirtParticle(pos, -this.getVelocity().Angle() - 90.0f);
 		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", pos, 0.50f);
 	}
 	else

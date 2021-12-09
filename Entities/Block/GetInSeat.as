@@ -33,8 +33,6 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
     {
 		if (isServer())
 		{
-			string seatOwner;
-			this.get("playerOwner", seatOwner);
 			CBlob@ caller = getBlobByNetworkID(params.read_netid());
 			if (caller !is null)
 			{

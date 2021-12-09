@@ -3,6 +3,7 @@
 #include "IslandsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
+#include "TileCommon.as";
 #include "ParticleSparks.as";
  
 const f32 BULLET_RANGE = 100.0f;
@@ -27,13 +28,7 @@ void onInit(CBlob@ this)
     {
         layer.SetRelativeZ(2);
         layer.SetLighting(false);
-        Animation@ anim = layer.addAnimation("fire", Maths::Round( DECONSTRUCT_RATE ), false);
-        anim.AddFrame(Block::HARVESTER_A2);
-        anim.AddFrame(Block::HARVESTER_A1);
-
-		Animation@ anim3 = layer.addAnimation("default", 1, false);
-		anim3.AddFrame(Block::HARVESTER_A1);
-        layer.SetAnimation("default");  
+        layer.SetFrame(Block::HARVESTER_A1);  
     }
 	
 	sprite.SetEmitSound("/ReclaimSound.ogg");
@@ -69,16 +64,7 @@ void onTick( CBlob@ this )
 		Island@ isle = getIsland(this.getShape().getVars().customData);
 		if (isle !is null)
 		{
-			if (isle.isMothership)
-			{			
-				//don't shoot if docked on mothership
-				//CBlob@ core = getMothership( this.getTeamNum() );
-				//if ( core !is null )
-				//	this.set_bool( "mShipDocked", !coreLinkedDirectional( this, gameTime, core.getPosition() ) ); //very buggy
-				this.set_bool("mShipDocked", false);
-			} 
-			else
-				this.set_bool("mShipDocked", false);
+			this.set_bool("mShipDocked", false);
 		}
 	}
 }
@@ -88,7 +74,7 @@ bool canShoot(CBlob@ this)
 	return (this.get_u32("fire time") + DECONSTRUCT_RATE < getGameTime());
 }
  
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire"))
     {
@@ -97,10 +83,10 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		u16 shooterID;
 		if (!params.saferead_u16(shooterID)) return;
 			
-		CBlob@ shooter = getBlobByNetworkID( shooterID );
+		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null) return;
 		
-		Island@ island = getIsland( this.getShape().getVars().customData );
+		Island@ island = getIsland( this.getShape().getVars().customData);
 		if (island is null) return;
 
 		this.set_u32("fire time", getGameTime());
@@ -155,7 +141,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 							laser.SetRelativeZ(1);
 						}
 
-						hitEffects(b, hi.hitpos);
+						sparks(hi.hitpos, 4);
 					}			
 								
 					CPlayer@ thisPlayer = shooter.getPlayer();						
@@ -238,7 +224,7 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "ReclaimBeam.png", 16, 16);
 			if (laser !is null)
 			{
-				Animation@ anim = laser.addAnimation( "default", 1, false );
+				Animation@ anim = laser.addAnimation("default", 1, false);
 				int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 				anim.AddFrames(frames);
 				laser.SetVisible(true);
@@ -250,16 +236,6 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 				laser.setRenderStyle(RenderStyle::light);
 				laser.SetRelativeZ(1);
 			}
-			
-			MakeWaterParticle(barrelPos + aimVector * (BULLET_RANGE), Vec2f_zero);
 		}
     }
-}
-
-void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
-{
-	CSprite@ sprite = hitBlob.getSprite();
-	const int blockType = sprite.getFrame();
-
-	sparks(worldPoint, 4);
 }

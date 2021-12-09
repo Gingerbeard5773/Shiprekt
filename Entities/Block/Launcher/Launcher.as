@@ -33,16 +33,16 @@ const uint8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotspreadrandom(0x11598); //clientside
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("weapon");
 	this.Tag("usesAmmo");
 	this.Tag("machinegun"); //for seat.as
 	this.addCommandID("fire");
 	this.addCommandID("disable");
-	this.set_bool( "mShipDocked", false );
+	this.set_bool("mShipDocked", false);
 
-	if ( getNet().isServer() )
+	if (isServer())
 	{
 		this.set('ammo', MAX_AMMO);
 		this.set('maxAmmo', MAX_AMMO);
@@ -54,33 +54,25 @@ void onInit( CBlob@ this )
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer( "weapon", 16, 16 );
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
     if (layer !is null)
     {
         layer.SetRelativeZ(2);
-        layer.SetLighting( false );
-        Animation@ anim = layer.addAnimation( "fire", Maths::Round( MIN_FIRE_PAUSE ), false );
-        anim.AddFrame(Block::LAUNCHER3);
-        anim.AddFrame(Block::LAUNCHER1);
-
-		Animation@ anim3 = layer.addAnimation( "default", 1, false );
-		anim3.AddFrame(Block::LAUNCHER1);
-        layer.SetAnimation("default");
+        layer.SetLighting(false);
+        layer.SetFrame(Block::LAUNCHER1);
     }
 
 	this.set_u32("fire time", 0);
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
-	if ( this.getShape().getVars().customData <= 0 )//not placed yet
+	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
 
 	u32 gameTime = getGameTime();
 
-	CSprite@ sprite = this.getSprite();
-
-if (getNet().isServer())
+	if (isServer())
 	{
 		Island@ isle = getIsland(this.getShape().getVars().customData);
 
@@ -92,7 +84,7 @@ if (getNet().isServer())
 
 			if (ammo < maxAmmo)
 			{
-				if (isle.isMothership || isle.isStation || isle.isMiniStation )
+				if (isle.isMothership || isle.isStation || isle.isMiniStation)
 				{
 					if (gameTime % (30 * REFILL_SECONDS) == 0)
 					{
@@ -117,12 +109,12 @@ if (getNet().isServer())
 	}
 }
 
-bool canShoot( CBlob@ this )
+bool canShoot(CBlob@ this)
 {
-	return ( this.get_u32("fire time") + FIRE_RATE < getGameTime() ) && !this.get_bool( "mShipDocked" );
+	return (this.get_u32("fire time") + FIRE_RATE < getGameTime()) && !this.get_bool("mShipDocked");
 }
 
-bool isClear( CBlob@ this )
+bool isClear(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
@@ -130,11 +122,11 @@ bool isClear( CBlob@ this )
 	bool clear = true;
 	
 	CBlob@[] blobs;
-	if( getMap().getBlobsAtPosition(pos + aimVector*8, @blobs ) )
-		for ( uint i = 0; i < blobs.length; i++ )
+	if (getMap().getBlobsAtPosition(pos + aimVector*8, @blobs))
+		for (uint i = 0; i < blobs.length; i++)
 		{
 			CBlob@ b =  blobs[i];
-			if( b is null || b is this ) continue;
+			if (b is null || b is this) continue;
 			const int blockType = b.getSprite().getFrame();
 			if (blockType == Block::SOLID && b.getTeamNum() == teamNum)
 			{
@@ -144,13 +136,13 @@ bool isClear( CBlob@ this )
 		}
 
 	HitInfo@[] hitInfos;
-	if( getMap().getHitInfosFromRay( pos, -aimVector.Angle(), BULLET_RANGE/4, this, @hitInfos ) )
-		for ( uint i = 0; i < hitInfos.length; i++ )
+	if (getMap().getHitInfosFromRay( pos, -aimVector.Angle(), BULLET_RANGE/4, this, @hitInfos ) )
+		for (uint i = 0; i < hitInfos.length; i++)
 		{
 			CBlob@ b =  hitInfos[i].blob;
-			if( b is null || b is this ) continue;
+			if (b is null || b is this) continue;
 
-			if ( b.hasTag("weapon") && b.getTeamNum() == teamNum )//team weaps
+			if (b.hasTag("weapon") && b.getTeamNum() == teamNum)//team weaps
 			{
 				clear = false;
 				break;
@@ -160,83 +152,76 @@ bool isClear( CBlob@ this )
 	return clear;
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if ( !canShoot(this) )
+		if (!canShoot(this))
 			return;
 
 		u16 shooterID;
-		if ( !params.saferead_u16(shooterID) )
+		if (!params.saferead_u16(shooterID))
 			return;
 
-		CBlob@ shooter = getBlobByNetworkID( shooterID );
+		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null)
 			return;
 
-		bool isServer = getNet().isServer();
 		Vec2f pos = this.getPosition();
 
-		Island@ island = getIsland( this.getShape().getVars().customData );
-		if ( island is null )
+		Island@ island = getIsland(this.getShape().getVars().customData);
+		if (island is null)
 			return;
 
-		if ( !isClear( this ) )
+		if (!isClear(this))
 		{
-			directionalSoundPlay( "lightup", pos );
+			directionalSoundPlay("lightup", pos);
 			return;
 		}
 
 		//ammo
 		u16 ammo = this.get_u16("ammo");
-		if (isServer)
+		if (isServer())
 			this.get("ammo", ammo);
 
 		if (ammo <= 0)
 		{
-			directionalSoundPlay( "LoadingTick1", pos, 0.35f );
+			directionalSoundPlay("LoadingTick1", pos, 0.35f);
 			return;
 		}
 
 		ammo--;
-		this.set_u16( "ammo", ammo );
-		if ( isServer )
-			this.set( "ammo", ammo );
-
-		//autocannon effects
-		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.getSpriteLayer( "weapon" );
-		layer.SetAnimation( "default" );
+		this.set_u16("ammo", ammo);
+		if (isServer())
+			this.set("ammo", ammo);
 
 		Vec2f aimvector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 
 		Vec2f barrelPos = this.getPosition() + aimvector*9;
 
 		//hit stuff
-		u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
 		HitInfo@[] hitInfos;
 		CMap@ map = this.getMap();
 
 		Vec2f velocity = aimvector*BULLET_SPEED;
 
-		if (isServer)
+		if (isServer())
 		{
-            CBlob@ bullet = server_CreateBlob( "rocket", this.getTeamNum(), pos + aimvector*8.0f );
+            CBlob@ bullet = server_CreateBlob("rocket", this.getTeamNum(), pos + aimvector*8.0f);
             if (bullet !is null)
             {
-            	if (shooter !is null){
-                	bullet.SetDamageOwnerPlayer( shooter.getPlayer() );
+            	if (shooter !is null)
+				{
+                	bullet.SetDamageOwnerPlayer(shooter.getPlayer());
                 }
-                bullet.setVelocity( velocity + ((getIsland(this) !is null) ? getIsland( this ).vel : Vec2f(0, 0)) );
+                bullet.setVelocity(velocity + ((getIsland(this) !is null) ? getIsland(this).vel : Vec2f(0, 0)));
 				bullet.setAngleDegrees(-aimvector.Angle() + 90.0f);
-                bullet.server_SetTimeToDie( 25 );
+                bullet.server_SetTimeToDie(25);
             }
     	}
 
 		shotParticles(barrelPos, aimvector.Angle(), false);
-		directionalSoundPlay("LauncherFire" + (XORRandom(2) + 1) + ".ogg", barrelPos);
-		layer.SetAnimation("fire");
+		directionalSoundPlay("LauncherFire" + (XORRandom(2) + 1), barrelPos);
 
 		this.set_u32("fire time", getGameTime());
     }

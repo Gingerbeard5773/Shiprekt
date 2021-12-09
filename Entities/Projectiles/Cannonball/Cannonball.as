@@ -21,7 +21,7 @@ void onInit( CBlob@ this )
 	
 	this.set_u16( "pierced count", 0 );
     u32[] piercedBlobIDs;
-    this.set( "pierced blob IDs", piercedBlobIDs );
+    this.set("pierced blob IDs", piercedBlobIDs);
 
 	this.getSprite().SetZ(550.0f);	
 }
@@ -170,8 +170,6 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	if (customData == 9 || damage <= 0.0f) return;
 	
 	const int blockType = hitBlob.getSprite().getFrame();
-	
-	int piercedCount = this.get_u16("pierced count");
 
 	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
 	{

@@ -4,6 +4,7 @@
 #include "Booty.as"
 #include "AccurateSoundPlay.as"
 #include "CustomMap.as";
+//#include "TileCommon.as";
 #include "ParticleSparks.as";
 
 const f32 BULLET_SPREAD = 2.5f;
@@ -355,8 +356,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					laser.setRenderStyle(RenderStyle::light);
 					laser.SetRelativeZ(1);
 					
+					Vec2f endPos = barrelPos + aimVector * (BULLET_RANGE + rangeOffset);
+					
 					if (hitStone) hitEffects(this, solidPos);
-					else MakeWaterParticle(barrelPos + aimVector * (BULLET_RANGE + rangeOffset), Vec2f_zero);
+					else if (isInWater(endPos))
+						MakeWaterParticle(endPos, Vec2f_zero);
+					else AngledDirtParticle(endPos, this.getAngleDegrees()-90);
 				}
 			}
 		}

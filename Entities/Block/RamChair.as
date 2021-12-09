@@ -128,7 +128,7 @@ void onTick( CBlob@ this )
 		const bool right_click = occupier.isKeyPressed( key_action2 );	
 
 		//client-side couplings managing functions
-		if ( player.isMyPlayer() )
+		if (player.isMyPlayer())
 		{
 			//show help tip
 			occupier.set_bool( "drawSeatHelp", island.owner != "" && occupierTeam == teamNum && !isCaptain && occupierName == seatOwner );
@@ -141,10 +141,10 @@ void onTick( CBlob@ this )
 			for (uint b_iter = 0; b_iter < island.blocks.length; ++b_iter)
 			{
 				IslandBlock@ isle_block = island.blocks[b_iter];
-				if(isle_block is null) continue;
+				if (isle_block is null) continue;
 
 				CBlob@ block = getBlobByNetworkID( isle_block.blobID );
-				if(block is null) continue;
+				if (block is null) continue;
 				
 				//gather couplings
 				if (block.hasTag("coupling") && !block.hasTag("_coupling_hitspace"))
