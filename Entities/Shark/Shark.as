@@ -82,14 +82,9 @@ void onTick(CBlob@ this)
 
 		if (this.isMyPlayer())
 		{
-		    if (getHUD().hasButtons())
-		    {
-		        if (this.isKeyJustPressed(key_action1))
-		        {
-				    CGridMenu @gmenu;
-				    CGridButton @gbutton;
-				    this.ClickGridMenu(0, gmenu, gbutton); 
-			    }
+		    if (this.isKeyJustPressed(key_bubbles))
+			{
+				this.CreateBubbleMenu();
 			}
 		}
 		this.getSprite().SetAnimation("default");
@@ -120,14 +115,16 @@ void MoveTo(CBlob@ this, Vec2f vel)
 	const f32 angle = moveVel.Angle();
 	moveVel *= SHARK_SPEED;
 
-	this.setVelocity(moveVel);	
-	this.setAngleDegrees(-angle);	
-
-	// water effect
-
-	if ((getGameTime() + this.getNetworkID()) % 9 == 0)
+	this.setVelocity(moveVel);
+	if (moveVel.Length() > 0.1f)
 	{
-		MakeWaterWave(pos, Vec2f_zero, -angle + (_anglerandom.NextRanged(100) > 50 ? 180 : 0)); 
+		this.setAngleDegrees(-angle);	
+
+		// water effect
+		if ((getGameTime() + this.getNetworkID()) % 9 == 0)
+		{
+			MakeWaterWave(pos, Vec2f_zero, -angle + (_anglerandom.NextRanged(100) > 50 ? 180 : 0)); 
+		}
 	}
 }
 

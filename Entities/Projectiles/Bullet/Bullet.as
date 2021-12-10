@@ -5,7 +5,6 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
-#include "MakeDustParticle";
 
 void onInit(CBlob@ this)
 {

@@ -2,16 +2,6 @@
 
 void onInit( CBlob@ this )
 {
-	//Set Owner
-	if (isServer())
-	{
-		CBlob@ owner = getBlobByNetworkID(this.get_u16("ownerID"));    
-		if (owner !is null)
-		{
-			this.set_string("playerOwner", owner.getPlayer().getUsername());
-			this.Sync("playerOwner", true);
-		}
-	}
     this.addCommandID("decouple");
     this.Tag("coupling");
 	this.Tag("removable");//for corelinked checks

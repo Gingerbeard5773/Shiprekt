@@ -41,24 +41,18 @@ void onInit(CBlob@ this)
 
 	if (isServer())
 	{
-		this.set('ammo', MAX_AMMO);
-		this.set('maxAmmo', MAX_AMMO);
-		this.set_u16('ammo', MAX_AMMO);
-		this.set_u16('maxAmmo', MAX_AMMO);
-
-		this.Sync('ammo', true);
-		this.Sync('maxAmmo', true);
+		this.set_u16("ammo", MAX_AMMO);
+		this.set_u16("maxAmmo", MAX_AMMO);
+		this.Sync("ammo", true);
+		this.Sync("maxAmmo", true);
+		
+		this.set_bool("seatEnabled", true);
+		this.Sync("seatEnabled", true);
 	}
 
 	this.set_u32("fire time", 0);
 	this.set_u16("parentID", 0);
 	this.set_u16("childID", 0);
-
-	if (isServer())
-	{
-		this.set_bool("seatEnabled", true);
-		this.Sync("seatEnabled", true);
-	}
 
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
@@ -92,11 +86,11 @@ void onTick(CBlob@ this)
 		if (childFlak !is null)
 		{
 			if (!childFlak.hasAttached() && childFlak.getDistanceTo(this) < CLONE_RADIUS)
-				Clone( childFlak, this, occupier );
+				Clone(childFlak, this, occupier);
 			else
 				this.set_u16("childID", 0);
 		}
-		else if ( gameTime % 20 == 0 )
+		else if (gameTime % 20 == 0)
 		{
 			@childFlak = findFlakChild(this);
 			if (childFlak !is null)
@@ -138,13 +132,13 @@ void onTick(CBlob@ this)
 	{
 		CBlob@ childFlak = getBlobByNetworkID( this.get_u16("childID"));
 		if (childFlak !is null)
-			childFlak.set_u16( "parentID", 0);
+			childFlak.set_u16("parentID", 0);
 
 		this.set_u16("childID", 0);
 	}
 	else
 	{
-		Auto( this );
+		Auto(this);
 	}
 
 	if (isServer())
@@ -153,13 +147,12 @@ void onTick(CBlob@ this)
 
 		if (isle !is null)
 		{
-			u16 ammo, maxAmmo;
-			this.get('ammo', ammo);
-			this.get('maxAmmo', maxAmmo);
+			u16 ammo = this.get_u16("ammo");
+			u16 maxAmmo = this.get_u16("maxAmmo");
 
 			if (ammo < maxAmmo)
 			{
-				if (isle.isMothership || isle.isStation || isle.isMiniStation )
+				if (isle.isMothership || isle.isStation || isle.isMiniStation)
 				{
 					if (gameTime % (30 * REFILL_SECONDS) == 0)
 					{
@@ -174,12 +167,9 @@ void onTick(CBlob@ this)
 					}
 				}
 
-				this.set('ammo', ammo);
+				this.set_u16("ammo", ammo);
+				this.Sync("ammo", true);
 			}
-
-			this.Sync('ammo', true);
-			this.set_u16('ammo', ammo);
-			this.Sync('ammo', true);
 		}
 	}
 }
@@ -294,7 +284,7 @@ void Auto(CBlob@ this)
 						netID = pBlob.getNetworkID();
 				}
 			}
-			Fire( this, shootVec, netID );
+			Fire(this, shootVec, netID);
 		}
 	}
 }
@@ -308,17 +298,17 @@ void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
 	// fire
 	if (isClearShot(this, aimVec))
 	{
-		Rotate( this, aimVec );
-		if (controller.isMyPlayer() && controller.isKeyPressed( key_action1 ) && canShootManual(this, true) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
+		Rotate(this, aimVec);
+		if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this, true) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
 		{
-			Island@ isle = getIsland( this.getShape().getVars().customData );
+			Island@ isle = getIsland(this.getShape().getVars().customData);
 			u16 netID = 0;
 			if (isle !is null && player !is null && (!isle.isMothership || isle.owner != player.getUsername()))
 				netID = controller.getNetworkID();
 			Fire(this, aimVec, netID);
 		}
 	}
-	else if ( getGameTime() - this.get_u32("fire time") > 50 )//free it so it tries to find another
+	else if (getGameTime() - this.get_u32("fire time") > 50)//free it so it tries to find another
 	{
 		parent.set_u16("childID", 0);
 		this.set_u16("parentID", 0);
@@ -339,7 +329,7 @@ CBlob@ findFlakChild( CBlob@ this )
 	}
 
 	if (flak.length > 0)
-		return flak[ getGameTime() % flak.length ];
+		return flak[getGameTime() % flak.length];
 
 	return null;
 }
@@ -357,7 +347,7 @@ bool canShootManual(CBlob@ this, bool manual = false)
 bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 {
 	Vec2f pos = this.getPosition();
-	const f32 distanceToTarget = Maths::Max( aimVec.Length(), 80.0f );
+	const f32 distanceToTarget = Maths::Max(aimVec.Length(), 80.0f);
 	HitInfo@[] hitInfos;
 	CMap@ map = getMap();
 
@@ -365,8 +355,8 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 	offset.Normalize();
 	offset *= 7.0f;
 
-	map.getHitInfosFromRay( pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
-	map.getHitInfosFromRay( pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
+	map.getHitInfosFromRay(pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
+	map.getHitInfosFromRay(pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
 	if (hitInfos.length > 0)
 	{
 		//HitInfo objects are sorted, first come closest hits
@@ -434,7 +424,7 @@ void Rotate(CBlob@ this, Vec2f aimVector)
 	if(layer !is null)
 	{
 		layer.ResetTransform();
-		layer.RotateBy( -aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero);
+		layer.RotateBy(-aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero);
 	}
 }
 
@@ -453,16 +443,15 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	if (button !is null) button.radius = 3.3f; //engine fix
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire"))
     {
 		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		Vec2f pos = this.getPosition();
+
 		//ammo
 		u16 ammo = this.get_u16("ammo");
-		if (isServer())
-			this.get("ammo", ammo);
 
 		if (ammo == 0)
 		{
@@ -472,8 +461,6 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 
 		ammo--;
 		this.set_u16("ammo", ammo);
-		if (isServer())
-			this.set("ammo", ammo);
 
 		Vec2f velocity = params.read_Vec2f();
 		Vec2f aimVector = velocity;		aimVector.Normalize();

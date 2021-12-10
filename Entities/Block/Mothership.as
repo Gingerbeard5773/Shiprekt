@@ -23,6 +23,7 @@ void onInit( CBlob@ this )
 	this.Tag("mothership");
 	this.addCommandID("buyBlock");
 	this.addCommandID("returnBlocks");
+
 	this.server_SetHealth( INIT_HEALTH );
 	
 	CSprite@ sprite = this.getSprite();

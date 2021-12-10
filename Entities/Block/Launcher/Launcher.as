@@ -40,17 +40,13 @@ void onInit(CBlob@ this)
 	this.Tag("machinegun"); //for seat.as
 	this.addCommandID("fire");
 	this.addCommandID("disable");
-	this.set_bool("mShipDocked", false);
 
 	if (isServer())
 	{
-		this.set('ammo', MAX_AMMO);
-		this.set('maxAmmo', MAX_AMMO);
-		this.set_u16('ammo', MAX_AMMO);
-		this.set_u16('maxAmmo', MAX_AMMO);
-
-		this.Sync('ammo', true);
-		this.Sync('maxAmmo', true);
+		this.set_u16("ammo", MAX_AMMO);
+		this.set_u16("maxAmmo", MAX_AMMO);
+		this.Sync("ammo", true);
+		this.Sync("maxAmmo", true);
 	}
 
 	CSprite@ sprite = this.getSprite();
@@ -78,9 +74,8 @@ void onTick(CBlob@ this)
 
 		if (isle !is null)
 		{
-			u16 ammo, maxAmmo;
-			this.get('ammo', ammo);
-			this.get('maxAmmo', maxAmmo);
+			u16 ammo = this.get_u16("ammo");
+			u16 maxAmmo = this.get_u16("maxAmmo");
 
 			if (ammo < maxAmmo)
 			{
@@ -99,19 +94,16 @@ void onTick(CBlob@ this)
 					}
 				}
 
-				this.set('ammo', ammo);
+				this.set_u16("ammo", ammo);
+				this.Sync("ammo", true);
 			}
-
-			this.Sync('ammo', true);
-			this.set_u16('ammo', ammo);
-			this.Sync('ammo', true);
 		}
 	}
 }
 
 bool canShoot(CBlob@ this)
 {
-	return (this.get_u32("fire time") + FIRE_RATE < getGameTime()) && !this.get_bool("mShipDocked");
+	return (this.get_u32("fire time") + FIRE_RATE < getGameTime()) ;
 }
 
 bool isClear(CBlob@ this)
@@ -181,8 +173,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		//ammo
 		u16 ammo = this.get_u16("ammo");
-		if (isServer())
-			this.get("ammo", ammo);
 
 		if (ammo <= 0)
 		{
@@ -192,8 +182,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		ammo--;
 		this.set_u16("ammo", ammo);
-		if (isServer())
-			this.set("ammo", ammo);
 
 		Vec2f aimvector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 

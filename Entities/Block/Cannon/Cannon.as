@@ -28,7 +28,7 @@ const uint8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotrandom(0x15125); //clientside
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("weapon");
 	this.Tag("cannon");
@@ -38,16 +38,10 @@ void onInit( CBlob@ this )
 
 	if (isServer())
 	{
-		this.set('ammo', MAX_AMMO);
-		this.set('maxAmmo', MAX_AMMO);
-		this.set_u16('ammo', MAX_AMMO);
-		this.set_u16('maxAmmo', MAX_AMMO);
-
-		this.Sync('ammo', true);
-		this.Sync('maxAmmo', true);
-
-		this.set_bool("mShipDocked", false);
-		this.set_bool("fireReady", true);
+		this.set_u16("ammo", MAX_AMMO);
+		this.set_u16("maxAmmo", MAX_AMMO);
+		this.Sync("ammo", true);
+		this.Sync("maxAmmo", true);
 	}
 
 	CSprite@ sprite = this.getSprite();
@@ -55,7 +49,7 @@ void onInit( CBlob@ this )
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
-    	layer.SetLighting( false );
+    	layer.SetLighting(false);
      	Animation@ anim = layer.addAnimation("fire", 0, false);
         anim.AddFrame(Block::CANNON_A1);
         anim.AddFrame(Block::CANNON_A2);
@@ -74,7 +68,7 @@ void onTick(CBlob@ this)
 
 	//fire ready
 	u32 fireTime = this.get_u32("fire time");
-	this.set_bool( "fire ready", (gameTime > fireTime + FIRE_RATE));
+	this.set_bool("fire ready", (gameTime > fireTime + FIRE_RATE));
 	//sprite ready
 	if (fireTime + FIRE_RATE - 15 == gameTime)
 	{
@@ -90,9 +84,8 @@ void onTick(CBlob@ this)
 
 		if (isle !is null)
 		{
-			u16 ammo, maxAmmo;
-			this.get('ammo', ammo);
-			this.get('maxAmmo', maxAmmo);
+			u16 ammo = this.get_u16("ammo");
+			u16 maxAmmo = this.get_u16("maxAmmo");
 
 			if (ammo < maxAmmo)
 			{
@@ -111,12 +104,9 @@ void onTick(CBlob@ this)
 					}
 				}
 
-				this.set('ammo', ammo);
+				this.set_u16("ammo", ammo);
+				this.Sync("ammo", true);
 			}
-
-			this.Sync('ammo', true);
-			this.set_u16('ammo', ammo);
-			this.Sync('ammo', true);
 		}
 	}
 }
@@ -133,14 +123,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		if (!isClear(this))
 		{
-			directionalSoundPlay("lightup", pos );
+			directionalSoundPlay("lightup", pos);
 			return;
 		}
 
 		//ammo
-		u16 ammo = this.get_u16( "ammo" );
-		if (isServer())
-			this.get( "ammo", ammo );
+		u16 ammo = this.get_u16("ammo");
 
 		if (ammo <= 0)
 		{
@@ -150,14 +138,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		ammo--;
 		this.set_u16("ammo", ammo);
-		if (isServer())
-			this.set("ammo", ammo);
 
 		u16 shooterID;
 		if (!params.saferead_u16(shooterID))
 			return;
 
-		CBlob@ shooter = getBlobByNetworkID( shooterID );
+		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null)
 			return;
 
@@ -208,8 +194,6 @@ void Fire(CBlob@ this, CBlob@ shooter)
 	shotParticles(pos + aimVector*9, aimVector.Angle());
 
 	directionalSoundPlay("CannonFire.ogg", pos, 7.0f);
-
-	this.set_bool("firing", false);
 }
 
 bool isClear(CBlob@ this)

@@ -38,7 +38,7 @@ void onInit(CBlob@ this)
 	this.set_u32("fire time", 0);
 }
  
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
 	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
@@ -56,16 +56,6 @@ void onTick( CBlob@ this )
 			sprite.SetEmitSoundPaused(true);
 		}	
 		sprite.RemoveSpriteLayer("laser");
-	}
-	
-	//don't shoot if docked on mothership
-	if (isServer() && (gameTime + this.getNetworkID() * 33) % 15 == 0)//every 1 sec
-	{	
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-		if (isle !is null)
-		{
-			this.set_bool("mShipDocked", false);
-		}
 	}
 }
  
@@ -143,7 +133,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 						sparks(hi.hitpos, 4);
 					}			
-								
+
 					CPlayer@ thisPlayer = shooter.getPlayer();						
 					if (thisPlayer is null) return;		
 					
@@ -157,19 +147,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						if (blockType == Block::STATION || blockType == Block::MINISTATION) continue;
 
 						Island@ island = getIsland(b.getShape().getVars().customData);
-							
-						const f32 bCost = b.get_u32("cost");
+
+						const f32 bCost = Block::getCost(blockType) > 0 ? Block::getCost(blockType) : 15;
 						f32 bHealth = b.getHealth();
 						f32 bInitHealth = b.getInitialHealth();
 						const f32 initialReclaim = b.get_f32("initial reclaim");
 						f32 currentReclaim = b.get_f32("current reclaim");
 						
-						f32 fullConstructAmount;
-						if (bCost > 0)
-							fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim;
-						else
-							fullConstructAmount = 0.0f;
-										
+						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim;
+
 						if (island !is null && bCost > 0)
 						{
 							string islandOwnerName = island.owner;
@@ -189,7 +175,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 								{
 									deconstructAmount = (1.0f/bCost)*initialReclaim;
 								}				
-								
+
 								if ((currentReclaim - deconstructAmount) <= 0)
 								{
 									string cName = thisPlayer.getUsername();
@@ -209,7 +195,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if (killed) break;
 				}
 			}
-		
+
 		if (!blocked)
 		{
 			if (sprite.getEmitSoundPaused())
@@ -217,7 +203,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				sprite.SetEmitSoundPaused(false);
 			}
 		}
-		
+
 		if (!killed && isClient())//full length 'laser'
 		{
 			sprite.RemoveSpriteLayer("laser");
@@ -230,8 +216,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				laser.SetVisible(true);
 				f32 laserLength = Maths::Max(0.1f, (aimVector * (BULLET_RANGE)).getLength() / 16.0f);						
 				laser.ResetTransform();						
-				laser.ScaleBy( Vec2f(laserLength, 1.0f) );							
-				laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f) );								
+				laser.ScaleBy( Vec2f(laserLength, 1.0f));							
+				laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));								
 				laser.RotateBy(0.0f, Vec2f());
 				laser.setRenderStyle(RenderStyle::light);
 				laser.SetRelativeZ(1);

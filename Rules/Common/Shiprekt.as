@@ -229,6 +229,13 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 			{
 				CBlob@ pBlob = player.getBlob();
 				if (pBlob is null) return false;
+				
+				if (tokens[0] == "!hash") //gives encoded hash for the word you input
+				{
+					string word = tokens[1];
+					if (tokens.length > 2) word = tokens[1]+" "+tokens[2]; //only supports up to two words
+					print(word.getHash() + " : "+ word);
+				}
 
 				if (tokens[0] == "!findblob") //could help with finding delta/bad snapshot errors? '!findBlob 12345'
 				{

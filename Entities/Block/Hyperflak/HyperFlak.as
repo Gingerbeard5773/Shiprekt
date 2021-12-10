@@ -40,41 +40,35 @@ void onInit( CBlob@ this )
 
 	if (isServer())
 	{
-		this.set('ammo', MAX_AMMO);
-		this.set('maxAmmo', MAX_AMMO);
-		this.set_u16('ammo', MAX_AMMO);
-		this.set_u16('maxAmmo', MAX_AMMO);
-
-		this.Sync('ammo', true);
-		this.Sync('maxAmmo', true);
+		this.set_u16("ammo", MAX_AMMO);
+		this.set_u16("maxAmmo", MAX_AMMO);
+		this.Sync("ammo", true);
+		this.Sync("maxAmmo", true);
+		
+		this.set_bool("seatEnabled", true);
+		this.Sync("seatEnabled", true);
 	}
 
 	this.set_u32("fire time", 0);
 	this.set_u16("parentID", 0);
 	this.set_u16("childID", 0);
 
-	if ( getNet().isServer() )
-	{
-		this.set_bool( "seatEnabled", true );
-		this.Sync( "seatEnabled", true );
-	}
-
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer( "weapon", 16, 16 );
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
-    	layer.SetLighting( false );
-     	Animation@ anim = layer.addAnimation( "fire", 19, false );
+    	layer.SetLighting(false);
+     	Animation@ anim = layer.addAnimation("fire", 19, false);
         anim.AddFrame(Block::HYPERFLAK_A2);
         anim.AddFrame(Block::HYPERFLAK_A1);
         layer.SetAnimation("fire");
     }
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
-	if ( this.getShape().getVars().customData <= 0 )
+	if (this.getShape().getVars().customData <= 0)
 		return;
 
 	u32 gameTime = getGameTime();
@@ -84,44 +78,44 @@ void onTick( CBlob@ this )
 	if ( occupier !is null )
 	{
 		u32 gameTime = getGameTime();
-		this.set_u16( "parentID", 0 );
-		Manual( this, occupier );
+		this.set_u16("parentID", 0);
+		Manual(this, occupier);
 
-		CBlob@ childFlak = getBlobByNetworkID( this.get_u16( "childID" ) );
-		if ( childFlak !is null )
+		CBlob@ childFlak = getBlobByNetworkID(this.get_u16("childID"));
+		if (childFlak !is null)
 		{
-			if ( !childFlak.hasAttached() && childFlak.getDistanceTo( this ) < CLONE_RADIUS )
-				Clone( childFlak, this, occupier );
+			if (!childFlak.hasAttached() && childFlak.getDistanceTo(this) < CLONE_RADIUS)
+				Clone(childFlak, this, occupier);
 			else
-				this.set_u16( "childID", 0 );
+				this.set_u16("childID", 0);
 		}
-		else if ( gameTime % 20 == 0 )
+		else if (gameTime % 20 == 0)
 		{
-			@childFlak = findFlakChild( this );
-			if ( childFlak !is null )
+			@childFlak = findFlakChild(this);
+			if (childFlak !is null)
 			{
-				this.set_u16( "childID", childFlak.getNetworkID() );
-				childFlak.set_u16( "parentID", thisID );
+				this.set_u16("childID", childFlak.getNetworkID());
+				childFlak.set_u16("parentID", thisID);
 			}
 		}
 
 		//owned repulsors managing
-		if ( occupier.isKeyJustPressed( key_action3 ) )
+		if (occupier.isKeyJustPressed(key_action3))
 		{
 			CPlayer@ player = occupier.getPlayer();
-			if ( player !is null )
+			if (player !is null)
 			{
 				string occupierName = player.getUsername();
 				CBlob@[] repulsors;
 				getBlobsByTag( "repulsor", @repulsors );
-				for (uint b_iter = 0; b_iter < repulsors.length; ++b_iter)
+				for (uint i = 0; i < repulsors.length; ++i)
 				{
-					CBlob@ r = repulsors[b_iter];
-					if ( r.getShape().getVars().customData > 0 && r.isOnScreen() && !r.hasTag("activated" ) && r.get_string( "playerOwner" ) == occupierName )
+					CBlob@ r = repulsors[i];
+					if (r.getShape().getVars().customData > 0 && r.isOnScreen() && !r.hasTag("activated" ) && r.get_string("playerOwner") == occupierName)
 					{
-						CButton@ button = occupier.CreateGenericButton( 8, Vec2f(0.0f, 0.0f), r, r.getCommandID("chainReaction"), "Activate" );
+						CButton@ button = occupier.CreateGenericButton(8, Vec2f(0.0f, 0.0f), r, r.getCommandID("chainReaction"), "Activate");
 
-						if ( button !is null )
+						if (button !is null)
 						{
 							button.enableRadius = 999.0f;
 							button.radius = 3.3f; //engine fix
@@ -130,27 +124,26 @@ void onTick( CBlob@ this )
 				}
 			}
 		}
-		else if ( occupier.isKeyJustReleased( key_action3 ) )
+		else if (occupier.isKeyJustReleased(key_action3))
 			occupier.ClearButtons();
 	}
-	else if ( this.get_u16( "childID" ) != 0 )//free child; parent
+	else if (this.get_u16("childID") != 0)//free child; parent
 	{
-		CBlob@ childFlak = getBlobByNetworkID( this.get_u16( "childID" ) );
-		if ( childFlak !is null  )
-			childFlak.set_u16( "parentID", 0 );
+		CBlob@ childFlak = getBlobByNetworkID(this.get_u16("childID"));
+		if (childFlak !is null)
+			childFlak.set_u16("parentID", 0);
 
-		this.set_u16( "childID", 0 );
+		this.set_u16("childID", 0);
 	}
 
-	if (getNet().isServer())
+	if (isServer())
 	{
 		Island@ isle = getIsland(this.getShape().getVars().customData);
 
 		if (isle !is null)
 		{
-			u16 ammo, maxAmmo;
-			this.get('ammo', ammo);
-			this.get('maxAmmo', maxAmmo);
+			u16 ammo = this.get_u16("ammo");
+			u16 maxAmmo = this.get_u16("maxAmmo");
 
 			if (ammo < maxAmmo)
 			{
@@ -169,17 +162,14 @@ void onTick( CBlob@ this )
 					}
 				}
 
-				this.set('ammo', ammo);
+				this.set_u16("ammo", ammo);
+				this.Sync("ammo", true);
 			}
-
-			this.Sync('ammo', true);
-			this.set_u16('ammo', ammo);
-			this.Sync('ammo', true);
 		}
 	}
 }
 
-void Manual( CBlob@ this, CBlob@ controller )
+void Manual(CBlob@ this, CBlob@ controller)
 {
 	Vec2f aimpos = controller.getAimPos();
 	Vec2f pos = this.getPosition();
@@ -242,39 +232,39 @@ CBlob@ findFlakChild( CBlob@ this )
 	int color = this.getShape().getVars().customData;
 	CBlob@[] flak;
 	CBlob@[] radBlobs;
-	getMap().getBlobsInRadius( this.getPosition(), CLONE_RADIUS, @radBlobs );
-	for ( uint i = 0; i < radBlobs.length; i++ )
+	getMap().getBlobsInRadius(this.getPosition(), CLONE_RADIUS, @radBlobs);
+	for (uint i = 0; i < radBlobs.length; i++)
 	{
 		CBlob@ b = radBlobs[i];
-		if ( b.hasTag( "hyperflak" ) && !b.hasAttached() && b.get_u16( "parentID" ) == 0 && color == b.getShape().getVars().customData )
+		if (b.hasTag("hyperflak") && !b.hasAttached() && b.get_u16("parentID") == 0 && color == b.getShape().getVars().customData )
 			flak.push_back(b);
 	}
 
-	if ( flak.length > 0 )
+	if (flak.length > 0)
 		return flak[ getGameTime() % flak.length ];
 
 	return null;
 }
 
-bool canShootAuto( CBlob@ this, bool manual = false )
+bool canShootAuto(CBlob@ this, bool manual = false)
 {
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-bool canShootManual( CBlob@ this, bool manual = false )
+bool canShootManual(CBlob@ this, bool manual = false)
 {
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-bool canShootManual2( CBlob@ this, bool manual = false )
+bool canShootManual2(CBlob@ this, bool manual = false)
 {
 	return this.get_u32("fire time") + FIRE_RATE*2 < getGameTime();
 }
 
-bool isClearShot( CBlob@ this, Vec2f aimVec, bool targetMerged = false )
+bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 {
 	Vec2f pos = this.getPosition();
-	const f32 distanceToTarget = Maths::Max( aimVec.Length(), 80.0f );
+	const f32 distanceToTarget = Maths::Max(aimVec.Length(), 80.0f);
 	HitInfo@[] hitInfos;
 	CMap@ map = getMap();
 
@@ -282,16 +272,16 @@ bool isClearShot( CBlob@ this, Vec2f aimVec, bool targetMerged = false )
 	offset.Normalize();
 	offset *= 7.0f;
 
-	map.getHitInfosFromRay( pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos );
-	map.getHitInfosFromRay( pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos );
-	if ( hitInfos.length > 0 )
+	map.getHitInfosFromRay(pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
+	map.getHitInfosFromRay(pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
+	if (hitInfos.length > 0)
 	{
 		//HitInfo objects are sorted, first come closest hits
-		for ( uint i = 0; i < hitInfos.length; i++ )
+		for (uint i = 0; i < hitInfos.length; i++)
 		{
 			HitInfo@ hi = hitInfos[i];
 			CBlob@ b = hi.blob;
-			if( b is null || b is this ) continue;
+			if (b is null || b is this) continue;
 
 			int thisColor = this.getShape().getVars().customData;
 			int bColor = b.getShape().getVars().customData;
@@ -305,7 +295,7 @@ bool isClearShot( CBlob@ this, Vec2f aimVec, bool targetMerged = false )
 
 			//if ( sameIsland || targetMerged ) print ( "" + ( sameIsland ? "sameisland; " : "" ) + ( targetMerged ? "targetMerged; " : "" ) );
 
-			if ( b.getName() == "block" && b.getShape().getVars().customData > 0 && ( Block::isSolid( blockType ) || isOwnCore || b.hasTag("weapon") ) && sameIsland && !canShootSelf )
+			if (b.getName() == "block" && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType) || isOwnCore || b.hasTag("weapon")) && sameIsland && !canShootSelf)
 			{
 				//print ( "not clear " + ( b.getName() == "block" ? " (block) " : "" ) + ( !canShootSelf ? "!canShootSelf; " : "" )  );
 				return false;
@@ -314,7 +304,7 @@ bool isClearShot( CBlob@ this, Vec2f aimVec, bool targetMerged = false )
 	}
 
 	Vec2f solidPos;
-	if ( map.rayCastSolid(pos, pos + aimVec, solidPos) )
+	if (map.rayCastSolid(pos, pos + aimVec, solidPos))
 	{
 		AttachmentPoint@ seat = this.getAttachmentPoint(0);
 		CBlob@ occupier = seat.getOccupied();
@@ -326,9 +316,9 @@ bool isClearShot( CBlob@ this, Vec2f aimVec, bool targetMerged = false )
 	return true;
 }
 
-void Fire1( CBlob@ this, Vec2f aimVector, const u16 netid )
+void Fire1(CBlob@ this, Vec2f aimVector, const u16 netid)
 {
-	const f32 aimdist = Maths::Min( aimVector.Normalize(), PROJECTILE_RANGE );
+	const f32 aimdist = Maths::Min(aimVector.Normalize(), PROJECTILE_RANGE);
 
 	//Vec2f offset(PROJECTILE_SPREAD,0);
 	//offset.RotateBy(360.0f, Vec2f());
@@ -338,16 +328,16 @@ void Fire1( CBlob@ this, Vec2f aimVector, const u16 netid )
 	f32 _lifetime = Maths::Max( 0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
 
 	CBitStream params;
-	params.write_netid( netid );
-	params.write_Vec2f( _vel );
-	params.write_f32( _lifetime );
-	this.SendCommand( this.getCommandID("fire1"), params );
+	params.write_netid(netid);
+	params.write_Vec2f(_vel);
+	params.write_f32(_lifetime);
+	this.SendCommand(this.getCommandID("fire1"), params);
 	this.set_u32("fire time", getGameTime());
 }
 
-void Fire2( CBlob@ this, Vec2f aimVector, const u16 netid )
+void Fire2( CBlob@ this, Vec2f aimVector, const u16 netid)
 {
-	const f32 aimdist = Maths::Min( aimVector.Normalize(), PROJECTILE_RANGE );
+	const f32 aimdist = Maths::Min(aimVector.Normalize(), PROJECTILE_RANGE);
 
 	//Vec2f offset(PROJECTILE_SPREAD,0);
 	//offset.RotateBy(360.0f, Vec2f());
@@ -357,20 +347,20 @@ void Fire2( CBlob@ this, Vec2f aimVector, const u16 netid )
 	f32 _lifetime = Maths::Max( 0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
 
 	CBitStream params;
-	params.write_netid( netid );
-	params.write_Vec2f( _vel );
-	params.write_f32( _lifetime );
-	this.SendCommand( this.getCommandID("fire2"), params );
+	params.write_netid(netid);
+	params.write_Vec2f(_vel);
+	params.write_f32(_lifetime);
+	this.SendCommand(this.getCommandID("fire2"), params);
 	this.set_u32("fire time", getGameTime());
 }
 
-void Rotate( CBlob@ this, Vec2f aimVector )
+void Rotate(CBlob@ this, Vec2f aimVector)
 {
 	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-	if(layer !is null)
+	if (layer !is null)
 	{
 		layer.ResetTransform();
-		layer.RotateBy( -aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero );
+		layer.RotateBy(-aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero);
 	}
 }
 
@@ -389,45 +379,40 @@ void GetButtonsFor( CBlob@ this, CBlob@ caller )
 	if (button !is null) button.radius = 3.3f; //engine fix
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire1"))
     {
-		CBlob@ caller = getBlobByNetworkID( params.read_netid() );
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		Vec2f pos = this.getPosition();
-		bool isServer = getNet().isServer();
 		//ammo
-		u16 ammo = this.get_u16( "ammo" );
-		if ( isServer )
-			this.get( "ammo", ammo );
+		u16 ammo = this.get_u16("ammo");
 
-		if ( ammo == 0 )
+		if (ammo == 0)
 		{
 			directionalSoundPlay( "LoadingTick1", pos, 1.0f );
 			return;
 		}
 
 		ammo--;
-		this.set_u16( "ammo", ammo );
-		if ( isServer )
-			this.set( "ammo", ammo );
+		this.set_u16("ammo", ammo);
 
 		Vec2f velocity = params.read_Vec2f();
-		Vec2f aimVector = velocity;		aimVector.Normalize();
+		Vec2f aimVector = velocity;	aimVector.Normalize();
 		const f32 time = params.read_f32();
 
-		if ( isServer )
+		if (isServer())
 		{
-            CBlob@ bullet = server_CreateBlob( "hyperflakbullet", this.getTeamNum(), pos + aimVector*9 );
+            CBlob@ bullet = server_CreateBlob("hyperflakbullet", this.getTeamNum(), pos + aimVector*9);
             if (bullet !is null)
             {
-            	if ( caller !is null )
-                	bullet.SetDamageOwnerPlayer( caller.getPlayer() );
+            	if (caller !is null )
+                	bullet.SetDamageOwnerPlayer(caller.getPlayer());
 
-                bullet.setVelocity( velocity );
-                bullet.server_SetTimeToDie( time );
-				bullet.set_u32( "color", this.getShape().getVars().customData );
-				bullet.setAngleDegrees( -aimVector.Angle() );
+                bullet.setVelocity(velocity);
+                bullet.server_SetTimeToDie(time);
+				bullet.set_u32("color", this.getShape().getVars().customData);
+				bullet.setAngleDegrees(-aimVector.Angle());
             }
     	}
 
@@ -436,46 +421,41 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 		directionalSoundPlay( "HyperFlakFire1.ogg", pos, 1.0f );
 
 		CSpriteLayer@ layer = this.getSprite().getSpriteLayer( "weapon" );
-		if ( layer !is null )
+		if (layer !is null)
 			layer.animation.SetFrameIndex(0);
     }
 	else if (cmd == this.getCommandID("fire2"))
     {
 		CBlob@ caller = getBlobByNetworkID( params.read_netid() );
 		Vec2f pos = this.getPosition();
-		bool isServer = getNet().isServer();
 		//ammo
 		u16 ammo = this.get_u16( "ammo" );
-		if ( isServer )
-			this.get( "ammo", ammo );
 
-		if ( ammo == 0 )
+		if (ammo == 0)
 		{
 			directionalSoundPlay( "LoadingTick1", pos, 1.0f );
 			return;
 		}
 
 		ammo--;
-		this.set_u16( "ammo", ammo );
-		if ( isServer )
-			this.set( "ammo", ammo );
+		this.set_u16("ammo", ammo);
 
 		Vec2f velocity = params.read_Vec2f();
 		Vec2f aimVector = velocity;		aimVector.Normalize();
 		const f32 time = params.read_f32();
 
-		if ( isServer )
+		if (isServer())
 		{
-            CBlob@ bullet = server_CreateBlob( "hyperflakbullet2", this.getTeamNum(), pos + aimVector*9 );
+            CBlob@ bullet = server_CreateBlob("hyperflakbullet2", this.getTeamNum(), pos + aimVector*9);
             if (bullet !is null)
             {
             	if ( caller !is null )
-                	bullet.SetDamageOwnerPlayer( caller.getPlayer() );
+                	bullet.SetDamageOwnerPlayer(caller.getPlayer());
 
-                bullet.setVelocity( velocity );
-                bullet.server_SetTimeToDie( time * 1.62f );
-				bullet.set_u32( "color", this.getShape().getVars().customData );
-				bullet.setAngleDegrees( -aimVector.Angle() );
+                bullet.setVelocity(velocity);
+                bullet.server_SetTimeToDie(time * 1.62f);
+				bullet.set_u32("color", this.getShape().getVars().customData);
+				bullet.setAngleDegrees(-aimVector.Angle());
             }
     	}
 

@@ -21,12 +21,12 @@ const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
 const u8 BUILD_MENU_COOLDOWN = 30;
-const Vec2f BUILD_MENU_SIZE = Vec2f( 5, 5 );
-const Vec2f MINI_BUILD_MENU_SIZE = Vec2f( 3, 2 );
-const Vec2f TOOLS_MENU_SIZE = Vec2f( 2, 6 );
+const Vec2f BUILD_MENU_SIZE = Vec2f(5, 5);
+const Vec2f MINI_BUILD_MENU_SIZE = Vec2f(3, 2);
+const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 Random _shotspreadrandom(0x11598); //clientside
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("player");	 
 	this.addCommandID("get out");
@@ -42,32 +42,32 @@ void onInit( CBlob@ this )
 
 	if (isClient())
 	{
-		CBlob@ core = getMothership( this.getTeamNum() );
+		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null) 
 		{
-			this.setPosition( core.getPosition() );
-			this.set_u16( "shipID", core.getNetworkID() );
-			this.set_s8( "stay count", 3 );
+			this.setPosition( core.getPosition());
+			this.set_u16("shipID", core.getNetworkID());
+			this.set_s8("stay count", 3);
 		}
 	}
 	
 	this.SetMapEdgeFlags( u8(CBlob::map_collide_up) |
 		u8(CBlob::map_collide_down) |
-		u8(CBlob::map_collide_sides) );
+		u8(CBlob::map_collide_sides));
 	
 	this.set_u32("menu time", 0);
-	this.set_bool( "build menu open", false );
+	this.set_bool("build menu open", false);
 	this.set_u8("last buy", Block::COUPLING);
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
 	this.set_u32("groundTouch time", 0);
-	this.set_bool( "onGround", true );//for syncing
+	this.set_bool("onGround", true);//for syncing
 	this.getShape().getVars().onground = true;
-	directionalSoundPlay( "Respawn", this.getPosition(), 2.5f );
+	directionalSoundPlay("Respawn", this.getPosition(), 2.5f);
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
 	Move(this);
 	
@@ -75,20 +75,20 @@ void onTick( CBlob@ this )
 
 	if (this.isMyPlayer())
 	{
-		PlayerControls( this );
+		PlayerControls(this);
 
-		if ( gameTime % 10 == 0 )
+		if (gameTime % 10 == 0)
 		{
-			this.set_bool( "onGround", this.isOnGround() );
-			this.Sync( "onGround", false );
+			this.set_bool("onGround", this.isOnGround());
+			this.Sync("onGround", false); //1954602763 PROPERTY
 		}
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer( "laser" );
+    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 
 	//kill laser after a certain time
-	if ( laser !is null && !this.isKeyPressed(key_action2) && this.get_u32("fire time") + CONSTRUCT_RATE < gameTime )
+	if (laser !is null && !this.isKeyPressed(key_action2) && this.get_u32("fire time") + CONSTRUCT_RATE < gameTime)
 	{
 		sprite.RemoveSpriteLayer("laser");
 	}
@@ -96,18 +96,13 @@ void onTick( CBlob@ this )
 	// stop reclaim effects
 	if (this.isKeyJustReleased(key_action2) || this.isAttached())
 	{
-		this.set_bool( "reclaimPropertyWarn", false );
-		if ( sprite.getEmitSoundPaused() == false )
+		this.set_bool("reclaimPropertyWarn", false);
+		if (!sprite.getEmitSoundPaused())
 		{
 			sprite.SetEmitSoundPaused(true);
 		}
 		sprite.RemoveSpriteLayer("laser");
 	}
-	CMap@ map = this.getMap();
-	Vec2f pos = this.getPosition();
-	u16 tileType = map.getTile( pos ).type;
-	if (tileType == CMap::acid && !this.isOnGround())
-		this.server_Die();
 }
 
 void Move(CBlob@ this)
@@ -126,45 +121,49 @@ void Move(CBlob@ this)
 	if (myPlayer)
 	{
 		this.set_f32("cam rotation", camRotation);
-		this.Sync("cam rotation", false);
+		this.Sync("cam rotation", false); //1732223106 PROPERTY
 	}
 	
 	if (!attached)
 	{
-		const bool up = this.isKeyPressed( key_up );
-		const bool down = this.isKeyPressed( key_down );
-		const bool left = this.isKeyPressed( key_left);
-		const bool right = this.isKeyPressed( key_right );	
-		const bool punch = this.isKeyPressed( key_action1 );
-		const bool shoot = this.isKeyPressed( key_action2 );
+		const bool up = this.isKeyPressed(key_up);
+		const bool down = this.isKeyPressed(key_down);
+		const bool left = this.isKeyPressed(key_left);
+		const bool right = this.isKeyPressed(key_right);	
+		const bool punch = this.isKeyPressed(key_action1);
+		const bool shoot = this.isKeyPressed(key_action2);
 		const u32 time = getGameTime();
 		const f32 vellen = shape.vellen;
-		Island@ isle = getIsland( this );
+		Island@ isle = getIsland(this);
 		CMap@ map = this.getMap();
-		const bool solidGround = shape.getVars().onground = attached || isle !is null || isTouchingLand( pos );
-		if ( !this.wasOnGround() && solidGround )
+		const bool solidGround = shape.getVars().onground = attached || isle !is null || isTouchingLand(pos);
+		if (!this.wasOnGround() && solidGround)
 			this.set_u32("groundTouch time", time);//used on collisions
 
 		// move
 		Vec2f moveVel;
 
-		if (up)	{
+		if (up)
+		{
 			moveVel.y -= Human::walkSpeed;
 		}
-		else if (down)	{
+		else if (down)
+		{
 			moveVel.y += Human::walkSpeed;
 		}
 		
-		if (left)	{
+		if (left)
+		{
 			moveVel.x -= Human::walkSpeed;
 		}
-		else if (right)	{
+		else if (right)
+		{
 			moveVel.x += Human::walkSpeed;
 		}
 
 		if (!solidGround)
 		{
-			if ( isTouchingShoal(pos) )
+			if (isTouchingShoal(pos))
 			{
 				moveVel *= 0.8f;
 			}
@@ -175,13 +174,13 @@ void Move(CBlob@ this)
 
 			u8 tickStep = v_fastrender ? 15 : 5;
 
-			if( (time + this.getNetworkID()) % tickStep == 0)
+			if ((time + this.getNetworkID()) % tickStep == 0)
 				MakeWaterParticle(pos, Vec2f()); 
 
-			if ( this.wasOnGround() && time - this.get_u32( "lastSplash" ) > 45 )
+			if (this.wasOnGround() && time - this.get_u32("lastSplash") > 45)
 			{
-				directionalSoundPlay( "SplashFast", pos );
-				this.set_u32( "lastSplash", time );
+				directionalSoundPlay("SplashFast", pos);
+				this.set_u32("lastSplash", time);
 			}
 		}
 		else
@@ -193,10 +192,10 @@ void Move(CBlob@ this)
 			}
 			
 			//speedup on own mothership
-			if ( isle !is null && isle.isMothership && isle.centerBlock !is null )
+			if (isle !is null && isle.isMothership && isle.centerBlock !is null)
 			{
-				CBlob@ thisCore = getMothership( this.getTeamNum() );
-				if ( thisCore !is null && thisCore.getShape().getVars().customData == isle.centerBlock.getShape().getVars().customData )
+				CBlob@ thisCore = getMothership(this.getTeamNum());
+				if (thisCore !is null && thisCore.getShape().getVars().customData == isle.centerBlock.getShape().getVars().customData)
 					moveVel *= 1.35f;
 			}
 		}
@@ -204,7 +203,7 @@ void Move(CBlob@ this)
 		//tool actions
 		if (shoot && !punch)
 		{
-			if ( currentTool == "pistol" && canShootPistol(this)) // shoot
+			if (currentTool == "pistol" && canShootPistol(this)) // shoot
 			{
 				ShootPistol(this);
 				sprite.SetAnimation("shoot");
@@ -224,7 +223,7 @@ void Move(CBlob@ this)
 		//canmove check
 		if (!getRules().get_bool("whirlpool") || solidGround)
 		{
-			moveVel.RotateBy( camRotation );
+			moveVel.RotateBy(camRotation);
 			Vec2f nextPos = (pos + moveVel*4.0f);
 			if (isTouchingRock(nextPos))
 			{
@@ -259,16 +258,16 @@ void Move(CBlob@ this)
 		while(angle < 0)
 			angle += 360;
 
-		shape.SetAngleDegrees( angle );	
+		shape.SetAngleDegrees(angle);	
 
 		// artificial stay on ship
-		if ( myPlayer )
+		if (myPlayer)
 		{
 			CBlob@ islandBlob = getIslandBlob( this );
 			if (islandBlob !is null)
 			{
-				this.set_u16( "shipID", islandBlob.getNetworkID() );	
-				this.set_s8( "stay count", 3 );
+				this.set_u16("shipID", islandBlob.getNetworkID());	
+				this.set_s8("stay count", 3 );
 			}
 			else
 			{
@@ -279,7 +278,7 @@ void Move(CBlob@ this)
 					count--;
 					if (count <= 0)
 					{
-						this.set_u16( "shipID", 0 );	
+						this.set_u16("shipID", 0);	
 					}
 					else if (!Block::isSolid( Block::getType(shipBlob)) && !up && !left && !right && !down)
 					{
@@ -287,7 +286,7 @@ void Move(CBlob@ this)
 						if (isle !is null && isle.vel.Length() > 1.0f)
 							this.setPosition( shipBlob.getPosition());
 					}
-					this.set_s8( "stay count", count );		
+					this.set_s8("stay count", count);		
 				}
 			}
 		}
@@ -302,7 +301,7 @@ void PlayerControls(CBlob@ this)
 {
 	CHUD@ hud = getHUD();
 	CControls@ controls = getControls();
-	bool toolsKey = controls.isKeyJustPressed( controls.getActionKeyKey( AK_PARTY ) );
+	bool toolsKey = controls.isKeyJustPressed(controls.getActionKeyKey(AK_PARTY));
 	CSprite@ sprite = this.getSprite();
 	
 	// bubble menu
@@ -899,7 +898,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			const int blockType = mBlob.getSprite().getFrame();
 			Island@ island = getIsland(mBlob.getShape().getVars().customData);
 				
-			const f32 mBlobCost = mBlob.get_u32("cost");
+			const f32 mBlobCost = Block::getCost(blockType) > 0 ? Block::getCost(blockType) : 15;
 			f32 mBlobHealth = mBlob.getHealth();
 			f32 mBlobInitHealth = mBlob.getInitialHealth();
 			const f32 initialReclaim = mBlob.get_f32("initial reclaim");
@@ -1098,7 +1097,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			owner = "";
 			seat.set("playerOwner", owner);
 			seat.set_string("playerOwner", "");
-			seat.Sync("playerOwner", true);
+			seat.Sync("playerOwner", true); //2040865191
 		}
 	}
 	else if (isServer() && this.getCommandID("giveBooty") == cmd)//transfer booty

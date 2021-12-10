@@ -15,12 +15,6 @@ void onInit( CBlob@ this )
 	if (isServer())
 	{
 		this.set("couplingCooldown", 0);
-		
-		CBlob@ owner = getBlobByNetworkID(this.get_u16("ownerID"));    
-		if (owner !is null)
-			server_setOwner(this, owner.getPlayer().getUsername());
-		else
-			server_setOwner(this, "");
 			
 		u16[] left_propellers, strafe_left_propellers, strafe_right_propellers, right_propellers, up_propellers, down_propellers, machineguns, cannons;					
 		this.set("left_propellers", left_propellers);
@@ -41,7 +35,7 @@ void onInit( CBlob@ this )
 	}
 	
 	this.set_string("seat label", "Steering Seat");
-	this.set_bool("canProduceCoupling", false );
+	this.set_bool("canProduceCoupling", false);
 	this.set_u8("seat icon", 7);
 	this.Tag("seat");
 	this.Tag("control");
@@ -78,7 +72,6 @@ void onTick(CBlob@ this)
 	
 	if (isServer())
 	{
-		this.get("playerOwner", seatOwner);
 		//clear ownership on player leave/change team or seat not used
 		CPlayer@ ownerPlayer = getPlayerByUsername(seatOwner);
 		if (ownerPlayer is null || ownerPlayer.getTeamNum() != teamNum || gameTime - this.get_u32("lastActive") > UNUSED_RESET)
@@ -453,7 +446,7 @@ void onTick(CBlob@ this)
 					for (uint i = 0; i < machineguns.length; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID(machineguns[i]);
-						if (weap is null || weap.get_bool("mShipDocked"))
+						if (weap is null)
 							continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
@@ -474,7 +467,7 @@ void onTick(CBlob@ this)
 					for (uint i = 0; i < cannons.length; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID(cannons[i]);
-						if (weap is null || !weap.get_bool("fire ready") || weap.get_bool("mShipDocked"))
+						if (weap is null || !weap.get_bool("fire ready"))
 							continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
@@ -593,7 +586,6 @@ void updateArrays(CBlob@ this, Island@ island)
 void server_setOwner(CBlob@ this, string owner)
 {
 	//print( "" + this.getNetworkID() + " seat setOwner: " + owner );
-	this.set("playerOwner", owner);
 	this.set_string("playerOwner", owner);
 	this.Sync("playerOwner", true);
 	this.set_u32("lastOwnerUpdate", getGameTime());

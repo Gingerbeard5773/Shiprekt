@@ -46,16 +46,13 @@ void onInit( CBlob@ this )
 
 	if (isServer())
 	{
-		this.set('ammo', MAX_AMMO);
-		this.set('maxAmmo', MAX_AMMO);
-		this.set_u16('ammo', MAX_AMMO);
-		this.set_u16('maxAmmo', MAX_AMMO);
+		this.set_u16("ammo", MAX_AMMO);
+		this.set_u16("maxAmmo", MAX_AMMO);
 		this.set_f32("fire pause",MIN_FIRE_PAUSE);
-		this.set_bool("mShipDocked", false);
 
 		this.Sync("fire pause", true);
-		this.Sync('ammo', true);
-		this.Sync('maxAmmo', true);
+		this.Sync("ammo", true);
+		this.Sync("maxAmmo", true);
 	}
 
 	CSprite@ sprite = this.getSprite();
@@ -105,9 +102,8 @@ void onTick(CBlob@ this)
 
 		if (isle !is null)
 		{
-			u16 ammo, maxAmmo;
-			this.get('ammo', ammo);
-			this.get('maxAmmo', maxAmmo);
+			u16 ammo = this.get_u16("ammo");
+			u16 maxAmmo = this.get_u16("maxAmmo");
 
 			if (ammo < maxAmmo)
 			{
@@ -126,12 +122,9 @@ void onTick(CBlob@ this)
 					}
 				}
 
-				this.set('ammo', ammo);
+				this.set_u16("ammo", ammo);
+				this.Sync("ammo", true);
 			}
-
-			this.Sync('ammo', true);
-			this.set_u16('ammo', ammo);
-			this.Sync('ammo', true);
 		}
 	}
 
@@ -183,8 +176,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		// ammo
 		u16 ammo = this.get_u16("ammo");
-		if (isServer)
-			this.get("ammo", ammo);
 
 		if (ammo <= 0)
 		{
@@ -194,8 +185,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		ammo--;
 		this.set_u16("ammo", ammo);
-		if (isServer)
-			this.set("ammo", ammo);
 
 		//effects
 		CSprite@ sprite = this.getSprite();
@@ -290,15 +279,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
 						if (laser !is null)//partial length laser
 						{
-							Animation@ anim = laser.addAnimation( "default", 1, false );
+							Animation@ anim = laser.addAnimation("default", 1, false);
 							int[] frames = { 0, 1, 2, 3, 4, 5 };
 							anim.AddFrames(frames);
 							laser.SetVisible(true);
 							f32 laserLength = Maths::Max(0.1f, (hi.hitpos - barrelPos).getLength() / 16.0f);
 							laser.ResetTransform();
-							laser.ScaleBy( Vec2f(laserLength, 0.5f) );
-							laser.TranslateBy( Vec2f(laserLength*8.0f + 8.0f, barrelOffsetRelative.y) );
-							laser.RotateBy( offsetAngle, Vec2f());
+							laser.ScaleBy(Vec2f(laserLength, 0.5f));
+							laser.TranslateBy( Vec2f(laserLength*8.0f + 8.0f, barrelOffsetRelative.y));
+							laser.RotateBy(offsetAngle, Vec2f());
 							laser.setRenderStyle(RenderStyle::light);
 							laser.SetRelativeZ(1);
 						}
@@ -308,12 +297,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 					CPlayer@ attacker = shooter.getPlayer();
 					if (attacker !is null && blockType != Block::MOTHERSHIP5)
-						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 2, "Pinball_", true);
+						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 1, "Pinball_", true);
 
 					if (isServer)
 					{
 						f32 damage = getDamage(b, blockType);
-						if (b.hasTag("propeller") && b.getTeamNum() != teamNum && XORRandom(3) == 0 )
+						if (b.hasTag("propeller") && b.getTeamNum() != teamNum && XORRandom(3) == 0)
 							b.SendCommand(b.getCommandID("off"));
 						this.server_Hit(b, hi.hitpos, Vec2f_zero, damage, 0, true);
 					}

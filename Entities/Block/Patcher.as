@@ -58,16 +58,6 @@ void onTick(CBlob@ this)
 		}	
 		sprite.RemoveSpriteLayer("laser");
 	}
-	
-	//don't shoot if docked on mothership
-	if (isServer() && (gameTime + this.getNetworkID() * 33) % 15 == 0)//every 1 sec
-	{	
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-		if (isle !is null)
-		{
-				this.set_bool("mShipDocked", false);
-		}
-	}
 }
  
 bool canShoot(CBlob@ this)
@@ -166,17 +156,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					u16 cBooty = server_getPlayerBooty( cName );
 					f32 mBlobHealth = b.getHealth();
 					f32 mMaxHealth = b.getInitialHealth();
-					const f32 mBlobCost = b.get_u32("cost");
+					const f32 mBlobCost = Block::getCost(blockType) > 0 ? Block::getCost(blockType) : 15;
 					const f32 initialReclaim = b.get_f32("initial reclaim");
 					f32 currentReclaim = b.get_f32("current reclaim");
 
 					f32 fullConstructAmount;
-					if (mBlobCost > 0)
+					if (blockType != Block::MOTHERSHIP5)
 						fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
-					else if (blockType == Block::MOTHERSHIP5)
-						fullConstructAmount = (0.01f)*mMaxHealth;
 					else
-						fullConstructAmount = 0.0f;
+						fullConstructAmount = (0.01f)*mMaxHealth;
 					
 					if (blockType == Block::MOTHERSHIP5)
 					{

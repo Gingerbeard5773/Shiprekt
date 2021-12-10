@@ -427,7 +427,7 @@ void onTick( CBlob@ this )
 					for (uint i = 0; i < machineguns.length; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID( machineguns[i] );
-						if ( weap is null || weap.get_bool( "mShipDocked" ) )
+						if (weap is null)
 							continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy( weap.getAngleDegrees() );
@@ -448,7 +448,7 @@ void onTick( CBlob@ this )
 					for (uint i = 0; i < cannons.length; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID( cannons[i] );
-						if ( weap is null || !weap.get_bool( "fire ready" ) || weap.get_bool( "mShipDocked" ) )
+						if ( weap is null || !weap.get_bool( "fire ready" ))
 							continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy( weap.getAngleDegrees() );

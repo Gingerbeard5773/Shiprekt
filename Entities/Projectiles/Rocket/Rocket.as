@@ -107,7 +107,7 @@ void onTick( CBlob@ this )
 			f32 thisAngle = this.getAngleDegrees();
 			f32 shortAngle = (thisAngle + targetAngle + angleOffset) % 360;				
 			
-			this.set_f32("shortAngle", shortAngle);
+			/*this.set_f32("shortAngle", shortAngle);
 			if (ownerBlob.isMyPlayer()) 
 			{
 				this.Sync("shortAngle", false);
@@ -115,7 +115,7 @@ void onTick( CBlob@ this )
 			else
 			{
 				shortAngle = this.get_f32("shortAngle");
-			}
+			}*/
 			
 			if (shortAngle < 0 - ROTATION_SPEED*2.0f)
 			{

@@ -6,15 +6,15 @@ const float INITIAL_HEALTH = 4.0f;
 void onInit(CBlob@ this)
 {
 	this.Tag('decoyCore');
-	this.set_bool("placed", false);
-	this.Sync("placed", true);
+	//this.set_bool("placed", false);
+	//this.Sync("placed", true);
 
-	if (getNet().isServer())
+	if (isServer())
 	{
 		this.server_SetHealth(INITIAL_HEALTH);
 	}
 
-	if (getNet().isClient())
+	if (isClient())
 	{
 		CSprite@ sprite = this.getSprite();
 		CSpriteLayer@ layer = sprite.addSpriteLayer('damage');
@@ -34,15 +34,15 @@ void onInit(CBlob@ this)
 
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
-	if ( this.getShape().getVars().customData <= 0 )//not placed yet
+	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
 
-	if (this.get_bool("placed") == false)
+	if (!this.get_bool("placed"))
 	{
 		CRules@ rules = getRules();
-		if(!rules.exists("decoyCoreCount" + this.getTeamNum()))
+		if (!rules.exists("decoyCoreCount" + this.getTeamNum()))
 		{
 			rules.set_u8("decoyCoreCount" + this.getTeamNum(), 0);
 			rules.Sync("decoyCoreCount" + this.getTeamNum(), true);
@@ -50,15 +50,14 @@ void onTick( CBlob@ this )
 
 		rules.set_u8("decoyCoreCount" + this.getTeamNum(), rules.get_u8("decoyCoreCount" + this.getTeamNum()) + 1);
 		rules.Sync("decoyCoreCount" + this.getTeamNum(), true);
+		
+		this.set_bool("placed", true);
 	}
-
-	this.set_bool("placed", true);
-	this.Sync("placed", true);
 }
 
 void onHealthChange(CBlob@ this, float old)
 {
-	if (getNet().isClient())
+	if (isClient())
 	{
 		updateFrame(this);
 	}
