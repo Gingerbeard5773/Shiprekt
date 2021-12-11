@@ -6,7 +6,7 @@ bool isTouchingLand(Vec2f pos)
 	CMap@ map = getMap();
 	u16 tileType = map.getTile(pos).type;
 	
-	return ( (tileType >= CMap::sand_inland && tileType <= CMap::grass_sand_border_diagonal_L1)
+	return ((tileType >= CMap::sand_inland && tileType <= CMap::grass_sand_border_diagonal_L1)
 			||	((tileType >= CMap::sand_shoal_border_convex_RU1 && tileType <= CMap::sand_shoal_border_diagonal_L1)&&(tileType)%2 == 0));
 }
 

@@ -296,8 +296,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					}
 
 					CPlayer@ attacker = shooter.getPlayer();
-					if (attacker !is null && blockType != Block::MOTHERSHIP5)
-						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 1, "Pinball_", true);
+					if (attacker !is null && blockType != Block::MOTHERSHIP5 && !b.hasTag("weapon"))
+						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 2, "Pinball_", true);
 
 					if (isServer)
 					{

@@ -1,13 +1,9 @@
 #define CLIENT_ONLY
 #include "ActorHUDStartPos.as"
-#include "TeamColour.as"
-#include "IslandsCommon.as"
-#include "KGUI.as";
 
 bool showHelp = true;
 bool justJoined = true;
 bool page1 = true;
-const int slotsSize = 6;
 f32 boxMargin = 50.0f;
 //key names
 const string party_key = getControls().getActionKeyKeyName( AK_PARTY );
@@ -21,11 +17,6 @@ const string action3_key = getControls().getActionKeyKeyName( AK_ACTION3 );
 const string map_key = getControls().getActionKeyKeyName( AK_MAP );
 const string zoomIn_key = getControls().getActionKeyKeyName( AK_ZOOMIN );
 const string zoomOut_key = getControls().getActionKeyKeyName( AK_ZOOMOUT );
-
-Window@ helpWindow;
-Label@ helpText;
-Button@ nextBtn;
-Button@ doneBtn;
 		
 void onInit( CRules@ this )
 {
@@ -108,13 +99,12 @@ void onRender(CRules@ this)
 		string lastChangesInfo = "Shiprekt Version 1.40\n"
 		
 		+ "Last changes :\n"
-		+ "- 11-30-2021 - By Gingerbeard\n"
+		+ "- 11-30-2021 - 1.37v By Gingerbeard\n"
 		+ "  * Mini-station takes half as much time to capture.\n"
-		+ "  * Explosives can now be deconstructed properly without detonating.\n"
 		+ "  * Auxillary Core can only be created at your mothership.\n"
-		+ "  * Many other small changes and bug fixes.\n"
-		+ "- 12-7-2021 -\n"
-		+ "  * Various bugs fixed from previous update\n";
+		+ "- 12-10-2021 - 1.40v\n"
+		+ "  * Possible improvement to the stability of the mod!\n"
+		+ "  * Ram is now only unlocked after warmup\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
@@ -141,8 +131,8 @@ void onRender(CRules@ this)
 		
 		if (page1)
 		{
-			GUI::DrawText(lastChangesInfo, Vec2f( sWidth/2 - imageSize.x,  tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
-			GUI::DrawIconByName( "$HELP$", Vec2f( sWidth/2 - imageSize.x,  tlBox.y + boxMargin + 10));
+			GUI::DrawText(lastChangesInfo, Vec2f(sWidth/2 - imageSize.x,  tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
+			GUI::DrawIconByName("$HELP$", Vec2f(sWidth/2 - imageSize.x,  tlBox.y + boxMargin + 10));
 		}
 		else
 			GUI::DrawText(textInfo, Vec2f(sWidth/2 - infoSize.x/2,  tlBox.y + boxMargin + 40), tipsColor);
@@ -152,21 +142,15 @@ void onRender(CRules@ this)
 		Vec2f tl = getActorHUDStartPosition(null, 6);
 		if (localBlob is null)
 		{
-			GUI::DrawIconByName("$BOOTY$", tl + Vec2f(111, -12));
-			GUI::DrawIconByName("$CREW$", tl + Vec2f(67, -11));
+			GUI::DrawIconByName("$BOOTY$", tl + Vec2f(111, 12));
+			GUI::DrawIconByName("$CREW$", tl + Vec2f(67, 11));
 		}
 		
 		if (localBlob is null || (controls.getMouseScreenPos() - tl - Vec2f(125, 20)).Length() > 50.0f)
 		{
 			SColor arrowColor = SColor( 150, 255, 255, 255 );
 			GUI::DrawText( "Click these Icons for Control and Booty functions",  tl + Vec2f(225, 5), tipsColor);
-			GUI::DrawSplineArrow2D( tl + Vec2f(225, 7), tl + Vec2f(145, -12), arrowColor);
 			GUI::DrawSplineArrow2D( tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
-		}
-		
-		if (helpWindow !is null)
-		{
-			if (helpWindow.isEnabled){helpWindow.draw();} //telling window to draw iteself
 		}
 		
 		//Add social links

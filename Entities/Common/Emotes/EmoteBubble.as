@@ -48,30 +48,31 @@ void onTick( CBlob@ blob )
 				emote.SetFacingLeft( false );
 				
 				CCamera@ camera = getCamera();
-				if ( camera !is null )
+				if (camera !is null)
 				{
 					bool pointEmote = index == Emotes::up || index == Emotes::down || index == Emotes::left || index == Emotes::right;
-					if ( !pointEmote )
+					if (!pointEmote)
 					{
 						f32 angle = camera.getRotation() - blob.getAngleDegrees();
-						emote.RotateBy( angle, -emote.getOffset() ); 
+						emote.RotateBy(angle, -emote.getOffset()); 
 					}
 					else//messy stuff below
 					{
 						emote.animation.frame = Emotes::up;
 						Vec2f aimVec;
-						const int direction = blob.getAimDirection( aimVec );
-						const f32 camRotation = blob.isMyPlayer() ? camera.getRotation() : blob.get_f32("cam rotation");
-						Vec2f blobCamVec = Vec2f( 0.0f, 1.0f );
-							blobCamVec.RotateBy( camRotation );
-						Vec2f localCamVec = Vec2f( 0.0f, 1.0f );
-							localCamVec.RotateBy( camera.getRotation() );
+						const int direction = blob.getAimDirection(aimVec);
+						//const f32 camRotation = blob.isMyPlayer() ? camera.getRotation() : blob.get_f32("cam rotation");
+						const f32 camRotation = camera.getRotation();
+						Vec2f blobCamVec = Vec2f(0.0f, 1.0f);
+							blobCamVec.RotateBy(camRotation);
+						Vec2f localCamVec = Vec2f(0.0f, 1.0f);
+							localCamVec.RotateBy(camera.getRotation());
 
-						if ( localCamVec.AngleWith( aimVec ) < 0 )
-							emote.SetFacingLeft( true );
+						if (localCamVec.AngleWith(aimVec) < 0)
+							emote.SetFacingLeft(true);
 
-						f32 angle = 180 + blobCamVec.AngleWith( aimVec ) + camRotation - blob.getAngleDegrees();
-						emote.RotateBy( angle, -emote.getOffset() ); 
+						f32 angle = 180 + blobCamVec.AngleWith(aimVec) + camRotation - blob.getAngleDegrees();
+						emote.RotateBy(angle, -emote.getOffset()); 
 					}
 				}
 			}

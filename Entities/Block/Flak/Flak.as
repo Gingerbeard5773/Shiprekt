@@ -59,7 +59,7 @@ void onInit(CBlob@ this)
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
-    	layer.SetLighting( false );
+    	layer.SetLighting(false);
      	Animation@ anim = layer.addAnimation("fire", 15, false);
         anim.AddFrame(Block::FLAK_A2);
         anim.AddFrame(Block::FLAK_A1);

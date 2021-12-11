@@ -356,7 +356,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			{
 				//kill by impact
 				Island@ island = getIsland(color);
-				if (island !is null && this.getTeamNum() != blob.getTeamNum() && (getGameTime() - blob.get_u32( "groundTouch time" ) < 15)/*longer wasOnGround*/
+				if (island !is null && this.getTeamNum() != blob.getTeamNum() && (getGameTime() - blob.get_u32("groundTouch time") < 15)/*longer wasOnGround*/
 					&& (island.vel.LengthSquared() > 4.0f || Maths::Abs(island.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
 				{
 

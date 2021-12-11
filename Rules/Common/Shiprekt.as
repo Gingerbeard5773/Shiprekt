@@ -236,8 +236,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					if (tokens.length > 2) word = tokens[1]+" "+tokens[2]; //only supports up to two words
 					print(word.getHash() + " : "+ word);
 				}
-
-				if (tokens[0] == "!findblob") //could help with finding delta/bad snapshot errors? '!findBlob 12345'
+				else if (tokens[0] == "!findblob") //could help with finding delta/bad snapshot errors? '!findBlob 12345'
 				{
 					CBlob@ b = getBlobByNetworkID(parseInt(tokens[1]));
 					if (b is null) return false;

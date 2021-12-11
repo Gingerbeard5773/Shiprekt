@@ -113,7 +113,7 @@ void onTick(CBlob@ this)
                         blocks_angle -= 360.0f;
                     }
                     this.set_f32("target_angle", target_angle);
-                    this.Sync("target_angle", false);
+                    this.Sync("target_angle", false); //-1491678232
                 }
             }
 

@@ -137,7 +137,6 @@ shared class HoverMessageShiprekt2
     void drawDeltaBooty(CBlob@ blob) 
 	{
         string m = this.message();
-		const int slotsSize = 6;
         Vec2f pos = Vec2f( 158 , 11);
         SColor color = this.getColor();
         GUI::DrawText(m,pos,color);

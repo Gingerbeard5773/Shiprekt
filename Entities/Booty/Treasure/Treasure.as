@@ -16,31 +16,32 @@ void onInit(CBlob@ this)
 	this.getCurrentScript().tickFrequency = CHECK_FREQUENCY;
 }
 
+const s32 timerMax = 10;
+s32 timer = timerMax;
+
 void onInit(CSprite@ this)
 {
 	this.SetVisible(false);
 	this.ScaleBy(Vec2f(1, 1));
 	this.SetZ(-15.0f);
+	Vec2f tokenOffset = Vec2f(8, 8);
 	
-	CSpriteLayer@ layer = this.addSpriteLayer("accent_1", 9, 9);
-	if (layer !is null)
+	for (u8 i = 0; i < timerMax; i++)
 	{
-		layer.SetFrame(2);
-		layer.SetVisible(false);
-		layer.SetOffset(Vec2f(8, 8));
-	}
-	CSpriteLayer@ layer_2 = this.addSpriteLayer("accent_2", 9, 9);
-	if (layer_2 !is null)
-	{
-		layer_2.SetFrame(2);
-		layer_2.SetVisible(false);
-		layer_2.SetOffset(Vec2f(-8, -8));
-		layer_2.RotateBy(180.0f, Vec2f());
+		CSpriteLayer@ layer = this.addSpriteLayer("token"+i, 4, 4);
+		if (layer !is null)
+		{
+			layer.SetFrame(5);
+			layer.SetVisible(false);
+			
+			//if (i == 10) tokenOffset = Vec2f(12, 12); //second layer
+
+			tokenOffset.RotateBy(40.0f);
+			layer.SetOffset(tokenOffset);
+		}
 	}
 	this.ReloadSprites(1, 0); //set Red
 }
-
-s32 timer = 10;
 
 void onTick(CBlob@ this)
 {
@@ -49,9 +50,9 @@ void onTick(CBlob@ this)
 	CBlob@[] humans;
 	
 	CSprite@ sprite = this.getSprite();
-	if (this.getTickSinceCreated() > 200)
+	if (this.getTickSinceCreated() > 100)
 	{
-		if (getMap().getBlobsInRadius(pos, sprite.isVisible() ? 10.0f : 200.0f, @humans))
+		if (getMap().getBlobsInRadius(pos, sprite.isVisible() ? 10.0f : 100.0f, @humans))
 		{
 			for (u8 i = 0; i < humans.length; i++)
 			{
@@ -65,25 +66,34 @@ void onTick(CBlob@ this)
 
 					if (human.getVelocity() == Vec2f())
 					{
-						timer = Maths::Clamp(timer - 1, 0, 10);
-						Sound::Play("Poing"+(XORRandom(6)+1), this.getPosition());
+						timer = Maths::Clamp(timer - 1, 0, timerMax);
+						if (timer > 0) Sound::Play("Pinball_2", this.getPosition());
 					}
-					else timer = 10; //reset timer if player moving
+					else if (timer < timerMax) //reset timer if player moving
+					{
+						Sound::Play("join", this.getPosition());
+						timer = timerMax;
+					}
 				}
-				else humans.erase(i--); //only humans in array
+				else
+				{
+					humans.erase(i--); //only humans in array
+				}
 			}
 		}
 
-		if (humans.length <= 0) //reset timer if no players
+		if (humans.length <= 0 && timer < timerMax) //reset timer if no players
 		{
-			timer = 10;
+			Sound::Play("join", this.getPosition());
+			timer = timerMax;
 		}
 	}
 
-	if (timer == 0)
+	if (timer <= 0)
 	{
+		Sound::Play("snes_coin", this.getPosition());
 		this.server_Die();
-		timer = 10; //reset time so new treasure doesn't die immediately
+		timer = timerMax; //reset time so new treasure doesn't die immediately
 	}
 	//print("timer: "+timer);
 }
@@ -93,18 +103,10 @@ void reveal(CBlob@ this, CBlob@ finder)
 	this.Tag("revealed treasure"); //for gui compass
 
 	if (finder.getPlayer() !is null)
-		client_AddToChat("***A treasure chest has been found by " + finder.getPlayer().getCharacterName() + "! ***");
+		client_AddToChat("*** A treasure chest has been found by " + finder.getPlayer().getCharacterName() + "! ***");
 	
 	//reveal sprite
 	CSprite@ sprite = this.getSprite();
-	
-	CSpriteLayer@ layer = sprite.getSpriteLayer("accent_1");
-	if (layer !is null)
-		layer.SetVisible(true);
-	CSpriteLayer@ layer_2 = sprite.getSpriteLayer("accent_2");
-	if (layer_2 !is null) 
-		layer_2.SetVisible(true);
-	
 	sprite.SetVisible(true);
 }
 
@@ -124,8 +126,21 @@ void onTick(CSprite@ this)
 {
 	//rotate sprites
 	this.RotateBy(4, Vec2f_zero);
-	CSpriteLayer@ layer = this.getSpriteLayer("accent_1");
-	if (layer !is null) layer.RotateBy(-4, Vec2f(-8, -8));
-	CSpriteLayer@ layer_2 = this.getSpriteLayer("accent_2");
-	if (layer_2 !is null) layer_2.RotateBy(-4, Vec2f(8, 8));
+	
+	if (this.isVisible())
+	{
+		for (u8 i = 0; i < timerMax; i++)
+		{
+			CSpriteLayer@ layer = this.getSpriteLayer("token"+i);
+			if (layer !is null)
+			{
+				layer.SetVisible(timer - 1 > i);
+				layer.RotateBy(1, layer.getOffset());
+				Vec2f rotation = layer.getOffset();
+				rotation.RotateBy(4.0f);
+				layer.SetOffset(rotation); //moving tokens around X
+				//layer.RotateBy(5.0f, Vec2f_zero); //rotating the token sprite
+			}
+		}
+	}
 }

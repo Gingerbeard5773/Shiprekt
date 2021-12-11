@@ -6,7 +6,7 @@ const float INITIAL_HEALTH = 4.0f;
 void onInit(CBlob@ this)
 {
 	this.Tag('decoyCore');
-	//this.set_bool("placed", false);
+	this.set_bool("placed", false);
 	//this.Sync("placed", true);
 
 	if (isServer())

@@ -36,7 +36,7 @@ void onInit(CBlob@ this)
 	this.addCommandID("giveBooty");
 	this.addCommandID("releaseOwnership");
 	this.addCommandID("swap tool");
-	this.set_f32("cam rotation", 0.0f);
+	//this.set_f32("cam rotation", 0.0f);
 
 	this.getShape().getVars().waterDragScale = 0; // fix
 
@@ -80,7 +80,7 @@ void onTick(CBlob@ this)
 		if (gameTime % 10 == 0)
 		{
 			this.set_bool("onGround", this.isOnGround());
-			this.Sync("onGround", false); //1954602763 PROPERTY
+			this.Sync("onGround", false); //1954602763
 		}
 	}
 
@@ -108,7 +108,8 @@ void onTick(CBlob@ this)
 void Move(CBlob@ this)
 {
 	const bool myPlayer = this.isMyPlayer();
-	const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
+	//const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
+	const f32 camRotation = getCamera().getRotation();
 	const bool attached = this.isAttached();
 	Vec2f pos = this.getPosition();	
 	Vec2f aimpos = this.getAimPos();
@@ -116,13 +117,13 @@ void Move(CBlob@ this)
 	CShape@ shape = this.getShape();
 	CSprite@ sprite = this.getSprite();
 	
-	string currentTool = this.get_string( "current tool" );
+	string currentTool = this.get_string("current tool");
 
-	if (myPlayer)
+	/*if (myPlayer)
 	{
 		this.set_f32("cam rotation", camRotation);
-		this.Sync("cam rotation", false); //1732223106 PROPERTY
-	}
+		this.Sync("cam rotation", false); //1732223106
+	}*/
 	
 	if (!attached)
 	{
@@ -528,13 +529,17 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 				description = "An industrial-sized reconstructor that shoots a green restoration beem through a ship, repairing multiple ship parts concomitantly.\nAmmoCap: infinite";
 				AddBlock(this, menu, Block::PATCHER, "$PATCHER$", "Patcher", description, core);
 			}
-			{ //Ram Hull
-				description = "A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits. Can effectively negate damage from bullets, flak, and to some extent cannons.";
-				AddBlock(this, menu, Block::RAM, "$RAM$", "Ram Hull", description, core);
-			}
 			{ //Anti Ram Hull
 				description = "An excellent defence against enemy rammers. Can absorb multiple ram components. Partially weaker against gunfire than Wood Hull.";
 				AddBlock(this, menu, Block::ANTIRAM, "$ANTIRAM$", "Anti-Ram Hull", description, core);
+			}
+			{ //Repulsor
+				description = "Explodes pushing blocks away. Can be triggered remotely or by impact. Activates in a chain.";
+				AddBlock(this, menu, Block::REPULSOR, "$REPULSOR$", "Repulsor", description, core);
+			}
+			{ //Ram Hull
+				description = "A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits. Can effectively negate damage from bullets, flak, and to some extent cannons.";
+				AddBlock(this, menu, Block::RAM, "$RAM$", "Ram Hull", description, core, gameTime < WARMUP_TIME);
 			}
 			if (!isStation)
 			{ //Auxilliary Core

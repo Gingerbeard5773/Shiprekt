@@ -167,7 +167,7 @@ void server_updateX(CBlob@ this, u16 reward, bool instaPickup = true)
 	else
 		this.set_u16("ammount", Maths::Max(0, ammount - reward));
 
-	this.Sync("ammount", true);	
+	this.Sync("ammount", true);	//522519900
 }
 
 void server_giveBooty(string name, u16 ammount)
@@ -184,7 +184,7 @@ void server_giveBooty(string name, u16 ammount)
 
 void onTick(CSprite@ this)
 {
-	this.RotateBy(1, Vec2f_zero);
+	this.RotateBy(0.5f, Vec2f_zero);
 	if (this.animation.name == "default" && this.animation.ended())
 		this.SetAnimation("pulse");
 

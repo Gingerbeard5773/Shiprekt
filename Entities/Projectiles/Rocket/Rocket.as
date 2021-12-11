@@ -110,7 +110,7 @@ void onTick( CBlob@ this )
 			/*this.set_f32("shortAngle", shortAngle);
 			if (ownerBlob.isMyPlayer()) 
 			{
-				this.Sync("shortAngle", false);
+				this.Sync("shortAngle", false); //324847272
 			}
 			else
 			{
@@ -137,7 +137,7 @@ void onTick( CBlob@ this )
 		sparks(pos, 15, 5.0f, 20);
 		smoke(pos, 5);	
 		blast(pos, 5);															
-		directionalSoundPlay( "Blast2.ogg", pos );
+		directionalSoundPlay("Blast2.ogg", pos);
 	}
 	
 	if (isServer() && this.getTickSinceCreated() >= 4)
@@ -190,7 +190,7 @@ void onTick( CBlob@ this )
 					{
 						CBlob@ blob = owner.getBlob();
 						if (blob !is null)
-							damageBooty(owner, blob, b, Block::isSolid(blockType) || blockType == Block::DOOR, 10);
+							damageBooty(owner, blob, b, Block::isSolid(blockType) || blockType == Block::DOOR, 15);
 					}
 					
 					f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
