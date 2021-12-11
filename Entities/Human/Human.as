@@ -109,7 +109,7 @@ void Move(CBlob@ this)
 {
 	const bool myPlayer = this.isMyPlayer();
 	//const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
-	const f32 camRotation = getCamera().getRotation();
+	const f32 camRotation = myPlayer ? getCamera().getRotation() : 0.0f;
 	const bool attached = this.isAttached();
 	Vec2f pos = this.getPosition();	
 	Vec2f aimpos = this.getAimPos();
