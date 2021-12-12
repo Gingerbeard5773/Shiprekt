@@ -51,7 +51,7 @@ void onTick(CBlob@ this)
 				CRules@ rules = getRules();
 				bool skipCoreCheck = gameTime > getRules().get_u16("warmup_time") || (island.isMothership && (island.owner == "" || island.owner == "*" || island.owner == player.getUsername()));
 				bool cLinked = false;
-                const bool overlappingIsland = blocksOverlappingIsland( @blocks );
+                const bool overlappingIsland = blocksOverlappingIsland(@blocks);
 				for (uint i = 0; i < blocks.length; ++i)
 				{
 					if (overlappingIsland)
@@ -214,7 +214,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         CBlob@[]@ blocks;
         if (this.get("blocks", @blocks) && blocks.size() > 0)                 
         {	
-			PositionBlocks(@blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy( angleDelta ), target_angle, centerBlock, refBlock);
+			PositionBlocks(@blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy(angleDelta), target_angle, centerBlock, refBlock);
 
 			int iColor = centerBlock.getShape().getVars().customData;
 			for (uint i = 0; i < blocks.length; ++i)

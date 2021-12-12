@@ -361,6 +361,7 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 					if (multiTeams)
 						oldestSeatOwner = "*";
 					else
+					{
 						for (int i = 0; i < seatIDs.length; i++)
 						{
 							CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[i]);
@@ -370,6 +371,7 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 								break;
 							}
 						}
+					}
 				}
 			}
 			
@@ -462,11 +464,11 @@ void setIsleTeam(Island @isle, u8 teamNum = 255)
 	}
 }
 
-/*void onBlobChangeTeam( CRules@ this, CBlob@ blob, const int oldTeam )//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
+void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
 {
-	if ( !getNet().isServer() && blob.getName() == "block" )
-		blob.set_u8( "frame", blob.getSprite().getFrame() );
-}*/
+	if (!isServer() && blob.getName() == "block")
+		blob.set_u8("frame", blob.getSprite().getFrame());
+}
 
 void StoreVelocities(CRules@ this)
 {

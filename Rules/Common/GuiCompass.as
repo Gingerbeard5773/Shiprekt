@@ -37,14 +37,16 @@ class CompassVars
 	f32 treasure_angle;
 	f32 treasure_distance;
 	
-	f32 isle_angle;
-	f32 isle_distance;
+	//f32 isle_angle;
+	//f32 isle_distance;
 
-    CompassVars() {
+    CompassVars()
+	{
         Reset();
     }
 
-    void Reset() {
+    void Reset()
+	{
         center_angle = 0.0f;
 		center_distance = -1.0f;
         core_angles.clear();
@@ -66,14 +68,14 @@ class CompassVars
 		booty_distance = -1.0f;
 		treasure_angle = 0.0f;
 		treasure_distance = -1.0f;
-		isle_angle = 0.0f;
-		isle_distance = -1.0f;
+		//isle_angle = 0.0f;
+		//isle_distance = -1.0f;
     }
 };
 
 CompassVars _vars;
 
-void onTick( CRules@ this )
+void onTick(CRules@ this)
 {
     _vars.Reset();
 
@@ -82,7 +84,7 @@ void onTick( CRules@ this )
 
     CBlob@ b = p.getBlob();
 	CCamera@ camera = getCamera();
-    if(b is null && camera is null) return;
+    if (b is null && camera is null) return;
 
     Vec2f pos = b !is null ? b.getPosition() : camera.getPosition();
 	u8 localTeamNum = p.getTeamNum();
@@ -111,7 +113,7 @@ void onTick( CRules@ this )
     }
 	
 	CBlob@[] decoycores;
-    getBlobsByTag( "decoyCore", @decoycores );
+    getBlobsByTag("decoyCore", @decoycores);
     for (uint i = 0; i < decoycores.length; i++)
     {
         CBlob@ decoycore = decoycores[i];
@@ -166,7 +168,7 @@ void onTick( CRules@ this )
 		f32 distance = offset.Length();
 		u8 teamNum = human.getTeamNum();
 		
-		if (distance < 208 || ( distance > 864 && localTeamNum != teamNum))//don't include if too close or too far
+		if (distance < 208 || (distance > 864 && localTeamNum != teamNum))//don't include if too close or too far
 			continue;
 			
         _vars.human_teams.push_back(teamNum);
@@ -176,7 +178,7 @@ void onTick( CRules@ this )
 	
 	//booty
 	CBlob@[] booty;
-    getBlobsByTag( "booty", @booty );	
+    getBlobsByTag("booty", @booty);	
 	f32 closestBootyDist = 999999.9f;
 	s16 closestBootyIndex = -1;
     for (uint i = 0; i < booty.length; i++)
@@ -185,7 +187,7 @@ void onTick( CRules@ this )
 		Vec2f bootyPos = currBooty.getPosition();
 		f32 distToPlayer = (bootyPos - pos).getLength();
 		f32 dist = distToPlayer;	
-		if (currBooty.get_u16( "ammount" ) > 0 && dist < closestBootyDist)
+		if (currBooty.get_u16("ammount") > 0 && dist < closestBootyDist)
 		{
 			closestBootyDist = dist;
 			closestBootyIndex = i;
@@ -196,7 +198,7 @@ void onTick( CRules@ this )
 		}
     }
 	
-	if ( closestBootyIndex > -1 )
+	if (closestBootyIndex > -1)
 	{
 		Vec2f bootyOffset = (booty[closestBootyIndex].getPosition() - pos);
 
@@ -235,18 +237,18 @@ void onTick( CRules@ this )
 	}
 	
 	//islands
-	Island[]@ islands;
+	/*Island[]@ islands;
 	f32 closestIsleDist = 999999.9f;
 	s16 closestIsleIndex = -1;
-	if ( getRules().get( "islands", @islands ) )	//count islands as booty too
+	if (getRules().get("islands", @islands)) //count islands as booty too
 	{
-		for ( uint i = 0; i < islands.length; ++i )
+		for (uint i = 0; i < islands.length; ++i)
 		{								
 			Island @isle = islands[i];	
 			Vec2f islePos = isle.pos;
 			f32 distToPlayer = (islePos - pos).getLength();
 			f32 dist = distToPlayer;	
-			if ( dist < closestIsleDist && isle.owner == "" )
+			if ( dist < closestIsleDist && isle.owner == "")
 			{
 				closestIsleDist = dist;
 				closestIsleIndex = i;
@@ -258,33 +260,33 @@ void onTick( CRules@ this )
 		}
 	}
 	
-	if ( closestIsleIndex > -1 )
+	if (closestIsleIndex > -1 )
 	{
 		Vec2f isleOffset = (islands[closestIsleIndex].pos - pos);
 
 		_vars.isle_angle = isleOffset.Angle() * -1.0f; 
 		_vars.isle_distance = isleOffset.Length();
-	}
+	}*/
 }
 
-void onInit( CRules@ this )
+void onInit(CRules@ this)
 {
     onRestart(this);
 }
 
-void onRestart( CRules@ this )
+void onRestart(CRules@ this)
 {
     _vars.Reset();
 }
 
-void onRender( CRules@ this )
+void onRender(CRules@ this)
 {
     const string gui_image_fname = "GUI/compass.png";
 
     CCamera@ c = getCamera();
     f32 camangle = c.getRotation();
 	CControls@ controls = getControls();
-	bool mapKey = controls.ActionKeyPressed( AK_MAP );
+	bool mapKey = controls.ActionKeyPressed(AK_MAP);
 	
 	CPlayer@ p = getLocalPlayer();
 	u8 localTeamNum = p !is null ? p.getTeamNum() : -1;
@@ -293,14 +295,15 @@ void onRender( CRules@ this )
     Vec2f framesize = Vec2f(64,64);
     Vec2f center = Vec2f(32,32);
 
-	if ( mapKey )
+	if (mapKey)
 	{
-		if ( !mKeyWasPressed )
+		if (!mKeyWasPressed)
 		{
 			mKeyWasPressed = true;
 			mKeyPressTime = getGameTime();
 		}
-	} else if ( mKeyWasPressed )
+	}
+	else if (mKeyWasPressed)
 	{
 		mKeyWasPressed = false;
 		mKeyTap = mKeyTap ? false : getGameTime() - mKeyPressTime < 10;
@@ -308,8 +311,8 @@ void onRender( CRules@ this )
 		
 	f32 scale = 1.0f;
 	//GUI set scale
-	if ( mKeyTap || ( controls.getMouseScreenPos() - topLeft - center ).Length() < 64.0f 
-		|| mapKey )
+	if (mKeyTap || (controls.getMouseScreenPos() - topLeft - center).Length() < 64.0f 
+		|| mapKey)
 	{
 		scale = 2.0f;
 	}
@@ -318,20 +321,20 @@ void onRender( CRules@ this )
 
     //center
     {
-        Vec2f pos(Maths::Min(8.0f, _vars.center_distance / 48.0f ), 0.0f);
+        Vec2f pos(Maths::Min(8.0f, _vars.center_distance / 48.0f), 0.0f);
 
         Vec2f thisframesize = Vec2f(16,16);
 
         pos.RotateBy(_vars.center_angle - camangle);
 		
-		if ( !getRules().get_bool( "whirlpool" ) )
-			GUI::DrawIcon(gui_image_fname, 13, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
+		if ( !getRules().get_bool("whirlpool"))
+			GUI::DrawIcon(gui_image_fname, 13, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
 		else
-			GUI::DrawIcon("WhilrpoolIcon.png", 0, Vec2f(16,16), ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
+			GUI::DrawIcon("WhilrpoolIcon.png", 0, Vec2f(16,16), (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
     }
 	
 	//closest booty
-	if ( _vars.booty_distance > 0.0f && _vars.booty_distance < _vars.isle_distance )
+	if (_vars.booty_distance > 0.0f) // && _vars.booty_distance < _vars.isle_distance)
 	{
         Vec2f pos(Maths::Min(18.0f, _vars.booty_distance / 48.0f), 0.0f);
 
@@ -339,11 +342,11 @@ void onRender( CRules@ this )
 
         pos.RotateBy(_vars.booty_angle - camangle);
 
-        GUI::DrawIcon(gui_image_fname, 14, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
+        GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
     }
 	
 	//closest treasure
-	if ( _vars.treasure_distance > 0.0f)
+	if (_vars.treasure_distance > 0.0f)
 	{
         Vec2f pos(Maths::Min(18.0f, _vars.treasure_distance / 48.0f), 0.0f);
 
@@ -351,11 +354,11 @@ void onRender( CRules@ this )
 
         pos.RotateBy(_vars.treasure_angle - camangle);
 
-        GUI::DrawIcon("WhilrpoolIcon.png", 0, Vec2f(16,16), ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 1);
+        GUI::DrawIcon("WhilrpoolIcon.png", 0, Vec2f(16,16), (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 1);
     }
 	
 	//closest island
-	if ( _vars.isle_distance > 0.0f && _vars.isle_distance < _vars.booty_distance )
+	/*if (_vars.isle_distance > 0.0f && _vars.isle_distance < _vars.booty_distance)
 	{
         Vec2f pos(Maths::Min(18.0f, _vars.isle_distance / 48.0f), 0.0f);
 
@@ -363,8 +366,8 @@ void onRender( CRules@ this )
 
         pos.RotateBy(_vars.isle_angle - camangle);
 
-        GUI::DrawIcon(gui_image_fname, 14, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
-    }
+        GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
+    }*/
 	
 	//station icons
     for (uint i = 0; i < _vars.station_teams.length; i++)
@@ -375,7 +378,7 @@ void onRender( CRules@ this )
 
         pos.RotateBy(_vars.station_angles[i] - camangle);
 
-        GUI::DrawIcon(gui_image_fname, 25, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, _vars.station_teams[i]);
+        GUI::DrawIcon(gui_image_fname, 25, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, _vars.station_teams[i]);
     }
 	
 	//ministation icons

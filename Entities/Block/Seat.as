@@ -175,7 +175,7 @@ void onTick(CBlob@ this)
 					} 
 					else if (isOwner)
 					{
-						CButton@ button = occupier.CreateGenericButton( 2, Vec2f_zero, c, c.getCommandID("decouple"), "Decouple" );
+						CButton@ button = occupier.CreateGenericButton(2, Vec2f_zero, c, c.getCommandID("decouple"), "Decouple");
 						if (button !is null)
 						{
 							button.enableRadius = 999.0f;

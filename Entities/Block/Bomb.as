@@ -61,7 +61,7 @@ void onInit(CBlob@ this)
     }*/
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
 	//update island owner
 	int color = this.getShape().getVars().customData;
@@ -70,10 +70,6 @@ void onTick( CBlob@ this )
 	Island@ island = getIsland(color);	
 	if (island !is null)
 	{
-		CPlayer@ islandOwner = getPlayerByUsername(island.owner);
-		if (islandOwner !is null)
-			this.SetDamageOwnerPlayer(islandOwner);
-			
 		//go neutral when placed on an enemy mothership
 		if (isServer() && island.isMothership && island.centerBlock !is null)
 		{
@@ -97,61 +93,62 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
     makeLargeExplosionParticle(pos);
     ShakeScreen(4*radius, 45, pos);
 
-    if (isServer())
-    {
-        //hit blobs
-        CBlob@[] blobs;
-        map.getBlobsInRadius(pos, radius, @blobs);
+	//hit blobs
+	CBlob@[] blobs;
+	map.getBlobsInRadius(pos, radius, @blobs);
 
-        for (uint i = 0; i < blobs.length; i++)
-        {
-            CBlob@ hit_blob = blobs[i];
-			if (hit_blob is this)
-				continue;
+	for (uint i = 0; i < blobs.length; i++)
+	{
+		CBlob@ hit_blob = blobs[i];
+		if (hit_blob is this)
+			continue;
 
-            Vec2f hit_blob_pos = hit_blob.getPosition();  
+		if (isServer())
+		{
+			Vec2f hit_blob_pos = hit_blob.getPosition();  
 
-            if (hit_blob.getName() == "block")
-            {
-                if (hit_blob.getShape().getVars().customData <= 0)
-                    continue;
+			if (hit_blob.getName() == "block")
+			{
+				if (hit_blob.getShape().getVars().customData <= 0)
+					continue;
 
-                // move the island
+				// move the island
 
-                Island@ isle = getIsland(hit_blob);
-                if (isle !is null && isle.mass > 0.0f)
-                {
-                    Vec2f impact = (hit_blob_pos - pos) * 0.15f / isle.mass;
-                    isle.vel += impact;
-                }
+				Island@ isle = getIsland(hit_blob);
+				if (isle !is null && isle.mass > 0.0f)
+				{
+					Vec2f impact = (hit_blob_pos - pos) * 0.15f / isle.mass;
+					isle.vel += impact;
+				}
 
-                // detonate bomb
-                    
-                if (Block::isType(hit_blob, Block::BOMB))
-                {
+				// detonate bomb
+					
+				if (Block::isType(hit_blob, Block::BOMB))
+				{
 					hit_blob.server_Die();
-                    continue;
-                }
-            }
-        
+					continue;
+				}
+			}
+		
 			//f32 distanceFactor = Maths::Min( 1.0f, Maths::Max( 0.0f, BOMB_RADIUS - this.getDistanceTo( hit_blob ) + 8.0f ) / BOMB_RADIUS );
 			f32 distanceFactor = 1.0f;
-			f32 damageFactor = ( hit_blob.hasTag( "mothership" ) || hit_blob.hasTag( "player" ) ) ? 0.25f : 1.0f;
-            //hit the object
-            this.server_Hit(hit_blob, hit_blob_pos, Vec2f_zero, BOMB_BASE_DAMAGE * distanceFactor * damageFactor, Hitters::bomb, true);
-			
-			CPlayer@ owner = this.getDamageOwnerPlayer();
-			if (owner !is null)
-			{
-				string teamCaptainName = getCaptainName(this.getTeamNum());
-				CBlob@ blob = owner.getBlob();
-				if (owner.getUsername() != teamCaptainName && blob !is null)
-					damageBootyBomb(owner, blob, hit_blob);
-			}
-			//print( hit_blob.getNetworkID() + " for: " + BOMB_BASE_DAMAGE * distanceFactor + " dFctr: " + distanceFactor + ", dist: " + this.getDistanceTo( hit_blob) );
-        }
-    }
-	    
+			f32 damageFactor = (hit_blob.hasTag("mothership") || hit_blob.hasTag("player")) ? 0.25f : 1.0f;
+
+			//hit the object
+			this.server_Hit(hit_blob, hit_blob_pos, Vec2f_zero, BOMB_BASE_DAMAGE * distanceFactor * damageFactor, Hitters::bomb, true);
+			//print(hit_blob.getNetworkID() + " for: " + BOMB_BASE_DAMAGE * distanceFactor + " dFctr: " + distanceFactor + ", dist: " + this.getDistanceTo(hit_blob));
+		}
+		
+		CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
+		if (owner !is null)
+		{
+			//this.SetDamageOwnerPlayer(owner);
+			string teamCaptainName = getCaptainName(this.getTeamNum());
+			CBlob@ blob = owner.getBlob();
+			if (owner.getUsername() != teamCaptainName && blob !is null)
+				damageBootyBomb(owner, blob, hit_blob);
+		}
+	}  
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
@@ -202,8 +199,8 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
 
 		if (victimIsle !is null && victimIsle.blocks.length > 3
-			&& (victimIsle.owner != "" || victimIsle.isMothership)
-			&& victimTeamNum != teamNum
+			&& (victimIsle.owner != "" || victimIsle.isMothership) //only inhabited ships
+			&& victimTeamNum != teamNum //cant be own ships
 			&& (blockType != Block::PLATFORM && blockType != Block::COUPLING))
 		{
 			if (attacker.isMyPlayer())
@@ -217,7 +214,7 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 				if (victim.hasTag("weapon") || Block::isBomb(blockType))
 					reward += 15;
 				else if (blockType == Block::MOTHERSHIP5)
-					reward += 30;
+					reward += 15;
 
 				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
 				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32( "bootyTeam_median") + 1000)));

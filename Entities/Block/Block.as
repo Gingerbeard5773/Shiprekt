@@ -113,13 +113,17 @@ void onTick (CBlob@ this)
 	
  	// push merged ships away from each other
 	if (this.get_bool("colliding")) this.set_bool("colliding", false); 
+}
 
-	/*if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on islands.as)
+void onChangeTeam(CBlob@ this, const int oldTeam)
+{
+	if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on islands.as)
 	{
+		CSprite@ sprite = this.getSprite();
 		u8 frame = this.get_u8("frame");
-		if (thisSprite.getFrame() == 0 && frame != 0)
-			thisSprite.SetFrame(frame);
-	}*/
+		if (sprite.getFrame() == 0 && frame != 0)
+			sprite.SetFrame(frame);
+	}
 }
 
 // onCollision: called once from the engine when a collision happens; 
@@ -434,10 +438,10 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 
 void CollisionResponse2( Island@ island, Island@ other_island, Vec2f point1 )
 {
-	if ( island is null || other_island is null )
+	if (island is null || other_island is null)
 		return;
 		
-	if ( island.mass <= 0 || other_island.mass <= 0 )
+	if (island.mass <= 0 || other_island.mass <= 0)
 		return;
 	
 	Vec2f velnorm = island.vel; 

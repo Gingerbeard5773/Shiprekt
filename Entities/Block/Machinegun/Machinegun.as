@@ -158,10 +158,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (shooter is null)
 			return;
 
-		bool isServer = getNet().isServer();
-		Vec2f pos = this.getPosition();
-
-		Island@ island = getIsland( this.getShape().getVars().customData );
+		Island@ island = getIsland(this.getShape().getVars().customData);
 		if (island is null)
 			return;
 
@@ -171,6 +168,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			if (currentFirePause < MAX_FIRE_PAUSE)
 				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * ( island.isMothership ? 1.0 : 1.0f) * FIRE_PAUSE_RATE));
 		}
+
+		Vec2f pos = this.getPosition();
 
 		this.set_u32("fire time", getGameTime());
 
@@ -222,7 +221,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		f32 rangeOffset = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 8.0f;
 
-		if (map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos))
+		if (map.getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos))
 		{
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
@@ -243,13 +242,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
-						if (Block::isSolid(blockType) || (b.getTeamNum() != teamNum && ( blockType == Block::MOTHERSHIP5 || blockType == Block::DECOYCORE || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::BOMB)))//hit these and die
+						if (Block::isSolid(blockType) || (b.getTeamNum() != teamNum && 
+						   (blockType == Block::DOOR || blockType == Block::MOTHERSHIP5 || blockType == Block::DECOYCORE || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::BOMB)))//hit these and die
 							killed = true;
 						else if (sameIsland && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
 						{
 							killed = true;
 							blocked = true;
-							directionalSoundPlay( "lightup", barrelPos );
+							directionalSoundPlay("lightup", barrelPos);
 							break;
 						}
 						else if (blockType == Block::SEAT || blockType == Block::RAMCHAIR)
@@ -297,9 +297,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 					CPlayer@ attacker = shooter.getPlayer();
 					if (attacker !is null && blockType != Block::MOTHERSHIP5 && !b.hasTag("weapon"))
-						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 2, "Pinball_", true);
+						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 1, "Pinball_", true);
 
-					if (isServer)
+					if (isServer())
 					{
 						f32 damage = getDamage(b, blockType);
 						if (b.hasTag("propeller") && b.getTeamNum() != teamNum && XORRandom(3) == 0)
@@ -359,43 +359,40 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 f32 getDamage(CBlob@ hitBlob, int blockType)
 {
-	if ( hitBlob.hasTag( "rocket"))
+	f32 damage = 0.01f;
+
+	switch (blockType)
+	{
+		case Block::RAMENGINE:
+			damage = 0.25f;
+			break;
+		case Block::PROPELLER:
+			damage = 0.15f;
+			break;
+		case Block::FAKERAM:
+			damage = 0.30f;
+			break;
+		case Block::ANTIRAM:
+			damage = 0.09f;
+			break;
+		case Block::SEAT:
+			damage = 0.05f;
+			break;
+		case Block::DECOYCORE:
+			damage = 0.075f;
+			break;
+	}
+
+	if (Block::isBomb(blockType))
+		return 0.4f;
+	else if (hitBlob.hasTag("rocket"))
 		return 1.0f;
-
-	if ( blockType == Block::PROPELLER )
-		return 0.15f;
-
-	if ( blockType == Block::FAKERAM )
-		return 0.30f;
-
-	if ( blockType == Block::ANTIRAM )
-		return 0.09f;
-
-	if ( blockType == Block::RAMENGINE )
-		return 0.25f;
-
-	if ( hitBlob.hasTag( "weapon" ) && hitBlob.getName() != "hyperflak" )
+	else if (hitBlob.hasTag("weapon"))
 		return 0.075f;
-
-	if ( hitBlob.getName() == "hyperflak" )
-		return 0.05f;
-
-	if ( hitBlob.getName() == "shark" || hitBlob.getName() == "human" )
+	else if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 0.5f;
 
-	if ( blockType == Block::SEAT )
-		return 0.05f;
-
-	if ( blockType == Block::RAMCHAIR )
-		return 0.10f;
-
-	if ( Block::isBomb( blockType ) )
-		return 0.4f;
-
-	if ( blockType == Block::DECOYCORE )
-		return 0.075f;
-
-	return 0.01f;//cores, solids
+	return damage;//cores, solids
 }
 
 void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)

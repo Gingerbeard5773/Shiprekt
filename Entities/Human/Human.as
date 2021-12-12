@@ -189,7 +189,7 @@ void Move(CBlob@ this)
 			// punch
 			if (punch && !Human::isHoldingBlocks(this) && canPunch(this))
 			{
-				Punch( this );
+				Punch(this);
 			}
 			
 			//speedup on own mothership
@@ -786,15 +786,15 @@ void Construct(CBlob@ this)
 			
 			if (laser !is null)//laser management
 			{
-				Animation@ defaultAnim = laser.addAnimation( "default", 1, true );
+				Animation@ defaultAnim = laser.addAnimation("default", 1, true);
 				int[] defaultAnimFrames = { 16 };
 				defaultAnim.AddFrames(defaultAnimFrames);
 				laser.SetAnimation("default");
 				laser.SetVisible(true);
 				f32 laserLength = Maths::Min(1.0f*CONSTRUCT_RANGE / 32.0f, (aimPos - pos).getLength() / 32.0f);						
 				laser.ResetTransform();						
-				laser.ScaleBy( Vec2f(laserLength, 0.5f) );							
-				laser.TranslateBy( Vec2f(laserLength*16.0f, + 0.5f) );
+				laser.ScaleBy(Vec2f(laserLength, 0.5f));							
+				laser.TranslateBy(Vec2f(laserLength*16.0f, + 0.5f));
 				laser.setRenderStyle(RenderStyle::light);
 				laser.SetRelativeZ(-1); 
 			}
@@ -920,7 +920,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			if (island !is null)
 			{
 				string isleOwner = island.owner;
-				CBlob@ mBlobOwnerBlob = getBlobByNetworkID(mBlob.get_u16( "ownerID" ));
+				CBlob@ mBlobOwnerBlob = getBlobByNetworkID(mBlob.get_u16("ownerID"));
 				
 				if (currentTool == "deconstructor" && !(blockType == Block::MOTHERSHIP5) && mBlobCost > 0 )
 				{
@@ -1032,15 +1032,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						
 						if ((currentReclaim + reconstructAmount > mBlobHealth) && cBooty >= reconstructCost)
 						{
-							mBlob.server_SetHealth( mBlobHealth + reconstructAmount);
+							mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
-							server_setPlayerBooty( cName, cBooty - reconstructCost);
+							server_setPlayerBooty(cName, cBooty - reconstructCost);
 						}
 						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
 					
-					if (currentReclaim >= initialReclaim * 0.75f ) //visually repair block
+					if (currentReclaim >= initialReclaim * 0.75f) //visually repair block
 					{
 						CSprite@ mBlobSprite = mBlob.getSprite();
 						for (uint frame = 0; frame < 11; ++frame)
@@ -1095,7 +1095,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (player is null || seat is null) return;
 	
 		string owner;
-		seat.get( "playerOwner", owner );
+		seat.get("playerOwner", owner);
 		if (owner == player.getUsername())
 		{
 			print("$ " + owner + " released seat");
