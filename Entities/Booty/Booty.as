@@ -145,7 +145,7 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 			{
 				CRules@ rules = getRules();
 				if (victim.hasTag("propeller"))
-					reward += 3;
+					reward += Maths::Clamp(reward/2, 1, 3);
 				else if (victim.hasTag("weapon"))
 					reward += Maths::Clamp(reward/2, 1, 8);
 				else if (Block::isBomb(blockType))

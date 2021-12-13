@@ -45,7 +45,7 @@ void onTick(CRules@ this)
 		}
 
 		UpdateIslands(this, true, full_sync);
-		Synchronize(this, full_sync );
+		Synchronize(this, full_sync);
 	}
 	else
 		UpdateIslands(this);//client-side integrate
