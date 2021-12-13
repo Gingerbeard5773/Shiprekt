@@ -268,7 +268,7 @@ void Move(CBlob@ this)
 			if (islandBlob !is null)
 			{
 				this.set_u16("shipID", islandBlob.getNetworkID());	
-				this.set_s8("stay count", 3 );
+				this.set_s8("stay count", 3);
 			}
 			else
 			{
@@ -281,11 +281,11 @@ void Move(CBlob@ this)
 					{
 						this.set_u16("shipID", 0);	
 					}
-					else if (!Block::isSolid( Block::getType(shipBlob)) && !up && !left && !right && !down)
+					else if (!Block::isSolid(Block::getType(shipBlob)) && !up && !left && !right && !down)
 					{
-						Island@ isle = getIsland( shipBlob.getShape().getVars().customData);
+						Island@ isle = getIsland(shipBlob.getShape().getVars().customData);
 						if (isle !is null && isle.vel.Length() > 1.0f)
-							this.setPosition( shipBlob.getPosition());
+							this.setPosition(shipBlob.getPosition());
 					}
 					this.set_s8("stay count", count);		
 				}

@@ -6,6 +6,7 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
+#include "Hitters.as";
 
 const f32 EXPLODE_RADIUS = 30.0f;
 const f32 FLAK_REACH = 50.0f;
@@ -86,7 +87,7 @@ void flak(CBlob@ this)
 				if (Block::isSolid(blockType) || ( !sameTeam
 					&& (blockType == Block::SEAT || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || Block::isBomb( blockType ) || ( b.hasTag( "player" ) && !b.isAttached() ) ) ) )
 				{
-					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage( b, blockType ), 11, true );
+					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage( b, blockType ), Hitters::bomb, true );
 					if ( owner !is null )
 					{
 						CBlob@ blob = owner.getBlob();

@@ -5,6 +5,7 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
+#include "Hitters.as";
 
 void onInit(CBlob@ this)
 {
@@ -119,7 +120,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 					damageBooty(owner, blob, b, b.hasTag("propeller"), 5);
 			}
 
-			this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(b, blockType), 0, true);
+			this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(b, blockType), Hitters::bomb_arrow, true);
 			
 			if (killed)
 				this.server_Die();

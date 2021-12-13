@@ -372,20 +372,20 @@ namespace Block
 		return blockType == MOTHERSHIP5 ? w.mothership : w.wood;//MOTHERSHIP5 is the core block
 	}
 
-	f32 getWeight ( CBlob@ blob )
+	f32 getWeight (CBlob@ blob)
 	{
-		return getWeight( getType(blob) );
+		return getWeight(getType(blob));
 	}
 	
-	u16 getCost ( const uint blockType )
+	u16 getCost (const uint blockType)
 	{
 		CRules@ rules = getRules();
 		
-		Costs@ c = Block::getCosts( rules );
+		Costs@ c = Block::getCosts(rules);
 
-		if ( c is null )
+		if (c is null)
 		{
-			warn( "** Couldn't get Costs!" );
+			warn("** Couldn't get Costs!");
 			return 0;
 		}
 		

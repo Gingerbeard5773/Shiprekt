@@ -202,6 +202,22 @@ bool isClear(CBlob@ this)
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 	u8 teamNum = this.getTeamNum();
 	bool clear = true;
+	
+	CBlob@[] blobs;
+	if (getMap().getBlobsAtPosition(pos + aimVector*8, @blobs))
+	{
+		for (uint i = 0; i < blobs.length; i++)
+		{
+			CBlob@ b =  blobs[i];
+			if (b is null || b is this) continue;
+			const int blockType = b.getSprite().getFrame();
+			if (blockType == Block::SOLID && b.getTeamNum() == teamNum)
+			{
+				clear = false;
+				break;
+			}
+		}
+	}
 
 	HitInfo@[] hitInfos;
 	if (getMap().getHitInfosFromRay(pos, -aimVector.Angle(), PROJECTILE_RANGE/4, this, @hitInfos))

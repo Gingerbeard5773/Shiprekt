@@ -4,16 +4,11 @@
 #include "TileCommon.as"
 
 const u8 CHECK_FREQUENCY = 30;//30 = 1 second
-const u32 FISH_RADIUS = 65.0f;//pickup radius
-const f32 MAX_REWARD_FACTOR = 0.13f;//% taken per check for mothership (goes fully to captain if no one else on the ship)
-const f32 CREW_REWARD_FACTOR = MAX_REWARD_FACTOR/5.0f;
-const f32 CREW_REWARD_FACTOR_MOTHERSHIP = MAX_REWARD_FACTOR/2.5f;
-const u32 AMMOUNT_INSTANT_PICKUP = 50;
-const u8 SPACE_HOG_TICKS = 15;//seconds after collecting where no Xs can spawn there
 
 void onInit(CBlob@ this)
 {
-	this.getCurrentScript().tickFrequency = CHECK_FREQUENCY;
+	this.set_s32("fade", 0);
+	//this.getCurrentScript().tickFrequency = CHECK_FREQUENCY;
 }
 
 const s32 timerMax = 10;
@@ -22,7 +17,7 @@ s32 timer = timerMax;
 void onInit(CSprite@ this)
 {
 	this.SetVisible(false);
-	this.ScaleBy(Vec2f(1, 1));
+	this.ScaleBy(Vec2f(0.1f, 0.1f));
 	this.SetZ(-15.0f);
 	Vec2f tokenOffset = Vec2f(8, 8);
 	
@@ -52,74 +47,84 @@ void onTick(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 	if (this.getTickSinceCreated() > 100)
 	{
-		if (getMap().getBlobsInRadius(pos, sprite.isVisible() ? 10.0f : 100.0f, @humans))
+		if (timer > 0)
 		{
-			for (u8 i = 0; i < humans.length; i++)
+			if (getMap().getBlobsInRadius(pos, sprite.isVisible() ? 10.0f : 100.0f, @humans))
 			{
-				CBlob@ human = humans[i];
-				if (human.getName() == "human" || human.getName() == "shark")
+				for (u8 i = 0; i < humans.length; i++)
 				{
-					if (!sprite.isVisible()) //Reveal the treasure!
+					CBlob@ human = humans[i];
+					if (isTouchingLand(human.getPosition()) && human.getName() == "human")
 					{
-						reveal(this, human);
-					}
+						if (!sprite.isVisible()) //Reveal the treasure!
+						{
+							reveal(this, human);
+						}
 
-					if (human.getVelocity() == Vec2f())
-					{
-						timer = Maths::Clamp(timer - 1, 0, timerMax);
-						if (timer > 0) Sound::Play("Pinball_2", this.getPosition());
+						if (human.getVelocity() == Vec2f())
+						{
+							if (getGameTime() % 60 == 0)
+							{
+								timer = Maths::Clamp(timer - 1, 0, timerMax);
+								if (timer > 0) Sound::Play("Pinball_2", this.getPosition());
+							}
+						}
+						else if (timer < timerMax) //reset timer if player moving
+						{
+							Sound::Play("join", this.getPosition());
+							timer = timerMax;
+						}
 					}
-					else if (timer < timerMax) //reset timer if player moving
+					else
 					{
-						Sound::Play("join", this.getPosition());
-						timer = timerMax;
+						humans.erase(i--); //only humans in array
 					}
-				}
-				else
-				{
-					humans.erase(i--); //only humans in array
 				}
 			}
-		}
 
-		if (humans.length <= 0 && timer < timerMax) //reset timer if no players
-		{
-			Sound::Play("join", this.getPosition());
-			timer = timerMax;
+			if (humans.length <= 0 && timer < timerMax) //reset timer if no players
+			{
+				Sound::Play("join", this.getPosition());
+				timer = timerMax;
+			}
 		}
 	}
+	
+	if (sprite.isVisible() && this.get_s32("fade") < 15 && !this.hasTag("revealed treasure"))
+	{
+		this.getSprite().ScaleBy(Vec2f(1.16f, 1.16f)); //scale X up
+		this.add_s32("fade", 1);
+	}
+	else if (this.get_s32("fade") >= 15 && !this.hasTag("revealed treasure"))
+		this.Tag("revealed treasure"); //for gui compass
 
 	if (timer <= 0)
 	{
-		Sound::Play("snes_coin", this.getPosition());
-		this.server_Die();
-		timer = timerMax; //reset time so new treasure doesn't die immediately
+		if (this.get_s32("fade") == 15) Sound::Play("snes_coin", this.getPosition());
+		this.sub_s32("fade", 1);
+	}
+
+	if (this.get_s32("fade") < 15 && this.hasTag("revealed treasure")) //death sequence
+	{
+		this.getSprite().ScaleBy(Vec2f(0.9f, 0.9f)); //scale X down
+		if (this.get_s32("fade") <= 0)
+		{
+			this.server_Die();
+			timer = timerMax; //reset time so new treasure doesn't die immediately
+		}
 	}
 	//print("timer: "+timer);
 }
 
 void reveal(CBlob@ this, CBlob@ finder)
 {
-	this.Tag("revealed treasure"); //for gui compass
-
+	Sound::Play("ReportSound");
 	if (finder.getPlayer() !is null)
 		client_AddToChat("*** A treasure chest has been found by " + finder.getPlayer().getCharacterName() + "! ***");
 	
 	//reveal sprite
 	CSprite@ sprite = this.getSprite();
 	sprite.SetVisible(true);
-}
-
-void server_giveBooty(string name, u16 ammount)
-{
-	if (!isServer()) return;
-
-	CPlayer@ player = getPlayerByUsername(name);
-	if (player is null) return;
-
-	u16 pBooty = server_getPlayerBooty(name);
-	server_setPlayerBooty(name, pBooty + ammount);
-	server_updateTotalBooty(player.getTeamNum(), ammount);
 }
 
 void onTick(CSprite@ this)

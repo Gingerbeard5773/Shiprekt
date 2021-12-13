@@ -5,6 +5,7 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
+#include "Hitters.as";
 
 const f32 SPLASH_RADIUS = 8.0f;
 const f32 SPLASH_DAMAGE = 0.0f;
@@ -42,14 +43,14 @@ void onTick(CBlob@ this)
 
 void onCollision(CBlob@ this, CBlob@ b, bool solid)
 {
-	if (!isServer()) return;
+	if (b is null || b is this) return;
+
+	if (!isServer() || (this.getTickSinceCreated() <= 1 && this.getTeamNum() == b.getTeamNum())) return;
 	
 	int piercedCount = this.get_u16("pierced count");
     u32[]@ piercedBlobIDs;
     this.get("pierced blob IDs", @piercedBlobIDs);
 	bool killed = false;
-	
-	if (b is null || b is this) return;
 	
 	u32 bID = b.getNetworkID();
 	
@@ -105,10 +106,10 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 		if (owner !is null)
 		{
 			CBlob@ blob = owner.getBlob();
-			if (blob !is null) damageBooty(owner, blob, b);
+			if (blob !is null) damageBooty(owner, blob, b, Block::isSolid(blockType), 4);
 		}
 		
-		this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(this, b, blockType), 0, true);
+		this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(this, b, blockType), Hitters::ballista, true);
 		
 		if (killed) 
 		{

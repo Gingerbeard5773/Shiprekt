@@ -59,7 +59,7 @@ Island@ getIsland(const int colorIndex)
 
 Island@ getIsland(CBlob@ this)
 {
-	CBlob@[] blobsInRadius;	   
+	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius)) 
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)

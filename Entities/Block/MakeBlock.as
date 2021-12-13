@@ -14,7 +14,6 @@ CBlob@ makeBlock(Vec2f pos, f32 angle, u16 blockType, const int team = -1)
 			block.AddScript("Propeller.as");
 			break;
 			case Block::RAMENGINE:
-			block.AddScript("GetInSeat.as");
 			block.AddScript("RamEngine.as");
 			break;
 			case Block::SEAT:

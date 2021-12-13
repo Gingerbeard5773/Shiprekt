@@ -6,6 +6,7 @@
 #include "MakeDustParticle.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
+#include "Hitters.as";
 
 const f32 SPLASH_RADIUS = 8.0f;
 const f32 SPLASH_DAMAGE = 0.75f;
@@ -19,7 +20,7 @@ const f32 GUIDANCE_RANGE = 225.0f;
 
 Random _effectspreadrandom(0x11598); //clientside
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("projectile");
 	this.Tag("rocket");
@@ -38,7 +39,7 @@ void onInit( CBlob@ this )
 	this.set_u32("last smoke puff", 0 );
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {	
 	bool killed = false;
 
@@ -68,7 +69,7 @@ void onTick( CBlob@ this )
 			int diff = gametime - (lastSmokeTime + ticksTillSmoke);
 			if (diff > 0)
 			{
-				CParticle@ p = ParticleAnimated( CFileMatcher("RocketFire2.png").getFirst(), 
+				CParticle@ p = ParticleAnimated(CFileMatcher("RocketFire2.png").getFirst(), 
 												this.getPosition() - aimvector*4 + Vec2f(fireRandomOffsetX, 0).RotateBy(angle), 
 												this.getVelocity() + Vec2f(0.0f, 2.5f).RotateBy(angle), 
 												float(XORRandom(360)), 
@@ -99,7 +100,7 @@ void onTick( CBlob@ this )
 			
 			if (targetDistance > GUIDANCE_RANGE) //must be done to preven desync issues
 			{	
-				aimPos = ownerPos + Vec2f( GUIDANCE_RANGE, 0).RotateBy( -(aimPos - ownerPos).getAngleDegrees());
+				aimPos = ownerPos + Vec2f(GUIDANCE_RANGE, 0).RotateBy( -(aimPos - ownerPos).getAngleDegrees());
 			}
 		
 			f32 angleOffset = 270.0f;		
@@ -168,7 +169,7 @@ void onTick( CBlob@ this )
 					if (isBlock || b.hasTag("rocket"))
 					{
 						if (blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || Block::isSolid(blockType) || 
-							blockType == Block::DOOR || ((b.hasTag( "weapon" ) || b.hasTag( "rocket" )) && !sameTeam ))
+							blockType == Block::DOOR || ((b.hasTag("weapon") || b.hasTag("rocket")) && !sameTeam))
 							killed = true;
 						else if (blockType == Block::SEAT)
 						{
@@ -194,7 +195,7 @@ void onTick( CBlob@ this )
 					}
 					
 					f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
-					this.server_Hit(b, pos, Vec2f_zero, getDamage(b, blockType) * damageModifier, 0, true);
+					this.server_Hit(b, pos, Vec2f_zero, getDamage(b, blockType) * damageModifier, Hitters::bomb, true);
 					
 					if (killed)
 					{
@@ -209,43 +210,37 @@ void onTick( CBlob@ this )
 
 f32 getDamage(CBlob@ hitBlob, int blockType)
 {
+	f32 damage = 2.0f;
+
+	switch (blockType)
+	{
+		case Block::RAMENGINE:
+		case Block::DOOR:
+			damage = 4.0f;
+			break;
+		case Block::PROPELLER:
+			damage = 1.5f;
+			break;
+		case Block::FAKERAM:
+			damage = 8.0f;
+			break;
+		case Block::ANTIRAM:
+			damage = 3.0f;
+			break;
+		case Block::SEAT:
+			damage = 1.0f;
+			break;
+		case Block::DECOYCORE:
+			damage = 1.5f;
+			break;
+	}
+
 	if (hitBlob.hasTag("rocket"))
 		return 4.0f;
-
-	if ((hitBlob.hasTag("weapon") && hitBlob.getName() != "hyperflak") || blockType == Block::PROPELLER )
-		return 1.5f;
-		
-	if (blockType == Block::FAKERAM)
-		return 8.0f;
-		
-	if (blockType == Block::ANTIRAM)
-		return 3.0f;
-		
-	if (hitBlob.getName() == "hyperflak")
-		return 1.0f;
-		
-	if (blockType == Block::RAMENGINE)
-		return 4.0f;
-
-	if (blockType == Block::DOOR)
-		return 4.0f;
-		
-	if (Block::isSolid(blockType))
-		return 2.0f;
-	
-	if (blockType == Block::PLATFORM)
-		return 0.5f;
-
-	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
-		return 0.0f;
-
-	if (blockType == Block::SEAT)
-		return 1.0f;
-
-	if (blockType == Block::DECOYCORE)
+	else if (hitBlob.hasTag("weapon"))
 		return 1.5f;
 
-	return 1.20f;
+	return damage; //solids
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
@@ -297,7 +292,7 @@ void onDie(CBlob@ this)
 			const int blockType = b.getSprite().getFrame();
 			
 			if (!b.hasTag("seat") && !b.hasTag("mothership") && b.getName() == "block" && b.getShape().getVars().customData > 0)
-				this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b, blockType) * SPLASH_DAMAGE, 9, false);
+				this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b, blockType) * SPLASH_DAMAGE, Hitters::bomb, false);
 		}
 	}
 }

@@ -1,12 +1,13 @@
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
+#include "BlockCommon.as";
+#include "IslandsCommon.as";
 #include "ExplosionEffects.as";
 #include "WaterEffects.as";
-#include "Booty.as"
-#include "BlockProduction.as"
-#include "TeamColour.as"
-#include "HumanCommon.as"
-#include "AccurateSoundPlay.as"
+#include "Booty.as";
+#include "BlockProduction.as";
+#include "TeamColour.as";
+#include "HumanCommon.as";
+#include "AccurateSoundPlay.as";
+#include "Hitters.as";
 
 const u16 BASE_KILL_REWARD = 275;
 const f32 HEAL_AMMOUNT = 0.1f;
@@ -18,22 +19,22 @@ const u8 MAX_TEAM_FLAKS = 100;
 const u8 MAX_TOTAL_FLAKS = 1000;
 u8 DAMAGE_FRAMES = 3;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("mothership");
 	this.addCommandID("buyBlock");
 	this.addCommandID("returnBlocks");
 
-	this.server_SetHealth( INIT_HEALTH );
+	this.server_SetHealth(INIT_HEALTH);
 	
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer( "damage", 8, 8 );
+    CSpriteLayer@ layer = sprite.addSpriteLayer("damage", 8, 8);
     if (layer !is null)
     {
     	layer.SetRelativeZ(1);
     	layer.SetLighting( false );
-     	Animation@ anim = layer.addAnimation( "state", 0, false );
-        anim.AddFrame(Block::MOTHERSHIP5 );
+     	Animation@ anim = layer.addAnimation("state", 0, false);
+        anim.AddFrame(Block::MOTHERSHIP5);
         anim.AddFrame(Block::MOTHERSHIP5 + 2);
         anim.AddFrame(Block::MOTHERSHIP5 + 3);
         anim.AddFrame(Block::MOTHERSHIP5 + 4);
@@ -542,7 +543,7 @@ void selfDestruct(CBlob@ this)
 		{
 			f32 maxHealth = blastBlobs[i].getInitialHealth();
 			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo( blastBlobs[i] ))/BLAST_RADIUS;
-			this.server_Hit(blastBlobs[i], pos, Vec2f_zero, damage, 0, true);
+			this.server_Hit(blastBlobs[i], pos, Vec2f_zero, damage, Hitters::bomb, true);
 		}
 
 	//kill island
@@ -555,7 +556,7 @@ void selfDestruct(CBlob@ this)
 	for (uint i = 0; i < isle.blocks.length; ++i)
 	{
 		IslandBlock@ isle_block = isle.blocks[i];
-		CBlob@ b = getBlobByNetworkID( isle_block.blobID );
+		CBlob@ b = getBlobByNetworkID(isle_block.blobID);
 		if (b !is null && b !is this && teamNum == b.getTeamNum())
 			b.server_Die();
 	}

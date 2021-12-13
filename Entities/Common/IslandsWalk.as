@@ -1,12 +1,13 @@
 #define CLIENT_ONLY
-#include "IslandsCommon.as"
+#include "IslandsCommon.as";
+#include "TileCommon.as";
 
 //saving local values because the ones provied by sv aren't correct after a desync
 u16 currentCenterBlockID = 0;
 f32 islandOldAngle = 0;
 Vec2f islandOldPos = Vec2f_zero;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.getCurrentScript().runFlags |= Script::tick_myplayer;
 	currentCenterBlockID = 0;
@@ -14,16 +15,16 @@ void onInit( CBlob@ this )
 	islandOldPos = Vec2f_zero;
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
-	if ( !this.isOnGround() )
+	if (!this.isOnGround())
 		return;
 		
-	Island@ island = getIsland( this );
-	if ( island !is null && island.centerBlock !is null )
+	Island@ island = getIsland(this);
+	if (island !is null && island.centerBlock !is null)
 	{
 		u16 id = island.centerBlock.getNetworkID();
-		if ( id != currentCenterBlockID || !this.wasOnGround() )//island changed: set cached values to current
+		if (id != currentCenterBlockID || !this.wasOnGround())//island changed: set cached values to current
 		{
 			islandOldPos = island.centerBlock.getPosition();
 			islandOldAngle = island.centerBlock.getAngleDegrees();
@@ -36,10 +37,13 @@ void onTick( CBlob@ this )
 		Vec2f islandDisplacement = islandPos - islandOldPos;
 		f32 islandAngleDelta = islandAngle - islandOldAngle;
 		Vec2f islandToBlob = pos - islandPos + islandDisplacement;
-		islandToBlob.RotateBy( islandAngleDelta );
+		islandToBlob.RotateBy(islandAngleDelta);
 		
 		islandOldPos = islandPos;
 		islandOldAngle = islandAngle;
-		this.setPosition( islandPos + islandToBlob );
+
+		CBlob@ islandBlock = getMap().getBlobAtPosition(islandPos + islandToBlob);
+		if (isTouchingLand(this.getPosition()) ? islandBlock !is null : true) //Only move player if there is a block to move onto
+			this.setPosition(islandPos + islandToBlob);
 	}
 }

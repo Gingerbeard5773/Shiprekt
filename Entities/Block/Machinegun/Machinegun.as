@@ -4,7 +4,7 @@
 #include "Booty.as"
 #include "AccurateSoundPlay.as"
 #include "CustomMap.as";
-//#include "TileCommon.as";
+#include "Hitters.as";
 #include "ParticleSparks.as";
 
 const f32 BULLET_SPREAD = 2.5f;
@@ -184,6 +184,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		ammo--;
 		this.set_u16("ammo", ammo);
+		
+		CPlayer@ attacker = shooter.getPlayer();
+		if (attacker !is null && attacker !is this.getDamageOwnerPlayer())
+			this.SetDamageOwnerPlayer(shooter.getPlayer());
 
 		//effects
 		CSprite@ sprite = this.getSprite();
@@ -304,7 +308,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						f32 damage = getDamage(b, blockType);
 						if (b.hasTag("propeller") && b.getTeamNum() != teamNum && XORRandom(3) == 0)
 							b.SendCommand(b.getCommandID("off"));
-						this.server_Hit(b, hi.hitpos, Vec2f_zero, damage, 0, true);
+						this.server_Hit(b, hi.hitpos, Vec2f_zero, damage, Hitters::arrow, true);
 					}
 
 					if (killed) break;

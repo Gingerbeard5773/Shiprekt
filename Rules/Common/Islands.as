@@ -563,7 +563,6 @@ void Synchronize(CRules@ this, bool full_sync, CPlayer@ player = null)
     }
 }
 
-// this looks really suspicious
 bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 {
 	Island[]@ islands;

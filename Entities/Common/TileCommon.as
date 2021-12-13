@@ -31,5 +31,5 @@ bool isInWater(Vec2f pos)
 	CMap@ map = getMap();
 	u16 tileType = map.getTile(pos).type;
 
-	return tileType == 0 || (tileType >= CMap::shoal_inland && tileType <= CMap::shoal_shore_diagonal_L1) || (tileType >= CMap::acid && tileType <= CMap::acid_to_water_border_diagonal_L1);
+	return tileType == 0 || (tileType >= CMap::shoal_inland && tileType <= CMap::shoal_shore_diagonal_L1);
 }

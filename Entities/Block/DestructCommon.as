@@ -5,6 +5,7 @@
 #include 'AccurateSoundPlay.as';
 #include 'ExplosionEffects.as';
 #include 'WaterEffects.as';
+#include 'Hitters.as';
 
 namespace Destruct
 {
@@ -41,7 +42,7 @@ namespace Destruct
       float distance = this.getDistanceTo(blob);
       float damage = 1.5f * initial * (radius - distance) / radius;
 
-      this.server_Hit(blob, position, Vec2f_zero, damage, 0, true);
+      this.server_Hit(blob, position, Vec2f_zero, damage, Hitters::bomb, true);
     }
 
     // Kill island
