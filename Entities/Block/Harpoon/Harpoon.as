@@ -179,7 +179,7 @@ void onTick(CBlob@ this)
 				force = harpoon.grapple_pos - this.getPosition();
 				dist = force.Normalize();
 				f32 offdist = dist - harpoon_grapple_range;
-				if(offdist > 0)
+				if (offdist > 0)
 				{
 					offset = force * Maths::Min(8.0f,offdist * harpoon_grapple_stiffness);
 					force *= 1000.0f / (harpoon.grapple_pos - this.getPosition()).getLength();
@@ -297,7 +297,7 @@ void onTick(CBlob@ this)
 				CBlob@ b = null;
 				if (harpoon.grapple_id != 0)
 				{
-					@b = getBlobByNetworkID( harpoon.grapple_id );
+					@b = getBlobByNetworkID(harpoon.grapple_id);
 					if (b is null)
 					{
 						harpoon.grapple_id = 0;
@@ -306,8 +306,7 @@ void onTick(CBlob@ this)
 				
 				if (b !is null)
 				{
-					const bool isBlock = b.getName() == "block";
-					if (isBlock)
+					if (b.getName() == "block")
 					{
 						const int blockType = b.getSprite().getFrame();
 						if (Block::isSolid(blockType))
@@ -342,11 +341,6 @@ void onTick(CBlob@ this)
 								}
 							}
 						}
-					}				
-					else if (b.getName() == "scrap")
-					{
-						b.AddForce(-(harpoon.grapple_pos - this.getPosition())*0.25f);
-						harpoon.grapple_pos = b.getPosition();
 					}
 				}
 				else
@@ -377,7 +371,7 @@ void Rotate(CBlob@ this, Vec2f aimvector)
 	if(layer !is null)
 	{
 		layer.ResetTransform();
-		layer.RotateBy( -aimvector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero );
+		layer.RotateBy(-aimvector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero);
 	}	
 }
 
@@ -403,7 +397,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		AttachmentPoint@ seat = this.getAttachmentPoint(0);
 		CBlob@ crewmate = seat.getOccupied();
 		if (crewmate !is null)
-			crewmate.SendCommand( crewmate.getCommandID("get out") );
+			crewmate.SendCommand(crewmate.getCommandID("get out"));
 	}
 }
 
@@ -507,8 +501,6 @@ void HandleGrapple(CBlob@ this, CBitStream@ bt, bool apply)
 
 void doRopeUpdate(CSprite@ this, CBlob@ blob, HarpoonInfo@ harpoon)
 {
-	AttachmentPoint@ seat = blob.getAttachmentPoint(0);
-
 	CSpriteLayer@ looseRope = this.getSpriteLayer("loose rope");
 	CSpriteLayer@ rope = this.getSpriteLayer("rope");
 	CSpriteLayer@ hook = this.getSpriteLayer("hook");
@@ -554,9 +546,9 @@ void doRopeUpdate(CSprite@ this, CBlob@ blob, HarpoonInfo@ harpoon)
 	{
 		harpoon.cache_angle = -harpoon.grapple_vel.Angle() - blob.getAngleDegrees();
 	}
-	hook.RotateBy( harpoon.cache_angle, Vec2f());
+	hook.RotateBy(harpoon.cache_angle, Vec2f());
 	
-	hook.TranslateBy( off.RotateBy( -blob.getAngleDegrees(), Vec2f()) );
+	hook.TranslateBy(off.RotateBy(-blob.getAngleDegrees(), Vec2f()));
 	hook.SetFacingLeft(false);
 	
 	GUI::DrawLine(blob.getPosition(), harpoon.grapple_pos, SColor(255,255,255,0));
@@ -604,10 +596,10 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 
 				harpoon.grapple_id = b.getNetworkID();
 				
-				SyncGrapple( this );
+				SyncGrapple(this);
 				
 				
-				Sound::Play( "crowbar_impact2.ogg", harpoon.grapple_pos );
+				Sound::Play("crowbar_impact2.ogg", harpoon.grapple_pos);
 				sparks1(harpoon.grapple_pos, 0, 3.0f);
 				
 				return true;

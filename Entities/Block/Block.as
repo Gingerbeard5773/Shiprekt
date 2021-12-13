@@ -369,12 +369,12 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					{
 						player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
 						blob.Tag("dead");
-						CSprite@ sprite = blob.getSprite();
+						/*CSprite@ sprite = blob.getSprite();
 						if (sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
 						{
 							directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos);
 							sprite.Gib();
-						}
+						}*/
 					}
 				}
 				
@@ -432,8 +432,8 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 	
 	//effects
 	int shake = (vellen * island.mass + other_vellen * other_island.mass)*0.5f;
-	ShakeScreen( shake, 12, point1 );
-	directionalSoundPlay( shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1 );
+	ShakeScreen(shake, 12, point1);
+	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 }
 
 void CollisionResponse2( Island@ island, Island@ other_island, Vec2f point1 )
@@ -484,16 +484,16 @@ void onDie(CBlob@ this)
 			if (localBlob !is null && localBlob.get_u16("shipID") == this.getNetworkID())
 			{
 				CPlayer@ player = localBlob.getPlayer();
-				if ( player !is null && localBlob.getDistanceTo(this) < 6.5f)
+				if (player !is null && localBlob.getDistanceTo(this) < 6.5f)
 				{
 					player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
 					localBlob.Tag("dead");
-					CSprite@ sprite = localBlob.getSprite();
-					if ( sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
+					/*CSprite@ sprite = localBlob.getSprite();
+					if (sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
 					{
 						directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), localBlob.getPosition());
 						sprite.Gib();
-					}
+					}*/
 				}
 			}
 		}
@@ -523,7 +523,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		int teamNum = this.getTeamNum();
 		CRules@ rules = getRules();
 		
-		f32 msDMG = rules.get_f32( "msDMG" + teamNum );
+		f32 msDMG = rules.get_f32("msDMG" + teamNum);
 		if (msDMG < 8.0f)
 			getRules().set_f32("msDMG" + teamNum, msDMG + (this.hasTag("mothership") ? 5.0f : 1.0f) * damage);
 	}
