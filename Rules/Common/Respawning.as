@@ -11,7 +11,8 @@ shared class Respawn
 	string username;
 	u32 timeStarted;
 
-	Respawn( const string _username, const u32 _timeStarted ){
+	Respawn(const string _username, const u32 _timeStarted)
+	{
 		username = _username;
 		timeStarted = _timeStarted;
 	}
@@ -51,7 +52,7 @@ s32 getRandomMinimumTeam(CRules@ this, const int atLeast = -1)
         team = XORRandom(teamsCount);
     while(playersperteam[team] > minplayers);
 
-	//print( "ret Team : " + team );
+	//print("ret Team : " + team);
     return team;
 }
 
@@ -59,7 +60,7 @@ void onInit(CRules@ this)
 {
 	Respawn[] respawns;
 	this.set("respawns", respawns);
-	this.set_u8( "endCount", 0 );
+	this.set_u8("endCount", 0);
     onRestart(this);
 }
 
@@ -83,7 +84,7 @@ void onReload(CRules@ this)
 void onRestart(CRules@ this)
 {
 	this.clear("respawns");
-	this.set_u8( "endCount", 0 );
+	this.set_u8("endCount", 0);
 	//assign teams
     for (int i = 0; i < getPlayerCount(); i++)
 	{
@@ -105,7 +106,7 @@ void onRestart(CRules@ this)
 
 void onPlayerRequestSpawn(CRules@ this, CPlayer@ player)
 {
-	if (!isRespawnAdded( this, player.getUsername()) && player.getTeamNum() != this.getSpectatorTeamNum())
+	if (!isRespawnAdded(this, player.getUsername()) && player.getTeamNum() != this.getSpectatorTeamNum())
 	{
     	Respawn r(player.getUsername(), getGameTime());
     	this.push("respawns", r);
@@ -154,7 +155,7 @@ void onTick(CRules@ this)
 						for (int i = 0; i < getPlayerCount(); i++)
 						{
 							CPlayer@ player = getPlayer(i);
-							if ( player.getBlob() !is null )
+							if (player.getBlob() !is null)
 								teamWithPlayers = player.getTeamNum();
 						}
 					}
@@ -233,7 +234,7 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
         		player.server_setTeamNum(team);
         }
 
-		CBlob@ newBlob = server_CreateBlobNoInit( PLAYER_BLOB );
+		CBlob@ newBlob = server_CreateBlobNoInit(PLAYER_BLOB);
 		if (newBlob !is null)
 		{
 			newBlob.server_SetPlayer(player);
@@ -281,6 +282,7 @@ CBlob@ SpawnAsShark(CRules@ this, CPlayer@ player)
     if (shark !is null)
 	{
         shark.server_SetPlayer(player);
+		player.server_setTeamNum(9); //set to shark team
     }
     return shark;
 }

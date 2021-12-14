@@ -99,6 +99,9 @@ void onRender(CRules@ this)
 		string lastChangesInfo = "Shiprekt Version 1.42\n"
 		
 		+ "Last changes :\n"
+		+ "- 12-14-2021 - v1.42 By Gingerbeard\n"
+		+ "  * Fixed a crash every nextmap.\n"
+		+ "  * Fixed machinegun booty.\n"
 		+ "- 12-13-2021 - v1.41 By Gingerbeard\n"
 		+ "  * Added kill messages.\n"
 		+ "  * Bomb blocks will give booty if an enemy was hit.\n"
@@ -150,7 +153,7 @@ void onRender(CRules@ this)
 		if (localBlob is null || (controls.getMouseScreenPos() - tl - Vec2f(125, 20)).Length() > 50.0f)
 		{
 			SColor arrowColor = SColor( 150, 255, 255, 255 );
-			GUI::DrawText( "Click these Icons for Control and Booty functions",  tl + Vec2f(225, 5), tipsColor);
+			GUI::DrawText("Click these Icons for Control and Booty functions",  tl + Vec2f(225, 5), tipsColor);
 			GUI::DrawSplineArrow2D( tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
 		}
 		

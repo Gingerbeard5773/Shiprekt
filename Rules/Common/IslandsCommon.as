@@ -18,8 +18,8 @@ shared class Island
 	bool beached;             //is the ship touching land?
 	bool slowed;              //is the ship touching a shoal?
 	
-	Vec2f net_pos, net_vel;
-	f32 net_angle, net_angle_vel;
+	Vec2f net_pos, net_vel;        //network
+	f32 net_angle, net_angle_vel;  //network
 
 	Island()
 	{
@@ -139,7 +139,7 @@ bool isMothership(CBlob@ this) //Determine if an island has a mothership core at
 		return false;
 }
 
-string getCaptainName(u8 team)
+string getCaptainName(u8 team) //Gets the name of the mothership's captain
 {
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);

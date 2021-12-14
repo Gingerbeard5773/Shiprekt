@@ -260,6 +260,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!teamchange") //change your player blobs team without dying
 				{
+					player.server_setTeamNum(parseInt(tokens[1]));
 					pBlob.server_setTeamNum(parseInt(tokens[1]));
 				}
 				else if (tokens[0] == "!saveship")
