@@ -518,6 +518,9 @@ void Die(CBlob@ this)
 //mothership damage alerts
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
+	const int color = this.getShape().getVars().customData;
+	if (color < 0) return 0.0f;
+
 	if (this.getTeamNum() != hitterBlob.getTeamNum() && isMothership(this))
 	{
 		int teamNum = this.getTeamNum();
