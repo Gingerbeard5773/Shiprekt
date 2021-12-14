@@ -96,15 +96,16 @@ void onRender(CRules@ this)
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Shiprekt Version 1.40\n"
+		string lastChangesInfo = "Shiprekt Version 1.42\n"
 		
 		+ "Last changes :\n"
-		+ "- 11-30-2021 - 1.37v By Gingerbeard\n"
-		+ "  * Mini-station takes half as much time to capture.\n"
-		+ "  * Auxillary Core can only be created at your mothership.\n"
-		+ "- 12-10-2021 - 1.40v\n"
-		+ "  * Possible improvement to the stability of the mod!\n"
-		+ "  * Ram is now only unlocked after warmup\n";
+		+ "- 12-13-2021 - v1.41 By Gingerbeard\n"
+		+ "  * Added kill messages.\n"
+		+ "  * Bomb blocks will give booty if an enemy was hit.\n"
+		+ "  * Cannonballs are easier to shoot out of a cannon.\n"
+		+ "- 12-10-2021 - v1.40\n"
+		+ "  * Major improvement to the stability of the mod!\n"
+		+ "  * Ram is now only unlocked after warmup.\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
