@@ -115,13 +115,13 @@ namespace Block
 		f32 decoyCore;
 	}
 	
-	Weights@ queryWeights( CRules@ this )
+	Weights@ queryWeights(CRules@ this)
 	{
 		ConfigFile cfg;
-		if ( !cfg.loadFile( "SHRKTVars.cfg" ) ) 
+		if (!cfg.loadFile("SHRKTVars.cfg")) 
 			return null;
 		
-		print( "** Getting Weights from cfg" );
+		print("** Getting Weights from cfg");
 		Block::Weights w;
 
 		w.mothership = cfg.read_f32("w_mothership");
@@ -254,11 +254,6 @@ namespace Block
 	bool isCore(const uint blockType)
 	{
 		return (blockType >= Block::MOTHERSHIP1 && blockType <= Block::MOTHERSHIP9);
-	}
-
-	bool isDoor(const uint blockType)
-	{ 
-		return (blockType == Block::DOOR);
 	}
 
 	bool isBomb(const uint blockType)

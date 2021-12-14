@@ -6,19 +6,19 @@ bool justJoined = true;
 bool page1 = true;
 f32 boxMargin = 50.0f;
 //key names
-const string party_key = getControls().getActionKeyKeyName( AK_PARTY );
-const string inv_key = getControls().getActionKeyKeyName( AK_INVENTORY );
-const string pick_key = getControls().getActionKeyKeyName( AK_PICKUP );
-const string taunts_key = getControls().getActionKeyKeyName( AK_TAUNTS );
-const string use_key = getControls().getActionKeyKeyName( AK_USE );
-const string action1_key = getControls().getActionKeyKeyName( AK_ACTION1 );
-const string action2_key = getControls().getActionKeyKeyName( AK_ACTION2 );
-const string action3_key = getControls().getActionKeyKeyName( AK_ACTION3 );
-const string map_key = getControls().getActionKeyKeyName( AK_MAP );
-const string zoomIn_key = getControls().getActionKeyKeyName( AK_ZOOMIN );
-const string zoomOut_key = getControls().getActionKeyKeyName( AK_ZOOMOUT );
+const string party_key = getControls().getActionKeyKeyName(AK_PARTY);
+const string inv_key = getControls().getActionKeyKeyName(AK_INVENTORY);
+const string pick_key = getControls().getActionKeyKeyName(AK_PICKUP);
+const string taunts_key = getControls().getActionKeyKeyName(AK_TAUNTS);
+const string use_key = getControls().getActionKeyKeyName(AK_USE);
+const string action1_key = getControls().getActionKeyKeyName(AK_ACTION1);
+const string action2_key = getControls().getActionKeyKeyName(AK_ACTION2);
+const string action3_key = getControls().getActionKeyKeyName(AK_ACTION3);
+const string map_key = getControls().getActionKeyKeyName(AK_MAP);
+const string zoomIn_key = getControls().getActionKeyKeyName(AK_ZOOMIN);
+const string zoomOut_key = getControls().getActionKeyKeyName(AK_ZOOMOUT);
 		
-void onInit( CRules@ this )
+void onInit(CRules@ this)
 {
 	CFileImage@ image = CFileImage("GameHelp.png");
 	Vec2f imageSize = Vec2f(image.getWidth(), image.getHeight());
@@ -26,7 +26,7 @@ void onInit( CRules@ this )
 	u_showtutorial = true;// for ShowTipOnDeath to work
 }
 
-void onTick( CRules@ this )
+void onTick(CRules@ this)
 {
 	CControls@ controls = getControls();
 	if (controls.isKeyJustPressed(KEY_F1))

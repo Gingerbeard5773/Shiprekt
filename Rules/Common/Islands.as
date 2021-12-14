@@ -76,7 +76,7 @@ void GenerateIslands(CRules@ this)
 				color++;
 
 				Island island;
-				SetNextId( this, @island );
+				SetNextId(this, @island);
 				this.push("islands", island);
 				Island@ p_island;
 				this.getLast("islands", @p_island);
@@ -103,7 +103,7 @@ void ColorBlocks(CBlob@ blob, Island@ island)
 	island.blocks.push_back(isle_block);
 
 	CBlob@[] overlapping;
-    if (blob.getOverlapping( @overlapping ))
+    if (blob.getOverlapping(@overlapping))
     {
         for (uint i = 0; i < overlapping.length; i++)
         {
@@ -257,8 +257,8 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 					if (onRock)
 					{
 						TileCollision(isle, bPos);
-						if (!b.hasTag("mothership") || this.get_bool("sudden death") )
-							b.server_Hit( b, bPos, Vec2f_zero, 2.2f, 0, true );
+						if (!b.hasTag("mothership") || this.get_bool("sudden death"))
+							b.server_Hit(b, bPos, Vec2f_zero, 2.2f, 0, true);
 					}
 					else if (isTouchingLand(bPos))
 						isle.beached = true;						
@@ -320,9 +320,9 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 					
 					if (b.hasTag("control") && b.get_string("playerOwner") != "")
 					{
-						seatIDs.push_back( isle_block.blobID );
+						seatIDs.push_back(isle_block.blobID);
 						
-						if (teamComp == -1 )
+						if (teamComp == -1)
 							teamComp = b.getTeamNum();
 						else if (b.getTeamNum() != teamComp)
 							multiTeams = true;
@@ -845,11 +845,11 @@ bool onClientProcessChat(CRules@ this, const string &in textIn, string &out text
 				{
 					if (tokens.length > 1)
 					{
-						UPDATE_DELTA_SMOOTHNESS = Maths::Max( 1.0f, parseFloat( tokens[1] ) );
-						client_AddToChat("Delta smoothness set to " + UPDATE_DELTA_SMOOTHNESS );
+						UPDATE_DELTA_SMOOTHNESS = Maths::Max(1.0f, parseFloat(tokens[1]));
+						client_AddToChat("Delta smoothness set to " + UPDATE_DELTA_SMOOTHNESS);
 					}
 					else
-						client_AddToChat("Delta smoothness: " + UPDATE_DELTA_SMOOTHNESS );
+						client_AddToChat("Delta smoothness: " + UPDATE_DELTA_SMOOTHNESS);
 				}
 				return false;
 			}

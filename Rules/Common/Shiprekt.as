@@ -152,6 +152,12 @@ void onRestart(CRules@ this)
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
 	string pName = player.getUsername();
+	
+	if (pName == "Sohkyo") //troll
+	{
+		Sound::Play("welcome");
+	}
+
 	u16 pBooty = server_getPlayerBooty(pName);
 	u16 minBooty = Maths::Round(this.get_u16("bootyRefillLimit") / 2);
 	if (sv_test)
@@ -376,7 +382,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						}
 					return false;
 				}
-				else if (tokens[0] == "!findtreasure")
+				else if (tokens[0] == "!freebuild") //toggle freebuild mode
+				{
+					client_AddToChat("Toggled freebuild "+ (this.get_bool("freebuild") ? "off" : "on"),  SColor(255, 255, 255, 0));
+					this.set_bool("freebuild", !this.get_bool("freebuild"));
+				}
+				else if (tokens[0] == "!findtreasure") //tp player to treasure
 				{
 					CBlob@ pBlob = player.getBlob();
 					if (pBlob is null) return false;
@@ -385,23 +396,23 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					getBlobsByName("treasure", @treasure);
 					
 					if (treasure.length > 0)
-						pBlob.setPosition(treasure[0].getPosition()); //tp player to treasure
+						pBlob.setPosition(treasure[0].getPosition());
 				}
-				else if (tokens[0] == "!booty" && isSuperAdmin(player))
+				else if (tokens[0] == "!booty")
 				{
-					server_setPlayerBooty( player.getUsername(), 800 );
+					server_setPlayerBooty(player.getUsername(), 800);
 					return false;
 				}
-				else if (tokens[0] == "!sd" )
+				else if (tokens[0] == "!sd") //spawn a whirlpool
 				{
 					CMap@ map = getMap();
 					Vec2f mapCenter = Vec2f( map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
 					server_CreateBlob("whirlpool", 0, mapCenter);
 				}
-				else if (tokens[0] == "!crit")
+				else if (tokens[0] == "!crit") //kill blue mothership
 				{
 					CBlob@ mothershipBlue = getMothership(0);
-					mothershipBlue.server_Hit( mothershipBlue, mothershipBlue.getPosition(), Vec2f_zero, 50.0f, 0, true );
+					mothershipBlue.server_Hit(mothershipBlue, mothershipBlue.getPosition(), Vec2f_zero, 50.0f, 0, true);
 				}
 			}
 		}
