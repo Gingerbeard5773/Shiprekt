@@ -1,5 +1,6 @@
 //trap block script for devious builders
 #include "BlockCommon.as";
+#include "AccurateSoundPlay.as";
 
 void onInit(CBlob@ this)
 {
@@ -38,14 +39,14 @@ void setOpen(CBlob@ this, bool open, bool faceLeft = false)
 		this.getCurrentScript().tickFrequency = 3;
 		this.getShape().getConsts().collidable = false;
 		sprite.SetFacingLeft(faceLeft);   // swing left or right
-		Sound::Play("/DoorOpen.ogg", this.getPosition());
+		directionalSoundPlay("/DoorOpen.ogg", this.getPosition());
 	}
 	else
 	{
         sprite.SetAnimation("default");//update sprite
 		this.getCurrentScript().tickFrequency = 0;
 		this.getShape().getConsts().collidable = true;
-		Sound::Play("/DoorClose.ogg", this.getPosition());
+		directionalSoundPlay("/DoorClose.ogg", this.getPosition());
 	}
 }
 

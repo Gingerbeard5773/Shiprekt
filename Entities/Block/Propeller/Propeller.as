@@ -15,8 +15,8 @@ void onInit(CBlob@ this)
 	this.Tag("propeller");
 	this.set_f32("power", 0.0f);
 	this.set_f32("powerFactor", 1.0f);
-	this.set_u32( "onTime", 0 );
-	this.set_u8( "stallTime", 0 );
+	this.set_u32("onTime", 0);
+	this.set_u8("stallTime", 0);
 
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ propeller = sprite.addSpriteLayer("propeller");
@@ -35,19 +35,19 @@ void onInit(CBlob@ this)
     sprite.SetEmitSoundPaused(true);
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
-    if (cmd == this.getCommandID("on/off") && getNet().isServer())
+    if (cmd == this.getCommandID("on/off") && isServer())
     {
 		this.set_f32("power", isOn(this) ? 0.0f : -this.get_f32("powerFactor"));
     }
 	
-    if (cmd == this.getCommandID("off") && getNet().isServer())
+    if (cmd == this.getCommandID("off") && isServer())
     {
 		this.set_f32("power", 0.0f);
     }
 	
-    if (cmd == this.getCommandID("stall") && getNet().isClient())
+    if (cmd == this.getCommandID("stall") && isClient())
 	{
 		directionalSoundPlay("propellerStall.ogg", this.getPosition(), 2.5f);		
 		this.set_u8("stallTime", params.read_u8());
@@ -156,10 +156,11 @@ void onTick(CBlob@ this)
 				}
 				
 				// limit sounds		
-				if (island.soundsPlayed == 0 && sprite.getEmitSoundPaused() == true)
+				if (island.soundsPlayed == 0 && sprite.getEmitSoundPaused())
 				{
-					sprite.SetEmitSoundPaused(false);								
+					sprite.SetEmitSoundPaused(false);
 				}
+
 				island.soundsPlayed++;
 				const f32 vol = Maths::Min(0.5f + float(island.soundsPlayed)/2.0f, 3.0f);
 				sprite.SetEmitSoundVolume(vol);
@@ -175,7 +176,7 @@ void onTick(CBlob@ this)
 	}
 }
 
-f32 onHit( CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData )
+f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	if (!isServer() || this.get_u8("stallTime") > 0)
 		return damage;

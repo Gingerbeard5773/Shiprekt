@@ -1,7 +1,8 @@
 #include "Booty.as";
 #include "IslandsCommon.as";
-#include "AccurateSoundPlay.as"
-#include "TileCommon.as"
+#include "AccurateSoundPlay.as";
+#include "TileCommon.as";
+#include "AccurateSoundPlay.as";
 
 const u8 CHECK_FREQUENCY = 30;//30 = 1 second
 
@@ -66,12 +67,12 @@ void onTick(CBlob@ this)
 							if (getGameTime() % 60 == 0)
 							{
 								timer = Maths::Clamp(timer - 1, 0, timerMax);
-								if (timer > 0) Sound::Play("Pinball_2", this.getPosition());
+								if (timer > 0) directionalSoundPlay("Pinball_2", this.getPosition());
 							}
 						}
 						else if (timer < timerMax) //reset timer if player moving
 						{
-							Sound::Play("join", this.getPosition());
+							directionalSoundPlay("join", this.getPosition());
 							timer = timerMax;
 						}
 					}
@@ -84,7 +85,7 @@ void onTick(CBlob@ this)
 
 			if (humans.length <= 0 && timer < timerMax) //reset timer if no players
 			{
-				Sound::Play("join", this.getPosition());
+				directionalSoundPlay("join", this.getPosition());
 				timer = timerMax;
 			}
 		}
@@ -100,7 +101,7 @@ void onTick(CBlob@ this)
 
 	if (timer <= 0)
 	{
-		if (this.get_s32("fade") == 15) Sound::Play("snes_coin", this.getPosition());
+		if (this.get_s32("fade") == 15) directionalSoundPlay("snes_coin", this.getPosition());
 		this.sub_s32("fade", 1);
 	}
 

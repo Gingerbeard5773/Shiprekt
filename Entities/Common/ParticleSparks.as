@@ -32,6 +32,7 @@ void sparks(Vec2f pos, int amount, f32 spread = 1.0f, int16 pTime = 10)
         p.timeout = pTime + spark.NextRanged(20);
         p.scale = 0.5f + spark.NextFloat();
         p.damping = 0.95f;
+		p.collides = false;
 		p.Z = 550.0f;
     }
 }

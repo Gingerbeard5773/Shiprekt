@@ -4,6 +4,7 @@
 #include "HarpoonForceCommon.as"
 #include "ParticleSparks.as"
 #include "TileCommon.as";
+#include "AccurateSoundPlay.as";
 
 const int FIRE_RATE = 45;
 const f32 harpoon_grapple_length = 300.0f;
@@ -99,10 +100,10 @@ void onTick(CBlob@ this)
 				harpoon.grappling = true;
 				harpoon.grapple_id = 0xffff;
 				harpoon.grapple_pos = pos;
-				sprite.PlaySound("HookShot.ogg", 1.0f, XORRandom(2) == 1 ? 1.0f : 1.5f);
+				directionalSoundPlay("HookShot.ogg", pos, 1.0f, XORRandom(2) == 1 ? 1.0f : 1.5f);
 				CParticle@ p = ParticleAnimated( "Entities/Effects/Sprites/WhitePuff.png",
-									this.getPosition(),
-									this.getVelocity()*0.5f + (occupier.getAimPos() - this.getPosition())/(occupier.getAimPos() - this.getPosition()).getLength(),
+									pos,
+									this.getVelocity()*0.5f + (occupier.getAimPos() - pos)/(occupier.getAimPos() - pos).getLength(),
 									1.0f, 0.5f, 
 									2, 
 									0.0f, true);			
@@ -138,7 +139,7 @@ void onTick(CBlob@ this)
 		//update grapple
 		//TODO move to its own script?
 		
-		bool ropeTooLong = (harpoon.grapple_pos - this.getPosition()).getLength() > harpoon_grapple_length;	
+		bool ropeTooLong = (harpoon.grapple_pos - pos).getLength() > harpoon_grapple_length;	
 		
 		bool ropeOutOfBounds = (harpoon.grapple_pos.x < 16.0f 
 									|| harpoon.grapple_pos.x > (getMap().tilemapwidth * getMap().tilesize) - 16.0f
@@ -146,13 +147,13 @@ void onTick(CBlob@ this)
 									|| harpoon.grapple_pos.y > (getMap().tilemapheight * getMap().tilesize) - 16.0f);
 		
 		if ((ropeTooLong && harpoon.grapple_id == 0xffff) && !harpoon.reeling && !layer.isAnimation("set"))
-				Sound::Play("HookReel.ogg", this.getPosition());
+				directionalSoundPlay("HookReel.ogg", pos);
 				
 		if (occupier !is null)
 		{
 			if (occupier.isKeyJustPressed(key_action2) && !harpoon.reeling && !layer.isAnimation("set"))
 			{
-				Sound::Play("HookReel.ogg", this.getPosition());
+				directionalSoundPlay("HookReel.ogg", pos);
 				harpoon.reeling = true;
 			}					
 		}
@@ -176,13 +177,13 @@ void onTick(CBlob@ this)
 			Vec2f offset;
 			f32 dist;
 			{
-				force = harpoon.grapple_pos - this.getPosition();
+				force = harpoon.grapple_pos - pos;
 				dist = force.Normalize();
 				f32 offdist = dist - harpoon_grapple_range;
 				if (offdist > 0)
 				{
 					offset = force * Maths::Min(8.0f,offdist * harpoon_grapple_stiffness);
-					force *= 1000.0f / (harpoon.grapple_pos - this.getPosition()).getLength();
+					force *= 1000.0f / (harpoon.grapple_pos - pos).getLength();
 				}
 				else
 				{
@@ -195,7 +196,7 @@ void onTick(CBlob@ this)
 
 			harpoon.grapple_vel = -force;
 			
-			Vec2f retractBaseMin = (harpoon.grapple_pos - this.getPosition());
+			Vec2f retractBaseMin = (harpoon.grapple_pos - pos);
 			retractBaseMin.Normalize();
 			Vec2f retract = retractBaseMin*5.0f;
 			Vec2f next = harpoon.grapple_pos + harpoon.grapple_vel - retract;
@@ -224,9 +225,9 @@ void onTick(CBlob@ this)
 						//can't grapple self if not reeled in
 
 						harpoon.grappling = false;
-						SyncGrapple( this );						
-													
-						Sound::Play("HookReset.ogg", this.getPosition());
+						SyncGrapple(this);						
+						
+						directionalSoundPlay("HookReset.ogg", pos);
 						harpoon.reeling = false;
 					}
 				}
@@ -249,7 +250,7 @@ void onTick(CBlob@ this)
 			Vec2f offset;
 			f32 dist;
 			{
-				force = harpoon.grapple_pos - this.getPosition();
+				force = harpoon.grapple_pos - pos;
 				dist = force.Normalize();
 				f32 offdist = dist - harpoon_grapple_range;
 				if (offdist > 0)
@@ -318,7 +319,7 @@ void onTick(CBlob@ this)
 							if (hitIsland !is null)
 							{
 								bool isMyIsland = hitIsland.id == thisIsland.id;
-								bool ropeTooLong = (harpoon.grapple_pos - this.getPosition()).getLength() > harpoon_grapple_length;
+								bool ropeTooLong = (harpoon.grapple_pos - pos).getLength() > harpoon_grapple_length;
 								if (!isMyIsland && ropeTooLong)
 								{
 									Vec2f moveVel;
@@ -356,8 +357,7 @@ void onTick(CBlob@ this)
 void Manual(CBlob@ this, CBlob@ occupier)
 {
 	Vec2f aimpos = occupier.getAimPos();
-	Vec2f pos = this.getPosition();
-	Vec2f aimvector = aimpos - pos;	
+	Vec2f aimvector = aimpos - this.getPosition();	
 
 	// rotate muzzle
 	Rotate(this, aimvector);
@@ -382,7 +382,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	
 	if (cmd == this.getCommandID(grapple_sync_cmd))
     {
-		HandleGrapple( this, params, true );
+		HandleGrapple(this, params, true);
 	}
 	else if (cmd == this.getCommandID("unhook"))
     {
@@ -411,7 +411,7 @@ void LoadSprites(CSprite@ this)
 
     if (hook !is null)
     {
-        Animation@ anim = hook.addAnimation( "default", 0, false );
+        Animation@ anim = hook.addAnimation("default", 0, false);
         anim.AddFrame(28);
         hook.SetRelativeZ(101.0f);
         hook.SetVisible(false);
@@ -422,7 +422,7 @@ void LoadSprites(CSprite@ this)
 
     if (looseRope !is null)
     {
-        Animation@ anim = looseRope.addAnimation( "default", 1, true );
+        Animation@ anim = looseRope.addAnimation("default", 1, true);
 		array<int> frames = {0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1};
 		anim.AddFrames( frames );
         looseRope.SetRelativeZ(100.0f);
@@ -430,7 +430,7 @@ void LoadSprites(CSprite@ this)
     }
 	
 	this.RemoveSpriteLayer("rope");
-    CSpriteLayer@ rope = this.addSpriteLayer("rope", texname , 32, 32, this.getBlob().getTeamNum(), this.getBlob().getSkinNum() );
+    CSpriteLayer@ rope = this.addSpriteLayer("rope", texname , 32, 32, this.getBlob().getTeamNum(), this.getBlob().getSkinNum());
 
     if (rope !is null)
     {
@@ -444,7 +444,7 @@ void LoadSprites(CSprite@ this)
 void SyncGrapple(CBlob@ this)
 {
 	HarpoonInfo@ harpoon;
-	if (!this.get( "harpoonInfo", @harpoon )) return;
+	if (!this.get("harpoonInfo", @harpoon)) return;
 	
 	CBitStream bt;
 	
@@ -463,7 +463,7 @@ void SyncGrapple(CBlob@ this)
 void HandleGrapple(CBlob@ this, CBitStream@ bt, bool apply)
 {
 	HarpoonInfo@ harpoon;
-	if (!this.get( "harpoonInfo", @harpoon )) return;
+	if (!this.get("harpoonInfo", @harpoon)) return;
 	
 	bool grappling;
 	u16 grapple_id;
@@ -582,8 +582,8 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 
 				harpoon.grappling = false;
 				SyncGrapple(this);
-				
-				Sound::Play("HookReset.ogg", this.getPosition());
+
+				directionalSoundPlay("HookReset.ogg", this.getPosition());
 
 				return true;
 			}
@@ -598,8 +598,7 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 				
 				SyncGrapple(this);
 				
-				
-				Sound::Play("crowbar_impact2.ogg", harpoon.grapple_pos);
+				directionalSoundPlay("crowbar_impact2.ogg", harpoon.grapple_pos);
 				sparks1(harpoon.grapple_pos, 0, 3.0f);
 				
 				return true;
