@@ -7,14 +7,10 @@
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
-#include "CustomMap.as";
 #include "Hitters.as";
-#include "ParticleSparks";
+#include "ParticleSparks.as";
 
 int useClickTime = 0;
-const int PUNCH_RATE = 15;
-const int FIRE_RATE = 40;
-const int CONSTRUCT_RATE = 14;
 const int CONSTRUCT_VALUE = 5;
 const int CONSTRUCT_RANGE = 48;
 const f32 BULLET_SPREAD = 0.2f;
@@ -45,13 +41,13 @@ void onInit(CBlob@ this)
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null) 
 		{
-			this.setPosition( core.getPosition());
+			this.setPosition(core.getPosition());
 			this.set_u16("shipID", core.getNetworkID());
 			this.set_s8("stay count", 3);
 		}
 	}
 	
-	this.SetMapEdgeFlags( u8(CBlob::map_collide_up) |
+	this.SetMapEdgeFlags(u8(CBlob::map_collide_up) |
 		u8(CBlob::map_collide_down) |
 		u8(CBlob::map_collide_sides));
 	
@@ -88,7 +84,7 @@ void onTick(CBlob@ this)
     CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 
 	//kill laser after a certain time
-	if (laser !is null && !this.isKeyPressed(key_action2) && this.get_u32("fire time") + CONSTRUCT_RATE < gameTime)
+	if (laser !is null && !this.isKeyPressed(key_action2) && this.get_u32("fire time") + Human::CONSTRUCT_RATE < gameTime)
 	{
 		sprite.RemoveSpriteLayer("laser");
 	}
@@ -136,7 +132,6 @@ void Move(CBlob@ this)
 		const u32 time = getGameTime();
 		const f32 vellen = shape.vellen;
 		Island@ isle = getIsland(this);
-		CMap@ map = this.getMap();
 		const bool solidGround = shape.getVars().onground = attached || isle !is null || isTouchingLand(pos);
 		if (!this.wasOnGround() && solidGround)
 			this.set_u32("groundTouch time", time);//used on collisions
@@ -209,15 +204,9 @@ void Move(CBlob@ this)
 				ShootPistol(this);
 				sprite.SetAnimation("shoot");
 			}
-			else if (currentTool == "deconstructor") //reclaim
+			else if (currentTool == "deconstructor" || currentTool == "reconstructor") //reclaim, repair
 			{
 				Construct(this);
-				sprite.SetAnimation("reclaim");
-			}
-			else if (currentTool == "reconstructor") //repair
-			{
-				Construct(this);
-				sprite.SetAnimation("repair");
 			}
 		}		
 
@@ -231,7 +220,7 @@ void Move(CBlob@ this)
 				moveVel = Vec2f(0,0);
 			}
 			
-			this.setVelocity( moveVel );
+			this.setVelocity(moveVel);
 		}
 
 		// face
@@ -264,7 +253,7 @@ void Move(CBlob@ this)
 		// artificial stay on ship
 		if (myPlayer)
 		{
-			CBlob@ islandBlob = getIslandBlob( this );
+			CBlob@ islandBlob = getIslandBlob(this);
 			if (islandBlob !is null)
 			{
 				this.set_u16("shipID", islandBlob.getNetworkID());	
@@ -401,7 +390,7 @@ void PlayerControls(CBlob@ this)
 						{
 							Sound::Play("buttonclick.ogg");
 							this.set_u32("menu time", gameTime);
-							BuildShopMenu(this, core, "", Vec2f(0,0), pIsle.isStation || pIsle.isSecondaryCore, pIsle.isMiniStation);
+							BuildShopMenu(this, core, "", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
 						}
 						else
 							Sound::Play("/Sounds/bone_fall1.ogg");
@@ -450,23 +439,6 @@ void PlayerControls(CBlob@ this)
 			Sound::Play("buttonclick.ogg");
 		}
 	}
-}
-
-void AddBlock(CBlob@ this, CGridMenu@ menu, u8 block, string icon, string bname, string desc, CBlob@ core, bool isWeapon = false)
-{
-	//add a block to the build menu
-	CBitStream params;
-	params.write_u16(this.getNetworkID());
-	params.write_u8(block);
-			
-	CGridButton@ button = menu.AddButton(icon, bname + " $" + Block::getCost(block), core.getCommandID("buyBlock"), params);
-
-	const bool selected = this.get_u8("last buy") == block;
-	if (selected) button.SetSelected(2);
-			
-	button.SetHoverText(isWeapon ? "Weapons are enabled after the warm-up time ends.\n" :
-						desc + "\nWeight: " + Block::getWeight(block) * 100 + "rkt\n" + (selected ? "\nPress the inventory key to buy again.\n" : ""));
-	button.SetEnabled(!isWeapon);
 }
 
 void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, bool isStation = false, bool isMiniStation = false)
@@ -582,7 +554,6 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 				description = "Sometimes the threat of ramming is an effective tool. Bought in 3s for quick construction.";
 				AddBlock(this, menu, Block::FAKERAM, "$RAM$", "Fake Ram Hull", description, core);
 			}
-
 			if (rules.get_u8("decoyCoreCount" + this.getTeamNum()) < 3)
 			{ //Decoy Core
 				description = "A fake core to fool enemies.\nLimit of 3 per team per match. Currently bought: " + rules.get_u8("decoyCoreCount" + this.getTeamNum()) + "/3";
@@ -592,61 +563,59 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 	}
 }
 
-void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
+void AddBlock(CBlob@ this, CGridMenu@ menu, u8 block, string icon, string bname, string desc, CBlob@ core, bool isWeapon = false)
 {
-	CRules@ rules = getRules();
-	Block::Costs@ c = Block::getCosts(rules);
-	Block::Weights@ w = Block::getWeights(rules);
-	
-	if (c is null || w is null)
-		return;
-		
+	//Add a block to the build menu
+	CBitStream params;
+	params.write_u16(this.getNetworkID());
+	params.write_u8(block);
+			
+	CGridButton@ button = menu.AddButton(icon, bname + " $" + Block::getCost(block), core.getCommandID("buyBlock"), params);
+
+	const bool selected = this.get_u8("last buy") == block;
+	if (selected) button.SetSelected(2);
+			
+	button.SetHoverText(isWeapon ? "Weapons are enabled after the warm-up time ends.\n" :
+						desc + "\nWeight: " + Block::getWeight(block) * 100 + "rkt\n" + (selected ? "\nPress the inventory key to buy again.\n" : ""));
+	button.SetEnabled(!isWeapon);
+}
+
+void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
+{	
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, this, TOOLS_MENU_SIZE, description);
-	u32 gameTime = getGameTime();
-	
 	if (menu !is null) 
 	{
 		menu.deleteAfterClick = true;
-		
-		u16 netID = this.getNetworkID();
-		string currentTool = this.get_string("current tool");
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_string("pistol");
-			
-			CGridButton@ button = menu.AddButton("$PISTOL$", "Pistol", this.getCommandID("swap tool"), params);
-			
-			if (currentTool == "pistol")
-				button.SetSelected(2);
-			
-			button.SetHoverText("A basic, ranged, personal defence weapon.");
+
+		string description;
+		{ //Pistol
+			description = "A basic, ranged, personal defence weapon.";
+			AddTool(this, menu, "$PISTOL$", "Pistol", description, "pistol");
 		}
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_string("deconstructor");
-				
-			CGridButton@ button = menu.AddButton("$DECONSTRUCTOR$", "Deconstructor", this.getCommandID("swap tool"), params);
-	
-			if (currentTool == "deconstructor")
-				button.SetSelected(2);
-				
-			button.SetHoverText("A tool that can reclaim ship parts for booty.");
+		{ //Deconstructor
+			description = "A tool that can reclaim ship parts for booty.";
+			AddTool(this, menu, "$DECONSTRUCTOR$", "Deconstructor", description, "deconstructor");
 		}
-		{
-			CBitStream params;
-			params.write_u16(netID);
-			params.write_string("reconstructor");
-				
-			CGridButton@ button = menu.AddButton("$RECONSTRUCTOR$", "Reconstructor", this.getCommandID("swap tool"), params);
-	
-			if (currentTool == "reconstructor")
-				button.SetSelected(2);
-				
-			button.SetHoverText("A tool that can repair ship parts at the cost of booty. Can repair cores at a rate of 10 booty per 1% health.");
+		{ //Reconstructor
+			description = "A tool that can repair ship parts at the cost of booty. Can repair cores at a rate of 10 booty per 1% health.";
+			AddTool(this, menu, "$RECONSTRUCTOR$", "Reconstructor", description, "reconstructor");
 		}
 	}
+}
+
+void AddTool(CBlob@ this, CGridMenu@ menu, string icon, string toolName , string desc, string currentTool)
+{
+	//Add a tool to the tools menu
+	CBitStream params;
+	params.write_u16(this.getNetworkID());
+	params.write_string(currentTool);
+	
+	CGridButton@ button = menu.AddButton(icon, toolName, this.getCommandID("swap tool"), params);
+			
+	if (this.get_string("current tool") == currentTool)
+		button.SetSelected(2);
+			
+	button.SetHoverText(desc);
 }
 
 void Punch(CBlob@ this)
@@ -727,7 +696,7 @@ void Construct(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	Vec2f aimPos = this.getAimPos();
-	CBlob@ mBlob = getMap().getBlobAtPosition( aimPos );
+	CBlob@ mBlob = getMap().getBlobAtPosition(aimPos);
 	Vec2f aimVector = aimPos - pos;
 
 	Vec2f offset(_shotspreadrandom.NextFloat() * BULLET_SPREAD,0);
@@ -776,11 +745,7 @@ void Construct(CBlob@ this)
 		{
 			sprite.RemoveSpriteLayer("laser");
 			
-			string beamSpriteFilename;
-			if (currentTool == "deconstructor")
-				beamSpriteFilename = "ReclaimBeam";
-			else if (currentTool == "reconstructor")
-				beamSpriteFilename = "RepairBeam";
+			string beamSpriteFilename = currentTool == "deconstructor" ? "ReclaimBeam" : "RepairBeam";
 				
 			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", beamSpriteFilename + ".png", 32, 16);
 			
@@ -806,22 +771,6 @@ void Construct(CBlob@ this)
 	}
 }
 
-bool canPunch(CBlob@ this)
-{
-	return !this.hasTag("dead") && this.get_u32("punch time") + PUNCH_RATE < getGameTime();
-}
-
-bool canShootPistol(CBlob@ this)
-{
-	return !this.hasTag("dead") && this.get_string("current tool") == "pistol" && this.get_u32("fire time") + FIRE_RATE < getGameTime();
-}
-
-bool canConstruct(CBlob@ this)
-{
-	return !this.hasTag("dead") && (this.get_string("current tool") == "deconstructor" || this.get_string("current tool") == "reconstructor")
-				&& this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime();
-}
-
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
 	if (isServer() && this.getCommandID("get out") == cmd)
@@ -835,11 +784,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		{
 			Vec2f pos = b.getPosition();
 			this.set_u32("punch time", getGameTime());
-			directionalSoundPlay( "Kick.ogg", pos);
+			directionalSoundPlay("Kick.ogg", pos);
 			ParticleBloodSplat(pos, false);
 
 			if (isServer())
-				this.server_Hit(b, pos, Vec2f_zero, 0.25f, Hitters::muscles, false );
+				this.server_Hit(b, pos, Vec2f_zero, 0.25f, Hitters::muscles, false);
 		}
 	}
 	else if (this.getCommandID("shoot") == cmd && canShootPistol(this))
@@ -881,7 +830,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
             }
     	}
 		
-		this.set_u32("fire time", getGameTime());	
+		this.set_u32("fire time", getGameTime());
 		shotParticles(pos + Vec2f(0,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle(), true, 0.02f , 0.6f);
 		directionalSoundPlay("Gunshot.ogg", pos, 0.75f);
 	}
@@ -1059,17 +1008,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				
 				this.getSprite().RemoveSpriteLayer("laser");
 				
-				string beamSpriteFilename;
-				if (currentTool == "deconstructor")
-					beamSpriteFilename = "ReclaimBeam";
-				else if (currentTool == "reconstructor")
-					beamSpriteFilename = "RepairBeam";
+				string beamSpriteFilename = currentTool == "deconstructor" ? "ReclaimBeam" : "RepairBeam";
 					
 				CSpriteLayer@ laser = this.getSprite().addSpriteLayer("laser", beamSpriteFilename + ".png", 32, 16);
 
 				if (laser !is null)//partial length laser
 				{
-					Animation@ reclaimingAnim = laser.addAnimation( "constructing", 1, true );
+					Animation@ reclaimingAnim = laser.addAnimation("constructing", 1, true);
 					int[] reclaimingAnimFrames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 					reclaimingAnim.AddFrames(reclaimingAnimFrames);
 					laser.SetAnimation("constructing");
@@ -1077,7 +1022,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);						
 					laser.ResetTransform();						
 					laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-					laser.TranslateBy( Vec2f(laserLength*16.0f, + 0.5f));
+					laser.TranslateBy(Vec2f(laserLength*16.0f, + 0.5f));
 					laser.RotateBy(offsetAngle, Vec2f());
 					laser.setRenderStyle(RenderStyle::light);
 					laser.SetRelativeZ(-1);
@@ -1233,7 +1178,7 @@ void onDie(CBlob@ this)
 				}
 				
 				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
-					server_setPlayerBooty( pName, pBooty + returnBooty );
+					server_setPlayerBooty(pName, pBooty + returnBooty);
 			}
 		}
 		Human::clearHeldBlocks(this);
@@ -1243,35 +1188,40 @@ void onDie(CBlob@ this)
 	SetScreenFlash(0, 0, 0, 0, 0.0f);
 }
 
-f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
+void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-	if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
-	ParticleBloodSplat(worldPoint, false);
-
-	//when killed: reward hitterBlob if this was boarding his mothership
-	if (hitterBlob.getName() == "human" && hitterBlob !is this && this.getHealth() - damage <= 0)
+	//when enemy is killed: reward this player if hitBlob was on their mothership
+	if (hitBlob.getName() == "human" && hitBlob !is this && hitBlob.getHealth() <= 0)
 	{
-		Island@ pIsle = getIsland(this);
-		CPlayer@ hitterPlayer = hitterBlob.getPlayer();
-		u8 teamNum = hitterBlob.getTeamNum();
-		if (hitterPlayer !is null && pIsle !is null && pIsle.isMothership && pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum)
+		Island@ pIsle = getIsland(hitBlob);
+		CPlayer@ thisPlayer = this.getPlayer();
+		u8 teamNum = this.getTeamNum();
+		if (thisPlayer !is null && pIsle !is null &&
+			pIsle.isMothership && //enemy was on a mothership
+			pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum) //enemy was on our mothership
 		{
-			if (hitterPlayer.isMyPlayer())
+			if (thisPlayer.isMyPlayer())
 				Sound::Play("snes_coin.ogg");
 
 			if (isServer())
 			{
-				string attackerName = hitterPlayer.getUsername();
+				string defenderName = thisPlayer.getUsername();
 				u16 reward = 50;
 				if (getRules().get_bool("whirlpool")) reward *= 3;
 				
-				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward );
+				server_setPlayerBooty(defenderName, server_getPlayerBooty(defenderName) + reward);
 				server_updateTotalBooty(teamNum, reward);
 			}
 		}
 	}
+}
+
+f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
+{
+	if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
+	ParticleBloodSplat(worldPoint, false);
 	
-	if (this.getTickSinceCreated() > 60)
+	if (this.getTickSinceCreated() > 60) //invincible for a few seconds after spawning
 		return damage;
 	else
 		return 0.0f;
