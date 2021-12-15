@@ -1,9 +1,6 @@
-#include "Human.as"
-#include "HumanCommon.as"
-
 Random _punchr(0xfecc);
 
-void onTick( CSprite@ this )
+void onTick(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
 
@@ -13,60 +10,55 @@ void onTick( CSprite@ this )
 	{
 		this.SetAnimation("default");
 	}
-	else if(solidGround)
+	else if (solidGround)
 	{
 		if (this.isAnimationEnded() ||
-			!(this.isAnimation("punch1") || this.isAnimation("punch2") || this.isAnimation("shoot")) )
+			!(this.isAnimation("punch1") || this.isAnimation("punch2") || this.isAnimation("shoot")))
 		{
-			if (blob.isKeyPressed( key_action2 ) && canShootPistol( blob ) && !blob.isKeyPressed( key_action1 ))
-			{
-				this.SetAnimation("shoot");
-			}
-			else if (blob.isKeyPressed( key_action2 ) && (blob.get_string( "current tool" ) == "deconstructor") && !blob.isKeyPressed( key_action1 ))
+			if (blob.isKeyPressed(key_action2) && (blob.get_string("current tool") == "deconstructor") && !blob.isKeyPressed(key_action1))
 			{
 				this.SetAnimation("reclaim");
 			}
-			else if (blob.isKeyPressed( key_action2 ) && (blob.get_string( "current tool" ) == "reconstructor") && !blob.isKeyPressed( key_action1 ))
+			else if (blob.isKeyPressed(key_action2) && (blob.get_string("current tool") == "reconstructor") && !blob.isKeyPressed(key_action1))
 			{
 				this.SetAnimation("repair");
 			}
-			else if (blob.isKeyPressed( key_action1 ) )
+			else if (blob.isKeyPressed(key_action1))
 			{
 				this.SetAnimation("punch"+(_punchr.NextRanged(2)+1));
 			}
-			else if (blob.getShape().vellen > 0.1f) {
+			else if (blob.getShape().vellen > 0.1f)
+			{
 				this.SetAnimation("walk");
 			}
-			else {
+			else
+			{
 				this.SetAnimation("default");
 			}
 		}
 	}
 	else //in water
 	{
-		if (this.isAnimationEnded() ||
-			!(this.isAnimation("shoot")) )
+		if (this.isAnimationEnded() || !(this.isAnimation("shoot")))
 		{
-			if (blob.isKeyPressed( key_action2 ) && (blob.get_string( "current tool" ) == "deconstructor") )
+			if (blob.isKeyPressed(key_action2) && (blob.get_string("current tool") == "deconstructor"))
 			{
-					this.SetAnimation("reclaim");
+				this.SetAnimation("reclaim");
 			}
-			else if (blob.isKeyPressed( key_action2 ) && (blob.get_string( "current tool" ) == "reconstructor") )
+			else if (blob.isKeyPressed(key_action2) && (blob.get_string("current tool") == "reconstructor"))
 			{
-					this.SetAnimation("repair");
+				this.SetAnimation("repair");
 			}
-			else if (blob.getShape().vellen > 0.1f) {
+			else if (blob.getShape().vellen > 0.1f)
+			{
 				this.SetAnimation("swim");
 			}
-			else if (blob.isKeyPressed( key_action2 ) && canShootPistol( blob ))
+			else
 			{
-					this.SetAnimation("shoot");
-			}
-			else {
 				this.SetAnimation("float");
 			}
 		}
 	}
 
-	this.SetZ( 540.0f );
+	this.SetZ(540.0f);
 }

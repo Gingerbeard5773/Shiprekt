@@ -1,6 +1,5 @@
 #define SERVER_ONLY
 
-#include "HumanCommon.as"
 #include "TileCommon.as"
 
 const int SECS_TO_SHARK = 3;

@@ -2,6 +2,10 @@ namespace Human
 {
 	const float walkSpeed = 1.0f;
 	const float swimSlow = 0.4f;
+	
+	const int PUNCH_RATE = 15;
+	const int FIRE_RATE = 40;
+	const int CONSTRUCT_RATE = 14;
 };
 
 // helper functions
@@ -34,4 +38,20 @@ namespace Human
 			blocks.clear();
 		}
 	}
+}
+
+bool canPunch(CBlob@ this)
+{
+	return !this.hasTag("dead") && this.get_u32("punch time") + Human::PUNCH_RATE < getGameTime();
+}
+
+bool canShootPistol(CBlob@ this)
+{
+	return !this.hasTag("dead") && this.get_string("current tool") == "pistol" && this.get_u32("fire time") + Human::FIRE_RATE < getGameTime();
+}
+
+bool canConstruct(CBlob@ this)
+{
+	return !this.hasTag("dead") && (this.get_string("current tool") == "deconstructor" || this.get_string("current tool") == "reconstructor")
+				&& this.get_u32("fire time") + Human::CONSTRUCT_RATE < getGameTime();
 }
