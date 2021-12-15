@@ -390,7 +390,7 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 	if (Block::isBomb(blockType))
 		return 0.4f;
 	else if (hitBlob.hasTag("rocket"))
-		return 1.0f;
+		return 0.35f;
 	else if (hitBlob.hasTag("weapon"))
 		return 0.075f;
 	else if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")

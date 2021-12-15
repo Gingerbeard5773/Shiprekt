@@ -579,7 +579,7 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 				AddBlock(this, menu, Block::LAUNCHER, "$LAUNCHER$", "Missile Launcher", description, core, gameTime < WARMUP_TIME);
 			}
 			{ //Fake Ram Hull
-				description = "Sometimes the threat of ramming is an effective tool.";
+				description = "Sometimes the threat of ramming is an effective tool. Bought in 3s for quick construction.";
 				AddBlock(this, menu, Block::FAKERAM, "$RAM$", "Fake Ram Hull", description, core);
 			}
 

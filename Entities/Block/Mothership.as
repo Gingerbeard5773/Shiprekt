@@ -90,6 +90,10 @@ void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 	{
 		amount = 2;
 	}
+	else if (bType == Block::FAKERAM) //fake ram gives three blocks
+	{
+		amount = 3;
+	}
 	else if (bType == Block::FLAK)
 	{
 		//Max turrets to avoid lag
