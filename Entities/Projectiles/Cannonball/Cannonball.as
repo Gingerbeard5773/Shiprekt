@@ -131,21 +131,24 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob, int blockType)
 		damageFactor *= 0.5f;
 
 	if (Block::isSolid(blockType))
-		return 0.5f * damageFactor;
+		return 0.7f * damageFactor;
 	
 	switch (blockType)
 	{
 		case Block::FAKERAM:
-			damage = 99.0f;
+			damage = 5.0f;
 			break;
 		case Block::ANTIRAM:
-			damage = 0.75f;
+			damage = 10.0f;
 			break;
 		case Block::RAMENGINE:
-			damage = 2.75f;
+			damage = 4.30f;
+			break;
+		case Block::PROPELLER:
+			damage = 2.15f;
 			break;
 		case Block::DOOR:
-			damage = 0.6f ;
+			damage = 5.0f ;
 			break;
 		case Block::SEAT:
 			damage = 1.0f;
@@ -156,12 +159,12 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob, int blockType)
 		default: damage = 0.25;
 	}
 	
-	if ((hitBlob.hasTag("weapon") && hitBlob.getName() != "hyperflak") || blockType == Block::PROPELLER)
+	if ((hitBlob.hasTag("weapon") && hitBlob.getName() != "hyperflak"))
 		return 1.75f * damageFactor;
 	else if (hitBlob.getName() == "hyperflak")
-		return 0.7f * damageFactor;
+		return 1.15f * damageFactor;
 	else if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
-		return 1.0f * damageFactor;
+		return 0.75f * damageFactor;
 
 	return damage *damageFactor;
 }
