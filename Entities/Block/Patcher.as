@@ -138,7 +138,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if (blockType != Block::MOTHERSHIP5)
 						fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
 					else
-						fullConstructAmount = (0.01f)*mMaxHealth;
+						fullConstructAmount = (0.01f)*mMaxHealth; //mothership
 					
 					if (blockType == Block::MOTHERSHIP5)
 					{
@@ -162,7 +162,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						if (cBooty >= reconstructCost && mBlobHealth < motherInitHealth)
 						{
 							b.server_SetHealth(mBlobHealth + reconstructAmount);
-							server_setPlayerBooty(cName, cBooty - reconstructCost);
+							server_addPlayerBooty(cName, -reconstructCost);
 						}
 					}
 					else if (blockType == Block::STATION || blockType == Block::MINISTATION)
@@ -213,7 +213,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						{
 							b.server_SetHealth( Maths::Min(mMaxHealth, mBlobHealth + reconstructAmount));
 							b.set_f32("current reclaim", Maths::Min(mMaxHealth, currentReclaim + reconstructAmount));
-							server_setPlayerBooty(cName, cBooty - reconstructCost);
+							server_addPlayerBooty(cName, -reconstructCost);
 							count++;
 						}
 						else if ((currentReclaim + reconstructAmount) < mBlobHealth)

@@ -52,7 +52,7 @@ void onTick(CRules@ this)
 						CBlob@ pBlob = player.getBlob();
 						CBlob@[]@ blocks;
 						if (pBlob !is null && pBlob.get("blocks", @blocks) && blocks.size() == 0)
-							server_setPlayerBooty(isle.owner, captainBooty + Maths::Min(15, minBooty - captainBooty));
+							server_addPlayerBooty(isle.owner, Maths::Min(15, minBooty - captainBooty));
 					}
 				}				
 			}
@@ -64,8 +64,6 @@ void onTick(CRules@ this)
 			u8 pteam = player.getTeamNum();
 			if (player is null)	
 				continue;
-				
-			u16 pBooty = server_getPlayerBooty(player.getUsername());
 			
 			u16 pStationCount = 0;
 			u16 pMiniStationCount = 0;
@@ -96,8 +94,8 @@ void onTick(CRules@ this)
 			CBlob@ pBlob = player.getBlob();
 			if (pBlob !is null)
 			{
-				server_setPlayerBooty(player.getUsername(), pBooty + STATION_BOOTY * pStationCount + MINI_STATION_BOOTY * pMiniStationCount);
-				server_updateTotalBooty(pteam, STATION_BOOTY * pStationCount + MINI_STATION_BOOTY * pMiniStationCount);
+				server_addPlayerBooty(player.getUsername(), (STATION_BOOTY * pStationCount) + (MINI_STATION_BOOTY * pMiniStationCount));
+				server_updateTotalBooty(pteam, (STATION_BOOTY * pStationCount) + (MINI_STATION_BOOTY * pMiniStationCount));
 			}
 		}
 	}
@@ -136,8 +134,7 @@ void onTick(CRules@ this)
 			{
 				u16 balance = Maths::Round( initBooty * compensate/teamPlayers[team] - initBooty);
 				string name = player.getUsername();
-				u16 pBooty = server_getPlayerBooty(name);
-				server_setPlayerBooty(name, pBooty + balance);
+				server_setPlayerBooty(name, balance);
 			}
 		}
 	}
@@ -168,7 +165,7 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 		this.Sync("booty" + pName, true);
 	}
 	else
-		server_setPlayerBooty( pName, getGameTime() > this.get_u16("warmup_time") ? minBooty : this.get_u16("starting_booty"));
+		server_setPlayerBooty(pName, getGameTime() > this.get_u16("warmup_time") ? minBooty : this.get_u16("starting_booty"));
 		
 	print("New player joined. New count : " + getPlayersCount());
 	if (getPlayersCount() <= 1)

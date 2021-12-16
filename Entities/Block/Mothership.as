@@ -113,7 +113,7 @@ void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 			ProduceBlock(getRules(), caller, bType, amount);
 		else if (pBooty >= cost)
 		{
-			server_setPlayerBooty(pName, pBooty - cost);
+			server_addPlayerBooty(pName, -cost);
 		
 			ProduceBlock(getRules(), caller, bType, amount);
 		}
@@ -164,7 +164,6 @@ void ReturnBlocks(CBlob@ this)
 			if (player !is null)
 			{
 				string pName = player.getUsername();
-				u16 pBooty = server_getPlayerBooty(pName);
 				u16 returnBooty = 0;
 				for (uint i = 0; i < blocks.length; ++i)
 				{
@@ -174,7 +173,7 @@ void ReturnBlocks(CBlob@ this)
 				}
 				
 				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
-					server_setPlayerBooty(pName, pBooty + returnBooty);
+					server_addPlayerBooty(pName, returnBooty);
 			}
 		}
 		
@@ -298,7 +297,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 					if (teamNum == hitterTeamNum)//winning tam
 					{
 						string name = player.getUsername();
-						server_setPlayerBooty(name, server_getPlayerBooty(name) + (name == captainName ? 2 * reward : reward));
+						server_addPlayerBooty(name, (name == captainName ? 2 * reward : reward));
 					}
 					else if (teamNum == thisTeamNum)//losing team consolation money
 					{
@@ -306,7 +305,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 						u16 booty = server_getPlayerBooty(name);
 						u16 rewardHalved = Maths::Round(BASE_KILL_REWARD/2);
 						if (booty < rewardHalved)
-							server_setPlayerBooty(name,  booty + rewardHalved);
+							server_addPlayerBooty(name, rewardHalved);
 					}
 				}
 				server_updateTotalBooty(hitterTeamNum, totalReward + BASE_KILL_REWARD);

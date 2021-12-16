@@ -210,7 +210,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 				directionalSoundPlay("coinpick.ogg", worldPoint, 0.75f);
 
 			if (isServer())
-				server_setPlayerBooty(pName, server_getPlayerBooty(pName) + 10 );
+				server_addPlayerBooty(pName, 10);
 		}
 	}
 	

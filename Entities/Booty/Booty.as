@@ -117,6 +117,11 @@ void server_setPlayerBooty(string name, u16 booty)
 	}
 }
 
+void server_addPlayerBooty(string name, u16 booty) //give or take booty
+{
+	server_setPlayerBooty(name, server_getPlayerBooty(name) + booty);
+}
+
 #include "IslandsCommon.as";
 #include "BlockCommon.as";
 
@@ -157,7 +162,7 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 				
 				reward = Maths::Round(reward * bFactor);
 								
-				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
+				server_addPlayerBooty(attackerName, reward);
 				server_updateTotalBooty(attacker.getTeamNum(), reward);
 			}
 		}

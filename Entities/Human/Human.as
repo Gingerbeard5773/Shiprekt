@@ -888,9 +888,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						else
 						{
 							string cName = thisPlayer.getUsername();
-							u16 cBooty = server_getPlayerBooty(cName);
 
-							server_setPlayerBooty(cName, cBooty + mBlobCost*(mBlobHealth/mBlobInitHealth));
+							server_addPlayerBooty(cName, mBlobCost*(mBlobHealth/mBlobInitHealth));
 							directionalSoundPlay("/ChaChing.ogg", pos);
 							mBlob.Tag("disabled");
 							mBlob.server_Die();
@@ -923,7 +922,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						if (cBooty >= reconstructCost && mBlobHealth < motherInitHealth)
 						{
 							mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
-							server_setPlayerBooty(cName, cBooty - reconstructCost);
+							server_addPlayerBooty(cName, cBooty - reconstructCost);
 						}
 					}
 					else if (blockType == Block::STATION || blockType == Block::MINISTATION)
@@ -964,7 +963,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						{
 							mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
-							server_setPlayerBooty(cName, cBooty - reconstructCost);
+							server_addPlayerBooty(cName, -reconstructCost);
 						}
 						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
@@ -1038,14 +1037,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		u16 fee = Maths::Round(transfer * rules.get_f32("booty_transfer_fee"));		
 		string pName = player.getUsername();
 		u16 playerBooty = server_getPlayerBooty(pName);
-		if (playerBooty < transfer + fee)	return;
+		if (playerBooty < transfer + fee) return;
 			
 		if (player !is captain)
 		{
 			print("$ " + pName + " transfers Booty to captain " + cName);
 			u16 captainBooty = server_getPlayerBooty(cName);
-			server_setPlayerBooty(pName, playerBooty - transfer - fee);
-			server_setPlayerBooty(cName, captainBooty + transfer);
+			server_addPlayerBooty(pName, -transfer - fee);
+			server_addPlayerBooty(cName, transfer);
 		}
 		else
 		{
@@ -1069,7 +1068,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				if (crew.length > 0)
 				{
 					print("$ " + pName + " transfers Booty to crew");
-					server_setPlayerBooty( pName, playerBooty - transfer - fee);
+					server_addPlayerBooty(pName, -transfer - fee);
 					u16 shareBooty = Maths::Floor(transfer/crew.length);
 					for (u8 i = 0; i < crew.length; i++ )
 					{
@@ -1077,9 +1076,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						if (player is null) continue;
 						
 						string cName = crewPlayer.getUsername();
-						u16 cBooty = server_getPlayerBooty(cName);
 
-						server_setPlayerBooty(cName, cBooty + shareBooty);
+						server_addPlayerBooty(cName, shareBooty);
 					}
 				}
 			}
@@ -1143,7 +1141,6 @@ void onDie(CBlob@ this)
 			if (player !is null)
 			{
 				string pName = player.getUsername();
-				u16 pBooty = server_getPlayerBooty(pName);
 				u16 returnBooty = 0;
 				for (uint i = 0; i < blocks.length; ++i)
 				{
@@ -1153,7 +1150,7 @@ void onDie(CBlob@ this)
 				}
 				
 				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
-					server_setPlayerBooty(pName, pBooty + returnBooty);
+					server_addPlayerBooty(pName, returnBooty);
 			}
 		}
 		Human::clearHeldBlocks(this);
@@ -1184,7 +1181,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 				u16 reward = 50;
 				if (getRules().get_bool("whirlpool")) reward *= 3;
 				
-				server_setPlayerBooty(defenderName, server_getPlayerBooty(defenderName) + reward);
+				server_addPlayerBooty(defenderName, reward);
 				server_updateTotalBooty(teamNum, reward);
 			}
 		}

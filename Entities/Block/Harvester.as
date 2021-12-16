@@ -76,74 +76,49 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null) return;
 		
-		Island@ island = getIsland( this.getShape().getVars().customData);
+		Island@ island = getIsland(this.getShape().getVars().customData);
 		if (island is null) return;
 
 		this.set_u32("fire time", getGameTime());
 			
 		//effects
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.getSpriteLayer("weapon");
-		layer.SetAnimation("default");
 	   
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-		   		
+		
 		Vec2f barrelPos = this.getPosition();
 
-		//hit stuff		
-		u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
+		//hit stuff
 		HitInfo@[] hitInfos;
-		CMap@ map = this.getMap();
 		bool killed = false;
 		bool blocked = false;
 			
-		if (map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
+		if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
+		{
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
 
-				const int color = b.getShape().getVars().customData;
 				const int blockType = b.getSprite().getFrame();
 				const bool isBlock = b.getName() == "block";
 
-				if (isBlock)
+				if (isBlock && b.getShape().getVars().customData > 0)
 				{
 					killed = true;
 					
 					if (isClient())//effects
 					{
-						sprite.RemoveSpriteLayer("laser");
-						CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "ReclaimBeam.png", 16, 16);
-						if (laser !is null)//partial length laser
-						{
-							Animation@ anim = laser.addAnimation( "default", 1, false );
-							int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-							anim.AddFrames(frames);
-							laser.SetVisible(true);
-							f32 laserLength = Maths::Max(0.1f, (hi.hitpos - barrelPos).getLength() / 16.0f);						
-							laser.ResetTransform();						
-							laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-							laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));							
-							laser.RotateBy(0.0f, Vec2f());
-							laser.setRenderStyle(RenderStyle::light);
-							laser.SetRelativeZ(1);
-						}
-
+						setLaser(sprite, hi.hitpos - barrelPos);
 						sparks(hi.hitpos, 4);
 					}			
 
 					CPlayer@ thisPlayer = shooter.getPlayer();						
-					if (thisPlayer is null) return;		
-					
-					Vec2f aimVector = hi.hitpos - barrelPos;	 
+					if (thisPlayer is null) return; 
 					
 					if (b !is null)
-					{		
-						CRules@ rules = getRules();
-						const int blockType = b.getSprite().getFrame();
-
+					{
 						if (blockType == Block::STATION || blockType == Block::MINISTATION) continue;
 
 						Island@ island = getIsland(b.getShape().getVars().customData);
@@ -154,34 +129,32 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						const f32 initialReclaim = b.get_f32("initial reclaim");
 						f32 currentReclaim = b.get_f32("current reclaim");
 						
-						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim;
+						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim; //fastest reclaim possible
 
 						if (island !is null && bCost > 0)
 						{
 							string islandOwnerName = island.owner;
-							CBlob@ mBlobOwnerBlob = getBlobByNetworkID(b.get_u16("ownerID"));
 							
-							if (!(blockType == Block::MOTHERSHIP5))
+							if (blockType != Block::MOTHERSHIP5)
 							{
 								f32 deconstructAmount = 0;
-								if ( (islandOwnerName == "" && !island.isMothership)
-									|| (b.get_string( "playerOwner" ) == "" && !island.isMothership)
-									|| (islandOwnerName == thisPlayer.getUsername())
-									|| (b.get_string( "playerOwner" ) == thisPlayer.getUsername()))
+								if ((islandOwnerName == "" && !island.isMothership) //true if no owner for island and island is not a mothership
+									|| (b.get_string("playerOwner") == "" && !island.isMothership) //true if no owner for the block and is not on a mothership
+									|| (islandOwnerName == thisPlayer.getUsername()) //true if we own the island
+									|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
 								{
 									deconstructAmount = fullConstructAmount; 
 								}
 								else
 								{
-									deconstructAmount = (1.0f/bCost)*initialReclaim;
-								}				
+									deconstructAmount = (1.0f/bCost)*initialReclaim; //slower reclaim
+								}
 
 								if ((currentReclaim - deconstructAmount) <= 0)
 								{
 									string cName = thisPlayer.getUsername();
-									u16 cBooty = server_getPlayerBooty( cName );
 
-									server_setPlayerBooty(cName, cBooty + bCost*(bHealth/bInitHealth));
+									server_addPlayerBooty(cName, bCost*(bHealth/bInitHealth));
 									directionalSoundPlay("/ChaChing.ogg", barrelPos);
 
 									b.Tag("disabled");
@@ -195,6 +168,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if (killed) break;
 				}
 			}
+		}
 
 		if (!blocked)
 		{
@@ -206,22 +180,28 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		if (!killed && isClient())//full length 'laser'
 		{
-			sprite.RemoveSpriteLayer("laser");
-			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "ReclaimBeam.png", 16, 16);
-			if (laser !is null)
-			{
-				Animation@ anim = laser.addAnimation("default", 1, false);
-				int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-				anim.AddFrames(frames);
-				laser.SetVisible(true);
-				f32 laserLength = Maths::Max(0.1f, (aimVector * (BULLET_RANGE)).getLength() / 16.0f);						
-				laser.ResetTransform();						
-				laser.ScaleBy( Vec2f(laserLength, 1.0f));							
-				laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));								
-				laser.RotateBy(0.0f, Vec2f());
-				laser.setRenderStyle(RenderStyle::light);
-				laser.SetRelativeZ(1);
-			}
+			setLaser(sprite, aimVector * BULLET_RANGE);
 		}
     }
+}
+
+void setLaser(CSprite@ this, Vec2f lengthPos)
+{
+	this.RemoveSpriteLayer("laser");
+	
+	CSpriteLayer@ laser = this.addSpriteLayer("laser", "ReclaimBeam.png", 16, 16);
+	if (laser !is null)
+	{
+		Animation@ anim = laser.addAnimation("default", 1, false);
+		int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+		anim.AddFrames(frames);
+		laser.SetVisible(true);
+		f32 laserLength = Maths::Max(0.1f, (lengthPos).getLength() / 16.0f);						
+		laser.ResetTransform();						
+		laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+		laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));								
+		laser.RotateBy(0.0f, Vec2f());
+		laser.setRenderStyle(RenderStyle::light);
+		laser.SetRelativeZ(1);
+	}
 }

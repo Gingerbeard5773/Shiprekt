@@ -177,9 +177,8 @@ void server_giveBooty(string name, u16 ammount)
 	CPlayer@ player = getPlayerByUsername(name);
 	if (player is null) return;
 
-	u16 pBooty = server_getPlayerBooty(name);
-	server_setPlayerBooty(name, pBooty + ammount);
-	server_updateTotalBooty( player.getTeamNum(), ammount);
+	server_addPlayerBooty(name, ammount);
+	server_updateTotalBooty(player.getTeamNum(), ammount);
 }
 
 void onTick(CSprite@ this)

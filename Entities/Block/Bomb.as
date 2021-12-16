@@ -221,7 +221,7 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 				
 				reward = Maths::Round(reward * bFactor);
 				
-				server_setPlayerBooty(attackerName, server_getPlayerBooty(attackerName) + reward);
+				server_addPlayerBooty(attackerName, reward);
 				server_updateTotalBooty(teamNum, reward);
 			}
 		}
