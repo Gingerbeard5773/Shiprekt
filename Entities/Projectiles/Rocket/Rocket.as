@@ -210,25 +210,25 @@ void onTick(CBlob@ this)
 
 f32 getDamage(CBlob@ hitBlob, int blockType)
 {
-	f32 damage = 2.0f;
+	f32 damage = 1.5f;
 
 	switch (blockType)
 	{
 		case Block::RAMENGINE:
 		case Block::DOOR:
-			damage = 4.0f;
+			damage = 5.0f;
 			break;
 		case Block::PROPELLER:
-			damage = 1.5f;
+			damage = 2.5f;
 			break;
 		case Block::FAKERAM:
-			damage = 8.0f;
+			damage = 9.0f;
 			break;
 		case Block::ANTIRAM:
-			damage = 3.0f;
+			damage = 2.5f;
 			break;
 		case Block::SEAT:
-			damage = 1.0f;
+			damage = 2.5f;
 			break;
 		case Block::DECOYCORE:
 			damage = 1.5f;
@@ -238,7 +238,7 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 	if (hitBlob.hasTag("rocket"))
 		return 4.0f;
 	else if (hitBlob.hasTag("weapon"))
-		return 1.5f;
+		return 2.5f;
 
 	return damage; //solids
 }
