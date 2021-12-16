@@ -1,6 +1,8 @@
 #include "WaterEffects.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
+#include "IslandsCommon.as";
+#include "TileCommon.as";
 
 const f32 SHARK_SPEED = 0.75f;
 
@@ -60,28 +62,58 @@ void onTick(CBlob@ this)
 	else
 	{
 		// player
-		const f32 speed = SHARK_SPEED * 3.65f;
+		const f32 speed = SHARK_SPEED * 2.0f;
 		Vec2f vel = this.getVelocity();
+		Vec2f move_vel = Vec2f_zero;
 		if (this.isKeyPressed(key_up))
 		{
-			vel.y -= speed;
+			move_vel.y -= 1;
 		}
 		if (this.isKeyPressed(key_down))
 		{
-			vel.y += speed;
+			move_vel.y += 1;
 		}
 		if (this.isKeyPressed(key_left))
 		{
-			vel.x -= speed;
+			move_vel.x -= 1;
 		}
 		if (this.isKeyPressed(key_right))
 		{
-			vel.x += speed;
+			move_vel.x += 1;
 		}
-		MoveTo(this, vel);
+		move_vel.Normalize();
+		move_vel *= speed;
+		MoveTo(this, vel + move_vel);
 
 		if (this.isMyPlayer())
 		{
+		    CBlob@ core = getMothership(this.getTeamNum());
+	        if(core !is null)
+	        {
+	        	if(!this.hasTag("just spawned"))
+	        	{
+	        		if(!this.hasTag("changing to human"))
+	        		{
+		        		if((this.getPosition() - core.getPosition()).Length() < 32)
+		        		{
+		        			this.Untag("just spawned");
+		        			this.Tag("changing to human");
+		        			CBitStream params;
+							params.write_u16(this.getNetworkID());
+							core.SendCommand(core.getCommandID("turnHuman"), params);
+		        		}
+	        		}
+	        		
+	        	}
+	        	else
+	        	{
+	        		if((this.getPosition() - core.getPosition()).Length() > 64)
+	        		{
+	        			this.Untag("just spawned");
+	        		}
+	        	}
+	        }
+
 		    if (this.isKeyJustPressed(key_bubbles))
 			{
 				this.CreateBubbleMenu();
@@ -114,6 +146,17 @@ void MoveTo(CBlob@ this, Vec2f vel)
 	Vec2f moveVel = vel;
 	const f32 angle = moveVel.Angle();
 	moveVel *= SHARK_SPEED;
+
+	if (this.isMyPlayer())
+	{
+		Vec2f fat = vel;
+		fat.Normalize();
+		fat *= 16;
+		if(isTouchingLand(pos + fat) || isTouchingRock(pos + fat))
+		{
+			moveVel = Vec2f_zero;
+		}
+	}
 
 	this.setVelocity(moveVel);
 	if (moveVel.Length() > 0.1f)
@@ -172,11 +215,12 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 {
 	if (blob is null) return;
 
-	if (blob.getName() == "human" && !blob.get_bool("onGround"))
+	if (blob.getName() == "human" && !blob.get_bool("onGround") && !(this.getPlayer() !is null && this.getTeamNum() == blob.getTeamNum())) // dont kill your own people if you are a shark
 	{
 		MakeWaterParticle(point1, Vec2f_zero); 
-		directionalSoundPlay("ZombieBite", point1);		
-		blob.server_Die();
+		directionalSoundPlay("ZombieBite", point1);
+		this.server_Hit(blob, point1, Vec2f_zero, 9000, 69); // 69 will be shark hitter from now on! :)
+		//blob.server_Die(); // hit instead of killing blob
 		if (this.getPlayer() is null) this.server_Die();
 	}
 }

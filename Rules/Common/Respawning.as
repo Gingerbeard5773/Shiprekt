@@ -4,6 +4,9 @@
 const string PLAYER_BLOB = "human";
 const string SPAWN_TAG = "mothership";
 
+const u32 standartRespawnTime = 7.5f*getTicksASecond();
+const u32 specToTeamRespawnTime = 60*getTicksASecond(); // one minute
+
 bool oneTeamLeft = false;
 
 shared class Respawn
@@ -77,6 +80,7 @@ void onReload(CRules@ this)
         {
             Respawn r(player.getUsername(), getGameTime());
             this.push("respawns", r);
+            syncRespawnTime(this, player, getGameTime());
         }
     }
 }
@@ -97,6 +101,7 @@ void onRestart(CRules@ this)
 			player.server_setTeamNum(getRandomMinimumTeam(this));
 			Respawn r(player.getUsername(), getGameTime());
 			this.push("respawns", r);
+			syncRespawnTime(this, player, getGameTime());
 		}
 	}
 
@@ -108,8 +113,9 @@ void onPlayerRequestSpawn(CRules@ this, CPlayer@ player)
 {
 	if (!isRespawnAdded(this, player.getUsername()) && player.getTeamNum() != this.getSpectatorTeamNum())
 	{
-    	Respawn r(player.getUsername(), getGameTime());
+    	Respawn r(player.getUsername(), standartRespawnTime + getGameTime());
     	this.push("respawns", r);
+    	syncRespawnTime(this, player, standartRespawnTime + getGameTime());
     }
 }
 
@@ -124,7 +130,7 @@ void onTick(CRules@ this)
 			for (uint i = 0; i < respawns.length; i++)
 			{
 				Respawn@ r = respawns[i];
-				if (r.timeStarted == 0 || r.timeStarted + this.playerrespawn_seconds*getTicksASecond() <= gametime)
+				if (r.timeStarted == 0 || r.timeStarted <= gametime)
 				{
 					SpawnPlayer( this, getPlayerByUsername( r.username ));
 					respawns.erase(i);
@@ -295,18 +301,21 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 	
 	if (newteam == 44)//request from Block.as
 		return;
-	
-	if (player.isMod())
+
+	u8 old_team = player.getTeamNum();
+
+	player.server_setTeamNum(newteam);
+	if(newteam != this.getSpectatorTeamNum())
 	{
-		player.server_setTeamNum(newteam);
-		if (newteam != this.getSpectatorTeamNum())
-			onPlayerRequestSpawn(this, player);
+		if(old_team == this.getSpectatorTeamNum() && !player.isMod())
+		{
+			Respawn r(player.getUsername(), specToTeamRespawnTime + getGameTime());
+	    	this.push("respawns", r);
+	    	syncRespawnTime(this, player, specToTeamRespawnTime + getGameTime());
+			return;
+		}
+		onPlayerRequestSpawn(this, player);
 	}
-	else if (newteam == this.getSpectatorTeamNum())
-    {
-        if (blob !is null && blob.getName() == "human")
-            SpawnAsShark(this, player);
-    }
 }
 
 bool allPlayersInOneTeam(CRules@ this)
@@ -325,4 +334,11 @@ bool allPlayersInOneTeam(CRules@ this)
     }
 
     return true;
+}
+
+void syncRespawnTime(CRules@ this, CPlayer@ player, u32 time)
+{
+	CBitStream params;
+	params.write_u32(time);
+	this.SendCommand(this.getCommandID("sync respawn time"), params, player);
 }

@@ -24,6 +24,8 @@ void onInit(CBlob@ this)
 	this.Tag("mothership");
 	this.addCommandID("buyBlock");
 	this.addCommandID("returnBlocks");
+	this.addCommandID("turnShark");
+	this.addCommandID("turnHuman");
 
 	this.server_SetHealth(INIT_HEALTH);
 	
@@ -63,6 +65,57 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CBlob@ caller = getBlobByNetworkID(params.read_u16());
 		if (caller !is null)
 			ReturnBlocks(caller);
+	}
+	else if (cmd == this.getCommandID("turnShark"))
+	{
+		CBlob@ caller = getBlobByNetworkID(params.read_u16());
+		if (caller !is null)
+		{
+			CPlayer@ player = caller.getPlayer();
+			if(player !is null) // only humans with player can turn in to sharks
+			{
+				caller.Tag("no_gib");
+				if(isClient())
+					Sound::Play("SharkTurn.ogg", caller.getPosition());
+				if(isServer())
+				{
+					CBlob@ shark = server_CreateBlob("shark", caller.getTeamNum(), this.getPosition());
+					if (shark !is null)
+					{
+						shark.server_SetPlayer(player);
+						shark.Tag("just spawned");
+					}
+				    caller.server_Die();
+				}
+			}
+			
+		}
+	}
+	else if (cmd == this.getCommandID("turnHuman"))
+	{
+		CBlob@ caller = getBlobByNetworkID(params.read_u16());
+		if (caller !is null)
+		{
+			CPlayer@ player = caller.getPlayer();
+			if(player !is null) // only sharks with player can turn in to humans
+			{
+				if(isClient())
+					Sound::Play("HumanTurn.ogg", caller.getPosition());
+				if(isServer())
+				{
+					CBlob@ human = server_CreateBlobNoInit("human");
+					if (human !is null)
+					{
+						human.server_SetPlayer(player);
+						human.server_setTeamNum(caller.getTeamNum());
+						human.setPosition(this.getPosition());
+						human.Init();
+					}
+				    caller.server_Die();
+				}
+			}
+			
+		}
 	}
 }
 
