@@ -1,5 +1,4 @@
 #include "HumanCommon.as";
-//#include "EmotesCommon.as"
 #include "MakeBlock.as";
 #include "WaterEffects.as";
 #include "IslandsCommon.as";
@@ -9,6 +8,7 @@
 #include "TileCommon.as";
 #include "Hitters.as";
 #include "ParticleSparks.as";
+#include "ParticleHeal.as";
 
 int useClickTime = 0;
 const int CONSTRUCT_VALUE = 5;
@@ -744,25 +744,6 @@ void Construct(CBlob@ this)
 		if (isClient())//effects
 		{
 			sprite.RemoveSpriteLayer("laser");
-			
-			string beamSpriteFilename = currentTool == "deconstructor" ? "ReclaimBeam" : "RepairBeam";
-				
-			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", beamSpriteFilename + ".png", 32, 16);
-			
-			if (laser !is null)//laser management
-			{
-				Animation@ defaultAnim = laser.addAnimation("default", 1, true);
-				int[] defaultAnimFrames = { 16 };
-				defaultAnim.AddFrames(defaultAnimFrames);
-				laser.SetAnimation("default");
-				laser.SetVisible(true);
-				f32 laserLength = Maths::Min(1.0f*CONSTRUCT_RANGE / 32.0f, (aimPos - pos).getLength() / 32.0f);						
-				laser.ResetTransform();						
-				laser.ScaleBy(Vec2f(laserLength, 0.5f));							
-				laser.TranslateBy(Vec2f(laserLength*16.0f, + 0.5f));
-				laser.setRenderStyle(RenderStyle::light);
-				laser.SetRelativeZ(-1); 
-			}
 		}
 		if (!sprite.getEmitSoundPaused())
 		{
@@ -859,10 +840,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			f32 currentReclaim = mBlob.get_f32("current reclaim");
 			
 			f32 fullConstructAmount;
-			if (mBlobCost > 0)
-				fullConstructAmount = (CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
-			else if (blockType == Block::MOTHERSHIP5)
+			if (blockType == Block::MOTHERSHIP5)
 				fullConstructAmount = (0.01f)*mBlobInitHealth;
+			else if (mBlobCost > 0)
+				fullConstructAmount = (CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
 			else
 				fullConstructAmount = 0.0f;
 							
@@ -988,15 +969,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
-					
-					if (currentReclaim >= initialReclaim * 0.75f) //visually repair block
-					{
-						CSprite@ mBlobSprite = mBlob.getSprite();
-						for (uint frame = 0; frame < 11; ++frame)
-						{
-							mBlobSprite.RemoveSpriteLayer("dmg"+frame);
-						}
-					}
 				}
 			}
 			
@@ -1035,7 +1007,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	else if (isServer() && this.getCommandID("releaseOwnership") == cmd)
 	{
 		CPlayer@ player = this.getPlayer();
-		CBlob@ seat = getBlobByNetworkID( params.read_u16() );
+		CBlob@ seat = getBlobByNetworkID(params.read_u16());
 		
 		if (player is null || seat is null) return;
 	
@@ -1145,16 +1117,19 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
 
 void onDie(CBlob@ this)
 {
-	CSprite@ sprite = this.getSprite();
-	Vec2f pos = this.getPosition();
-	
-	ParticleBloodSplat(pos, true);
-	directionalSoundPlay("BodyGibFall", pos);
-	
-	if (!sprite.getVars().gibbed) 
+	if (isClient())
 	{
-		directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos, 0.75f);
-		sprite.Gib();
+		CSprite@ sprite = this.getSprite();
+		Vec2f pos = this.getPosition();
+		
+		ParticleBloodSplat(pos, true);
+		directionalSoundPlay("BodyGibFall", pos);
+		
+		if (!sprite.getVars().gibbed) 
+		{
+			directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos, 0.75f);
+			sprite.Gib();
+		}
 	}
 	
 	//return held blocks
@@ -1230,5 +1205,12 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 void onHealthChange(CBlob@ this, f32 oldHealth)
 {
 	if (this.getHealth() > oldHealth)
-		directionalSoundPlay("Heal.ogg", this.getPosition(), 2.0f);
+	{
+		if (isClient())
+		{
+			directionalSoundPlay("Heal.ogg", this.getPosition(), 2.0f);
+			
+			makeHealParticle(this);
+		}
+	}
 }

@@ -403,7 +403,7 @@ void onTick(CBlob@ this)
 		//damage Sprite (set here so joining clients are updated)
 		CSprite@ sprite = this.getSprite();
 		CSpriteLayer@ dmg = sprite.getSpriteLayer("damage");
-		if ( dmg !is null )
+		if (dmg !is null)
 		{
 			u8 frame = Maths::Floor((INIT_HEALTH - hp) / (INIT_HEALTH / dmg.animation.getFramesCount()));
 			dmg.animation.frame = frame;
@@ -420,7 +420,7 @@ void onTick(CBlob@ this)
 		
 		//particles
 		{
-			CParticle@ p = ParticlePixel(pos, getRandomVelocity(90, 4, 360), getTeamColor( this.getTeamNum() ), true );
+			CParticle@ p = ParticlePixel(pos, getRandomVelocity(90, 4, 360), getTeamColor(this.getTeamNum()), true);
 			if (p !is null)
 			{
 				p.Z = 10.0f;
@@ -430,7 +430,7 @@ void onTick(CBlob@ this)
 		
 		if (v_fastrender)
 		{
-			CParticle@ p = ParticlePixel( pos, getRandomVelocity(90, 4, 360), getTeamColor( this.getTeamNum() ), true );
+			CParticle@ p = ParticlePixel(pos, getRandomVelocity(90, 4, 360), getTeamColor(this.getTeamNum()), true);
 			if (p !is null)
 			{
 				p.Z = 10.0f;

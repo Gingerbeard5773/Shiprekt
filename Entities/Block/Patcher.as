@@ -44,13 +44,11 @@ void onTick(CBlob@ this)
 	if (this.getShape().getVars().customData <= 0 )//not placed yet
 		return;
 		
-	u32 gameTime = getGameTime();
-	
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 	
 	//kill laser after a certain time
-	if (laser !is null && this.get_u32("fire time") + CONSTRUCT_RATE < gameTime)
+	if (laser !is null && this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime())
 	{
 		if (!sprite.getEmitSoundPaused())
 		{
@@ -80,9 +78,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (shooter is null)
 			return;
 		
-		bool isServer = getNet().isServer();
-		Vec2f pos = this.getPosition();
-		
 		Island@ island = getIsland(this.getShape().getVars().customData);
 		if (island is null)
 			return;
@@ -97,46 +92,26 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		Vec2f barrelPos = this.getPosition();
 
 		//hit stuff		
-		u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
 		HitInfo@[] hitInfos;
-		CMap@ map = this.getMap();
-		bool killed = false;
-		bool blocked = false;
 		u8 count = 0;
 			
-		if( map.getHitInfosFromRay( barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos ) )
+		if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
+		{
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;	  
-				if(b is null || b is this) continue;
+				if (b is null || b is this) continue;
 
 				const int color = b.getShape().getVars().customData;
 				const int blockType = b.getSprite().getFrame();
 				const bool isBlock = b.getName() == "block";
 
 
-				if (isBlock)
+				if (isBlock && color > 0)
 				{					
 					if (isClient())//effects
 					{
-						sprite.RemoveSpriteLayer("laser");
-						CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "RepairBeam.png", 16, 16);
-						if (laser !is null)//partial length laser
-						{
-							Animation@ anim = laser.addAnimation( "default", 1, false );
-							int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-							anim.AddFrames(frames);
-							laser.SetVisible(true);
-							f32 laserLength = Maths::Max(0.1f, (hi.hitpos - barrelPos).getLength() / 16.0f);						
-							laser.ResetTransform();						
-							laser.ScaleBy( Vec2f(laserLength, 1.0f) );							
-							laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f) );							
-							laser.RotateBy( 0.0f, Vec2f());
-							laser.setRenderStyle(RenderStyle::light);
-							laser.SetRelativeZ(1);
-						}
-
 						sparks(hi.hitpos, 4);
 					}			
 
@@ -148,12 +123,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					
 					Island@ otherIsland = getIsland(color);
 					bool isMyShip = otherIsland !is null && otherIsland is island;
-
-					Vec2f aimVector = hi.hitpos - pos;	 
+ 
 					f32 reconstructAmount = 0;
 					u16 reconstructCost = 0;
 					string cName = thisPlayer.getUsername();
-					u16 cBooty = server_getPlayerBooty( cName );
+					u16 cBooty = server_getPlayerBooty(cName);
 					f32 mBlobHealth = b.getHealth();
 					f32 mMaxHealth = b.getInitialHealth();
 					const f32 mBlobCost = Block::getCost(blockType) > 0 ? Block::getCost(blockType) : 15;
@@ -215,9 +189,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							}
 						}
 						
-						b.set_f32("current reclaim", Maths::Min( mMaxHealth, currentReclaim + reconstructAmount));
+						b.set_f32("current reclaim", Maths::Min(mMaxHealth, currentReclaim + reconstructAmount));
 					}
-					else if (currentReclaim < initialReclaim )
+					else if (currentReclaim < initialReclaim)
 					{					
 						if ((currentReclaim + reconstructAmount) <= initialReclaim)
 						{
@@ -237,52 +211,46 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 						if (cBooty >= reconstructCost)
 						{
-							b.server_SetHealth( Maths::Min(mMaxHealth, mBlobHealth + reconstructAmount ));
-							b.set_f32("current reclaim", Maths::Min( mMaxHealth, currentReclaim + reconstructAmount));
-							server_setPlayerBooty( cName, cBooty - reconstructCost );
+							b.server_SetHealth( Maths::Min(mMaxHealth, mBlobHealth + reconstructAmount));
+							b.set_f32("current reclaim", Maths::Min(mMaxHealth, currentReclaim + reconstructAmount));
+							server_setPlayerBooty(cName, cBooty - reconstructCost);
 							count++;
 						}
-						else if ( (currentReclaim + reconstructAmount) < mBlobHealth )
-							b.set_f32("current reclaim", Maths::Min( mMaxHealth, currentReclaim + reconstructAmount));
-					}
-					
-					if (currentReclaim >= initialReclaim*0.75f)	//visually repair block
-					{
-						CSprite@ mBlobSprite = b.getSprite();
-						for (uint frame = 0; frame < 11; ++frame)
-						{
-							mBlobSprite.RemoveSpriteLayer("dmg"+frame);
-						}
+						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
+							b.set_f32("current reclaim", Maths::Min(mMaxHealth, currentReclaim + reconstructAmount));
 					}
 				}
 			}
-		
-		if (!blocked)
-		{
-			if (sprite.getEmitSoundPaused())
-			{
-				sprite.SetEmitSoundPaused(false);
-			}
 		}
 		
-		if (!killed && isClient())//full length 'laser'
+		if (sprite.getEmitSoundPaused())
 		{
-			sprite.RemoveSpriteLayer("laser");
-			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "repairBeam.png", 16, 16);
-			if (laser !is null)
-			{
-				Animation@ anim = laser.addAnimation( "default", 1, false );
-				int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
-				anim.AddFrames(frames);
-				laser.SetVisible(true);
-				f32 laserLength = Maths::Max(0.1f, (aimVector * (BULLET_RANGE)).getLength() / 16.0f);						
-				laser.ResetTransform();						
-				laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-				laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));								
-				laser.RotateBy(0.0f, Vec2f());
-				laser.setRenderStyle(RenderStyle::light);
-				laser.SetRelativeZ(1);
-			}
+			sprite.SetEmitSoundPaused(false);
+		}
+
+		if (isClient())//full length 'laser'
+		{
+			setLaser(sprite, aimVector * (BULLET_RANGE));
 		}
     }
+}
+
+void setLaser(CSprite@ this, Vec2f lengthPos)
+{
+	this.RemoveSpriteLayer("laser");
+	CSpriteLayer@ laser = this.addSpriteLayer("laser", "repairBeam.png", 16, 16);
+	if (laser !is null)
+	{
+		Animation@ anim = laser.addAnimation("default", 1, false);
+		int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+		anim.AddFrames(frames);
+		laser.SetVisible(true);
+		f32 laserLength = Maths::Max(0.1f, (lengthPos).getLength() / 16.0f);						
+		laser.ResetTransform();						
+		laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+		laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));								
+		laser.RotateBy(0.0f, Vec2f());
+		laser.setRenderStyle(RenderStyle::light);
+		laser.SetRelativeZ(1);
+	}
 }

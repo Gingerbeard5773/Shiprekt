@@ -1,7 +1,8 @@
-#include "IslandsCommon.as"
-#include "BlockCommon.as"
-#include "MakeDustParticle.as"
-#include "AccurateSoundPlay.as"
+#include "IslandsCommon.as";
+#include "BlockCommon.as";
+#include "MakeDustParticle.as";
+#include "AccurateSoundPlay.as";
+#include "ParticleHeal.as";
 
 u8 DAMAGE_FRAMES = 3;
 // onInit: called from engine after blob is created with server_CreateBlob()
@@ -13,7 +14,7 @@ void onInit(CBlob@ this)
 	CShape @shape = this.getShape();
 	sprite.asLayer().SetLighting(false);
 	shape.getConsts().net_threshold_multiplier = -1.0f;
-	this.SetMapEdgeFlags( u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
+	this.SetMapEdgeFlags(u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
 }
 
 void onTick (CBlob@ this)
@@ -369,12 +370,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					{
 						player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
 						blob.Tag("dead");
-						/*CSprite@ sprite = blob.getSprite();
-						if (sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
-						{
-							directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos);
-							sprite.Gib();
-						}*/
 					}
 				}
 				
@@ -488,12 +483,6 @@ void onDie(CBlob@ this)
 				{
 					player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
 					localBlob.Tag("dead");
-					/*CSprite@ sprite = localBlob.getSprite();
-					if (sprite !is null && !sprite.getVars().gibbed)//to mask the latency a bit
-					{
-						directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), localBlob.getPosition());
-						sprite.Gib();
-					}*/
 				}
 			}
 		}
@@ -520,10 +509,11 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 {
 	const int color = this.getShape().getVars().customData;
 	if (color < 0) return 0.0f;
+	
+	int teamNum = this.getTeamNum();
 
-	if (this.getTeamNum() != hitterBlob.getTeamNum() && isMothership(this))
+	if (teamNum!= hitterBlob.getTeamNum() && isMothership(this))
 	{
-		int teamNum = this.getTeamNum();
 		CRules@ rules = getRules();
 		
 		f32 msDMG = rules.get_f32("msDMG" + teamNum);
@@ -537,53 +527,68 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 //damage layers
 void onHealthChange(CBlob@ this, f32 oldHealth)
 {
-	if (this.hasTag("mothership") || this.hasTag("secondaryCore")) return; //has own code
+	const bool isCore = this.hasTag("mothership") || this.hasTag("secondaryCore");
 
-	int blockType = this.getSprite().getFrame();
 	const f32 hp = this.getHealth();
-	const f32 initHealth = this.getInitialHealth();
 
-	if (hp < 0.0f) this.server_Die();
+	if (hp < 0.0f && !isCore) this.server_Die();
 	else
 	{
 		//update reclaim status
-		if (hp < this.get_f32("current reclaim"))
+		if (hp < this.get_f32("current reclaim") && !isCore)
 		{
 			this.set_f32("current reclaim", hp);
 		}
-	
-		//add damage layers
-		f32 step = initHealth / (DAMAGE_FRAMES + 1);
-		f32 currentStep = Maths::Floor(oldHealth/step) * step;
 		
-		if (hp < currentStep && hp <= initHealth - step && Block::isSolid(blockType))
+		if (isClient())
 		{
-			int bFrame = blockType == Block::RAM ? 9 :
-						blockType == Block::FAKERAM ? 49 :
-						blockType == Block::ANTIRAM ? 46 : 5;
+			int blockType = this.getSprite().getFrame();
+			const f32 initHealth = this.getInitialHealth();
 
-			if (blockType != Block::RAMENGINE && blockType != Block::POINTDEFENSE)
+			//add damage layers
+			f32 step = initHealth / (DAMAGE_FRAMES + 1); //health divided equally into segments which tell when to change dmg frame
+			f32 currentStep = Maths::Floor(oldHealth/step) * step; //what is the step we are on?
+			
+			if (Block::isSolid(blockType) && hp < currentStep && hp <= initHealth - step && !isCore) //update frame if past health margins
 			{
-				const int frame = (oldHealth > initHealth * 0.5f) ? bFrame : bFrame + 1;	
-				CSprite@ sprite = this.getSprite();
-				CSpriteLayer@ layer = sprite.addSpriteLayer("dmg"+frame);
-				if (layer !is null)
+				int bFrame = blockType == Block::RAM ? 9 : blockType == Block::ANTIRAM ? 46 : 5; //5 default- for propellers
+
+				if (blockType != Block::RAMENGINE && blockType != Block::POINTDEFENSE && blockType != Block::FAKERAM)
 				{
-					layer.SetRelativeZ(1+frame);
-					layer.SetLighting(false);
-					layer.SetFrame(frame);
-					layer.RotateBy(XORRandom(4) * 90, Vec2f_zero);
+					const int frame = (oldHealth > initHealth * 0.5f) ? bFrame : bFrame + 1;	
+					CSprite@ sprite = this.getSprite();
+					CSpriteLayer@ layer = sprite.addSpriteLayer("dmg"+sprite.getSpriteLayerCount());
+					if (layer !is null)
+					{
+						layer.SetRelativeZ(1+frame);
+						layer.SetLighting(false);
+						layer.SetFrame(frame);
+						layer.RotateBy(XORRandom(4) * 90, Vec2f_zero);
+					}
+				}
+
+				for (int i = 0; i < 2; ++i) //wood chips on frame change
+				{
+					CParticle@ p = makeGibParticle("Woodparts", this.getPosition(), getRandomVelocity(0, 0.3f, XORRandom(360)),
+													0, XORRandom(6), Vec2f(8, 8), 0.0f, 0, "");
+					if (p !is null)
+					{
+						//p.Z = 550.0f;
+						p.damping = 0.98f;
+					}
+					MakeDustParticle(this.getPosition(), "/dust2.png");
 				}
 			}
-
-		    MakeDustParticle(this.getPosition(), "/dust2.png");
-	    }
-		else if (oldHealth >= initHealth * 0.80f && (hp > oldHealth))
-		{
-			CSprite@ sprite = this.getSprite();
-			for (uint frame = 0; frame < 11; ++frame)
+			else if (hp > oldHealth)
 			{
-				sprite.RemoveSpriteLayer("dmg"+frame);
+				//remove damage frames on heal
+				if (Maths::Floor(hp) > currentStep)
+				{
+					CSprite@ sprite = this.getSprite();
+					sprite.RemoveSpriteLayer("dmg"+(sprite.getSpriteLayerCount()-1));
+				}
+
+				makeHealParticle(this, "HealParticle2"); //cute green particles
 			}
 		}
 	}
@@ -592,7 +597,7 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 void onGib(CSprite@ this)
 {
 	Vec2f pos = this.getBlob().getPosition();
-	MakeDustParticle(pos, "/DustSmall.png");
+	//MakeDustParticle(pos, "/DustSmall.png");
 	directionalSoundPlay("destroy_wood", pos);
 }
 // network
