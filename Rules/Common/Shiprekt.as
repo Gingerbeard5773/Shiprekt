@@ -155,7 +155,7 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 	
 	if (pName == "Sohkyo") //troll
 	{
-		Sound::Play("welcome");
+		Sound::Play("WelcomeSohkyoSilent");
 	}
 
 	u16 pBooty = server_getPlayerBooty(pName);
