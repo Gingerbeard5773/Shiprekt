@@ -394,7 +394,7 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 	else if (hitBlob.hasTag("weapon"))
 		return 0.075f;
 	else if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
-		return 0.5f;
+		return 0.1f;
 
 	return damage;//cores, solids
 }
