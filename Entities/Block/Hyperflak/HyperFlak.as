@@ -342,7 +342,7 @@ void Fire2( CBlob@ this, Vec2f aimVector, const u16 netid)
 	//Vec2f offset(PROJECTILE_SPREAD,0);
 	//offset.RotateBy(360.0f, Vec2f());
 
-	Vec2f _vel = (aimVector * PROJECTILE_SPEED/1.8);// + offset;
+	Vec2f _vel = (aimVector * PROJECTILE_SPEED/1.4);// + offset;
 
 	f32 _lifetime = Maths::Max( 0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
 
