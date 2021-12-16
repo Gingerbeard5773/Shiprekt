@@ -58,6 +58,7 @@ void onInit(CBlob@ this)
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
 	this.set_u32("groundTouch time", 0);
+	this.set_u32("sharkTurn time", 0);
 	this.set_bool("onGround", true);//for syncing
 	this.getShape().getVars().onground = true;
 	directionalSoundPlay("Respawn", this.getPosition(), 2.5f);
@@ -325,6 +326,21 @@ void PlayerControls(CBlob@ this)
 	        this.ClearMenus();
 			this.ClearButtons();
 	        this.ShowInteractButtons();
+
+	        CBlob@ core = getMothership(this.getTeamNum());
+	        if(core !is null)
+	        {
+		        if((this.getPosition() - core.getPosition()).Length() <= 4.5f) // standing on core
+		        {
+		        	this.add_u32("sharkTurn time", 1);
+		        	if(this.get_u32("sharkTurn time") >= 30) // turn
+	    			{
+	    				turnToShark(this);
+	    				this.set_u32("sharkTurn time", 0);
+	    			}
+		        }
+	        }
+	        
 	    }
 	    else if (this.isKeyJustReleased(key_use))
 	    {
@@ -332,6 +348,22 @@ void PlayerControls(CBlob@ this)
 			this.ClickClosestInteractButton(tapped ? this.getPosition() : this.getAimPos(), this.getRadius()*2);
 
 	        this.ClearButtons();
+
+	        if(this.get_u32("sharkTurn time") > 0 && this.get_u32("sharkTurn time") < 15) // released in time, cancel turn
+	        	this.set_u32("sharkTurn time", 0);
+	    }
+	    else // not holding button
+	    {
+	    	if(this.get_u32("sharkTurn time") >= 15) // continue adding to timer if we held button for more than 0.5 seconds
+	    	{
+	    		if(this.get_u32("sharkTurn time") >= 30) // turn
+	    		{
+	    			turnToShark(this);
+			    	this.set_u32("sharkTurn time", 0);
+	    		}
+	    		else
+	    			this.add_u32("sharkTurn time", 1);
+	    	}
 	    }
 
 	    // default cursor
@@ -438,6 +470,17 @@ void PlayerControls(CBlob@ this)
 			this.ClearMenus();
 			Sound::Play("buttonclick.ogg");
 		}
+	}
+}
+
+void turnToShark(CBlob@ this)
+{
+	CBlob@ core = getMothership(this.getTeamNum());
+    if(core !is null)
+    {
+    	CBitStream params;
+		params.write_u16(this.getNetworkID());
+		core.SendCommand(core.getCommandID("turnShark"), params);
 	}
 }
 
@@ -1117,7 +1160,7 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
 
 void onDie(CBlob@ this)
 {
-	if (isClient())
+	if (isClient() && !this.hasTag("no_gib"))
 	{
 		CSprite@ sprite = this.getSprite();
 		Vec2f pos = this.getPosition();
