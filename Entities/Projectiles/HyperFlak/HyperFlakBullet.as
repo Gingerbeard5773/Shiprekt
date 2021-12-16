@@ -130,37 +130,37 @@ f32 getDamage( CBlob@ hitBlob, int blockType )
 		return 0.05f;
 	
 	if ( blockType == Block::FAKERAM )
-		return 4.0f;
+		return 6.0f;
 
 	if ( blockType == Block::PROPELLER )
-		return 0.75f;
+		return 0.5f;
 	
 	if ( blockType == Block::ANTIRAM )
-		return 0.10f;
+		return 0.65f;
 		
 	if ( blockType == Block::RAMENGINE )
-		return 1.25f;
+		return 1.0f;
 
 	if ( blockType == Block::DOOR )
-		return 0.9f;
+		return 1.0f;
 
 	if ( hitBlob.getName() == "shark" || hitBlob.getName() == "human" )
 		return 1.0f;
 
 	if ( blockType == Block::SEAT || (hitBlob.hasTag( "weapon" ) && hitBlob.getName() != "hyperflak" ))
-		return 0.6f;
+		return 0.3f;
 
 	if ( hitBlob.getName() == "hyperflak" )
-		return 0.4f;
+		return 0.2f;
 	
 	if ( blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE)
-		return 0.3f;
+		return 0.1f;
 	
 	if ( Block::isBomb( blockType ) )
 		return 1.0f;
 
 	if ( blockType == Block::DECOYCORE )
-		return 0.6f;
+		return 0.1f;
 	
 	return 0.05f;
 }
