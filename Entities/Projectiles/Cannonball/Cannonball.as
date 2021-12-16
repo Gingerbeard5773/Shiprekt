@@ -11,7 +11,7 @@ const f32 SPLASH_RADIUS = 8.0f;
 const f32 SPLASH_DAMAGE = 0.0f;
 const f32 MAX_PIERCED = 2;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("cannonball");
 	this.Tag("projectile");
@@ -20,7 +20,7 @@ void onInit( CBlob@ this )
     consts.mapCollisions = false; // we have our own map collision
 	consts.bullet = true;	
 	
-	this.set_u16( "pierced count", 0 );
+	this.set_u16("pierced count", 0);
     u32[] piercedBlobIDs;
     this.set("pierced blob IDs", piercedBlobIDs);
 
@@ -45,7 +45,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 {
 	if (b is null || b is this) return;
 
-	if (!isServer() || (this.getTickSinceCreated() <= 1 && this.getTeamNum() == b.getTeamNum())) return;
+	if (!isServer()) return;
 	
 	int piercedCount = this.get_u16("pierced count");
     u32[]@ piercedBlobIDs;
@@ -85,9 +85,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 						killed = true;
 					else
 					{
-						this.push("pierced blob IDs", bID );
+						this.push("pierced blob IDs", bID);
 						piercedCount++;
-						this.setVelocity( this.getVelocity() * 0.5f);
+						this.setVelocity(this.getVelocity() * 0.5f);
 					}
 				}
 				else return;
@@ -156,7 +156,6 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob, int blockType)
 		case Block::DECOYCORE:
 			damage = 1.75;
 			break;
-		default: damage = 0.25;
 	}
 	
 	if ((hitBlob.hasTag("weapon") && hitBlob.getName() != "hyperflak"))

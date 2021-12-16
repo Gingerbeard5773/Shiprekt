@@ -576,8 +576,9 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 						//p.Z = 550.0f;
 						p.damping = 0.98f;
 					}
-					MakeDustParticle(this.getPosition(), "/dust2.png");
 				}
+				
+				MakeDustParticle(this.getPosition(), "/dust2.png");
 			}
 			else if (hp > oldHealth)
 			{

@@ -75,7 +75,7 @@ void onTick(CBlob@ this)
 		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
 		if (layer !is null) layer.animation.SetFrameIndex(0);
 
-		directionalSoundPlay( "Charging.ogg", this.getPosition(), 2.0f );
+		directionalSoundPlay("Charging.ogg", this.getPosition(), 2.0f);
 	}
 
 	if (isServer())
@@ -179,7 +179,7 @@ void Fire(CBlob@ this, CBlob@ shooter)
 				{
 					CPlayer@ attacker = shooter.getPlayer();
 					if (attacker !is null)
-						cannonball.SetDamageOwnerPlayer( attacker );
+						cannonball.SetDamageOwnerPlayer(attacker);
 				}
 
 				cannonball.setVelocity(vel);
