@@ -316,18 +316,6 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 		}
 		onPlayerRequestSpawn(this, player);
 	}
-	
-	/*if (player.isMod())
-	{
-		player.server_setTeamNum(newteam);
-		if (newteam != this.getSpectatorTeamNum())
-			onPlayerRequestSpawn(this, player);
-	}
-	else if (newteam == this.getSpectatorTeamNum())
-    {
-        if (blob !is null && blob.getName() == "human")
-            SpawnAsShark(this, player);
-    }*/
 }
 
 bool allPlayersInOneTeam(CRules@ this)
