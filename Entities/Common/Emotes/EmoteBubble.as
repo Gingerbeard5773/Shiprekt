@@ -1,32 +1,32 @@
 // Draw an emoticon
+
 #include "EmotesCommon.as";
 
-void onInit( CBlob@ blob )
+void onInit(CBlob@ blob)
 {
 	CSprite@ sprite = blob.getSprite();
     blob.set_u8("emote", Emotes::off);
     blob.set_u32("emotetime", 0);
     //init emote layer
-    CSpriteLayer@ emote = sprite.addSpriteLayer( "bubble", "Entities/Common/Emotes/Emoticons.png", 32, 32, 0, 0 );
+    CSpriteLayer@ emote = sprite.addSpriteLayer("bubble", "Entities/Common/Emotes/Emoticons.png", 32, 32, 0, 0);
 
     if (emote !is null)
     {
         emote.SetOffset(Vec2f(0,-blob.getRadius()*1.5f-13));
         emote.SetRelativeZ(100.0f);
         {
-            Animation@ anim = emote.addAnimation( "default", 0, true );
+            Animation@ anim = emote.addAnimation("default", 0, true);
 
             for (int i = 0; i < Emotes::emotes_total; i++) {
                 anim.AddFrame(i);
             }
         }
-        emote.SetVisible( false );
-        emote.SetHUD( true );
+        emote.SetVisible(false);
+        emote.SetHUD(true);
     }
 
-    AddBubblesToMenu( blob ); 	
+    AddBubblesToMenu(blob); 	
 }
-
 
 void onTick( CBlob@ blob )
 {
@@ -79,19 +79,19 @@ void onTick( CBlob@ blob )
 		}
 		else
 		{
-			emote.SetVisible( false );
+			emote.SetVisible(false);
 		}
     }
 }
 
-void onClickedBubble( CBlob@ this, int index )
+void onClickedBubble(CBlob@ this, int index)
 {
-	set_emote( this, index );
+	set_emote(this, index);
 }
 
-void AddBubblesToMenu( CBlob@ this )
+void AddBubblesToMenu(CBlob@ this)
 {
-    this.LoadBubbles( "Entities/Common/Emotes/Emoticons.png" );
+    this.LoadBubbles("Entities/Common/Emotes/Emoticons.png");
 
     //for (int i = Emotes::skull; i < Emotes::cog; i++) {
     //    if (i != Emotes::pickup && i != Emotes::blank && i != Emotes::dots) {

@@ -20,7 +20,6 @@ void onInit(CBlob@ this)
 	this.Tag("machinegun");
 	this.Tag("fixed_gun");
 	this.addCommandID("fire");
-	this.addCommandID("disable");
    
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);

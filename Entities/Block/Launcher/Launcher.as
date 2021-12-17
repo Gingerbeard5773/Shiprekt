@@ -1,16 +1,11 @@
-#include "WaterEffects.as";
+#include "WeaponCommon.as";
 #include "BlockCommon.as";
-#include "IslandsCommon.as";
-#include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 
 const f32 BULLET_SPEED = 3.0f;
 const int FIRE_RATE = 200;
-const f32 BULLET_RANGE = 240.0f;
-const f32 MIN_FIRE_PAUSE = 2.75f;//min wait between shots
-const f32 MAX_FIRE_PAUSE = 8.0f;//max wait between shots
-const f32 FIRE_PAUSE_RATE = 0.08f;//higher values = higher recover
+const f32 PROJECTILE_RANGE = 240.0f;
 
 // Max amount of ammunition
 const uint8 MAX_AMMO = 8;
@@ -39,7 +34,6 @@ void onInit(CBlob@ this)
 	this.Tag("usesAmmo");
 	this.Tag("machinegun"); //for seat.as
 	this.addCommandID("fire");
-	this.addCommandID("disable");
 
 	if (isServer())
 	{
@@ -70,34 +64,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-
-		if (isle !is null)
-		{
-			u16 ammo = this.get_u16("ammo");
-			u16 maxAmmo = this.get_u16("maxAmmo");
-
-			if (ammo < maxAmmo)
-			{
-				if (isle.isMothership || isle.isStation || isle.isMiniStation)
-				{
-					if (gameTime % (30 * REFILL_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_AMOUNT);
-					}
-				}
-				else if (isle.isSecondaryCore)
-				{
-					if (gameTime % (30 * REFILL_SECONDARY_CORE_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_SECONDARY_CORE_AMOUNT);
-					}
-				}
-
-				this.set_u16("ammo", ammo);
-				this.Sync("ammo", true);
-			}
-		}
+		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 	}
 }
 
@@ -115,6 +82,7 @@ bool isClear(CBlob@ this)
 	
 	CBlob@[] blobs;
 	if (getMap().getBlobsAtPosition(pos + aimVector*8, @blobs))
+	{
 		for (uint i = 0; i < blobs.length; i++)
 		{
 			CBlob@ b =  blobs[i];
@@ -126,9 +94,11 @@ bool isClear(CBlob@ this)
 				break;
 			}
 		}
-
+	}
+	
 	HitInfo@[] hitInfos;
-	if (getMap().getHitInfosFromRay( pos, -aimVector.Angle(), BULLET_RANGE/4, this, @hitInfos ) )
+	if (getMap().getHitInfosFromRay(pos, -aimVector.Angle(), PROJECTILE_RANGE/4, this, @hitInfos))
+	{
 		for (uint i = 0; i < hitInfos.length; i++)
 		{
 			CBlob@ b =  hitInfos[i].blob;
@@ -140,6 +110,7 @@ bool isClear(CBlob@ this)
 				break;
 			}
 		}
+	}
 
 	return clear;
 }
@@ -159,11 +130,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (shooter is null)
 			return;
 
-		Vec2f pos = this.getPosition();
-
 		Island@ island = getIsland(this.getShape().getVars().customData);
 		if (island is null)
 			return;
+			
+		Vec2f pos = this.getPosition();
 
 		if (!isClear(this))
 		{
@@ -184,13 +155,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		this.set_u16("ammo", ammo);
 
 		Vec2f aimvector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-
 		Vec2f barrelPos = this.getPosition() + aimvector*9;
-
-		//hit stuff
-		HitInfo@[] hitInfos;
-		CMap@ map = this.getMap();
-
 		Vec2f velocity = aimvector*BULLET_SPEED;
 
 		if (isServer())

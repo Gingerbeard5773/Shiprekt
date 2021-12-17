@@ -1,5 +1,5 @@
+#include "WeaponCommon.as";
 #include "BlockCommon.as";
-#include "IslandsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 
@@ -143,34 +143,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-
-		if (isle !is null)
-		{
-			u16 ammo = this.get_u16("ammo");
-			u16 maxAmmo = this.get_u16("maxAmmo");
-
-			if (ammo < maxAmmo)
-			{
-				if (isle.isMothership || isle.isStation || isle.isMiniStation)
-				{
-					if (gameTime % (30 * REFILL_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_AMOUNT);
-					}
-				}
-				else if (isle.isSecondaryCore)
-				{
-					if (gameTime % (30 * REFILL_SECONDARY_CORE_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_SECONDARY_CORE_AMOUNT);
-					}
-				}
-
-				this.set_u16("ammo", ammo);
-				this.Sync("ammo", true);
-			}
-		}
+		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 	}
 }
 
@@ -182,7 +155,7 @@ void Manual(CBlob@ this, CBlob@ controller)
 	CPlayer@ player = controller.getPlayer();
 
 	// fire
-	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this, true) && isClearShot(this, aimVec))
+	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && isClearShot(this, aimVec))
 	{
 		Island@ isle = getIsland(this.getShape().getVars().customData);
 		u16 netID = 0;
@@ -225,7 +198,7 @@ void Auto(CBlob@ this)
 				else
 				{
 					@targetIsland = getIsland(b);
-					if ( b.isAttached() )
+					if (b.isAttached())
 					{
 						AttachmentPoint@ humanAttach = b.getAttachmentPoint(0);
 						CBlob@ seat = humanAttach.getOccupied();
@@ -244,7 +217,7 @@ void Auto(CBlob@ this)
 
 					//prediction compensation
 					//aimVec += targetIsland.vel * distance /PROJECTILE_SPEED * 0.9f;//poor man's kinematics
-					aimVec += targetIsland.vel * Maths::FastSqrt( distance ) * 13.0f/PROJECTILE_SPEED;
+					aimVec += targetIsland.vel * Maths::FastSqrt(distance) * 13.0f/PROJECTILE_SPEED;
 					distance = aimVec.Length();//account for compensation
 				}
 				else if (b.hasTag("rocket"))
@@ -268,7 +241,7 @@ void Auto(CBlob@ this)
 		}
 	}
 
-	if ( shoot )
+	if (shoot)
 	{
 		if (isServer() && canShootAuto(this))
 		{
@@ -299,7 +272,7 @@ void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
 	if (isClearShot(this, aimVec))
 	{
 		Rotate(this, aimVec);
-		if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this, true) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
+		if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
 		{
 			Island@ isle = getIsland(this.getShape().getVars().customData);
 			u16 netID = 0;
@@ -315,16 +288,16 @@ void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
 	}
 }
 
-CBlob@ findFlakChild( CBlob@ this )
+CBlob@ findFlakChild(CBlob@ this)
 {
 	int color = this.getShape().getVars().customData;
 	CBlob@[] flak;
 	CBlob@[] radBlobs;
 	getMap().getBlobsInRadius(this.getPosition(), CLONE_RADIUS, @radBlobs);
-	for ( uint i = 0; i < radBlobs.length; i++ )
+	for (uint i = 0; i < radBlobs.length; i++)
 	{
 		CBlob@ b = radBlobs[i];
-		if (b.hasTag("flak") && !b.hasAttached() && b.get_u16("parentID") == 0 && color == b.getShape().getVars().customData )
+		if (b.hasTag("flak") && !b.hasAttached() && b.get_u16("parentID") == 0 && color == b.getShape().getVars().customData)
 			flak.push_back(b);
 	}
 
@@ -334,12 +307,12 @@ CBlob@ findFlakChild( CBlob@ this )
 	return null;
 }
 
-bool canShootAuto(CBlob@ this, bool manual = false)
+bool canShootAuto(CBlob@ this)
 {
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-bool canShootManual(CBlob@ this, bool manual = false)
+bool canShootManual(CBlob@ this)
 {
 	return this.get_u32("fire time") + FIRE_RATE/2 < getGameTime();
 }

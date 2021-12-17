@@ -1,5 +1,5 @@
+#include "WeaponCommon.as";
 #include "BlockCommon.as";
-#include "IslandsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 
@@ -28,7 +28,7 @@ const uint8 REFILL_SECONDARY_CORE_SECONDS = 10;
 // connected to secondary cores
 const uint8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("pointDefense");
 	this.Tag("weapon");
@@ -59,7 +59,7 @@ void onInit( CBlob@ this )
     }
 }
 
-void onTick( CBlob@ this )
+void onTick(CBlob@ this)
 {
 	if (this.getShape().getVars().customData <= 0)
 		return;
@@ -78,34 +78,7 @@ void onTick( CBlob@ this )
 
 	if (isServer())
 	{
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-
-		if (isle !is null)
-		{
-			u16 ammo = this.get_u16("ammo");
-			u16 maxAmmo = this.get_u16("maxAmmo");
-
-			if (ammo < maxAmmo)
-			{
-				if (isle.isMothership || isle.isStation || isle.isMiniStation )
-				{
-					if (gameTime % (30 * REFILL_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_AMOUNT);
-					}
-				}
-				else if (isle.isSecondaryCore)
-				{
-					if (gameTime % (30 * REFILL_SECONDARY_CORE_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_SECONDARY_CORE_AMOUNT);
-					}
-				}
-
-				this.set_u16("ammo", ammo);
-				this.Sync("ammo", true);
-			}
-		}
+		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 	}
 }
 
@@ -129,14 +102,14 @@ void Auto(CBlob@ this)
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
 			CBlob @b = blobsInRadius[i];
-			if ( b.getTeamNum() != this.getTeamNum()
+			if (b.getTeamNum() != this.getTeamNum()
 					&& (b.getName() == "human"|| b.hasTag("projectile")))
 			{
 				bPos = b.getPosition();
 
 				Island@ targetIsland;
 				if (b.getName() == "block")
-					@targetIsland = getIsland( b.getShape().getVars().customData );
+					@targetIsland = getIsland(b.getShape().getVars().customData);
 				else
 				{
 					@targetIsland = getIsland(b);
@@ -179,7 +152,7 @@ void Auto(CBlob@ this)
 	}
 }
 
-bool canShootAuto(CBlob@ this, bool manual = false)
+bool canShootAuto(CBlob@ this)
 {
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
@@ -204,7 +177,7 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 		{
 			HitInfo@ hi = hitInfos[i];
 			CBlob@ b = hi.blob;
-			if(b is null || b is this) continue;
+			if (b is null || b is this) continue;
 
 			int thisColor = this.getShape().getVars().customData;
 			int bColor = b.getShape().getVars().customData;
@@ -217,7 +190,7 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 			//if ( sameIsland || targetMerged ) print ( "" + ( sameIsland ? "sameisland; " : "" ) + ( targetMerged ? "targetMerged; " : "" ) );
 
 			if (b.hasTag("weapon") || Block::isSolid(blockType)
-					|| ( b.getName() == "block" && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType)) && sameIsland && !canShootSelf ) )
+					|| (b.getName() == "block" && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType)) && sameIsland && !canShootSelf))
 			{
 				//print ( "not clear " + ( b.getName() == "block" ? " (block) " : "" ) + ( !canShootSelf ? "!canShootSelf; " : "" )  );
 				return false;

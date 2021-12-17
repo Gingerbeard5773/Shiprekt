@@ -1,8 +1,8 @@
-#include "WaterEffects.as"
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "Booty.as"
-#include "AccurateSoundPlay.as"
+#include "WeaponCommon.as";
+#include "WaterEffects.as";
+#include "BlockCommon.as";
+#include "Booty.as";
+#include "AccurateSoundPlay.as";
 #include "CustomMap.as";
 #include "Hitters.as";
 #include "ParticleSparks.as";
@@ -34,14 +34,13 @@ const uint8 REFILL_SECONDARY_CORE_AMOUNT = 4;
 
 Random _shotspreadrandom(0x11598); //clientside
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("weapon");
 	this.Tag("machinegun");
 	this.Tag("usesAmmo");
 	this.Tag("fixed_gun");
 	this.addCommandID("fire");
-	this.addCommandID("disable");
 	this.set_string("barrel", "left");
 
 	if (isServer())
@@ -90,7 +89,7 @@ void onTick(CBlob@ this)
 	//print( "Fire pause: " + currentFirePause );
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer( "laser" );
+    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 
 	//kill laser after a certain time
 	if (laser !is null && this.get_u32("fire time") + 2.5f < gameTime)
@@ -98,34 +97,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-
-		if (isle !is null)
-		{
-			u16 ammo = this.get_u16("ammo");
-			u16 maxAmmo = this.get_u16("maxAmmo");
-
-			if (ammo < maxAmmo)
-			{
-				if (isle.isMothership || isle.isStation || isle.isMiniStation )
-				{
-					if (gameTime % (30 * REFILL_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_AMOUNT);
-					}
-				}
-				else if (isle.isSecondaryCore)
-				{
-					if (gameTime % (30 * REFILL_SECONDARY_CORE_SECONDS) == 0)
-					{
-						ammo = Maths::Min(maxAmmo, ammo + REFILL_SECONDARY_CORE_AMOUNT);
-					}
-				}
-
-				this.set_u16("ammo", ammo);
-				this.Sync("ammo", true);
-			}
-		}
+		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 	}
 
 	//reset the random seed periodically so joining clients see the same bullet paths
@@ -178,7 +150,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		if (ammo <= 0)
 		{
-			directionalSoundPlay( "LoadingTick1", pos, 0.5f );
+			directionalSoundPlay("LoadingTick1", pos, 0.5f);
 			return;
 		}
 
@@ -216,7 +188,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		//hit stuff
 		u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
 		HitInfo@[] hitInfos;
-		CMap@ map = this.getMap();
+		CMap@ map = getMap();
 		bool killed = false;
 		bool blocked = false;
 
@@ -321,7 +293,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			shotParticles(barrelPos, aimVector.Angle(), false);
 			directionalSoundPlay("Gunshot" + (XORRandom(2) + 2), barrelPos);
 			if (this.get_string("barrel") == "left")
-				layer.SetAnimation( "fire left" );
+				layer.SetAnimation("fire left");
 			if (this.get_string("barrel") == "right")
 				layer.SetAnimation("fire right");
 		}

@@ -35,6 +35,8 @@ void onInit(CBlob@ this)
 	//this.set_f32("cam rotation", 0.0f);
 
 	this.getShape().getVars().waterDragScale = 0; // fix
+	
+	this.chatBubbleOffset = Vec2f(0.0f, 10.0f);
 
 	if (isClient())
 	{
@@ -898,11 +900,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				if (currentTool == "deconstructor" && !(blockType == Block::MOTHERSHIP5) && mBlobCost > 0 )
 				{
 					f32 deconstructAmount = 0;
-					if (isleOwner == ""
-						|| mBlob.get_string("playerOwner") == ""
-						|| isleOwner == thisPlayer.getUsername() 
-						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername()
-						|| blockType == Block::STATION || blockType == Block::MINISTATION)
+					if ((isleOwner == "" && !island.isMothership) //no owner and is not a mothership
+						|| mBlob.get_string("playerOwner") == ""  //no one owns the block
+						|| isleOwner == thisPlayer.getUsername()  //we own the island
+						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername() //we own the block
+						|| blockType == Block::STATION || blockType == Block::MINISTATION) //its a station
 					{
 						deconstructAmount = fullConstructAmount; 
 					}
@@ -912,7 +914,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						this.set_bool("reclaimPropertyWarn", true);
 					}
 					
-					if (blockType != Block::STATION && blockType != Block::MINISTATION && (island.isStation || island.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
+					if (blockType != Block::STATION && blockType != Block::MINISTATION && 
+					   (island.isStation || island.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
 					{
 						deconstructAmount = (1.0f/mBlobCost)*initialReclaim; 
 						this.set_bool("reclaimPropertyWarn", true);					
@@ -950,6 +953,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					
 					if (blockType == Block::MOTHERSHIP5)
 					{
+						//mothership
 						const f32 motherInitHealth = 8.0f;
 						if ((mBlobHealth + reconstructAmount) <= motherInitHealth)
 						{
@@ -965,11 +969,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						if (cBooty >= reconstructCost && mBlobHealth < motherInitHealth)
 						{
 							mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
-							server_addPlayerBooty(cName, cBooty - reconstructCost);
+							server_addPlayerBooty(cName, -reconstructCost);
 						}
 					}
 					else if (blockType == Block::STATION || blockType == Block::MINISTATION)
-					{							
+					{
+						//stations
 						if ((currentReclaim + reconstructAmount) <= initialReclaim)
 						{
 							reconstructAmount = fullConstructAmount;
@@ -990,7 +995,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
 					else if (currentReclaim < initialReclaim)
-					{					
+					{
+						//blocks
 						if ((currentReclaim + reconstructAmount) <= initialReclaim)
 						{
 							reconstructAmount = fullConstructAmount;

@@ -1,8 +1,9 @@
 #define SERVER_ONLY
-#include "Booty.as"
-#include "IslandsCommon.as";
-#include "MakeBlock.as"
-#include "BlockCommon.as"
+#include "Booty.as";
+#include "IslandsCommon.as";;
+#include "MakeBlock.as";
+#include "BlockCommon.as";
+#include "EmotesCommon.as";
 
 const u16 STATION_BOOTY = 4;
 const u16 MINI_STATION_BOOTY = 1;
@@ -12,6 +13,23 @@ void onInit(CRules@ this)
 	this.set_bool("whirlpool", false);
 	setStartingBooty(this);
 	server_resetTotalBooty(this); 
+}
+
+//bubble while in chat
+void onEnterChat(CRules@ this)
+{
+	if (getChatChannel() != 0) return; //no dots for team chat
+
+	CBlob@ localblob = getLocalPlayerBlob();
+	if (localblob !is null)
+		set_emote(localblob, Emotes::dots, 100000);
+}
+
+void onExitChat(CRules@ this)
+{
+	CBlob@ localblob = getLocalPlayerBlob();
+	if (localblob !is null)
+		set_emote(localblob, Emotes::off);
 }
 
 void onTick(CRules@ this)
