@@ -14,7 +14,7 @@ void onRender(CSprite@ this)
 	if(timer <= 0) return;
 
 	Vec2f player_screen_pos = getDriver().getScreenPosFromWorldPos(blob.getPosition());
-	float percent = timer/30.0f;
+	float percent = timer/15.0f;
 
 	Vec2f bar_pos = player_screen_pos;
 	bar_pos.y -= 24;

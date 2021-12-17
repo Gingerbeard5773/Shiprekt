@@ -335,7 +335,7 @@ void PlayerControls(CBlob@ this)
 		        if((this.getPosition() - core.getPosition()).Length() <= 4.5f) // standing on core
 		        {
 		        	this.add_u32("sharkTurn time", 1);
-		        	if(this.get_u32("sharkTurn time") >= 30) // turn
+		        	if(this.get_u32("sharkTurn time") >= 15) // turn
 	    			{
 	    				turnToShark(this);
 	    				this.set_u32("sharkTurn time", 0);
@@ -351,21 +351,22 @@ void PlayerControls(CBlob@ this)
 
 	        this.ClearButtons();
 
-	        if(this.get_u32("sharkTurn time") > 0 && this.get_u32("sharkTurn time") < 15) // released in time, cancel turn
+	        //if(this.get_u32("sharkTurn time") > 0 && this.get_u32("sharkTurn time") < 7) // released in time, cancel turn
 	        	this.set_u32("sharkTurn time", 0);
 	    }
 	    else // not holding button
 	    {
-	    	if(this.get_u32("sharkTurn time") >= 15) // continue adding to timer if we held button for more than 0.5 seconds
+	    	/*if(this.get_u32("sharkTurn time") >= 7) // continue adding to timer if we held button for more than 0.5 seconds
 	    	{
-	    		if(this.get_u32("sharkTurn time") >= 30) // turn
+	    		if(this.get_u32("sharkTurn time") >= 15) // turn
 	    		{
 	    			turnToShark(this);
 			    	this.set_u32("sharkTurn time", 0);
 	    		}
 	    		else
 	    			this.add_u32("sharkTurn time", 1);
-	    	}
+	    	}*/
+	    	this.set_u32("sharkTurn time", 0);
 	    }
 
 	    // default cursor

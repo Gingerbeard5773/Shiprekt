@@ -1,8 +1,7 @@
-u8 command_id;
-	
+
 void onInit(CRules@ this)
 {
-	command_id = this.addCommandID("sync respawn time");
+	this.addCommandID("sync respawn time");
 }
 
 void onTick(CRules@ this)
@@ -17,7 +16,7 @@ void onRender(CRules@ this)
 		
 	CBlob@ localBlob = getLocalPlayerBlob();
 
-	u32 time = this.get_u32("respawn time");
+	u32 time = this.get_u32("respawn time") + 30;
 	s32 time_left = (time - getGameTime())/getTicksASecond();
 	
 	if (!g_videorecording && localBlob is null && player.getTeamNum() != this.getSpectatorTeamNum() && this.getCurrentState() == RuleState::GAME)
@@ -40,7 +39,7 @@ string textFromNumber(int num) // lol
 
 void onCommand( CRules@ this, u8 cmd, CBitStream @params )
 {
-	if(isClient() && cmd == command_id)
+	if(isClient() && cmd == this.getCommandID("sync respawn time"))
 	{
 		u32 time = params.read_u32();
 		this.set_u32("respawn time", time);
