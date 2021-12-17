@@ -28,6 +28,12 @@ void onInit(CBlob@ this)
 	this.addCommandID("turnHuman");
 
 	this.server_SetHealth(INIT_HEALTH);
+
+	if(isServer())
+	{
+		SharkQueue[] human_sharks;
+		this.set("human_sharks", @human_sharks);
+	}
 	
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ layer = sprite.addSpriteLayer("damage", 8, 8);
@@ -76,15 +82,29 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			{
 				caller.Tag("no_gib");
 				if(isClient())
+				{
 					Sound::Play("SharkTurn.ogg", caller.getPosition());
+					if(player.isMyPlayer()) // fix camera
+					{
+						CCamera@ camera = getCamera();
+						camera.setTarget(null);
+						camera.setPosition(caller.getPosition());
+					}
+				}
 				if(isServer())
 				{
-					CBlob@ shark = server_CreateBlob("shark", caller.getTeamNum(), this.getPosition());
+					/*CBlob@ shark = server_CreateBlob("shark", caller.getTeamNum(), this.getPosition());
 					if (shark !is null)
 					{
 						shark.server_SetPlayer(player);
 						shark.Tag("just spawned");
-					}
+					}*/
+					SharkQueue new_shark = SharkQueue(player.getNetworkID(), getGameTime() + 15); // just half a second :\
+					SharkQueue[]@ human_sharks;
+					this.get("human_sharks", @human_sharks);
+					human_sharks.push_back(new_shark);
+					this.set("human_sharks", @human_sharks);
+					caller.server_SetPlayer(null);
 				    caller.server_Die();
 				}
 			}
@@ -525,6 +545,39 @@ void onTick(CBlob@ this)
 			rules.set_u8("flak_total_max_timer", 0);
 		}
 	}
+
+	// check human sharks to spawn
+	if(isServer())
+	{
+		SharkQueue[]@ human_sharks;
+		this.get("human_sharks", @human_sharks);
+		for(int i = 0; i < human_sharks.size(); i++) // loop trough all, but process only one
+		{
+			SharkQueue new_shark = human_sharks[i];
+			CPlayer@ pl = getPlayerByNetworkId(new_shark.netid);
+			if(pl is null)
+			{
+				human_sharks.removeAt(i);
+				this.set("human_sharks", @human_sharks);
+				break;
+			}
+			else
+			{
+				if(new_shark.supposed_time <= getGameTime()) // crate sharko
+				{
+					CBlob@ shark = server_CreateBlob("shark", pl.getTeamNum(), this.getPosition());
+					if (shark !is null)
+					{
+						shark.server_SetPlayer(pl);
+						shark.Tag("just spawned");
+					}
+					human_sharks.removeAt(i);
+					this.set("human_sharks", @human_sharks);
+					break;
+				}
+			}
+		}
+	}
 }
 
 //make islandblocks start exploding
@@ -615,5 +668,17 @@ void selfDestruct(CBlob@ this)
 		CBlob@ b = getBlobByNetworkID(isle_block.blobID);
 		if (b !is null && b !is this && teamNum == b.getTeamNum())
 			b.server_Die();
+	}
+}
+
+class SharkQueue
+{
+	u16 netid;
+	u32 supposed_time;
+
+	SharkQueue(u16 _netid, u32 _supposed_time)
+	{
+		netid = _netid;
+		supposed_time = _supposed_time;
 	}
 }
