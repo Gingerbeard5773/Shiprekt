@@ -1059,14 +1059,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CBlob@ seat = getBlobByNetworkID(params.read_u16());
 		
 		if (player is null || seat is null) return;
-	
-		string owner;
-		seat.get("playerOwner", owner);
+		
+		string owner = seat.get_string("playerOwner");
 		if (owner == player.getUsername())
 		{
-			print("$ " + owner + " released seat");
-			owner = "";
-			seat.set("playerOwner", owner);
+			print("$ " + owner + " released seat: ID " + seat.getNetworkID());
+
 			seat.set_string("playerOwner", "");
 			seat.Sync("playerOwner", true); //2040865191
 		}

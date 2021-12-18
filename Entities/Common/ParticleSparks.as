@@ -62,7 +62,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 										true ); //selflit
 		if (p !is null)
 		{
-			p.Z = p.Z = 550.0f;.0f;
+			p.Z = 550.0f;
 		}
 	}
 	
@@ -89,7 +89,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 											true ); //selflit
 			if (p !is null)
 			{
-				p.Z = 550.0f;
+				p.Z = 540.0f;
 			}
 		}
 	}

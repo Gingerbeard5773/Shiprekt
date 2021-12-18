@@ -167,11 +167,6 @@ void onRestart(CRules@ this)
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
 	string pName = player.getUsername();
-	
-	if (pName == "Sohkyo") //troll
-	{
-		Sound::Play("WelcomeSohkyoSilent");
-	}
 
 	u16 pBooty = server_getPlayerBooty(pName);
 	u16 minBooty = Maths::Round(this.get_u16("bootyRefillLimit") / 2);
