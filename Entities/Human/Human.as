@@ -60,7 +60,7 @@ void onInit(CBlob@ this)
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
 	this.set_u32("groundTouch time", 0);
-	this.set_u32("sharkTurn time", 0);
+	this.set_s32("sharkTurn time", 0);
 	this.set_bool("onGround", true);//for syncing
 	this.getShape().getVars().onground = true;
 	directionalSoundPlay("Respawn", this.getPosition(), 2.5f);
