@@ -122,16 +122,13 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 f32 getDamage(CBlob@ this, CBlob@ hitBlob, int blockType)
 {
 	int piercedCount = this.get_u16("pierced count");
-	f32 damage = 0.25;
+	f32 damage = 0.7f; //solids
 	f32 damageFactor = 1.0f;
 	
 	if (piercedCount > 1)
 		damageFactor *= 0.7f;
 	if (piercedCount > 2)
 		damageFactor *= 0.5f;
-
-	if (Block::isSolid(blockType))
-		return 0.7f * damageFactor;
 	
 	switch (blockType)
 	{
@@ -157,7 +154,7 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob, int blockType)
 			damage = 1.75;
 			break;
 	}
-	
+
 	if ((hitBlob.hasTag("weapon") && hitBlob.getName() != "hyperflak"))
 		return 1.75f * damageFactor;
 	else if (hitBlob.getName() == "hyperflak")

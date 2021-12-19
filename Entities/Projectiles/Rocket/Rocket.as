@@ -10,7 +10,7 @@
 
 const f32 SPLASH_RADIUS = 8.0f;
 const f32 SPLASH_DAMAGE = 0.75f;
-const f32 MANUAL_DAMAGE_MODIFIER = 0.75f;
+//const f32 MANUAL_DAMAGE_MODIFIER = 0.75f;
 
 const f32 ROCKET_FORCE = 7.5f;
 const int ROCKET_DELAY = 15;
@@ -194,8 +194,8 @@ void onTick(CBlob@ this)
 							damageBooty(owner, blob, b, Block::isSolid(blockType) || blockType == Block::DOOR, 15);
 					}
 					
-					f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
-					this.server_Hit(b, pos, Vec2f_zero, getDamage(b, blockType) * damageModifier, Hitters::bomb, true);
+					//f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
+					this.server_Hit(b, pos, Vec2f_zero, getDamage(b, blockType), Hitters::bomb, true);
 					
 					if (killed)
 					{

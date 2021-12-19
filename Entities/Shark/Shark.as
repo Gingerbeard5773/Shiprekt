@@ -48,7 +48,7 @@ void onTick(CBlob@ this)
 		}
 		if (ticktime % 40 == 0)
 		{
-			this.set_Vec2f("target", getTargetVel( this ));
+			this.set_Vec2f("target", getTargetVel(this));
 		}
 		
 		if (!this.get_bool("retreating"))
@@ -235,7 +235,7 @@ void onSetPlayer(CBlob@ this, CPlayer@ player)
 		camera.mousecamstyle = 1; // follow
 		camera.targetDistance = 1.0f; // zoom factor
 		camera.posLag = 5; // lag/smoothen the movement of the camera
-		client_AddToChat( "You are a shark now." );
+		client_AddToChat("You are a shark now.");
 	}
 }
 

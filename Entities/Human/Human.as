@@ -865,7 +865,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	{
 		Vec2f pos = params.read_Vec2f();
 		Vec2f aimPos = params.read_Vec2f();
-		CBlob@ mBlob = getBlobByNetworkID( params.read_netid());
+		CBlob@ mBlob = getBlobByNetworkID(params.read_netid());
 		
 		CPlayer@ thisPlayer = this.getPlayer();						
 		if (thisPlayer is null) return;		

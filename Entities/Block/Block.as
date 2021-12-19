@@ -531,7 +531,7 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 
 	const f32 hp = this.getHealth();
 
-	if (hp < 0.0f && !isCore) this.server_Die();
+	if (hp <= 0.0f && !isCore) this.server_Die();
 	else
 	{
 		//update reclaim status
