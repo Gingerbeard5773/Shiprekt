@@ -2,7 +2,7 @@
 #include "TileCommon.as"
 //Spawn treasure randomly
 
-const u16 FREQUENCY = 2*30;//30 = 1 second
+const u16 FREQUENCY = 10*60*30;//30 = 1 second
 const f32 CLEAR_RADIUS_FACTOR = 2.5f;
 const f32 MAX_CLEAR_RADIUS = 700.0f;
 const u32 PADDING = 80;//border spawn padding

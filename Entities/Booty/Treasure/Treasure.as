@@ -2,18 +2,19 @@
 #include "IslandsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
-#include "AccurateSoundPlay.as";
 
-const u8 CHECK_FREQUENCY = 30;//30 = 1 second
+const s32 timerMax = 10; //amount of tokens to tick through
+const s32 treasureTick = 30; //time it takes to take 1 token off the timer (30 = 1 second)
+const f32 findRadius = 100.0f; //radius a player needs to be in for the treasure to be initially spotted
 
 void onInit(CBlob@ this)
 {
-	this.set_s32("fade", 0);
-	//this.getCurrentScript().tickFrequency = CHECK_FREQUENCY;
-}
+	client_AddToChat("$ A treasure chest been hiddened! $", SColor(255, 250, 250, 100));
 
-const s32 timerMax = 10;
-s32 timer = timerMax;
+	this.set_s32("treasureScale", 0);
+	this.set_s32("treasureToken", timerMax);
+	this.set_string("treasureTaker", "");
+}
 
 void onInit(CSprite@ this)
 {
@@ -29,8 +30,6 @@ void onInit(CSprite@ this)
 		{
 			layer.SetFrame(5);
 			layer.SetVisible(false);
-			
-			//if (i == 10) tokenOffset = Vec2f(12, 12); //second layer
 
 			tokenOffset.RotateBy(40.0f);
 			layer.SetOffset(tokenOffset);
@@ -41,16 +40,16 @@ void onInit(CSprite@ this)
 
 void onTick(CBlob@ this)
 {
-	Vec2f pos = this.getPosition();
-	
-	CBlob@[] humans;
+	s32 timer = this.get_s32("treasureToken");
 	
 	CSprite@ sprite = this.getSprite();
 	if (this.getTickSinceCreated() > 100)
 	{
 		if (timer > 0)
 		{
-			if (getMap().getBlobsInRadius(pos, sprite.isVisible() ? 10.0f : 100.0f, @humans))
+			CBlob@[] humans;
+
+			if (getMap().getBlobsInRadius(this.getPosition(), sprite.isVisible() ? 10.0f : findRadius, @humans))
 			{
 				for (u8 i = 0; i < humans.length; i++)
 				{
@@ -61,11 +60,13 @@ void onTick(CBlob@ this)
 						{
 							reveal(this, human);
 						}
-
-						if (human.getVelocity() == Vec2f())
+						else if (human.getVelocity() == Vec2f())
 						{
-							if (getGameTime() % 60 == 0)
+							if (getGameTime() % treasureTick == 0)
 							{
+								if (human.getPlayer() !is null && this.get_string("treasureTaker") == "")
+									this.set_string("treasureTaker", human.getPlayer().getUsername());
+
 								timer = Maths::Clamp(timer - 1, 0, timerMax);
 								if (timer > 0) directionalSoundPlay("Pinball_2", this.getPosition());
 							}
@@ -73,6 +74,7 @@ void onTick(CBlob@ this)
 						else if (timer < timerMax) //reset timer if player moving
 						{
 							directionalSoundPlay("join", this.getPosition());
+							this.set_string("treasureTaker", "");
 							timer = timerMax;
 						}
 					}
@@ -86,42 +88,49 @@ void onTick(CBlob@ this)
 			if (humans.length <= 0 && timer < timerMax) //reset timer if no players
 			{
 				directionalSoundPlay("join", this.getPosition());
+				this.set_string("treasureTaker", "");
 				timer = timerMax;
 			}
 		}
 	}
 	
-	if (sprite.isVisible() && this.get_s32("fade") < 15 && !this.hasTag("revealed treasure"))
+	if (sprite.isVisible() && this.get_s32("treasureScale") < 15 && !this.hasTag("revealed treasure"))
 	{
 		this.getSprite().ScaleBy(Vec2f(1.16f, 1.16f)); //scale X up
-		this.add_s32("fade", 1);
+		this.add_s32("treasureScale", 1);
 	}
-	else if (this.get_s32("fade") >= 15 && !this.hasTag("revealed treasure"))
+	else if (this.get_s32("treasureScale") >= 15 && !this.hasTag("revealed treasure"))
 		this.Tag("revealed treasure"); //for gui compass
 
 	if (timer <= 0)
 	{
-		if (this.get_s32("fade") == 15) directionalSoundPlay("snes_coin", this.getPosition());
-		this.sub_s32("fade", 1);
+		if (this.get_s32("treasureScale") == 15) directionalSoundPlay("snes_coin", this.getPosition());
+		this.sub_s32("treasureScale", 1);
 	}
 
-	if (this.get_s32("fade") < 15 && this.hasTag("revealed treasure")) //death sequence
+	if (this.get_s32("treasureScale") < 15 && this.hasTag("revealed treasure")) //death sequence
 	{
 		this.getSprite().ScaleBy(Vec2f(0.9f, 0.9f)); //scale X down
-		if (this.get_s32("fade") <= 0)
+		if (this.get_s32("treasureScale") <= 0)
 		{
+			server_addPlayerBooty(this.get_string("treasureTaker"), 200 + XORRandom(800));
 			this.server_Die();
-			timer = timerMax; //reset time so new treasure doesn't die immediately
 		}
 	}
+	this.set_s32("treasureToken", timer);
 	//print("timer: "+timer);
+}
+
+void reset(CBlob@ this)
+{
+	
 }
 
 void reveal(CBlob@ this, CBlob@ finder)
 {
 	Sound::Play("ReportSound");
 	if (finder.getPlayer() !is null)
-		client_AddToChat("*** A treasure chest has been found by " + finder.getPlayer().getCharacterName() + "! ***");
+		client_AddToChat("$ " +finder.getPlayer().getCharacterName() + " found the treasure! $", SColor(255, 250, 50, 50));
 	
 	//reveal sprite
 	CSprite@ sprite = this.getSprite();
@@ -140,7 +149,7 @@ void onTick(CSprite@ this)
 			CSpriteLayer@ layer = this.getSpriteLayer("token"+i);
 			if (layer !is null)
 			{
-				layer.SetVisible(timer - 1 > i);
+				layer.SetVisible(this.getBlob().get_s32("treasureToken") - 1 > i);
 				layer.RotateBy(1, layer.getOffset());
 				Vec2f rotation = layer.getOffset();
 				rotation.RotateBy(4.0f);
