@@ -121,11 +121,6 @@ void onTick(CBlob@ this)
 	//print("timer: "+timer);
 }
 
-void reset(CBlob@ this)
-{
-	
-}
-
 void reveal(CBlob@ this, CBlob@ finder)
 {
 	Sound::Play("ReportSound");
