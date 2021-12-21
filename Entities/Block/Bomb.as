@@ -143,9 +143,8 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 		if (owner !is null)
 		{
 			this.SetDamageOwnerPlayer(owner);
-			string teamCaptainName = getCaptainName(this.getTeamNum());
 			CBlob@ blob = owner.getBlob();
-			if (owner.getUsername() != teamCaptainName && blob !is null)
+			if (blob !is null)
 				damageBootyBomb(owner, blob, hit_blob);
 		}
 	}  

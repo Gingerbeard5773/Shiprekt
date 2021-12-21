@@ -11,17 +11,14 @@ void onRender(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
-	
-	Vec2f center = blob.getPosition();
-	Vec2f mouseWorld = getControls().getMouseWorldPos();
-	const f32 renderRadius = (blob.getRadius()) * 0.95f;		 
+	 
 	CBlob@ mBlob = getMap().getBlobAtPosition(blob.getAimPos());
 	
 	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && !mBlob.hasTag("mothership") 
 			&& (blob.get_string("current tool") == "deconstructor" || blob.get_string("current tool") == "reconstructor"))
 	{
 		                                  //VV right here VV
-		Vec2f pos2d = mBlob.getScreenPos() + Vec2f( 0, -50);
+		Vec2f pos2d = mBlob.getScreenPos() + Vec2f(0, -50);
 		Vec2f dim = Vec2f(24,8);
 		const f32 y = mBlob.getHeight()*2.4f;
 		const f32 initialHealth = mBlob.getInitialHealth();

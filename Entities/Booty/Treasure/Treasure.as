@@ -123,13 +123,16 @@ void onTick(CBlob@ this)
 
 void reveal(CBlob@ this, CBlob@ finder)
 {
-	Sound::Play("ReportSound");
-	if (finder.getPlayer() !is null)
-		client_AddToChat("$ " +finder.getPlayer().getCharacterName() + " found the treasure! $", SColor(255, 250, 50, 50));
-	
-	//reveal sprite
-	CSprite@ sprite = this.getSprite();
-	sprite.SetVisible(true);
+	if (isClient())
+	{
+		Sound::Play("ReportSound");
+		if (finder.getPlayer() !is null)
+			client_AddToChat("$ " +finder.getPlayer().getCharacterName() + " found the treasure! $", SColor(255, 250, 50, 50));
+		
+		//reveal sprite
+		CSprite@ sprite = this.getSprite();
+		sprite.SetVisible(true);
+	}
 }
 
 void onTick(CSprite@ this)

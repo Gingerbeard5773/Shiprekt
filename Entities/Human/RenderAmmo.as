@@ -10,13 +10,13 @@ void onRender(CSprite@ this)
 	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
 	
-	CBlob@ mBlob = getMap().getBlobAtPosition( blob.getAimPos());
+	CBlob@ mBlob = getMap().getBlobAtPosition(blob.getAimPos());
 	if (mBlob !is null && mBlob.hasTag("usesAmmo") && mBlob.getShape().getVars().customData > 0 && mBlob.getTeamNum() == blob.getTeamNum())
 	{
 		u16 maxAmmo = mBlob.get_u16("maxAmmo");
 		if (maxAmmo == 0) return;
 
-		Vec2f screenPos = getDriver().getScreenPosFromWorldPos(mBlob.getPosition());	
+		Vec2f screenPos = getDriver().getScreenPosFromWorldPos(mBlob.getInterpolatedPosition());	
 		//GUI::DrawProgressBar( screenPos + Vec2f( -20, 10 ), screenPos + Vec2f( 20, 25 ), float( mBlob.get_u16( "ammo" ) )/maxAmmo );
 
 		Vec2f textSize;
