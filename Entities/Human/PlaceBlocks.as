@@ -15,6 +15,38 @@ void onInit(CBlob@ this)
     this.addCommandID("place");
 }
 
+CBlob@ getReferenceBlock(CBlob@ this, Island@ island) //find specific origin blocks connected to an island
+{
+	if (island !is null)
+	{
+		CBlob@[] references;
+
+		if (island.isMothership)
+			return getMothership(this.getTeamNum());
+		else if (island.isSecondaryCore)
+			getBlobsByTag("secondaryCore", @references);
+			
+		getBlobsByTag("seat", @references); //always check
+
+		if (island.isStation)
+			getBlobsByTag("station", @references);
+		else if (island.isMiniStation)
+			getBlobsByTag("ministation", @references); //check last
+		
+		for (uint i=0; i < references.length; i++)
+		{
+			CBlob@ ref = references[i];
+			if (ref.getTeamNum() == this.getTeamNum() && 
+				ref.getShape().getVars().customData == getIslandBlob(this).getShape().getVars().customData)
+				return ref;
+		}
+
+		if (island.centerBlock !is null) 
+			return island.centerBlock;
+	}
+	return null;
+}
+
 void onTick(CBlob@ this)
 {
     CBlob@[]@ blocks;
@@ -28,7 +60,8 @@ void onTick(CBlob@ this)
         Island@ island = getIsland(this);
 		if (island !is null && island.centerBlock !is null)
         {
-			Vec2f islandPos = island.centerBlock.getPosition();
+			CBlob@ centerBlock = getReferenceBlock(this, island);
+			Vec2f islandPos = centerBlock.getPosition();
 			f32 blocks_angle = this.get_f32("blocks_angle");//next step angle
 			f32 target_angle = this.get_f32("target_angle");//final angle (after manual rotation)
 			Vec2f aimPos = this.getAimPos();
@@ -41,7 +74,7 @@ void onTick(CBlob@ this)
             }
 
 			if (isClient())
-				PositionBlocks(@blocks, pos, aimPos, blocks_angle, island.centerBlock, refBlob);
+				PositionBlocks(@blocks, pos, aimPos, blocks_angle, centerBlock, refBlob);
 
 			CPlayer@ player = this.getPlayer();
             if (player !is null && player.isMyPlayer()) 
@@ -89,12 +122,12 @@ void onTick(CBlob@ this)
                     if (target_angle == blocks_angle && !overlappingIsland && !cLinked)
                     {
                         CBitStream params;
-                        params.write_netid(island.centerBlock.getNetworkID());
+                        params.write_netid(centerBlock.getNetworkID());
                         params.write_netid(refBlob.getNetworkID());
                         params.write_Vec2f(pos - islandPos);
                         params.write_Vec2f(aimPos - islandPos);
                         params.write_f32(target_angle);
-                        params.write_f32(island.centerBlock.getAngleDegrees());
+                        params.write_f32(centerBlock.getAngleDegrees());
                         this.SendCommand(this.getCommandID("place"), params);
                     }
                     else
@@ -158,7 +191,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	if (refBOffset.x > 4.0f) refBOffset.x -= 8.0f; else if (refBOffset.x < -4.0f) refBOffset.x += 8.0f;
 	if (refBOffset.y > 4.0f) refBOffset.y -= 8.0f; else if (refBOffset.y < -4.0f) refBOffset.y += 8.0f;
 	refBOffset.RotateBy(refBAngle);
-		
+	
 	island_pos += refBOffset;
 	Vec2f mouseAim = aimPos - pos;
 	f32 mouseDist = Maths::Min(mouseAim.Normalize(), max_build_distance);
@@ -172,8 +205,8 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	{
 		CBlob @block = blocks[i];
 		Vec2f offset = block.get_Vec2f("offset");
-		offset.RotateBy(blocks_angle);                        
-		offset.RotateBy(refBAngle);                
+		offset.RotateBy(blocks_angle);
+		offset.RotateBy(refBAngle);
   
 		block.setPosition(cursor_pos + offset);//align to island grid
 		block.setAngleDegrees((refBAngle + blocks_angle + (block.hasTag("propeller") ? 90.0f : 0.0f)) % 360.0f);//set angle: reference angle + rotation angle
