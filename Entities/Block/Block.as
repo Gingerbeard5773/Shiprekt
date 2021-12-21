@@ -192,159 +192,116 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			}
 		}		
 		
-		if (isServer() && !(blockType == Block::STATION || other_blockType == Block::STATION) && !(blockType == Block::MINISTATION || other_blockType == Block::MINISTATION) )
+		if (isServer() && 
+			!(blockType == Block::STATION || other_blockType == Block::STATION) && 
+			!(blockType == Block::MINISTATION || other_blockType == Block::MINISTATION) ) // how to clean this up
 		{
 			if (docking)//force island merge
 				getRules().set_bool("dirty islands", true);
-			else if (blockType == Block::COUPLING || other_blockType == Block::COUPLING)//couplings don't deal damage
-			{
-				if (blockType == Block::COUPLING )
-					Die(this);
-				
-				if (other_blockType == Block::COUPLING)
-					Die(blob);
-			}
-			else if (Block::isRepulsor(blockType) || Block::isRepulsor(other_blockType))//repulsors don't deal damage
-			{
-				if (Block::isRepulsor(blockType))
-					Die(this);
-				
-				if (Block::isRepulsor(other_blockType))
-					Die(blob);
-			}
 			else
 			{
-				if (blockType == Block::RAMENGINE)//ram engines deal slight damage
+				// these are checked separately so that seats/ram engines don't break from coups/repulsors
+				if (blockType == Block::COUPLING || other_blockType == Block::COUPLING) // how to clean this up
 				{
-					if (blob.hasTag("weapon")) 
-					{
-						this.server_Hit(blob, point1, Vec2f_zero, 1.1f, 0, true);
-						Die(this);
-					}
-					else if (other_blockType == Block::PROPELLER || other_blockType == Block::SOLID)
-					{
-						this.server_Hit(blob, point1, Vec2f_zero, 2.1f, 0, true);
-						Die(this);
-					}	
-					else if (other_blockType == Block::PLATFORM)
-					{
-						Die(blob);
-						Die(this);
-					}				
-					else
-					{
-						this.server_Hit(blob, point1, Vec2f_zero, 1.1f, 0, true);
-						Die(this);
-					}
+					if (blockType == Block::COUPLING) Die(this);
+					if (other_blockType == Block::COUPLING) Die(blob);
 				}
-				
-				if (blockType == Block::SEAT || other_blockType == Block::SEAT)//seats don't deal damage
+				else if (Block::isRepulsor(blockType) || Block::isRepulsor(other_blockType)) // how to clean this up
 				{
-					if (blockType == Block::SEAT )
-						Die(this);
-					
-					if (other_blockType == Block::SEAT)
-						Die(blob);
+					if (Block::isRepulsor(blockType)) Die(this);
+					if (Block::isRepulsor(other_blockType)) Die(blob);
 				}
-
-				if (Block::isBomb(blockType)) //bombs annihilate all
-				{
-					if (other_blockType == Block::MOTHERSHIP5)
+				else
+				{ 
+					switch (blockType)
 					{
-						this.server_Hit(blob, point1, Vec2f_zero, 2.7f, 0, true);
-						Die(this);
-					}
-					else
-					{
-						Die(this);
-						Die(blob);
-					}
-				}
-				
-				if (blockType == Block::RAM )//Ram vs all
-				{
-					if (other_blockType == Block::MOTHERSHIP5 || other_blockType == Block::SECONDARYCORE || other_blockType == Block::DECOYCORE )
-					{
-						blob.server_Hit( this, point1, Vec2f_zero, other_solid ? 0.75f : 0.37f, 0, true );
-						Die(this);
-					}
-					else if (other_blockType == Block::PROPELLER)
-					{
-						this.server_Hit( this, point1, Vec2f_zero, 2.2f, 0, true);
-						Die(blob);
-					}
-					else if (other_blockType == Block::RAMENGINE)
-					{
-						this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
-						Die(blob);
-					}
-					else if (other_blockType == Block::SOLID || other_blockType == Block::RAM)
-					{
-						Die(this);
-						Die(blob);
-					}
-					else if (other_blockType == Block::ANTIRAM)
-					{
-						this.server_Hit(blob, point1, Vec2f_zero, 1.0f, 0, true);
-						Die(this);
-					}
-					else if (blob.hasTag("weapon"))
-					{
-						if (blob.getHealth() >= this.getHealth())
-						{
+						case Block::SEAT:
+						case Block::FAKERAM:
+						case Block::MACHINEGUN_A1: // closed seat... what the fuk
 							Die(this);
-							this.server_Hit(blob, point1, Vec2f_zero, solid ? this.getHealth() : this.getHealth()/2.0f, 0, true);
-						}
-						else
-						{
+							break;
+
+						case Block::RAMENGINE:
+							switch (other_blockType)
+							{
+								case Block::ANTIRAM:
+									this.server_Hit(blob, point1, Vec2f_zero, 0.6f, 0, true);
+									break;
+								case Block::PROPELLER:
+									this.server_Hit(blob, point1, Vec2f_zero, 2.1f, 0, true);
+									break;
+								case Block::PLATFORM:
+								case Block::RAMENGINE:
+									Die(blob);
+									break;
+								default:
+									this.server_Hit(blob, point1, Vec2f_zero, 1.1f, 0, true);
+									break;
+							}
+							Die(this);
+							break;
+
+						case Block::RAM:
+							switch (other_blockType)
+							{
+								case Block::ANTIRAM:
+									this.server_Hit(blob, point1, Vec2f_zero, 2.0f, 0, true);
+									Die(this);
+									break;
+
+								case Block::PROPELLER:
+									this.server_Hit( this, point1, Vec2f_zero, 2.2f, 0, true);
+									Die(blob);
+									break;
+
+								case Block::SOLID:
+								case Block::RAM:
+									Die(this);
+									Die(blob);
+									break;
+
+								case Block::MOTHERSHIP5:
+								case Block::SECONDARYCORE:
+								case Block::DECOYCORE:
+									Die(this);
+									break;
+
+								default:
+									if (blob.hasTag("weapon"))
+									{
+										if (blob.getHealth() >= this.getHealth())
+										{
+											Die(this);
+											this.server_Hit(blob, point1, Vec2f_zero, solid ? this.getHealth() : this.getHealth()/2.0f, 0, true);
+											break;
+										}
+										else blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
+									}
+									else if (!other_solid && other_island !is null) 
+										this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
+									Die(blob);
+									break;
+							}
+							break;
+
+						default:
+							if (Block::isBomb(blockType)) //bombs annihilate all
+							{
+								if (other_blockType == Block::MOTHERSHIP5)
+									this.server_Hit(blob, point1, Vec2f_zero, 2.7f, 0, true);
+								else Die(blob);
+								Die(this);
+							}
+							break;
+					}
+					switch (other_blockType)
+					{
+						case Block::SEAT:
+						case Block::FAKERAM:
+						case Block::MACHINEGUN_A1:
 							Die(blob);
-							blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
-						}
+							break;
 					}
-					else if (!other_solid && other_island !is null)
-					{
-						this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
-						Die(blob);
-					}
-					else 
-						Die(blob);
-				}
-				if (blockType == Block::FAKERAM)
-				{
-					Die(this);
-				}
-				if (blockType == Block::ANTIRAM)//Anti Ram
-				{
-					if (other_blockType == Block::MOTHERSHIP5 || 
-						other_blockType == Block::SECONDARYCORE || 
-						other_blockType == Block::DECOYCORE || 
-						other_blockType == Block::PROPELLER ||
-						other_blockType == Block::ANTIRAM || 
-						other_blockType == Block::SOLID || 
-						other_blockType == Block::DOOR ||
-						blob.hasTag("weapon") ||
-						!other_solid && other_island !is null)
-					{
-						//blob.server_Hit( this, point1, Vec2f_zero, other_solid ? 0.5f : 0.2f, 0, true );
-						//Die( this );
-					}
-					else if (other_blockType == Block::RAMENGINE)
-					{
-						this.server_Hit(this, point1, Vec2f_zero, 0.5f, 0, true);//DASKEW
-						Die( blob );
-					}
-					else if (other_blockType == Block::RAM)
-					{
-						this.server_Hit(this, point1, Vec2f_zero, 1.0f, 0, true);
-						Die(blob);
-					}
-					else if (other_blockType == Block::SEAT)//seats don't deal damage
-					{
-						this.server_Hit( this, point1, Vec2f_zero, 0.2f, 0, true);
-						Die(blob);
-					}
-					else 
-						blob.server_Hit( blob, point1, Vec2f_zero, 1.1f, 0, true );
 				}
 			}
 		}
