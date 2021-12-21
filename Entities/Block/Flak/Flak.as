@@ -136,7 +136,7 @@ void onTick(CBlob@ this)
 
 		this.set_u16("childID", 0);
 	}
-	else
+	else if (this.get_u16("ammo") > 0)
 	{
 		Auto(this);
 	}

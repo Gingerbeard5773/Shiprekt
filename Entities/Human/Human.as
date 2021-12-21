@@ -572,7 +572,7 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 		if (!isMiniStation)
 		{
 			{ //Machinegun
-				description = "A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nAmmoCap: medium";
+				description = "A fixed rapid-fire, lightweight, machinegun that fires high-velocity projectiles uncounterable by point defense. Effective against engines, flak cannons, and other weapons. However ineffectual against armour.\nAmmoCap: high";
 				AddBlock(this, menu, Block::MACHINEGUN, "$MACHINEGUN$", "Machinegun", description, core, gameTime < WARMUP_TIME);
 			}
 			{ //AP Cannon

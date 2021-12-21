@@ -74,7 +74,8 @@ void onTick(CBlob@ this)
 	if (laser !is null && this.get_u32("fire time") + 5.0f < gameTime)
 		sprite.RemoveSpriteLayer("laser");
 
-	Auto(this);
+	if (this.get_u16("ammo") > 0)
+		Auto(this);
 
 	if (isServer())
 	{
