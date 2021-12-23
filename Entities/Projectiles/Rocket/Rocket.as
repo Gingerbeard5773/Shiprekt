@@ -280,19 +280,20 @@ void onDie(CBlob@ this)
 		directionalSoundPlay("Blast2.ogg", pos);
 	}
 
-	if (isServer()) return;
-
-	//splash damage
-	CBlob@[] blobsInRadius;
-	if (getMap().getBlobsInRadius(pos, SPLASH_RADIUS, @blobsInRadius))
+	if (isServer())
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		//splash damage
+		CBlob@[] blobsInRadius;
+		if (getMap().getBlobsInRadius(pos, SPLASH_RADIUS, @blobsInRadius))
 		{
-			CBlob @b = blobsInRadius[i];
-			const int blockType = b.getSprite().getFrame();
-			
-			if (!b.hasTag("seat") && !b.hasTag("mothership") && b.getName() == "block" && b.getShape().getVars().customData > 0)
-				this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b, blockType) * SPLASH_DAMAGE, Hitters::bomb, false);
+			for (uint i = 0; i < blobsInRadius.length; i++)
+			{
+				CBlob @b = blobsInRadius[i];
+				const int blockType = b.getSprite().getFrame();
+				
+				if (!b.hasTag("seat") && !b.hasTag("mothership") && b.getName() == "block" && b.getShape().getVars().customData > 0)
+					this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b, blockType) * SPLASH_DAMAGE, Hitters::bomb, false);
+			}
 		}
 	}
 }

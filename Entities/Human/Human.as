@@ -314,7 +314,7 @@ void PlayerControls(CBlob@ this)
 
 		// aim cursor
 		hud.SetCursorImage("AimCursor.png", Vec2f(32,32));
-		hud.SetCursorOffset(Vec2f(-32, -32));		
+		hud.SetCursorOffset(Vec2f(-34, -34));		
 	}
 	else
 	{
@@ -366,7 +366,7 @@ void PlayerControls(CBlob@ this)
 		else
 		{
 			hud.SetCursorImage("PointerCursor.png", Vec2f(32,32));
-			hud.SetCursorOffset( Vec2f(-32, -32) );		
+			hud.SetCursorOffset(Vec2f(-36, -36));		
 		}
 	}
 	
