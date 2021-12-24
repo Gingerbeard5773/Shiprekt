@@ -96,7 +96,7 @@ void onRender(CRules@ this)
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Shiprekt Version 1.43\n"
+		string lastChangesInfo = "Shiprekt Version 1.44\n"
 		
 		+ "Last changes :\n"
 		+ "- 12-16-2021 - v1.43 By GoldenGuy\n"
@@ -107,10 +107,7 @@ void onRender(CRules@ this)
 		+ "  * Better effects, new particles.\n"
 		+ "- 12-13-2021 - v1.41\n"
 		+ "  * Added kill messages.\n"
-		+ "  * Bomb blocks will give booty if an enemy was hit.\n"
-		+ "- 12-10-2021 - v1.40\n"
-		+ "  * Major improvement to the stability of the mod!\n"
-		+ "  * Ram is now only unlocked after warmup.\n";
+		+ "  * Bomb blocks will give booty if an enemy was hit.\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
