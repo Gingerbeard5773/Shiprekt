@@ -20,7 +20,6 @@ namespace Block
 		PROPELLER_A2 = 33,
 		
 		SEAT = 23,
-		RAMCHAIR = 2,
 
 		MOTHERSHIP1 = 80,
 		MOTHERSHIP2 = 81,
@@ -96,7 +95,6 @@ namespace Block
 		f32 propeller;
 		f32 ramEngine;
 		f32 seat;
-		f32 ramChair;
 		f32 cannon;
 		f32 station;
 		f32 ministation;
@@ -134,7 +132,6 @@ namespace Block
 		w.propeller = cfg.read_f32("w_propeller");
 		w.ramEngine = cfg.read_f32("w_ramEngine");
 		w.seat = cfg.read_f32("w_seat");
-		w.ramChair = cfg.read_f32("w_ramChair");
 		w.cannon = cfg.read_f32("w_cannon");
 		w.harvester = cfg.read_f32("w_harvester");
 		w.patcher = cfg.read_f32("w_patcher");
@@ -178,7 +175,6 @@ namespace Block
 		u16 propeller;
 		u16 ramEngine;
 		u16 seat;
-		u16 ramChair;
 		u16 cannon;
 		u16 harvester;
 		u16 patcher;
@@ -215,7 +211,6 @@ namespace Block
 		c.propeller = cfg.read_u16("cost_propeller");
 		c.ramEngine = cfg.read_u16("cost_ramEngine");
 		c.seat = cfg.read_u16("cost_seat");
-		c.ramChair = cfg.read_u16("cost_ramChair");
 		c.cannon = cfg.read_u16("cost_cannon");
 		c.harvester = cfg.read_u16("cost_harvester");
 		c.patcher = cfg.read_u16("cost_patcher");
@@ -341,9 +336,6 @@ namespace Block
 			case Block::SEAT:
 				return w.seat;
 			break;
-			case Block::RAMCHAIR:
-				return w.ramChair;
-			break;
 			case Block::COUPLING:
 				return w.coupling;
 			break;
@@ -442,9 +434,6 @@ namespace Block
 			break;
 			case Block::SEAT:
 				return c.seat;
-			break;
-			case Block::RAMCHAIR:
-				return c.ramChair;
 			break;
 			case Block::COUPLING:
 				return c.coupling;

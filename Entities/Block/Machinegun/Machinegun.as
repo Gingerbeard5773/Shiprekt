@@ -228,7 +228,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							directionalSoundPlay("lightup", barrelPos);
 							break;
 						}
-						else if (blockType == Block::SEAT || blockType == Block::RAMCHAIR)
+						else if (blockType == Block::SEAT)
 						{
 							AttachmentPoint@ seat = b.getAttachmentPoint(0);
 							if (seat !is null)
