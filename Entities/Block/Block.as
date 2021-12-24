@@ -25,11 +25,13 @@ void onTick (CBlob@ this)
 	{
 		const int blockType = thisSprite.getFrame();
 		
-		this.set_f32("initial reclaim", this.getHealth());		
-		if (blockType != Block::STATION && blockType != Block::MINISTATION)
+		if (this.get_f32("current reclaim") == 0.0f)
 		{
-			if (this.get_f32("current reclaim") == 0.0f)
+			this.set_f32("initial reclaim", this.getHealth());		
+			if (blockType != Block::STATION && blockType != Block::MINISTATION)
+			{
 				this.set_f32("current reclaim", this.getHealth());
+			}
 		}
 		
 		//Set Owner
@@ -480,7 +482,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 //damage layers
 void onHealthChange(CBlob@ this, f32 oldHealth)
 {
-	if (this.getShape().getVars().customData == 0) return;
+	if (this.getShape().getVars().customData <= 0) return;
 	
 	const bool isCore = this.hasTag("mothership") || this.hasTag("secondaryCore");
 	const f32 hp = this.getHealth();

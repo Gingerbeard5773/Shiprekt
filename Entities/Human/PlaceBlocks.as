@@ -25,13 +25,11 @@ CBlob@ getReferenceBlock(CBlob@ this, Island@ island) //find specific origin blo
 			return getMothership(this.getTeamNum());
 		else if (island.isSecondaryCore)
 			getBlobsByTag("secondaryCore", @references);
-			
-		getBlobsByTag("seat", @references); //always check
-
-		if (island.isStation)
+		else if (island.isStation)
 			getBlobsByTag("station", @references);
 		else if (island.isMiniStation)
-			getBlobsByTag("ministation", @references); //check last
+			getBlobsByTag("ministation", @references);
+		else getBlobsByTag("seat", @references);
 		
 		for (uint i=0; i < references.length; i++)
 		{
@@ -233,21 +231,22 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         const f32 island_angle = params.read_f32();
 
         Island@ island = getIsland(centerBlock.getShape().getVars().customData);
-        if (island is null)
+        if (island is null && island.centerBlock !is null)
         {
             warn("place cmd: island not found");
             return;
         }
 		
 		Vec2f islandPos = centerBlock.getPosition();
-		f32 islandAngle = centerBlock.getAngleDegrees();
-		f32 angleDelta = islandAngle - island_angle;//to account for island angle lag
+		f32 islandAngle = island.centerBlock.getAngleDegrees();
+		f32 angleDelta = centerBlock.getAngleDegrees() - island_angle;//to account for island angle lag
 		
 		bool overlappingIsland = false;
         CBlob@[]@ blocks;
         if (this.get("blocks", @blocks) && blocks.size() > 0)                 
         {	
-			PositionBlocks(@blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy(angleDelta), target_angle, centerBlock, refBlock);
+			if (isServer())
+				PositionBlocks(@blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy(angleDelta), target_angle, centerBlock, refBlock);
 
 			int iColor = centerBlock.getShape().getVars().customData;
 			for (uint i = 0; i < blocks.length; ++i)
@@ -264,8 +263,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					{
 						IslandBlock isle_block;
 						isle_block.blobID = b.getNetworkID();
-						isle_block.offset = b.getPosition() - islandPos;
-						isle_block.offset.RotateBy( -islandAngle );
+						isle_block.offset = b.getPosition() - island.centerBlock.getPosition();
+						isle_block.offset.RotateBy(-islandAngle);
 						isle_block.angle_offset = b.getAngleDegrees() - islandAngle;
 						b.getShape().getVars().customData = iColor;
 						island.blocks.push_back(isle_block);	
@@ -273,7 +272,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					else
 						b.getShape().getVars().customData = 0; // push on island  
 					
-					b.set_u32( "placedTime", getGameTime() ); 
+					b.set_u32("placedTime", getGameTime()); 
 				}
 				else
 				{
