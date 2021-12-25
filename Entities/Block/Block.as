@@ -9,6 +9,7 @@ u8 DAMAGE_FRAMES = 3;
 
 void onInit(CBlob@ this)
 {
+	this.Tag("block");
 	CSprite @sprite = this.getSprite();
 	sprite.SetZ(510.0f);
 	CShape @shape = this.getShape();

@@ -75,7 +75,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 	{
 		const int color = b.getShape().getVars().customData;
 		const int blockType = b.getSprite().getFrame();
-		const bool isBlock = b.getName() == "block";				
+		const bool isBlock = b.hasTag("block");				
 
 		if (!b.hasTag("booty") && (color > 0 || !isBlock))
 		{

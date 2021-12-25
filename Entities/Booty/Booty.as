@@ -128,7 +128,7 @@ void server_addPlayerBooty(string name, u16 booty) //give or take booty
 //rewards for damaging enemy ships
 void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rewardBlocks = false, u16 reward = 4, string sound = "Pinball_0", bool randomSound = false)
 {
-	if (victim.getName() == "block")
+	if (victim.hasTag("block"))
 	{
 		const int blockType = victim.getSprite().getFrame();
 		string attackerName = attacker.getUsername();

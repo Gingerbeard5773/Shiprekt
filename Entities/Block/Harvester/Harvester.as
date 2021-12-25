@@ -101,9 +101,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				if (b is null || b is this) continue;
 
 				const int blockType = b.getSprite().getFrame();
-				const bool isBlock = b.getName() == "block";
 
-				if (isBlock && b.getShape().getVars().customData > 0)
+				if (b.hasTag("block") && b.getShape().getVars().customData > 0)
 				{
 					killed = true;
 					

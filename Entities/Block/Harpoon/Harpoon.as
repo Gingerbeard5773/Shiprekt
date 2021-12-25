@@ -307,7 +307,7 @@ void onTick(CBlob@ this)
 				
 				if (b !is null)
 				{
-					if (b.getName() == "block")
+					if (b.hasTag("block"))
 					{
 						const int blockType = b.getSprite().getFrame();
 						if (Block::isSolid(blockType))

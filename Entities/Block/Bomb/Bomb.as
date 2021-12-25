@@ -107,7 +107,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 		{
 			Vec2f hit_blob_pos = hit_blob.getPosition();  
 
-			if (hit_blob.getName() == "block")
+			if (hit_blob.hasTag("block"))
 			{
 				if (hit_blob.getShape().getVars().customData <= 0)
 					continue;
@@ -189,7 +189,7 @@ void onDie(CBlob@ this)
 
 void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 {
-	if (victim.getName() == "block")
+	if (victim.hasTag("block"))
 	{
 		const int blockType = victim.getSprite().getFrame();
 		u8 teamNum = attacker.getTeamNum();

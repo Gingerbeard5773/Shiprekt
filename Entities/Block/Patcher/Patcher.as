@@ -104,9 +104,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 				const int color = b.getShape().getVars().customData;
 				const int blockType = b.getSprite().getFrame();
-				const bool isBlock = b.getName() == "block";
 
-				if (isBlock && color > 0)
+				if (b.hasTag("block") && color > 0)
 				{					
 					if (isClient())//effects
 					{

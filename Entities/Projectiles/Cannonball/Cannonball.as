@@ -58,7 +58,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 
 	const int color = b.getShape().getVars().customData;
 	const int blockType = b.getSprite().getFrame();
-	const bool isBlock = b.getName() == "block";
+	const bool isBlock = b.hasTag("block");
 	const bool sameTeam = b.getTeamNum() == this.getTeamNum();
 	if (color > 0 || !isBlock)
 	{
@@ -205,7 +205,7 @@ void onDie(CBlob@ this)
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
 			CBlob @b = blobsInRadius[i];
-			if (!b.hasTag("seat") && b.getName() == "block" && b.getShape().getVars().customData > 0)
+			if (!b.hasTag("seat") && b.hasTag("block") && b.getShape().getVars().customData > 0)
 				this.server_Hit(b, Vec2f_zero, Vec2f_zero, SPLASH_DAMAGE, 9, false);
 		}
 	}

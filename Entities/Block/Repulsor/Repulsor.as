@@ -48,7 +48,7 @@ void Repulse(CBlob@ this)
 	{
 		CBlob@ b = blobs[i];
 		int color = b.getShape().getVars().customData;
-		if (b is this || b.getName() != "block" || color <= 0)
+		if (b is this || !b.hasTag("block") || color <= 0)
 			continue;
 		
 		//push island

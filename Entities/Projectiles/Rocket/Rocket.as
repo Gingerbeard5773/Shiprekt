@@ -156,7 +156,7 @@ void onTick(CBlob@ this)
 
 				const int color = b.getShape().getVars().customData;
 				const int blockType = b.getSprite().getFrame();
-				const bool isBlock = b.getName() == "block";
+				const bool isBlock = b.hasTag("block");
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
 				
 				if ((b.hasTag("human") || b.hasTag("shark")) && !sameTeam)
@@ -291,7 +291,7 @@ void onDie(CBlob@ this)
 				CBlob @b = blobsInRadius[i];
 				const int blockType = b.getSprite().getFrame();
 				
-				if (!b.hasTag("seat") && !b.hasTag("mothership") && b.getName() == "block" && b.getShape().getVars().customData > 0)
+				if (!b.hasTag("seat") && !b.hasTag("mothership") && b.hasTag("block") && b.getShape().getVars().customData > 0)
 					this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b, blockType) * SPLASH_DAMAGE, Hitters::bomb, false);
 			}
 		}

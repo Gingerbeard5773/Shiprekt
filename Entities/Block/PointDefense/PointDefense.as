@@ -109,7 +109,7 @@ void Auto(CBlob@ this)
 				bPos = b.getPosition();
 
 				Island@ targetIsland;
-				if (b.getName() == "block")
+				if (b.hasTag("block"))
 					@targetIsland = getIsland(b.getShape().getVars().customData);
 				else
 				{
@@ -188,12 +188,12 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 
 			bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
 
-			//if ( sameIsland || targetMerged ) print ( "" + ( sameIsland ? "sameisland; " : "" ) + ( targetMerged ? "targetMerged; " : "" ) );
+			//if (sameIsland || targetMerged) print ("" + (sameIsland ? "sameisland; " : "") + (targetMerged ? "targetMerged; " : ""));
 
 			if (b.hasTag("weapon") || Block::isSolid(blockType)
-					|| (b.getName() == "block" && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType)) && sameIsland && !canShootSelf))
+					|| (b.hasTag("block") && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType)) && sameIsland && !canShootSelf))
 			{
-				//print ( "not clear " + ( b.getName() == "block" ? " (block) " : "" ) + ( !canShootSelf ? "!canShootSelf; " : "" )  );
+				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;
 			}
 		}

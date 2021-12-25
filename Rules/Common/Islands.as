@@ -110,7 +110,7 @@ void ColorBlocks(CBlob@ blob, Island@ island)
             CBlob@ b = overlapping[i];
 			
             if (b.getShape().getVars().customData == 0 
-				&& b.getName() == "block" 
+				&& b.hasTag("block") 
 				&& (b.getPosition() - blob.getPosition()).LengthSquared() < 78 // avoid "corner" overlaps
 				&& ((b.get_u16("last color") == blob.get_u16("last color")) || (b.getSprite().getFrame() == Block::COUPLING) || (blob.getSprite().getFrame() == Block::COUPLING) 
 				|| ((getGameTime() - b.get_u32("placedTime")) < 10) || ((getGameTime() - blob.get_u32("placedTime")) < 10) 
@@ -467,7 +467,7 @@ void setIsleTeam(Island @isle, u8 teamNum = 255)
 
 void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
 {
-	if (!isServer() && blob.getName() == "block")
+	if (!isServer() && blob.hasTag("block"))
 		blob.set_u8("frame", blob.getSprite().getFrame());
 }
 

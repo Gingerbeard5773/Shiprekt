@@ -212,7 +212,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				bool sameIsland = bColor != 0 && thisColor == bColor;
 
 				const int blockType = b.getSprite().getFrame();
-				const bool isBlock = b.getName() == "block";
+				const bool isBlock = b.hasTag("block");
 
 				if (!b.hasTag("booty") && (bColor > 0 || !isBlock))
 				{
@@ -373,7 +373,7 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 
 void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 {
-	if (hitBlob.getName() == "block")
+	if (hitBlob.hasTag("block"))
 	{
 		sparks(worldPoint, 4);
 		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", worldPoint, 0.50f);

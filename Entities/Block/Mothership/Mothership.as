@@ -265,7 +265,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	u8 thisTeamNum = this.getTeamNum();
 	u8 hitterTeamNum = hitterBlob.getTeamNum();
 	
-	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900 && hitterBlob.getName() == "block")
+	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900 && hitterBlob.hasTag("block"))
 	{
 		CPlayer@ player = getLocalPlayer();
 		if (player !is null && player.isMod() && !getRules().isGameOver())

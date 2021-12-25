@@ -52,8 +52,7 @@ void onTick( CBlob@ this )
 
 			const int color = b.getShape().getVars().customData;
 			const int blockType = b.getSprite().getFrame();
-			const bool isBlock = b.getName() == "block";
-			if (isBlock && color > 0 && color != thisColor && Block::isSolid(blockType))
+			if (b.hasTag("block") && color > 0 && color != thisColor && Block::isSolid(blockType))
 				this.server_Die();
 		}
 	}

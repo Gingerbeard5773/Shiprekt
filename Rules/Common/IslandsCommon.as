@@ -205,7 +205,7 @@ bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos )//checks if th
 			Vec2f bPos = b.getPosition();
 			
 			f32 coreDist = (bPos - corePos).LengthSquared();
-			if (b.get_u16("checkToken") != token && (bPos - thisPos).LengthSquared() < 78 && !b.hasTag("removable") && b.getName() == "block")//maybe should do a color > 0 check
+			if (b.get_u16("checkToken") != token && (bPos - thisPos).LengthSquared() < 78 && !b.hasTag("removable") && b.hasTag("block"))//maybe should do a color > 0 check
 			{
 				if (coreDist <= minDist)
 				{

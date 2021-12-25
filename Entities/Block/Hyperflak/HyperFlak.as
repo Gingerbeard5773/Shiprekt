@@ -260,11 +260,11 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 
 			bool isOwnCore = Block::isCore(blockType) && this.getTeamNum() == b.getTeamNum();
 
-			//if ( sameIsland || targetMerged ) print ( "" + ( sameIsland ? "sameisland; " : "" ) + ( targetMerged ? "targetMerged; " : "" ) );
+			//if (sameIsland || targetMerged) print ("" + (sameIsland ? "sameisland; " : "") + (targetMerged ? "targetMerged; " : ""));
 
-			if (b.getName() == "block" && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType) || isOwnCore || b.hasTag("weapon")) && sameIsland && !canShootSelf)
+			if (b.hasTag("block") && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType) || isOwnCore || b.hasTag("weapon")) && sameIsland && !canShootSelf)
 			{
-				//print ( "not clear " + ( b.getName() == "block" ? " (block) " : "" ) + ( !canShootSelf ? "!canShootSelf; " : "" )  );
+				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;
 			}
 		}
