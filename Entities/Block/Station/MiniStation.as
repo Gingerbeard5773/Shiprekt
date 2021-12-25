@@ -1,17 +1,16 @@
 // Mini Station
-#include "IslandsCommon.as"
-#include "BlockCommon.as"	
+#include "IslandsCommon.as";
 
 void onInit(CBlob@ this)
 {
 	this.Tag("ministation"); 
 	
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("ministation", 16, 16);
+    CSpriteLayer@ layer = sprite.addSpriteLayer("ministation", "Station.png", 16, 16);
     if (layer !is null)
     {
 		layer.SetRelativeZ(1);
-        layer.SetFrame(Block::MINISTATION_A1);
+        layer.SetFrame(1);
     }
 }
 

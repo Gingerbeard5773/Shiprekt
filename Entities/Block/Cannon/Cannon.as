@@ -48,14 +48,14 @@ void onInit(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "Cannon.png", 16, 16);
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
     	layer.SetLighting(false);
      	Animation@ anim = layer.addAnimation("fire", 0, false);
-        anim.AddFrame(Block::CANNON_A1);
-        anim.AddFrame(Block::CANNON_A2);
+        anim.AddFrame(0);
+        anim.AddFrame(1);
         layer.SetAnimation("fire");
     }
 

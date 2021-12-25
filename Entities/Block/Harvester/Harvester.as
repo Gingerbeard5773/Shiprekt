@@ -22,12 +22,11 @@ void onInit(CBlob@ this)
 	this.addCommandID("fire");
    
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "Harvester.png", 16, 16);
     if (layer !is null)
     {
         layer.SetRelativeZ(2);
         layer.SetLighting(false);
-        layer.SetFrame(Block::HARVESTER_A1);  
     }
 	
 	sprite.SetEmitSound("/ReclaimSound.ogg");

@@ -47,16 +47,16 @@ void onInit(CBlob@ this)
 	
 	LoadSprites(sprite);
 	
-    CSpriteLayer@ layer = sprite.addSpriteLayer("harpoon", 16, 16);
+    CSpriteLayer@ layer = sprite.addSpriteLayer("harpoon", "HarpoonBlock.png", 16, 16);
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
     	layer.SetLighting(false);
      	Animation@ animFired = layer.addAnimation("fired", FIRE_RATE, false);
-        animFired.AddFrame(Block::HARPOON_A2);
+        animFired.AddFrame(1);
 
 		Animation@ animSet = layer.addAnimation("set", FIRE_RATE, false);
-        animSet.AddFrame(Block::HARPOON_A1);
+        animSet.AddFrame(0);
         layer.SetAnimation("set");
     }
 	

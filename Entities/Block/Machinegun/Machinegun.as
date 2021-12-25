@@ -55,21 +55,21 @@ void onInit(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "Machinegun.png", 16, 16);
     if (layer !is null)
     {
         layer.SetRelativeZ(2);
         layer.SetLighting(false);
         Animation@ anim = layer.addAnimation("fire left", Maths::Round(MIN_FIRE_PAUSE), false);
-        anim.AddFrame(Block::MACHINEGUN_A2);
-        anim.AddFrame(Block::MACHINEGUN_A1);
+        anim.AddFrame(1);
+        anim.AddFrame(0);
 
 		Animation@ anim2 = layer.addAnimation("fire right", Maths::Round(MIN_FIRE_PAUSE), false);
-        anim2.AddFrame(Block::MACHINEGUN_A3);
-        anim2.AddFrame(Block::MACHINEGUN_A1);
+        anim2.AddFrame(2);
+        anim2.AddFrame(0);
 
 		Animation@ anim3 = layer.addAnimation("default", 1, false);
-		anim3.AddFrame(Block::MACHINEGUN_A1);
+		anim3.AddFrame(0);
         layer.SetAnimation("default");
     }
 

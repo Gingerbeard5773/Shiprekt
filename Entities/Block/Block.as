@@ -216,7 +216,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					{
 						case Block::SEAT:
 						case Block::FAKERAM:
-						case Block::MACHINEGUN_A1: // closed seat... what the fuk
 							Die(this);
 							break;
 
@@ -297,7 +296,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					{
 						case Block::SEAT:
 						case Block::FAKERAM:
-						case Block::MACHINEGUN_A1:
 							Die(blob);
 							break;
 					}

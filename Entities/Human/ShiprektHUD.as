@@ -245,7 +245,7 @@ void DrawStationStatus(CBlob@ station, Vec2f tl, CControls@ controls)
 {
 	if (station is null) return;
 	
-    GUI::DrawIcon("Blocks.png", 72, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, station.getTeamNum());
+    GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, station.getTeamNum());
 
 	u8 health = Maths::Min( 100, Maths::Round(station.getHealth()/8.0f * 100));
 	

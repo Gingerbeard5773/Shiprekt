@@ -9,7 +9,7 @@ namespace Block
 		SOLID = 4,
 		RAM = 8,
 		FAKERAM = 48,
-		ANTIRAM = 46,
+		ANTIRAM = 45,
 	
 		COUPLING = 35,
 		DOOR = 12,
@@ -32,44 +32,17 @@ namespace Block
 		MOTHERSHIP9 = 114,
 		
 		STATION = 115,
-		STATION_A1 = 72,
-		
 		MINISTATION = 116,
-		MINISTATION_A1 = 14,
 		
 		HARVESTER = 42,
-		HARVESTER_A1 = 67,
-
 		PATCHER = 51,
-		PATCHER_A1 = 69,
-		
 		HARPOON = 43,
-		HARPOON_A1 = 75,
-		HARPOON_A2 = 76,
-		
 		MACHINEGUN = 34,
-		MACHINEGUN_A1 = 27,
-		MACHINEGUN_A2 = 28,
-		MACHINEGUN_A3 = 29,
-		
 		LAUNCHER = 36,
-		LAUNCHER1 = 51,
-
 		CANNON = 7,
-		CANNON_A1 = 30,
-		CANNON_A2 = 31,
-		
 		FLAK = 22,
-		FLAK_A1 = 11,
-		FLAK_A2 = 12,
-		
 		HYPERFLAK = 31,
-		HYPERFLAK_A1 = 19,
-		HYPERFLAK_A2 = 20,
-		
 		POINTDEFENSE = 37,
-		POINTDEFENSE_A1 = 59,
-		POINTDEFENSE_A2 = 60,
 		
 		BOMB = 19,
 		BOMB_A1 = 20,

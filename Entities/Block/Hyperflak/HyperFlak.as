@@ -53,14 +53,14 @@ void onInit(CBlob@ this)
 	this.set_u16("childID", 0);
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", 16, 16);
+    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "HyperFlak.png", 16, 16);
     if (layer !is null)
     {
     	layer.SetRelativeZ(2);
     	layer.SetLighting(false);
      	Animation@ anim = layer.addAnimation("fire", 19, false);
-        anim.AddFrame(Block::HYPERFLAK_A2);
-        anim.AddFrame(Block::HYPERFLAK_A1);
+        anim.AddFrame(1);
+        anim.AddFrame(0);
         layer.SetAnimation("fire");
     }
 }
