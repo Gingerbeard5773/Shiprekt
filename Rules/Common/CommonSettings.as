@@ -21,8 +21,7 @@ void onInit(CRules@ this)
 	this.set_u16("booty_transfer", 50);//min transfer ammount
 	this.set_f32("booty_transfer_fee", 0.0f);
 	this.set_f32("build_distance", 16 * 16);//max distance from the core for purchasing blocks
-	Block::Costs@ c = Block::getCosts(this);
-	this.set_u16("bootyRefillLimit", c !is null ? c.propeller : 50);
+	this.set_u16("bootyRefillLimit", 50);
 
 	//
 	
