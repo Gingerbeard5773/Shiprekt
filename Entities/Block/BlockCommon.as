@@ -1,3 +1,68 @@
+//BlockCommon
+//Costs, Weight, frames for individual blocks set here
+
+namespace Cost
+{
+	// Block Costs
+
+	const u16
+	station = 100,
+	ministation = 40,
+	platform = 15,
+	seat = 25,
+	propeller = 45,
+	ramengine = 50,
+	solid = 35,
+	door = 60,
+	ram = 50,
+	fakeram = 30,
+	antiram = 35,
+	coupling = 5,
+	repulsor = 15,
+	launcher = 400,
+	harvester = 75,
+	patcher = 200,
+	harpoon = 65,
+	machinegun = 125,
+	cannon = 250,
+	flak = 175,
+	hyperflak = 300,
+	pointdefense = 160,
+	bomb = 30,
+	secondarycore = 800,
+	decoycore = 150;
+};
+
+namespace Weight
+{
+	// Block Weights
+	const f32
+	platform = 0.2,
+	seat = 0.5,
+	propeller = 1.00,
+	ramengine = 1.25,
+	solid = 0.75,
+	door = 1.0,
+	ram = 2.0,
+	fakeram = 0.5,
+	antiram = 0.75,
+	coupling = 0.1,
+	repulsor = 0.25,
+	mothership = 12.0,
+	launcher = 4.5,
+	harvester = 2.0,
+	patcher = 3.0,
+	harpoon = 2.0,
+	machinegun = 2.0,
+	cannon = 3.25,
+	flak = 2.5,
+	hyperflak = 5.0,
+	pointdefense = 3.5,
+	bomb = 2.0,
+	secondarycore = 12.0,
+	decoycore = 6.0;
+};
+
 namespace Block
 {
 	const int size = 8;
@@ -55,164 +120,6 @@ namespace Block
 		SECONDARYCORE = 65,
 		DECOYCORE = 66,
 	};
-					
-	shared class Weights
-	{
-		f32 mothership;
-		f32 wood;
-		f32 ram;
-		f32 fakeram;
-		f32 antiram;
-		f32 solid;
-		f32 door;
-		f32 propeller;
-		f32 ramEngine;
-		f32 seat;
-		f32 cannon;
-		f32 station;
-		f32 ministation;
-		f32 harvester;
-		f32 patcher;
-		f32 harpoon;
-		f32 machinegun;
-		f32 flak;
-		f32 hyperflak;
-		f32 pointDefense;
-		f32 launcher;
-		f32 bomb;
-		f32 coupling;
-		f32 repulsor;
-		f32 secondaryCore;
-		f32 decoyCore;
-	}
-	
-	Weights@ queryWeights(CRules@ this)
-	{
-		ConfigFile cfg;
-		if (!cfg.loadFile("SHRKTVars.cfg")) 
-			return null;
-		
-		print("** Getting Weights from cfg");
-		Block::Weights w;
-
-		w.mothership = cfg.read_f32("w_mothership");
-		w.wood = cfg.read_f32("w_wood");
-		w.ram = cfg.read_f32("w_ram");
-		w.fakeram = cfg.read_f32("w_fakeram");
-		w.antiram = cfg.read_f32("w_antiram");
-		w.solid = cfg.read_f32("w_solid");
-		w.door = cfg.read_f32("w_door");
-		w.propeller = cfg.read_f32("w_propeller");
-		w.ramEngine = cfg.read_f32("w_ramEngine");
-		w.seat = cfg.read_f32("w_seat");
-		w.cannon = cfg.read_f32("w_cannon");
-		w.harvester = cfg.read_f32("w_harvester");
-		w.patcher = cfg.read_f32("w_patcher");
-		w.harpoon = cfg.read_f32("w_harpoon");
-		w.machinegun = cfg.read_f32("w_machinegun");
-		w.flak = cfg.read_f32("w_flak");
-		w.hyperflak = cfg.read_f32("w_hyperflak");
-		w.pointDefense = cfg.read_f32("w_pointDefense");
-		w.launcher = cfg.read_f32("w_launcher");
-		w.bomb = cfg.read_f32("w_bomb");
-		w.coupling = cfg.read_f32("w_coupling");
-		w.repulsor = cfg.read_f32("w_repulsor");
-		w.secondaryCore = cfg.read_f32("w_secondaryCore");
-		w.decoyCore = cfg.read_f32("w_decoyCore");
-
-		this.set("weights", w);
-		return @w;
-	}
-	
-	Weights@ getWeights(CRules@ this)
-	{
-		Block::Weights@ w;
-		this.get("weights", @w);
-		
-		if (w is null)
-			@w = Block::queryWeights(this);
-
-		return w;
-	}
-	
-	shared class Costs
-	{
-		u16 station;
-		u16 ministation;
-		u16 wood;
-		u16 ram;
-		u16 fakeram;
-		u16 antiram;
-		u16 solid;
-		u16 door;
-		u16 propeller;
-		u16 ramEngine;
-		u16 seat;
-		u16 cannon;
-		u16 harvester;
-		u16 patcher;
-		u16 harpoon;
-		u16 machinegun;
-		u16 flak;
-		u16 hyperflak;
-		u16 pointDefense;
-		u16 launcher;
-		u16 bomb;
-		u16 coupling;
-		u16 repulsor;
-		u16 secondaryCore;
-		u16 decoyCore;
-	}
-	
-	Costs@ queryCosts(CRules@ this)
-	{
-		ConfigFile cfg;
-		if (!cfg.loadFile("SHRKTVars.cfg")) 
-			return null;
-		
-		print("** Getting Costs from cfg");
-		Block::Costs c;
-		
-		c.station = 100;
-		c.ministation = 40;
-		c.wood = cfg.read_u16("cost_wood");
-		c.ram = cfg.read_u16("cost_ram");
-		c.fakeram = cfg.read_u16("cost_fakeram");
-		c.antiram = cfg.read_u16("cost_antiram");
-		c.solid = cfg.read_u16("cost_solid");
-		c.door = cfg.read_u16("cost_door");
-		c.propeller = cfg.read_u16("cost_propeller");
-		c.ramEngine = cfg.read_u16("cost_ramEngine");
-		c.seat = cfg.read_u16("cost_seat");
-		c.cannon = cfg.read_u16("cost_cannon");
-		c.harvester = cfg.read_u16("cost_harvester");
-		c.patcher = cfg.read_u16("cost_patcher");
-		c.harpoon = cfg.read_u16("cost_harpoon");
-		c.machinegun = cfg.read_u16("cost_machinegun");
-		c.flak = cfg.read_u16("cost_flak");
-		c.hyperflak = cfg.read_u16("cost_hyperflak");
-		c.pointDefense = cfg.read_u16("cost_pointDefense");
-		c.launcher = cfg.read_u16("cost_launcher");
-		c.bomb = cfg.read_u16("cost_bomb");
-		c.coupling = cfg.read_u16("cost_coupling");
-		c.repulsor = cfg.read_u16("cost_repulsor");
-		c.secondaryCore = cfg.read_u16("cost_secondaryCore");
-		c.decoyCore = cfg.read_u16("cost_decoyCore");
-
-		this.set("costs", c);
-		return @c;
-	}
-	
-	Costs@ getCosts(CRules@ this)
-	{
-		Block::Costs@ c;
-		this.get("costs", @c);
-		
-		if (c is null)
-			@c = Block::queryCosts(this);
-			
-		return c;
-	}
 	
 	bool isSolid(const uint blockType)
 	{
@@ -244,191 +151,176 @@ namespace Block
 		return blob.getSprite().getFrame();
 	}
 
-	f32 getWeight (const uint blockType)
+	f32 getWeight(const uint blockType)
 	{
-		CRules@ rules = getRules();
-		
-		Weights@ w = Block::getWeights(rules);
-
-		if (w is null)
-		{
-			warn("** Couldn't get Weights!");
-			return 0;
-		}
-		
 		switch(blockType)		
 		{
 			case Block::PROPELLER:
-				return w.propeller;
+				return Weight::propeller;
 			break;
 			case Block::RAMENGINE:
-				return w.ramEngine;
+				return Weight::ramengine;
 			break;
 			case Block::SOLID:
-				return w.solid;
+				return Weight::solid;
 			break;
 			case Block::DOOR:
-				return w.door;
+				return Weight::door;
 			break;
 			case Block::RAM:
-				return w.ram;
+				return Weight::ram;
 			break;
 			case Block::FAKERAM:
-				return w.fakeram;
+				return Weight::fakeram;
 			break;
 			case Block::ANTIRAM:
-				return w.antiram;
+				return Weight::antiram;
 			break;
 			case Block::PLATFORM:
-				return w.wood;
+				return Weight::platform;
 			break;
 			case Block::CANNON:
-				return w.cannon;
+				return Weight::cannon;
 			break;
 			case Block::HARVESTER:
-				return w.harvester;
+				return Weight::harvester;
 			break;
 			case Block::PATCHER:
-				return w.patcher;
+				return Weight::patcher;
 			break;
 			case Block::HARPOON:
-				return w.harpoon;
+				return Weight::harpoon;
 			break;
 			case Block::MACHINEGUN:
-				return w.machinegun;
+				return Weight::machinegun;
 			break;
 			case Block::FLAK:
-				return w.flak;
+				return Weight::flak;
 			break;
 			case Block::POINTDEFENSE:
-				return w.pointDefense;
+				return Weight::pointdefense;
 			break;
 			case Block::LAUNCHER:
-				return w.launcher;
+				return Weight::launcher;
 			break;
 			case Block::SEAT:
-				return w.seat;
+				return Weight::seat;
 			break;
 			case Block::COUPLING:
-				return w.coupling;
+				return Weight::coupling;
 			break;
 			case Block::REPULSOR:
-				return w.repulsor;
+				return Weight::repulsor;
 			break;
 			case Block::BOMB:
-				return w.bomb;
+				return Weight::bomb;
 			break;			
 			case Block::SECONDARYCORE:
-				return w.secondaryCore;
+				return Weight::secondarycore;
 			break;
 			case Block::DECOYCORE:
-				return w.decoyCore;
+				return Weight::decoycore;
 			break;
 			case Block::HYPERFLAK:
-				return w.hyperflak;
+				return Weight::hyperflak;
 			break;
 		}
 	
-		return blockType == MOTHERSHIP5 ? w.mothership : w.wood;//MOTHERSHIP5 is the core block
+		return blockType == MOTHERSHIP5 ? Weight::mothership : Weight::platform;//MOTHERSHIP5 is the core block
 	}
 
-	f32 getWeight (CBlob@ blob)
+	f32 getWeight(CBlob@ blob)
 	{
 		return getWeight(getType(blob));
 	}
 	
-	u16 getCost (const uint blockType)
+	u16 getCost(const uint blockType)
 	{
-		CRules@ rules = getRules();
-		
-		Costs@ c = Block::getCosts(rules);
-
-		if (c is null)
-		{
-			warn("** Couldn't get Costs!");
-			return 0;
-		}
-		
 		switch(blockType)		
 		{
 			case Block::STATION:
-				return c.station;
+				return Cost::station;
 			break;
 			case Block::MINISTATION:
-				return c.ministation;
+				return Cost::ministation;
 			break;
 			case Block::PROPELLER:
-				return c.propeller;
+				return Cost::propeller;
 			break;
 			case Block::RAMENGINE:
-				return c.ramEngine;
+				return Cost::ramengine;
 			break;
 			case Block::SOLID:
-				return c.solid;
+				return Cost::solid;
 			break;
 			case Block::DOOR:
-				return c.door;
+				return Cost::door;
 			break;
 			case Block::RAM:
-				return c.ram;
+				return Cost::ram;
 			break;
 			case Block::FAKERAM:
-				return c.fakeram;
+				return Cost::fakeram;
 			break;
 			case Block::ANTIRAM:
-				return c.antiram;
+				return Cost::antiram;
 			break;
 			case Block::PLATFORM:
-				return c.wood;
+				return Cost::platform;
 			break;
 			case Block::CANNON:
-				return c.cannon;
+				return Cost::cannon;
 			break;
 			case Block::HARVESTER:
-				return c.harvester;
+				return Cost::harvester;
 			break;
 			case Block::PATCHER:
-				return c.patcher;
+				return Cost::patcher;
 			break;
 			case Block::HARPOON:
-				return c.harpoon;
+				return Cost::harpoon;
 			break;
 			case Block::MACHINEGUN:
-				return c.machinegun;
+				return Cost::machinegun;
 			break;
 			case Block::FLAK:
-				return c.flak;
+				return Cost::flak;
 			break;
 			case Block::POINTDEFENSE:
-				return c.pointDefense;
+				return Cost::pointdefense;
 			break;
 			case Block::LAUNCHER:
-				return c.launcher;
+				return Cost::launcher;
 			break;
 			case Block::SEAT:
-				return c.seat;
+				return Cost::seat;
 			break;
 			case Block::COUPLING:
-				return c.coupling;
+				return Cost::coupling;
 			break;	
 			case Block::REPULSOR:
-				return c.repulsor;
+				return Cost::repulsor;
 			break;
 			case Block::BOMB:
-				return c.bomb;
+				return Cost::bomb;
 			break;			
 			case Block::SECONDARYCORE:
-				return c.secondaryCore;
+				return Cost::secondarycore;
 			break;
 			case Block::DECOYCORE:
-				return c.decoyCore;
+				return Cost::decoycore;
 			break;
 			case Block::HYPERFLAK:
-				return c.hyperflak;
+				return Cost::hyperflak;
 			break;
 		}
 	
 		return 0;
+	}
+	
+	f32 getCost(CBlob@ blob)
+	{
+		return getCost(getType(blob));
 	}
 
 	const f32 BUTTON_RADIUS_FLOOR = 6;

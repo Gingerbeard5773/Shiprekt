@@ -123,7 +123,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 				// detonate bomb
 					
-				if (Block::isType(hit_blob, Block::BOMB))
+				if (Block::getType(hit_blob) == Block::BOMB)
 				{
 					hit_blob.server_Die();
 					continue;

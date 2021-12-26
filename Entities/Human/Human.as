@@ -481,10 +481,6 @@ void turnToShark(CBlob@ this)
 void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, bool isStation = false, bool isMiniStation = false)
 {
 	CRules@ rules = getRules();
-	Block::Costs@ c = Block::getCosts(rules);
-	Block::Weights@ w = Block::getWeights(rules);
-	
-	if (c is null || w is null) return;
 		
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : BUILD_MENU_SIZE, description);
 	u32 gameTime = getGameTime();

@@ -142,13 +142,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 {
 	CRules@ rules = getRules();
-	Block::Costs@ c = Block::getCosts(rules);
-	
-	if (c is null)
-	{
-		warn("** Couldn't get Costs!");
-		return;
-	}
 
 	CPlayer@ player = caller.getPlayer();
 	string pName = player !is null ? player.getUsername() : "";
