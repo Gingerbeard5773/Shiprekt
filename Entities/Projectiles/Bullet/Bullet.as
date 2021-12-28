@@ -36,12 +36,13 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 {
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human" || hitBlob.hasTag("weapon"))
 		return 0.4f;
-	else if (Block::isBomb(blockType))
-		return 1.35f;
 
 	f32 dmg = 0.25f; //cores | solids
 	switch (blockType)
 	{
+		case Block::BOMB:
+			dmg = 1.35f;
+			break;
 		case Block::PROPELLER:
 			dmg = 0.75f;
 			break;
@@ -81,7 +82,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 		{
 			if (isBlock || b.hasTag("weapon"))
 			{
-				if (Block::isSolid(blockType) || blockType == Block::DOOR || (b.getTeamNum() != this.getTeamNum() && 
+				if (b.hasTag("solid") || blockType == Block::DOOR || (b.getTeamNum() != this.getTeamNum() && 
 				(blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("weapon") || blockType == Block::BOMB)))//hit these and die
 				{
 					killed = true;

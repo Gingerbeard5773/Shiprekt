@@ -9,7 +9,7 @@ const u16 CREW_COUPLINGS_LEASE = 10 * 30;//time till the captain can control cre
 const u16 UNUSED_RESET = 2 * 60 * 30;
 const u8 CANNON_FIRE_CYCLE = 15;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	//Set Owner/couplingsCooldown
 	if (isServer())
@@ -28,7 +28,7 @@ void onInit( CBlob@ this )
 		
 		this.set_bool("kUD", false);
 		this.set_bool("kLR", false);
-		this.set_u32( "lastCannonFire", getGameTime());
+		this.set_u32("lastCannonFire", getGameTime());
 		this.set_u8("cannonFireIndex", 0);
 		this.set_u32("lastActive", getGameTime());
 		this.set_u32("lastOwnerUpdate", 0);
@@ -37,23 +37,21 @@ void onInit( CBlob@ this )
 	this.set_string("seat label", "Steering Seat");
 	this.set_bool("canProduceCoupling", false);
 	this.set_u8("seat icon", 7);
-	this.Tag("seat");
 	this.Tag("control");
 	
 	//anim
-	CSprite@ sprite = this.getSprite();
-    if (sprite !is null)
+	CSpriteLayer@ layer = this.getSprite().addSpriteLayer("seatfold", 8, 8);
+    if (layer !is null)
     {
         //default
         {
-            Animation@ anim = sprite.addAnimation("default", 0, false);
+            Animation@ anim = layer.addAnimation("default", 0, false);
             anim.AddFrame(Block::SEAT);
         }
         //folding
         {
-            Animation@ anim = sprite.addAnimation("fold", 4, false);
-
-            int[] frames = {Block::SEAT, Block::SEAT+1, Block::SEAT+2, Block::SEAT+3, Block::SEAT+4 };
+            Animation@ anim = layer.addAnimation("fold", 4, false);
+            int[] frames = {Block::SEAT, Block::SEAT+1, Block::SEAT+2, Block::SEAT+3, Block::SEAT+4};
             anim.AddFrames(frames);
         }
     }
@@ -88,7 +86,9 @@ void onTick(CBlob@ this)
 		}
 	}
 
-    sprite.SetAnimation(seatOwner != "" ? "default": "fold");//update sprite
+	CSpriteLayer@ layer = sprite.getSpriteLayer("seatfold");
+    if (layer !is null)
+		layer.SetAnimation(seatOwner != "" ? "default": "fold");//update sprite
 
 	Island@ island = getIsland(this.getShape().getVars().customData);
 	if (island is null)	return;

@@ -168,7 +168,7 @@ void onTick(CBlob@ this)
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
-						if (blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || Block::isSolid(blockType) || 
+						if (blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("solid") || 
 							blockType == Block::DOOR || ((b.hasTag("weapon") || b.hasTag("rocket")) && !sameTeam))
 							killed = true;
 						else if (blockType == Block::SEAT)
@@ -191,7 +191,7 @@ void onTick(CBlob@ this)
 					{
 						CBlob@ blob = owner.getBlob();
 						if (blob !is null)
-							damageBooty(owner, blob, b, Block::isSolid(blockType) || blockType == Block::DOOR, 15);
+							damageBooty(owner, blob, b, b.hasTag("solid") || blockType == Block::DOOR, 15);
 					}
 					
 					//f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
@@ -249,7 +249,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	
 	const int blockType = hitBlob.getSprite().getFrame();
 
-	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || 
+	if (hitBlob.hasTag("solid")|| blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || 
 			 blockType == Block::SEAT || blockType == Block::DOOR || hitBlob.hasTag("weapon"))
 	{
 		sparks(worldPoint, 15, 5.0f, 20);

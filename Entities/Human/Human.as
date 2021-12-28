@@ -273,7 +273,7 @@ void Move(CBlob@ this)
 					{
 						this.set_u16("shipID", 0);	
 					}
-					else if (!Block::isSolid(Block::getType(shipBlob)) && !up && !left && !right && !down)
+					else if (!shipBlob.hasTag("solid") && !up && !left && !right && !down)
 					{
 						Island@ isle = getIsland(shipBlob.getShape().getVars().customData);
 						if (isle !is null && isle.vel.Length() > 1.0f)
@@ -1179,7 +1179,7 @@ void onDie(CBlob@ this)
 				u16 returnBooty = 0;
 				for (uint i = 0; i < blocks.length; ++i)
 				{
-					int type = Block::getType(blocks[i]);
+					int type = blocks[i].getSprite().getFrame();
 					if (type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1 )
 						returnBooty += Block::getCost(type);
 				}

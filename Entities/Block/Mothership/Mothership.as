@@ -233,7 +233,7 @@ void ReturnBlocks(CBlob@ this)
 				u16 returnBooty = 0;
 				for (uint i = 0; i < blocks.length; ++i)
 				{
-					int type = Block::getType(blocks[i]);
+					int type = blocks[i].getSprite().getFrame();
 					if (type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1)
 						returnBooty += Block::getCost(type);
 				}
@@ -600,8 +600,8 @@ void initiateSelfDestruct(CBlob@ this)
 		CBlob@ b = getBlobByNetworkID( isle_block.blobID);
 		if (b !is null && teamNum == b.getTeamNum())
 		{
-			int bType = Block::getType(b);
-			if (i % 4 == 0 && !Block::isCore(bType) && bType != Block::COUPLING)
+			int bType = b.getSprite().getFrame();
+			if (i % 4 == 0 && bType != Block::MOTHERSHIP5 && bType != Block::COUPLING)
 				b.AddScript("Block_Explode.as");
 		}
 	}

@@ -12,7 +12,6 @@ void ProduceBlock(CRules@ this, CBlob@ blob, uint type, u8 amount = 1)
     	blob_blocks.clear();
 
 		u16 blobID = blob.getNetworkID();
-		u16 playerID = blob.getPlayer().getNetworkID();
 
     	for (uint i = 0; i < amount; i++)
 		{
@@ -22,7 +21,6 @@ void ProduceBlock(CRules@ this, CBlob@ blob, uint type, u8 amount = 1)
 			//set block infos
 			b.set_Vec2f("offset", b.getPosition());			
         	b.set_u16("ownerID", blobID);
-        	b.set_u16("playerID", playerID);
     		b.getShape().getVars().customData = -1; // don't push on island
     	}
 	}

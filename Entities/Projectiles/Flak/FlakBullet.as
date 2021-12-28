@@ -51,8 +51,7 @@ void onTick(CBlob@ this)
 			if (b is null) continue;
 
 			const int color = b.getShape().getVars().customData;
-			const int blockType = b.getSprite().getFrame();
-			if (b.hasTag("block") && color > 0 && color != thisColor && Block::isSolid(blockType))
+			if (b.hasTag("block") && color > 0 && color != thisColor && b.hasTag("solid"))
 				this.server_Die();
 		}
 	}
@@ -83,11 +82,11 @@ void flak(CBlob@ this)
 									
 				const int blockType = b.getSprite().getFrame();
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
-				if (Block::isSolid(blockType) || ( !sameTeam
-					&& (blockType == Block::SEAT || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || Block::isBomb( blockType ) || ( b.hasTag( "player" ) && !b.isAttached() ) ) ) )
+				if (b.hasTag("solid") || (!sameTeam
+					&& (blockType == Block::SEAT || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::BOMB || (b.hasTag("player") && !b.isAttached()))))
 				{
-					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage( b, blockType ), Hitters::bomb, true );
-					if ( owner !is null )
+					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage(b, blockType), Hitters::bomb, true);
+					if (owner !is null)
 					{
 						CBlob@ blob = owner.getBlob();
 						if (blob !is null)
@@ -152,7 +151,7 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 	if ( blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE)
 		return 0.1f;
 	
-	if ( Block::isBomb( blockType ) )
+	if ( blockType == Block::BOMB )
 		return 0.1f;
 
 	if ( blockType == Block::DECOYCORE )
@@ -165,7 +164,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 {	
 	const int blockType = hitBlob.getSprite().getFrame();
 
-	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag("weapon"))
+	if (hitBlob.hasTag("solid") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag("weapon"))
 	{
 		Vec2f vel = worldPoint - hitBlob.getPosition();//todo: calculate real bounce angles?
 		ShrapnelParticle(worldPoint, vel);

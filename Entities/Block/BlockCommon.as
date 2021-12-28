@@ -120,36 +120,6 @@ namespace Block
 		SECONDARYCORE = 65,
 		DECOYCORE = 66,
 	};
-	
-	bool isSolid(const uint blockType)
-	{
-		return (blockType == Block::SOLID || blockType == Block::PROPELLER || blockType == Block::RAMENGINE || blockType == Block::RAM || blockType == Block::FAKERAM || blockType == Block::ANTIRAM || blockType == Block::POINTDEFENSE);
-	}
-
-	bool isCore(const uint blockType)
-	{
-		return (blockType >= Block::MOTHERSHIP1 && blockType <= Block::MOTHERSHIP9);
-	}
-
-	bool isBomb(const uint blockType)
-	{
-		return (blockType >= 19 && blockType <= 21);
-	}
-	
-	bool isRepulsor(const uint blockType)
-	{
-		return (blockType >= 28 && blockType <= 30);
-	}
-
-	bool isType(CBlob@ blob, const uint blockType)
-	{
-		return (blob.getSprite().getFrame() == blockType);
-	}
-
-	uint getType(CBlob@ blob)
-	{
-		return blob.getSprite().getFrame();
-	}
 
 	f32 getWeight(const uint blockType)
 	{
@@ -231,7 +201,7 @@ namespace Block
 
 	f32 getWeight(CBlob@ blob)
 	{
-		return getWeight(getType(blob));
+		return getWeight(blob.getSprite().getFrame());
 	}
 	
 	u16 getCost(const uint blockType)
@@ -320,7 +290,7 @@ namespace Block
 	
 	f32 getCost(CBlob@ blob)
 	{
-		return getCost(getType(blob));
+		return getCost(blob.getSprite().getFrame());
 	}
 
 	const f32 BUTTON_RADIUS_FLOOR = 6;

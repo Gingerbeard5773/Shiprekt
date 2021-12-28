@@ -26,6 +26,10 @@ void onTick (CBlob@ this)
 	{
 		const int blockType = thisSprite.getFrame();
 		
+		if (blockType == Block::SOLID || blockType == Block::PROPELLER || blockType == Block::RAMENGINE || blockType == Block::RAM ||
+			blockType == Block::FAKERAM || blockType == Block::ANTIRAM || blockType == Block::POINTDEFENSE)
+			this.Tag("solid"); //temporary until seperation
+		
 		if (this.get_f32("current reclaim") == 0.0f)
 		{
 			this.set_f32("initial reclaim", this.getHealth());		
@@ -143,9 +147,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		Island@ other_island = getIsland(other_color);
 	
 		const int blockType = this.getSprite().getFrame();
-		const bool solid = Block::isSolid(blockType);
 		const int other_blockType = blob.getSprite().getFrame();
-		const bool other_solid = Block::isSolid(other_blockType);
 		bool docking;
 		bool ramming;
 		
@@ -205,10 +207,10 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					if (blockType == Block::COUPLING) Die(this);
 					if (other_blockType == Block::COUPLING) Die(blob);
 				}
-				else if (Block::isRepulsor(blockType) || Block::isRepulsor(other_blockType)) // how to clean this up
+				else if (blockType == Block::REPULSOR || other_blockType == Block::REPULSOR) // how to clean this up
 				{
-					if (Block::isRepulsor(blockType)) Die(this);
-					if (Block::isRepulsor(other_blockType)) Die(blob);
+					if (blockType == Block::REPULSOR) Die(this);
+					if (other_blockType == Block::REPULSOR) Die(blob);
 				}
 				else
 				{ 
@@ -270,12 +272,12 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 										if (blob.getHealth() >= this.getHealth())
 										{
 											Die(this);
-											this.server_Hit(blob, point1, Vec2f_zero, solid ? this.getHealth() : this.getHealth()/2.0f, 0, true);
+											this.server_Hit(blob, point1, Vec2f_zero, this.hasTag("solid") ? this.getHealth() : this.getHealth()/2.0f, 0, true);
 											break;
 										}
 										else blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
 									}
-									else if (!other_solid && other_island !is null) 
+									else if (!blob.hasTag("solid") && other_island !is null) 
 										this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
 									Die(blob);
 									break;
@@ -283,7 +285,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 							break;
 
 						default:
-							if (Block::isBomb(blockType)) //bombs annihilate all
+							if (blockType == Block::BOMB) //bombs annihilate all
 							{
 								if (other_blockType == Block::MOTHERSHIP5)
 									this.server_Hit(blob, point1, Vec2f_zero, 2.7f, 0, true);
@@ -307,7 +309,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	{
 		int blockType = this.getSprite().getFrame();
 		// solid block vs player
-		if (Block::isSolid(blockType))
+		if (this.hasTag("solid"))
 		{
 			Vec2f pos = blob.getPosition();
 			
@@ -427,7 +429,7 @@ void onDie(CBlob@ this)
 	{
 		//kill humans standing on top. done locally because lag makes server unable to catch the overlapping playerblobs
 		int type = this.getSprite().getFrame();
-		if (type != Block::COUPLING && !Block::isRepulsor(type))
+		if (type != Block::COUPLING && type != Block::REPULSOR)
 		{
 			CBlob@ localBlob = getLocalPlayerBlob();
 			if (localBlob !is null && localBlob.get_u16("shipID") == this.getNetworkID())
@@ -504,7 +506,7 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 			f32 step = initHealth / (DAMAGE_FRAMES + 1); //health divided equally into segments which tell when to change dmg frame
 			f32 currentStep = Maths::Floor(oldHealth/step) * step; //what is the step we are on?
 			
-			if (Block::isSolid(blockType) && hp < currentStep && hp <= initHealth - step && !isCore) //update frame if past health margins
+			if (this.hasTag("solid") && hp < currentStep && hp <= initHealth - step && !isCore) //update frame if past health margins
 			{
 				int bFrame = blockType == Block::RAM ? 9 : blockType == Block::ANTIRAM ? 46 : 5; //5 default- for propellers
 
@@ -560,7 +562,7 @@ void onGib(CSprite@ this)
 
 void onSendCreateData(CBlob@ this, CBitStream@ stream)
 {
-	stream.write_u8(Block::getType(this));
+	stream.write_u8(this.getSprite().getFrame());
 	stream.write_netid(this.get_u16("ownerID"));
 }
 

@@ -16,20 +16,20 @@ void onInit(CBlob@ this)
 	this.Tag("removable");//for corelinked checks
     this.addCommandID("chainReaction");
     this.addCommandID("activate");
-	this.set_u32( "detonationTime", 0);
+	this.set_u32("detonationTime", 0);
 	this.server_SetHealth(2.0f);
 
-    CSprite@ sprite = this.getSprite();
-    if (sprite !is null)
+	CSpriteLayer@ layer =  this.getSprite().addSpriteLayer("repulse", 8, 8);
+    if (layer !is null)
     {
-        //default animation
+		//default animation
         {
-            Animation@ anim = sprite.addAnimation("default", 0, false);
+            Animation@ anim = layer.addAnimation("default", 0, false);
             anim.AddFrame(Block::REPULSOR);
         }
         //activated animation
         {
-            Animation@ anim = sprite.addAnimation("activated", FUSE_TIME/3, false);
+            Animation@ anim = layer.addAnimation("activated", FUSE_TIME/3, false);
 
             int[] frames = {Block::REPULSOR, Block::REPULSOR_A1, Block::REPULSOR_A2, Block::REPULSOR_A2, Block::REPULSOR_A2};
             anim.AddFrames(frames);
@@ -100,7 +100,7 @@ void onTick(CBlob@ this)
 			this.getShape().getVars().customData = -1;
 			getRules().set_bool("dirty islands", true);
 		}
-		else	if (gameTime == this.get_u32("detonationTime"))
+		else if (gameTime == this.get_u32("detonationTime"))
 			Repulse(this);
 	}
 }
@@ -109,15 +109,15 @@ void Activate(CBlob@ this, u32 time)
 {
     this.Tag("activated");
 	this.set_u32("detonationTime", time);
-    CSprite@ sprite = this.getSprite();
-    sprite.SetAnimation("activated");
-	directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f );
+    CSpriteLayer@ repulse = this.getSprite().getSpriteLayer("repulse");
+	if (repulse !is null) repulse.SetAnimation("activated");
+	directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
 }
 
 void ChainReaction(CBlob@ this, u32 time)
 {
 	CBitStream bs;
-	bs.write_u32( time );
+	bs.write_u32(time);
 	this.SendCommand( this.getCommandID("activate"), bs);
 
 	CBlob@[] overlapping;
@@ -140,7 +140,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
 	if (cmd == this.getCommandID("activate") && !this.hasTag("activated"))
 		Activate(this, params.read_u32());
-	else if ( getNet().isServer() && cmd == this.getCommandID("chainReaction") && !this.hasTag("activated"))
+	else if (isServer() && cmd == this.getCommandID("chainReaction") && !this.hasTag("activated"))
 		ChainReaction(this, getGameTime() + FUSE_TIME);
 }
 

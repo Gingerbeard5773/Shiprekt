@@ -8,7 +8,7 @@ void onGib(CSprite@ this)
 	u8 frame = this.getFrame();
 
 	//no gibs tiles
-	if( frame == Block::COUPLING || Block::isRepulsor( frame ) )
+	if (frame == Block::COUPLING || frame == Block::REPULSOR)
 		return;
 
     CBlob@ blob = this.getBlob();
@@ -17,12 +17,12 @@ void onGib(CSprite@ this)
 
     const u8 team = blob.getTeamNum();
     
-    for(int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++)
     {
     	Vec2f veladd(0,_r.NextFloat() + 0.1f * (i+1));
     	veladd.RotateBy(_r.NextFloat() * 360.0f, Vec2f());
 
-	    CParticle@ gib     = makeGibParticle( "BlockGibs.png",
+	    CParticle@ gib = makeGibParticle("BlockGibs.png",
 	    										pos,
 	    										vel + veladd,
 	    										0,
@@ -31,9 +31,9 @@ void onGib(CSprite@ this)
 	    										2.0f,
 	    										0,
 	    										"/BodyGibFall",
-	    										team );
+	    										team);
 
-	    if(gib !is null)
+	    if (gib !is null)
 	    {
 	    	gib.damping = 0.95f;
 	    	

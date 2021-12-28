@@ -11,7 +11,6 @@ const f32 BOMB_BASE_DAMAGE = 2.7f;
 void onInit(CBlob@ this)
 {
     this.getCurrentScript().tickFrequency = 60;
-	this.Tag("explosive");
     /*CSprite@ sprite = this.getSprite();
     if (sprite !is null)
     {
@@ -123,7 +122,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 				// detonate bomb
 					
-				if (Block::getType(hit_blob) == Block::BOMB)
+				if (hit_blob.getSprite().getFrame() == Block::BOMB)
 				{
 					hit_blob.server_Die();
 					continue;
@@ -210,7 +209,7 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 				CRules@ rules = getRules();
 				
 				u16 reward = 15;//propellers, seat, solids
-				if (victim.hasTag("weapon") || Block::isBomb(blockType))
+				if (victim.hasTag("weapon") || blockType == Block::BOMB)
 					reward += 15;
 				else if (blockType == Block::MOTHERSHIP5)
 					reward += 15;

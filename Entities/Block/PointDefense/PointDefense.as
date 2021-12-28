@@ -190,8 +190,8 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 
 			//if (sameIsland || targetMerged) print ("" + (sameIsland ? "sameisland; " : "") + (targetMerged ? "targetMerged; " : ""));
 
-			if (b.hasTag("weapon") || Block::isSolid(blockType)
-					|| (b.hasTag("block") && b.getShape().getVars().customData > 0 && (Block::isSolid(blockType)) && sameIsland && !canShootSelf))
+			if (b.hasTag("weapon") || b.hasTag("solid")
+					|| (b.hasTag("block") && b.getShape().getVars().customData > 0 && (b.hasTag("solid")) && sameIsland && !canShootSelf))
 			{
 				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;
@@ -202,7 +202,7 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 	return true;
 }
 
-void Fire( CBlob@ this, Vec2f aimVector, const u16 hitBlobNetID )
+void Fire(CBlob@ this, Vec2f aimVector, const u16 hitBlobNetID)
 {
 	CBitStream params;
 	params.write_netid(hitBlobNetID);

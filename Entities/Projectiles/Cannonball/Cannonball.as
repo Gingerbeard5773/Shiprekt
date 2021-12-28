@@ -64,7 +64,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 	{
 		if (isBlock)
 		{
-			if (Block::isSolid(blockType) || blockType == Block::DOOR || ((blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("weapon")) && !sameTeam))
+			if (b.hasTag("solid") || blockType == Block::DOOR || ((blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("weapon")) && !sameTeam))
 			{
 				if (piercedCount >= MAX_PIERCED)
 					killed = true;
@@ -106,7 +106,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 		if (owner !is null)
 		{
 			CBlob@ blob = owner.getBlob();
-			if (blob !is null) damageBooty(owner, blob, b, Block::isSolid(blockType), 4);
+			if (blob !is null) damageBooty(owner, blob, b, b.hasTag("solid"), 4);
 		}
 		
 		this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(this, b, blockType), Hitters::ballista, true);
@@ -171,7 +171,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	
 	const int blockType = hitBlob.getSprite().getFrame();
 
-	if (Block::isSolid(blockType) || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
+	if (hitBlob.hasTag("solid") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag( "weapon" ) )
 	{
 		sparksDirectional(worldPoint + this.getVelocity(), this.getVelocity(), 7);
 		directionalSoundPlay("Pierce1.ogg", worldPoint);

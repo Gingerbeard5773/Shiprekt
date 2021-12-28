@@ -218,7 +218,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
-						if (Block::isSolid(blockType) || (b.getTeamNum() != teamNum && 
+						if (b.hasTag("solid") || (b.getTeamNum() != teamNum && 
 						   (blockType == Block::DOOR || blockType == Block::MOTHERSHIP5 || blockType == Block::DECOYCORE || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::BOMB)))//hit these and die
 							killed = true;
 						else if (sameIsland && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
@@ -357,11 +357,12 @@ f32 getDamage(CBlob@ hitBlob, int blockType)
 		case Block::DECOYCORE:
 			damage = 0.075f;
 			break;
+		case Block::BOMB:
+			damage = 0.4f;
+			break;
 	}
 
-	if (Block::isBomb(blockType))
-		return 0.4f;
-	else if (hitBlob.hasTag("rocket"))
+	if (hitBlob.hasTag("rocket"))
 		return 0.35f;
 	else if (hitBlob.hasTag("weapon"))
 		return 0.075f;

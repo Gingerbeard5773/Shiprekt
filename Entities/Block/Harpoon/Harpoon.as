@@ -310,7 +310,7 @@ void onTick(CBlob@ this)
 					if (b.hasTag("block"))
 					{
 						const int blockType = b.getSprite().getFrame();
-						if (Block::isSolid(blockType))
+						if (b.hasTag("solid"))
 						{
 							harpoon.grapple_pos = b.getPosition();
 							
@@ -572,9 +572,8 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 		CBlob@ b = map.getBlobAtPosition(harpoon.grapple_pos);
 		if (b !is null)
 		{
-			Island@ hitIsland = getIsland( b );
-			const int blockType = b.getSprite().getFrame();
-			if (b is this || b.getName() == "human" || (!Block::isSolid(blockType)))
+			Island@ hitIsland = getIsland(b);
+			if (b is this || b.getName() == "human" || (!b.hasTag("solid")))
 			{
 				//can't grapple self if not reeled in
 				if (harpoon.grapple_ratio > 0.5f)
