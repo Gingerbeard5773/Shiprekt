@@ -2,74 +2,86 @@
 
 CBlob@ makeBlock(Vec2f pos, f32 angle, u16 blockType, const int team = -1)
 {
-	CBlob@ block = server_CreateBlob("block", team, pos);
+	string blockname = "block";
+	
+	switch(blockType)		
+	{
+		case Block::BOMB:
+		blockname = "bomb";
+		break;
+		case Block::CANNON:
+		blockname = "cannon";
+		break;
+		case Block::COUPLING:
+		blockname = "coupling";
+		break;
+		case Block::DECOYCORE:
+		blockname = "decoycore";
+		break;
+		case Block::DOOR:
+		blockname = "door";
+		break;
+		case Block::FLAK:
+		blockname = "flak";
+		break;
+		case Block::HARPOON:
+		blockname = "harpoon";
+		break;
+		case Block::HARVESTER:
+		blockname = "harvester";
+		break;
+		case Block::HYPERFLAK:
+		blockname = "hyperflak";
+		break;
+		case Block::LAUNCHER:
+		blockname = "launcher";
+		break;
+		case Block::MACHINEGUN:
+		blockname = "machinegun";
+		break;
+		case Block::MOTHERSHIP5:
+		blockname = "mothership";
+		break;
+		case Block::PATCHER:
+		blockname = "patcher";
+		break;
+		case Block::POINTDEFENSE:
+		blockname = "pointdefense";
+		break;
+		case Block::RAMENGINE:
+		blockname = "ramengine";
+		break;
+		case Block::PROPELLER:
+		blockname = "propeller";
+		break;
+		case Block::REPULSOR:
+		blockname = "repulsor";
+		break;
+		case Block::SEAT:
+		blockname = "seat";
+		break;
+		case Block::SECONDARYCORE:
+		blockname = "secondarycore";
+		break;
+		case Block::SOLID:
+		blockname = "solid";
+		break;
+		case Block::ANTIRAM:
+		blockname = "antiram";
+		break;
+		case Block::RAM:
+		blockname = "ram";
+		break;
+		case Block::FAKERAM:
+		blockname = "fakeram";
+		break;
+	}
+	CBlob@ block = server_CreateBlob(blockname, team, pos);
 	if (block !is null) 
 	{
+		print(blockname);
 		block.getSprite().SetFrame(blockType);
 		block.setAngleDegrees(angle);
-		
-		switch(blockType)		
-		{
-			case Block::PROPELLER:
-			block.AddScript("Propeller.as");
-			break;
-			case Block::RAMENGINE:
-			block.AddScript("RamEngine.as");
-			break;
-			case Block::SEAT:
-			block.AddScript("GetInSeat.as"); // so oninit doesnt override
-			block.AddScript("Seat.as");
-			break;		
-			case Block::COUPLING:
-			block.AddScript("Coupling.as");
-			break;
-			case Block::DOOR:
-			block.AddScript("Door.as");
-			break;		
-			case Block::REPULSOR:
-			block.AddScript("Repulsor.as");
-			break;
-			case Block::HARVESTER:
-			block.AddScript("Harvester.as");
-			break;
-			case Block::PATCHER:
-			block.AddScript("Patcher.as");
-			break;
-			case Block::HARPOON:
-			block.AddScript("GetInSeat.as");
-			block.AddScript("Harpoon.as");
-			break;
-			case Block::MACHINEGUN:
-			block.AddScript("Machinegun.as");
-			break;
-			case Block::LAUNCHER:
-			block.AddScript("Launcher.as");
-			break;
-			case Block::CANNON:
-			block.AddScript("Cannon.as");
-			break;
-			case Block::FLAK:
-			block.AddScript("GetInSeat.as");
-			block.AddScript("Flak.as");
-			break;
-			case Block::HYPERFLAK:
-			block.AddScript("GetInSeat.as");
-			block.AddScript("HyperFlak.as");
-			break;
-			case Block::POINTDEFENSE:
-			block.AddScript("PointDefense.as");
-			break;
-			case Block::BOMB:
-			block.AddScript("Bomb.as");
-			break;	
-			case Block::SECONDARYCORE:
-			block.AddScript("SecondaryCore.as");
-			break;
-			case Block::DECOYCORE:
-			block.AddScript("DecoyCore.as");
-			break;
-		}
-		
 		block.getShape().getVars().customData = 0;
 		block.set_u32("placedTime", getGameTime());
 	}

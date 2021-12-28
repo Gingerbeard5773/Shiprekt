@@ -13,6 +13,7 @@ void onInit(CBlob@ this)
 	this.addCommandID("off");
 	this.addCommandID("stall");
 	this.Tag("propeller");
+	this.Tag("solid");
 	this.set_f32("power", 0.0f);
 	this.set_f32("powerFactor", 2.0f);
 	this.set_u32("onTime", 0);

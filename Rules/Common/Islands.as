@@ -59,7 +59,7 @@ void GenerateIslands(CRules@ this)
 
 	CBlob@[] blocks;
 	this.clear("islands");
-	if (getBlobsByName("block", @blocks))
+	if (getBlobsByTag("block", @blocks))
 	{	
 		color = 0;
 		for (uint i = 0; i < blocks.length; ++i)

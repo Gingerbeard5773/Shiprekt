@@ -3,18 +3,12 @@
 #include 'DestructCommon.as';
 
 const uint16 SELF_DESTRUCT_SECONDS = 8;
-const float INITIAL_HEALTH = 4.0f;
 const float BLAST_RADIUS = 100.0f;
 const float HEAL_AMOUNT = 0.1f;
 
 void onInit(CBlob@ this)
 {
 	this.Tag('secondaryCore');
-
-	if (isServer())
-	{
-		this.server_SetHealth(INITIAL_HEALTH);
-	}
 
 	if (isClient())
 	{
@@ -151,7 +145,7 @@ void updateFrame(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 	CSpriteLayer@ layer = sprite.getSpriteLayer('damage');
 	uint8 frames = layer.animation.getFramesCount();
-	uint8 step = frames - ((health / INITIAL_HEALTH) * frames);
+	uint8 step = frames - ((health / this.getInitialHealth()) * frames);
 	layer.animation.frame = step;
 }
 

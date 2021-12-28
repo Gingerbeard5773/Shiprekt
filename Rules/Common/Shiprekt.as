@@ -342,7 +342,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!clearmap")
 				{
 					CBlob@[] blocks;
-					if (getBlobsByName("block", @blocks))
+					if (getBlobsByTag("block", @blocks))
 					{							
 						int numBlocks = blocks.length;
 						if (isServer()) 

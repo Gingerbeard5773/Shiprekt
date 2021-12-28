@@ -33,6 +33,7 @@ void onInit(CBlob@ this)
 	this.Tag("pointDefense");
 	this.Tag("weapon");
 	this.Tag("usesAmmo");
+	this.Tag("solid");
 	this.addCommandID("fire");
 	this.addCommandID("clear attached");
 
@@ -64,14 +65,9 @@ void onTick(CBlob@ this)
 	if (this.getShape().getVars().customData <= 0)
 		return;
 
-	u32 gameTime = getGameTime();
-	AttachmentPoint@ seat = this.getAttachmentPoint(0);
-	CBlob@ occupier = seat.getOccupied();
-	u16 thisID = this.getNetworkID();
-
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
-	if (laser !is null && this.get_u32("fire time") + 5.0f < gameTime)
+	if (laser !is null && this.get_u32("fire time") + 5.0f < getGameTime())
 		sprite.RemoveSpriteLayer("laser");
 
 	if (this.get_u16("ammo") > 0)

@@ -434,36 +434,31 @@ namespace CMap
 		}
 		else if (pixel == color_station) 
 		{
-			map.SetTile(offset, CMap::grass_inland );		
-			map.AddTileFlag( offset, Tile::BACKGROUND );
-			map.AddTileFlag( offset, Tile::LIGHT_PASSES );
+			map.SetTile(offset, CMap::grass_inland);		
+			map.AddTileFlag(offset, Tile::BACKGROUND);
+			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
 			
-			CBlob@ stationBlob = spawnBlob( map, "block", offset, 10, false);	
-			stationBlob.setPosition( stationBlob.getPosition() + Vec2f(-4.0f, -4.0f) );
+			CBlob@ stationBlob = spawnBlob(map, "station", offset, 10, false);	
+			stationBlob.setPosition(stationBlob.getPosition() + Vec2f(-4.0f, -4.0f));
 			stationBlob.server_setTeamNum(255);
-			stationBlob.getSprite().SetFrame( Block::STATION );
-			stationBlob.AddScript("Station.as"); 
+			stationBlob.getSprite().SetFrame(Block::STATION);
 		}
 		else if (pixel == color_ministation) 
 		{
-			map.SetTile(offset, CMap::grass_inland );		
-			map.AddTileFlag( offset, Tile::BACKGROUND );
-			map.AddTileFlag( offset, Tile::LIGHT_PASSES );
+			map.SetTile(offset, CMap::grass_inland);		
+			map.AddTileFlag(offset, Tile::BACKGROUND);
+			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
 			
-			CBlob@ ministationBlob = spawnBlob( map, "block", offset, 10, false);	
-			ministationBlob.setPosition( ministationBlob.getPosition() );
+			CBlob@ ministationBlob = spawnBlob(map, "ministation", offset, 10, false);	
 			ministationBlob.server_setTeamNum(255);
-			ministationBlob.getSprite().SetFrame( Block::MINISTATION );
-			ministationBlob.AddScript("MiniStation.as"); 
+			ministationBlob.getSprite().SetFrame(Block::MINISTATION);
 		}
 		else if (pixel == color_palmtree) 
 		{
-			map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5) );
-			map.AddTileFlag( offset, Tile::LIGHT_PASSES );
+			map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5));
+			map.AddTileFlag(offset, Tile::LIGHT_PASSES );
 			
-			CBlob@ palmtreeBlob = spawnBlob( map, "palmtree", offset, 10, false);	
-			palmtreeBlob.setPosition( palmtreeBlob.getPosition() );
-			palmtreeBlob.AddScript("Palmtree.as"); 
+			CBlob@ palmtreeBlob = spawnBlob(map, "palmtree", offset, 10, false);	
 		}	
 		else if (pixel == color_sand) 
 		{

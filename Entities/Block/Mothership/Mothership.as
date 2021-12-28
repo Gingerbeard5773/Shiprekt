@@ -12,7 +12,6 @@
 const u16 BASE_KILL_REWARD = 275;
 const f32 HEAL_AMMOUNT = 0.1f;
 const f32 HEAL_RADIUS = 16.0f;
-const f32 INIT_HEALTH = 8.0f;
 const u16 SELF_DESTRUCT_TIME = 8 * 30;
 const f32 BLAST_RADIUS = 25 * 8.0f;
 const u8 MAX_TEAM_FLAKS = 100;
@@ -26,8 +25,6 @@ void onInit(CBlob@ this)
 	this.addCommandID("returnBlocks");
 	this.addCommandID("turnShark");
 	this.addCommandID("turnHuman");
-
-	this.server_SetHealth(INIT_HEALTH);
 
 	if(isServer())
 	{
@@ -419,7 +416,7 @@ void onTick(CBlob@ this)
 				dir.Normalize();
 				
 				f32 whirlpoolFactor = !getRules().get_bool( "whirlpool" ) ? 2.0f : 1.25f;
-				f32 healthFactor = Maths::Max( 0.25f, hp/INIT_HEALTH );
+				f32 healthFactor = Maths::Max( 0.25f, hp/this.getInitialHealth() );
 				isle.vel += dir * healthFactor*whirlpoolFactor/distance;
 				
 				dir.RotateBy( -45.0f );
@@ -470,7 +467,7 @@ void onTick(CBlob@ this)
 		CSpriteLayer@ dmg = sprite.getSpriteLayer("damage");
 		if (dmg !is null)
 		{
-			u8 frame = Maths::Floor((INIT_HEALTH - hp) / (INIT_HEALTH / dmg.animation.getFramesCount()));
+			u8 frame = Maths::Floor((this.getInitialHealth() - hp) / (this.getInitialHealth() / dmg.animation.getFramesCount()));
 			dmg.animation.frame = frame;
 		}
 	}

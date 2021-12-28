@@ -1,18 +1,11 @@
 #include "TeamColour.as"
 #include 'DestructCommon.as';
 
-const float INITIAL_HEALTH = 4.0f;
-
 void onInit(CBlob@ this)
 {
 	this.Tag('decoyCore');
 	this.set_bool("placed", false);
 	//this.Sync("placed", true);
-
-	if (isServer())
-	{
-		this.server_SetHealth(INITIAL_HEALTH);
-	}
 
 	if (isClient())
 	{
@@ -69,6 +62,6 @@ void updateFrame(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 	CSpriteLayer@ layer = sprite.getSpriteLayer('damage');
 	uint8 frames = layer.animation.getFramesCount();
-	uint8 step = frames - ((health / INITIAL_HEALTH) * frames);
+	uint8 step = frames - ((health / this.getInitialHealth()) * frames);
 	layer.animation.frame = step;
 }

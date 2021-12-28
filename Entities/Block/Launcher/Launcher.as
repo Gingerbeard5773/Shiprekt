@@ -34,8 +34,6 @@ void onInit(CBlob@ this)
 	this.Tag("usesAmmo");
 	this.Tag("machinegun"); //for seat.as
 	
-	this.server_SetHealth(7.5f); //INITIAL HEALTH
-	
 	this.addCommandID("fire");
 
 	if (isServer())

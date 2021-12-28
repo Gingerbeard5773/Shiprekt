@@ -26,8 +26,8 @@ void onTick (CBlob@ this)
 	{
 		const int blockType = thisSprite.getFrame();
 		
-		if (blockType == Block::SOLID || blockType == Block::PROPELLER || blockType == Block::RAMENGINE || blockType == Block::RAM ||
-			blockType == Block::FAKERAM || blockType == Block::ANTIRAM || blockType == Block::POINTDEFENSE)
+		if (blockType == Block::SOLID || blockType == Block::RAM ||
+			blockType == Block::FAKERAM || blockType == Block::ANTIRAM)
 			this.Tag("solid"); //temporary until seperation
 		
 		if (this.get_f32("current reclaim") == 0.0f)
@@ -307,7 +307,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	}
 	else if (other_color == 0 && color > 0)
 	{
-		int blockType = this.getSprite().getFrame();
 		// solid block vs player
 		if (this.hasTag("solid"))
 		{
