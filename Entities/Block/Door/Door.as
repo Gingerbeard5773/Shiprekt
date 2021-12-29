@@ -4,6 +4,8 @@
 
 void onInit(CBlob@ this)
 {
+	this.Tag("door");
+	
     this.getShape().SetRotationsAllowed(false);
 	this.getShape().getConsts().collidable = true;
 
@@ -13,12 +15,12 @@ void onInit(CBlob@ this)
         //default
         {
             Animation@ anim = sprite.addAnimation("default", 0, false);
-            anim.AddFrame(Block::DOOR);
+            anim.AddFrame(0);
         }
         //folding
         {
             Animation@ anim = sprite.addAnimation("open", 2, false);
-            int[] frames = {Block::DOOR, Block::DOOR+1, Block::DOOR+2};
+            int[] frames = {0, 1};
             anim.AddFrames(frames);
         }
     }

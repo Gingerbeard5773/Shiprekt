@@ -1,9 +1,8 @@
-#include "IslandsCommon.as"
-#include "BlockCommon.as"
-#include "WaterEffects.as"
-#include "PropellerForceCommon.as"
-#include "AccurateSoundPlay.as"
-#include "TileCommon.as"
+#include "IslandsCommon.as";
+#include "WaterEffects.as";
+#include "PropellerForceCommon.as";
+#include "AccurateSoundPlay.as";
+#include "TileCommon.as";
 
 Random _r(133701); //global clientside random object
 
@@ -12,6 +11,7 @@ void onInit(CBlob@ this)
 	this.addCommandID("on/off");
 	this.addCommandID("off");
 	this.addCommandID("stall");
+	this.Tag("engine");
 	this.Tag("propeller");
 	this.Tag("solid");
 	this.set_f32("power", 0.0f);
@@ -27,8 +27,8 @@ void onInit(CBlob@ this)
     	propeller.SetRelativeZ(2);
     	propeller.SetLighting(false);
         Animation@ animcharge = propeller.addAnimation("go", 1, true);
-        animcharge.AddFrame(Block::PROPELLER_A1);
-        animcharge.AddFrame(Block::PROPELLER_A2);
+        animcharge.AddFrame(1);
+        animcharge.AddFrame(2);
         propeller.SetAnimation("go");
     }
 
@@ -85,7 +85,7 @@ void onTick(CBlob@ this)
 		this.set_u8("stallTime", stallTime - 1);
 		if (isClient())//stall smoke effect
 		{
-			if (gameTime % (v_fastrender ? 5 : 2 ) == 0)
+			if (gameTime % (v_fastrender ? 5 : 2) == 0)
 				smoke(pos);
 		}
 	}
@@ -133,7 +133,7 @@ void onTick(CBlob@ this)
 				//eat stuff
 				Vec2f faceNorm(0,-1);
 				faceNorm.RotateBy(this.getAngleDegrees());
-				CBlob@ victim = getMap().getBlobAtPosition(pos - faceNorm * Block::size);
+				CBlob@ victim = getMap().getBlobAtPosition(pos - faceNorm * 8);
 				if (victim !is null && !victim.isAttached() &&
 					victim.getShape().getVars().customData > 0 &&
 					!victim.hasTag("player"))

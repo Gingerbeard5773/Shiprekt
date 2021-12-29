@@ -1,8 +1,7 @@
 #define SERVER_ONLY
 #include "Booty.as";
-#include "IslandsCommon.as";;
+#include "IslandsCommon.as";
 #include "MakeBlock.as";
-#include "BlockCommon.as";
 
 const u16 STATION_BOOTY = 4;
 const u16 MINI_STATION_BOOTY = 1;
@@ -41,9 +40,9 @@ void onTick(CRules@ this)
 					{
 						CBlob@ b = getBlobByNetworkID(isle.blocks[b_iter].blobID);
 						if (b !is null)
-							if (b.hasTag("propeller"))
+							if (b.hasTag("engine"))
 								propellers++;
-							else if (b.hasTag( "coupling" ))
+							else if (b.hasTag("coupling"))
 								couplings++;
 					}
 
@@ -272,10 +271,10 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						IslandBlock@ isle_block = isle.blocks[i];
 						if (isle_block is null) continue;
 
-						CBlob@ block = getBlobByNetworkID( isle_block.blobID );
+						CBlob@ block = getBlobByNetworkID(isle_block.blobID);
 						if (block is null) continue;
 						
-						cfg.add_u16("block" + i + "type", block.getSprite().getFrame());
+						cfg.add_string("block" + i + "type", block.getName());
 						cfg.add_f32("block" + i + "positionX", (block.getPosition().x - playerPos.x));
 						cfg.add_f32("block" + i + "positionY", (block.getPosition().y - playerPos.y));
 						cfg.add_f32("block" + i + "angle", block.getAngleDegrees());
@@ -299,12 +298,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					int numBlocks = cfg.read_u16("total blocks");
 					for (uint i = 0; i < numBlocks; ++i)
 					{	
-						u16 blockType = cfg.read_u16("block" + i + "type");
+						string blockType = cfg.read_string("block" + i + "type");
 						f32 blockPosX = cfg.read_f32("block" + i + "positionX");
 						f32 blockPosY = cfg.read_f32("block" + i + "positionY");
 						f32 blockAngle = cfg.read_f32("block" + i + "angle");
-						
-						CBlob@ b = makeBlock(playerPos + Vec2f(blockPosX, blockPosY), blockAngle, blockType, pBlob.getTeamNum());
+						//fix with sep
+						//CBlob@ b = makeBlock(playerPos + Vec2f(blockPosX, blockPosY), blockAngle, blockType, pBlob.getTeamNum());
 					}
 				}
 			}
@@ -328,8 +327,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 							CBlob@ block = getBlobByNetworkID(isle_block.blobID);
 							if (block is null) continue;
-							
-							const int blockType = block.getSprite().getFrame();
 							
 							if (!block.hasTag("mothership"))
 							{

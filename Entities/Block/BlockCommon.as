@@ -65,235 +65,121 @@ namespace Weight
 
 namespace Block
 {
-	const int size = 8;
-
-	enum Type 
+	f32 getWeight(const string blockName)
 	{
-		PLATFORM = 0,
-		PLATFORM2 = 1,
-		SOLID = 4,
-		RAM = 8,
-		FAKERAM = 48,
-		ANTIRAM = 45,
+		if (blockName =="propeller")
+			return Weight::propeller;
+		if (blockName == "ramengine")
+			return Weight::ramengine;
+		if (blockName == "solid")
+			return Weight::solid;
+		if (blockName == "door")
+			return Weight::door;
+		if (blockName == "ram")
+			return Weight::ram;
+		if (blockName == "fakeram")
+			return Weight::fakeram;
+		if (blockName == "antiram")
+			return Weight::antiram;
+		if (blockName == "platform")
+			return Weight::platform;
+		if (blockName == "cannon")
+			return Weight::cannon;
+		if (blockName == "harvester")
+			return Weight::harvester;
+		if (blockName == "patcher")
+			return Weight::patcher;
+		if (blockName == "harpoon")
+			return Weight::harpoon;
+		if (blockName == "machinegun")
+			return Weight::machinegun;
+		if (blockName == "flak")
+			return Weight::flak;
+		if (blockName == "pointdefense")
+			return Weight::pointdefense;
+		if (blockName == "launcher")
+			return Weight::launcher;
+		if (blockName == "seat")
+			return Weight::seat;
+		if (blockName == "coupling")
+			return Weight::coupling;
+		if (blockName == "repulsor")
+			return Weight::repulsor;
+		if (blockName == "bomb")
+			return Weight::bomb;		
+		if (blockName == "secondarycore")
+			return Weight::secondarycore;
+		if (blockName == "decoycore")
+			return Weight::decoycore;
+		if (blockName == "hyperflak")
+			return Weight::hyperflak;
 	
-		COUPLING = 35,
-		DOOR = 12,
-
-		PROPELLER = 16,
-		RAMENGINE = 17,
-		PROPELLER_A1 = 32,
-		PROPELLER_A2 = 33,
-		
-		SEAT = 23,
-
-		MOTHERSHIP1 = 80,
-		MOTHERSHIP2 = 81,
-		MOTHERSHIP3 = 82,
-		MOTHERSHIP4 = 96,
-		MOTHERSHIP5 = 97,
-		MOTHERSHIP6 = 98,
-		MOTHERSHIP7 = 112,
-		MOTHERSHIP8 = 113,
-		MOTHERSHIP9 = 114,
-		
-		STATION = 115,
-		MINISTATION = 116,
-		
-		HARVESTER = 42,
-		PATCHER = 51,
-		HARPOON = 43,
-		MACHINEGUN = 34,
-		LAUNCHER = 36,
-		CANNON = 7,
-		FLAK = 22,
-		HYPERFLAK = 31,
-		POINTDEFENSE = 37,
-		
-		BOMB = 19,
-		BOMB_A1 = 20,
-		BOMB_A2 = 21,
-		
-		REPULSOR = 28,
-		REPULSOR_A1 = 29,
-		REPULSOR_A2 = 30,
-
-		SECONDARYCORE = 65,
-		DECOYCORE = 66,
-	};
-
-	f32 getWeight(const uint blockType)
-	{
-		switch(blockType)		
-		{
-			case Block::PROPELLER:
-				return Weight::propeller;
-			break;
-			case Block::RAMENGINE:
-				return Weight::ramengine;
-			break;
-			case Block::SOLID:
-				return Weight::solid;
-			break;
-			case Block::DOOR:
-				return Weight::door;
-			break;
-			case Block::RAM:
-				return Weight::ram;
-			break;
-			case Block::FAKERAM:
-				return Weight::fakeram;
-			break;
-			case Block::ANTIRAM:
-				return Weight::antiram;
-			break;
-			case Block::PLATFORM:
-				return Weight::platform;
-			break;
-			case Block::CANNON:
-				return Weight::cannon;
-			break;
-			case Block::HARVESTER:
-				return Weight::harvester;
-			break;
-			case Block::PATCHER:
-				return Weight::patcher;
-			break;
-			case Block::HARPOON:
-				return Weight::harpoon;
-			break;
-			case Block::MACHINEGUN:
-				return Weight::machinegun;
-			break;
-			case Block::FLAK:
-				return Weight::flak;
-			break;
-			case Block::POINTDEFENSE:
-				return Weight::pointdefense;
-			break;
-			case Block::LAUNCHER:
-				return Weight::launcher;
-			break;
-			case Block::SEAT:
-				return Weight::seat;
-			break;
-			case Block::COUPLING:
-				return Weight::coupling;
-			break;
-			case Block::REPULSOR:
-				return Weight::repulsor;
-			break;
-			case Block::BOMB:
-				return Weight::bomb;
-			break;			
-			case Block::SECONDARYCORE:
-				return Weight::secondarycore;
-			break;
-			case Block::DECOYCORE:
-				return Weight::decoycore;
-			break;
-			case Block::HYPERFLAK:
-				return Weight::hyperflak;
-			break;
-		}
-	
-		return blockType == MOTHERSHIP5 ? Weight::mothership : Weight::platform;//MOTHERSHIP5 is the core block
+		return blockName == "mothership" ? Weight::mothership : Weight::platform;
 	}
 
 	f32 getWeight(CBlob@ blob)
 	{
-		return getWeight(blob.getSprite().getFrame());
+		return getWeight(blob.getName());
 	}
 	
-	u16 getCost(const uint blockType)
+	u16 getCost(const string blockName)
 	{
-		switch(blockType)		
-		{
-			case Block::STATION:
-				return Cost::station;
-			break;
-			case Block::MINISTATION:
-				return Cost::ministation;
-			break;
-			case Block::PROPELLER:
-				return Cost::propeller;
-			break;
-			case Block::RAMENGINE:
-				return Cost::ramengine;
-			break;
-			case Block::SOLID:
-				return Cost::solid;
-			break;
-			case Block::DOOR:
-				return Cost::door;
-			break;
-			case Block::RAM:
-				return Cost::ram;
-			break;
-			case Block::FAKERAM:
-				return Cost::fakeram;
-			break;
-			case Block::ANTIRAM:
-				return Cost::antiram;
-			break;
-			case Block::PLATFORM:
-				return Cost::platform;
-			break;
-			case Block::CANNON:
-				return Cost::cannon;
-			break;
-			case Block::HARVESTER:
-				return Cost::harvester;
-			break;
-			case Block::PATCHER:
-				return Cost::patcher;
-			break;
-			case Block::HARPOON:
-				return Cost::harpoon;
-			break;
-			case Block::MACHINEGUN:
-				return Cost::machinegun;
-			break;
-			case Block::FLAK:
-				return Cost::flak;
-			break;
-			case Block::POINTDEFENSE:
-				return Cost::pointdefense;
-			break;
-			case Block::LAUNCHER:
-				return Cost::launcher;
-			break;
-			case Block::SEAT:
-				return Cost::seat;
-			break;
-			case Block::COUPLING:
-				return Cost::coupling;
-			break;	
-			case Block::REPULSOR:
-				return Cost::repulsor;
-			break;
-			case Block::BOMB:
-				return Cost::bomb;
-			break;			
-			case Block::SECONDARYCORE:
-				return Cost::secondarycore;
-			break;
-			case Block::DECOYCORE:
-				return Cost::decoycore;
-			break;
-			case Block::HYPERFLAK:
-				return Cost::hyperflak;
-			break;
-		}
+		if (blockName == "station")
+			return Cost::station;
+		if (blockName == "ministation")
+			return Cost::ministation;
+		if (blockName =="propeller")
+			return Cost::propeller;
+		if (blockName == "ramengine")
+			return Cost::ramengine;
+		if (blockName == "solid")
+			return Cost::solid;
+		if (blockName == "door")
+			return Cost::door;
+		if (blockName == "ram")
+			return Cost::ram;
+		if (blockName == "fakeram")
+			return Cost::fakeram;
+		if (blockName == "antiram")
+			return Cost::antiram;
+		if (blockName == "platform")
+			return Cost::platform;
+		if (blockName == "cannon")
+			return Cost::cannon;
+		if (blockName == "harvester")
+			return Cost::harvester;
+		if (blockName == "patcher")
+			return Cost::patcher;
+		if (blockName == "harpoon")
+			return Cost::harpoon;
+		if (blockName == "machinegun")
+			return Cost::machinegun;
+		if (blockName == "flak")
+			return Cost::flak;
+		if (blockName == "pointdefense")
+			return Cost::pointdefense;
+		if (blockName == "launcher")
+			return Cost::launcher;
+		if (blockName == "seat")
+			return Cost::seat;
+		if (blockName == "coupling")
+			return Cost::coupling;
+		if (blockName == "repulsor")
+			return Cost::repulsor;
+		if (blockName == "bomb")
+			return Cost::bomb;		
+		if (blockName == "secondarycore")
+			return Cost::secondarycore;
+		if (blockName == "decoycore")
+			return Cost::decoycore;
+		if (blockName == "hyperflak")
+			return Cost::hyperflak;
 	
 		return 0;
 	}
 	
 	f32 getCost(CBlob@ blob)
 	{
-		return getCost(blob.getSprite().getFrame());
+		return getCost(blob.getName());
 	}
-
-	const f32 BUTTON_RADIUS_FLOOR = 6;
-	const f32 BUTTON_RADIUS_SOLID = 10;
-
 };

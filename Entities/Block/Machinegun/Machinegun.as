@@ -1,6 +1,5 @@
 #include "WeaponCommon.as";
 #include "WaterEffects.as";
-#include "BlockCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "CustomMap.as";
@@ -210,8 +209,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				const int thisColor = this.getShape().getVars().customData;
 				int bColor = b.getShape().getVars().customData;
 				bool sameIsland = bColor != 0 && thisColor == bColor;
-
-				const int blockType = b.getSprite().getFrame();
 				const bool isBlock = b.hasTag("block");
 
 				if (!b.hasTag("booty") && (bColor > 0 || !isBlock))
@@ -219,7 +216,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if (isBlock || b.hasTag("rocket"))
 					{
 						if (b.hasTag("solid") || (b.getTeamNum() != teamNum && 
-						   (blockType == Block::DOOR || blockType == Block::MOTHERSHIP5 || blockType == Block::DECOYCORE || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::BOMB)))//hit these and die
+						   (b.hasTag("door") || b.hasTag("mothership") || b.hasTag("decoycore") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb"))))//hit these and die
 							killed = true;
 						else if (sameIsland && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
 						{
@@ -228,7 +225,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							directionalSoundPlay("lightup", barrelPos);
 							break;
 						}
-						else if (blockType == Block::SEAT)
+						else if (b.hasTag("seat"))
 						{
 							AttachmentPoint@ seat = b.getAttachmentPoint(0);
 							if (seat !is null)
@@ -272,13 +269,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					}
 
 					CPlayer@ attacker = shooter.getPlayer();
-					if (attacker !is null && blockType != Block::MOTHERSHIP5 && !b.hasTag("weapon"))
-						damageBooty(attacker, shooter, b, b.hasTag("propeller"), 1, "Pinball_", true);
+					if (attacker !is null && !b.hasTag("mothership") && !b.hasTag("weapon"))
+						damageBooty(attacker, shooter, b, b.hasTag("engine"), 1, "Pinball_", true);
 
 					if (isServer())
 					{
-						f32 damage = getDamage(b, blockType);
-						if (b.hasTag("propeller") && b.getTeamNum() != teamNum && XORRandom(3) == 0)
+						f32 damage = getDamage(b);
+						if (b.hasTag("engine") && b.getTeamNum() != teamNum && XORRandom(3) == 0)
 							b.SendCommand(b.getCommandID("off"));
 						this.server_Hit(b, hi.hitpos, Vec2f_zero, damage, Hitters::arrow, true);
 					}
@@ -333,40 +330,29 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
     }
 }
 
-f32 getDamage(CBlob@ hitBlob, int blockType)
+f32 getDamage(CBlob@ hitBlob)
 {
 	f32 damage = 0.01f;
 
-	switch (blockType)
-	{
-		case Block::RAMENGINE:
-			damage = 0.25f;
-			break;
-		case Block::PROPELLER:
-			damage = 0.15f;
-			break;
-		case Block::FAKERAM:
-			damage = 0.30f;
-			break;
-		case Block::ANTIRAM:
-			damage = 0.09f;
-			break;
-		case Block::SEAT:
-			damage = 0.05f;
-			break;
-		case Block::DECOYCORE:
-			damage = 0.075f;
-			break;
-		case Block::BOMB:
-			damage = 0.4f;
-			break;
-	}
-
+	if (hitBlob.hasTag("ramengine"))
+		return 0.25f;
+	if (hitBlob.hasTag("propeller"))
+		return 0.15f;
+	if (hitBlob.hasTag("fakeram"))
+		return 0.30f;
+	if (hitBlob.hasTag("antiram"))
+		return 0.09f;
+	if (hitBlob.hasTag("seat"))
+		return 0.05f;
+	if (hitBlob.hasTag("decoycore"))
+		return 0.075f;
+	if (hitBlob.hasTag("bomb"))
+		return 0.4f;
 	if (hitBlob.hasTag("rocket"))
 		return 0.35f;
-	else if (hitBlob.hasTag("weapon"))
+	if (hitBlob.hasTag("weapon"))
 		return 0.075f;
-	else if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
+	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 0.1f;
 
 	return damage;//cores, solids

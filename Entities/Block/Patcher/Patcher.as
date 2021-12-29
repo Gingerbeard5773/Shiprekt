@@ -126,18 +126,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					u16 cBooty = server_getPlayerBooty(cName);
 					f32 mBlobHealth = b.getHealth();
 					f32 mMaxHealth = b.getInitialHealth();
-					const f32 mBlobCost = Block::getCost(blockType) > 0 ? Block::getCost(blockType) : 15;
-					const f32 initialReclaim = (blockType == Block::MOTHERSHIP5 ? 8.0f : b.get_f32("initial reclaim"));
+					const f32 mBlobCost = Block::getCost(b) > 0 ? Block::getCost(b) : 15;
+					const f32 initialReclaim = (b.hasTag("mothership") ? b.getInitialHealth() : b.get_f32("initial reclaim"));
 					f32 currentReclaim = b.get_f32("current reclaim");
 
 					f32 fullConstructAmount;
-					if (blockType != Block::MOTHERSHIP5)
+					if (!b.hasTag("mothership"))
 						fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
 					else
 						fullConstructAmount = (0.01f)*mMaxHealth; //mothership
 					
 
-					if (currentReclaim < initialReclaim || blockType == Block::MOTHERSHIP5)
+					if (currentReclaim < initialReclaim || b.hasTag("mothership"))
 					{
 						//healing
 						if ((currentReclaim + reconstructAmount) <= initialReclaim)
@@ -150,24 +150,24 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							reconstructAmount = initialReclaim - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
 							
-							if (blockType != Block::STATION && blockType != Block::MINISTATION)
+							if (!b.hasTag("station") && !b.hasTag("station"))
 							{
 								//stations
 								if (b.getTeamNum() == 255) //neutral
 								{
 									b.server_setTeamNum(this.getTeamNum());
-									b.getSprite().SetFrame(blockType);
+									b.getSprite().SetFrame(blockType); //remove after sep
 								}
 							}
 						}
 						
 						//calculate amount it will cost the player
-						if (blockType == Block::MOTHERSHIP5)
+						if (b.hasTag("mothership"))
 							reconstructCost = 5;
 						else if (mBlobHealth < mMaxHealth)
 							reconstructCost *= isMyShip ? 1.0f : 0.20f;
 							
-						if (blockType == Block::MOTHERSHIP5)
+						if (b.hasTag("mothership"))
 						{
 							//mothership
 							if (cBooty >= reconstructCost && mBlobHealth < initialReclaim)
@@ -176,7 +176,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 								server_addPlayerBooty(cName, -reconstructCost);
 							}
 						}
-						else if (blockType != Block::STATION && blockType != Block::MINISTATION)
+						else if (!b.hasTag("station") && !b.hasTag("ministation"))
 						{
 							//normal blocks
 							if (cBooty >= reconstructCost)

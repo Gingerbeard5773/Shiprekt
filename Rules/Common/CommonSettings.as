@@ -1,4 +1,3 @@
-#include "BlockCommon.as";
 #include "EmotesCommon.as"; 
 const int BUTTON_SIZE = 4;
 
@@ -36,15 +35,15 @@ void onInit(CRules@ this)
 	AddIconToken("$PISTOL$", "Tools.png", Vec2f(32,32), 0);
 	AddIconToken("$DECONSTRUCTOR$", "Tools.png", Vec2f(32,32), 1);
 	AddIconToken("$RECONSTRUCTOR$", "Tools.png", Vec2f(32,32), 2);
-	AddIconToken("$WOOD$", "Blocks.png", Vec2f(8,8), 0);
-	AddIconToken("$SOLID$", "Blocks.png", Vec2f(8,8), 4);
-	AddIconToken("$DOOR$", "Blocks.png", Vec2f(8,8), 12);
-	AddIconToken("$RAM$", "Blocks.png", Vec2f(8,8), 8);
-	AddIconToken("$ANTIRAM$", "Blocks.png", Vec2f(8,8), 45);
+	AddIconToken("$WOOD$", "platform.png", Vec2f(8,8), 0);
+	AddIconToken("$SOLID$", "Solid.png", Vec2f(8,8), 0);
+	AddIconToken("$DOOR$", "Door.png", Vec2f(8,8), 0);
+	AddIconToken("$RAM$", "Ram.png", Vec2f(8,8), 0);
+	AddIconToken("$ANTIRAM$", "AntiRam.png", Vec2f(8,8), 0);
 	AddIconToken("$PROPELLER$", "PropellerIcons.png", Vec2f(16,16), 0);
 	AddIconToken("$RAMENGINE$", "PropellerIcons.png", Vec2f(16,16), 1);
-	AddIconToken("$SEAT$", "Blocks.png", Vec2f(8,8), 23 );
-	AddIconToken("$BOMB$", "Blocks.png", Vec2f(8,8), 19 );
+	AddIconToken("$SEAT$", "Seat.png", Vec2f(8,8), 0);
+	AddIconToken("$BOMB$", "Bomb.png", Vec2f(8,8), 0);
 	AddIconToken("$HARVESTER$", "Harvester.png", Vec2f(16,16), 0);
 	AddIconToken("$PATCHER$", "Patcher.png", Vec2f(16,16), 0);
 	AddIconToken("$HARPOON$", "HarpoonBlock.png", Vec2f(16,16), 0); 
@@ -54,10 +53,10 @@ void onInit(CRules@ this)
 	AddIconToken("$HYPERFLAK$", "HyperFlak.png", Vec2f(16,16), 0);
 	AddIconToken("$POINTDEFENSE$", "PointDefense.png", Vec2f(16,16), 0);
 	AddIconToken("$LAUNCHER$", "Launcher.png", Vec2f(16,16), 0);
-	AddIconToken("$COUPLING$", "Blocks.png", Vec2f(8,8), 35);
-	AddIconToken("$REPULSOR$", "Blocks.png", Vec2f(8,8), 28);
-	AddIconToken("$SECONDARYCORE$", "Blocks.png", Vec2f(8,8), 65);
-	AddIconToken("$DECOYCORE$", "Blocks.png", Vec2f(8,8), 97);
+	AddIconToken("$COUPLING$", "Coupling.png", Vec2f(8,8), 0);
+	AddIconToken("$REPULSOR$", "Repulsor.png", Vec2f(8,8), 0);
+	AddIconToken("$SECONDARYCORE$", "SecondaryCore.png", Vec2f(8,8), 0);
+	AddIconToken("$DECOYCORE$", "Mothership.png", Vec2f(8,8), 0);
 
 	//spectator stuff
 	this.addCommandID("pick teams");

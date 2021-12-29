@@ -1,5 +1,4 @@
 #include "WeaponCommon.as";
-#include "BlockCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 
@@ -30,7 +29,7 @@ const uint8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 void onInit(CBlob@ this)
 {
-	this.Tag("pointDefense");
+	this.Tag("pointdefense");
 	this.Tag("weapon");
 	this.Tag("usesAmmo");
 	this.Tag("solid");
@@ -179,8 +178,6 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 			int thisColor = this.getShape().getVars().customData;
 			int bColor = b.getShape().getVars().customData;
 			bool sameIsland = bColor != 0 && thisColor == bColor;
-
-			const int blockType = b.getSprite().getFrame();
 
 			bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
 

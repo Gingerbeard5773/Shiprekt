@@ -42,7 +42,7 @@ void onTick(CBlob@ this)
 	{
 		CBlob@ seat = this.getAttachmentPoint(0).getOccupied();
 		
-		if (seat !is null && seat.hasTag("seat"))
+		if (seat !is null && seat.hasTag("hasSeat"))
 		{
 			const f32 seat_angle = seat.getAngleDegrees() + 90.0f;
 			angle = seat_angle;

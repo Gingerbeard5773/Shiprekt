@@ -99,8 +99,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
 
-				const int blockType = b.getSprite().getFrame();
-
 				if (b.hasTag("block") && b.getShape().getVars().customData > 0)
 				{
 					killed = true;
@@ -114,54 +112,51 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					CPlayer@ thisPlayer = shooter.getPlayer();						
 					if (thisPlayer is null) return; 
 					
-					if (b !is null)
+					if (b.hasTag("station") || b.hasTag("ministation")) continue;
+
+					Island@ island = getIsland(b.getShape().getVars().customData);
+
+					const f32 bCost = Block::getCost(b) > 0 ? Block::getCost(b) : 15;
+					f32 bHealth = b.getHealth();
+					f32 bInitHealth = b.getInitialHealth();
+					const f32 initialReclaim = b.get_f32("initial reclaim");
+					f32 currentReclaim = b.get_f32("current reclaim");
+					
+					f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim; //fastest reclaim possible
+
+					if (island !is null && bCost > 0)
 					{
-						if (blockType == Block::STATION || blockType == Block::MINISTATION) continue;
-
-						Island@ island = getIsland(b.getShape().getVars().customData);
-
-						const f32 bCost = Block::getCost(blockType) > 0 ? Block::getCost(blockType) : 15;
-						f32 bHealth = b.getHealth();
-						f32 bInitHealth = b.getInitialHealth();
-						const f32 initialReclaim = b.get_f32("initial reclaim");
-						f32 currentReclaim = b.get_f32("current reclaim");
+						string islandOwnerName = island.owner;
 						
-						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim; //fastest reclaim possible
-
-						if (island !is null && bCost > 0)
+						if (!b.hasTag("mothership"))
 						{
-							string islandOwnerName = island.owner;
-							
-							if (blockType != Block::MOTHERSHIP5)
+							f32 deconstructAmount = 0;
+							if ((islandOwnerName == "" && !island.isMothership) //true if no owner for island and island is not a mothership
+								|| (b.get_string("playerOwner") == "" && !island.isMothership) //true if no owner for the block and is not on a mothership
+								|| (islandOwnerName == thisPlayer.getUsername()) //true if we own the island
+								|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
 							{
-								f32 deconstructAmount = 0;
-								if ((islandOwnerName == "" && !island.isMothership) //true if no owner for island and island is not a mothership
-									|| (b.get_string("playerOwner") == "" && !island.isMothership) //true if no owner for the block and is not on a mothership
-									|| (islandOwnerName == thisPlayer.getUsername()) //true if we own the island
-									|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
-								{
-									deconstructAmount = fullConstructAmount; 
-								}
-								else
-								{
-									deconstructAmount = (1.0f/bCost)*initialReclaim; //slower reclaim
-								}
-
-								if ((currentReclaim - deconstructAmount) <= 0)
-								{
-									string cName = thisPlayer.getUsername();
-
-									server_addPlayerBooty(cName, bCost*(bHealth/bInitHealth));
-									directionalSoundPlay("/ChaChing.ogg", barrelPos);
-
-									b.Tag("disabled");
-									b.server_Die();
-								}
-								else
-									b.set_f32("current reclaim", currentReclaim - deconstructAmount);
+								deconstructAmount = fullConstructAmount; 
 							}
+							else
+							{
+								deconstructAmount = (1.0f/bCost)*initialReclaim; //slower reclaim
+							}
+
+							if ((currentReclaim - deconstructAmount) <= 0)
+							{
+								string cName = thisPlayer.getUsername();
+
+								server_addPlayerBooty(cName, bCost*(bHealth/bInitHealth));
+								directionalSoundPlay("/ChaChing.ogg", barrelPos);
+
+								b.Tag("disabled");
+								b.server_Die();
+							}
+							else
+								b.set_f32("current reclaim", currentReclaim - deconstructAmount);
 						}
-					}				
+					}			
 					if (killed) break;
 				}
 			}

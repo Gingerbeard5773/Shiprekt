@@ -123,21 +123,19 @@ void server_addPlayerBooty(string name, u16 booty) //give or take booty
 }
 
 #include "IslandsCommon.as";
-#include "BlockCommon.as";
 
 //rewards for damaging enemy ships
 void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rewardBlocks = false, u16 reward = 4, string sound = "Pinball_0", bool randomSound = false)
 {
 	if (victim.hasTag("block"))
 	{
-		const int blockType = victim.getSprite().getFrame();
 		string attackerName = attacker.getUsername();
 		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
 
 		if (victimIsle !is null && victimIsle.blocks.length > 3 //minimum size requirement
 			&& (victimIsle.owner != "" || victimIsle.isMothership) //verified ship
 			&& victim.getTeamNum() != attacker.getTeamNum() //not teammates
-			&& (victim.hasTag("weapon") || blockType == Block::BOMB || blockType == Block::SEAT || blockType == Block::MOTHERSHIP5 || //for sure reward
+			&& (victim.hasTag("weapon") || victim.hasTag("bomb") || victim.hasTag("seat") || victim.hasTag("mothership") || //for sure reward
 				rewardBlocks) //individual blocks for each
 			)
 		{
@@ -148,17 +146,16 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 
 			if (isServer())
 			{
-				CRules@ rules = getRules();
-				if (victim.hasTag("propeller"))
+				if (victim.hasTag("engine"))
 					reward += Maths::Clamp(reward/2, 1, 3);
 				else if (victim.hasTag("weapon"))
 					reward += Maths::Clamp(reward/2, 1, 8);
-				else if (blockType == Block::BOMB)
+				else if (victim.hasTag("bomb"))
 					reward += Maths::Clamp(reward/2, 2, 10);
-				else if (blockType == Block::MOTHERSHIP5)
+				else if (victim.hasTag("mothership"))
 					reward *= 2.0f;
 
-				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f);
+				f32 bFactor = (getRules().get_bool("whirlpool") ? 3.0f : 1.0f);
 				
 				reward = Maths::Round(reward * bFactor);
 								

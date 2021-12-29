@@ -1,16 +1,9 @@
-#include "WaterEffects.as"
-#include "BlockCommon.as"
+#include "WaterEffects.as";
 
 Random _r(1569815698); //clientside
 
 void onGib(CSprite@ this)
 {
-	u8 frame = this.getFrame();
-
-	//no gibs tiles
-	if (frame == Block::COUPLING || frame == Block::REPULSOR)
-		return;
-
     CBlob@ blob = this.getBlob();
     Vec2f pos = blob.getPosition();
     Vec2f vel = blob.getVelocity();

@@ -20,7 +20,7 @@ void onInit(CBlob@ this)
 			layer.SetRelativeZ(1);
 			layer.SetLighting(false);
 			Animation@ animation = layer.addAnimation('default', 0, false);
-			array<int> frames = {65, 67, 68, 69};
+			array<int> frames = {0, 1, 2, 3};
 			animation.AddFrames(frames);
 			layer.SetAnimation('default');
 		}
@@ -116,9 +116,7 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 
 			if (blob !is null && team == blob.getTeamNum())
 			{
-				int blobType = blob.getSprite().getFrame();
-
-				if (i % 4 == 0 && blobType != Block::COUPLING)
+				if (i % 4 == 0 && !blob.hasTag("coupling"))
 				{
 					blob.AddScript('Block_Explode.as');
 				}

@@ -112,7 +112,7 @@ void ColorBlocks(CBlob@ blob, Island@ island)
             if (b.getShape().getVars().customData == 0 
 				&& b.hasTag("block") 
 				&& (b.getPosition() - blob.getPosition()).LengthSquared() < 78 // avoid "corner" overlaps
-				&& ((b.get_u16("last color") == blob.get_u16("last color")) || (b.getSprite().getFrame() == Block::COUPLING) || (blob.getSprite().getFrame() == Block::COUPLING) 
+				&& ((b.get_u16("last color") == blob.get_u16("last color")) || (b.hasTag("coupling")) || (blob.hasTag("coupling")) 
 				|| ((getGameTime() - b.get_u32("placedTime")) < 10) || ((getGameTime() - blob.get_u32("placedTime")) < 10) 
 				|| (getMap().getTimeSinceStart() < 100)))
 				{
@@ -467,7 +467,7 @@ void setIsleTeam(Island @isle, u8 teamNum = 255)
 
 void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
 {
-	if (!isServer() && blob.hasTag("block"))
+	if (!isServer() && blob.hasTag("block")) //remove after sep
 		blob.set_u8("frame", blob.getSprite().getFrame());
 }
 
@@ -517,7 +517,7 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 					}
 					i = 0;
 
-					if (blob.getSprite().getFrame() == Block::COUPLING)
+					if (blob.hasTag("coupling"))
 					{
 						this.set_bool("dirty islands", true);		
 						return;

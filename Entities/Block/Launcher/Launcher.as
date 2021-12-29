@@ -1,5 +1,4 @@
 #include "WeaponCommon.as";
-#include "BlockCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 
@@ -87,8 +86,7 @@ bool isClear(CBlob@ this)
 		{
 			CBlob@ b =  blobs[i];
 			if (b is null || b is this) continue;
-			const int blockType = b.getSprite().getFrame();
-			if (blockType == Block::SOLID && b.getTeamNum() == teamNum)
+			if (b.hasTag("solid") && b.getTeamNum() == teamNum)
 			{
 				clear = false;
 				break;

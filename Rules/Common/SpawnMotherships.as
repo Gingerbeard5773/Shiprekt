@@ -1,4 +1,4 @@
-#include "MakeBlock.as"
+#include "MakeBlock.as";
 
 void onInit(CRules@ this)
 {
@@ -50,41 +50,41 @@ void SpawnMothership(Vec2f pos, const int team)
 {
 	// platforms
 	
-	makeBlock(pos + Vec2f(-Block::size, -Block::size), 0.0f, Block::MOTHERSHIP1, team);
-	makeBlock(pos + Vec2f(0, -Block::size), 0.0f, Block::MOTHERSHIP2, team);
-	makeBlock(pos + Vec2f(Block::size, -Block::size), 0.0f, Block::MOTHERSHIP3, team);
+	makeBlock(pos + Vec2f(-8, -8), 0.0f, "platform", team);
+	makeBlock(pos + Vec2f(0, -8), 0.0f, "platform", team).getSprite().SetFrame(2);
+	makeBlock(pos + Vec2f(8, -8), 0.0f, "platform", team);
 
-	makeBlock(pos + Vec2f(-Block::size, 0), 0.0f, Block::MOTHERSHIP4, team);	
-	makeBlock(pos, 0.0f, Block::MOTHERSHIP5, team);
-	makeBlock(pos + Vec2f(Block::size, 0), 0.0f, Block::MOTHERSHIP6, team);
+	makeBlock(pos + Vec2f(-8, 0), 0.0f, "platform", team).getSprite().SetFrame(5);	
+	makeBlock(pos, 0.0f, "mothership", team);
+	makeBlock(pos + Vec2f(8, 0), 0.0f, "platform", team).getSprite().SetFrame(3);
 
-	makeBlock(pos + Vec2f(-Block::size, Block::size), 0.0f, Block::MOTHERSHIP7, team);
-	makeBlock(pos + Vec2f(0, Block::size), 0.0f, Block::MOTHERSHIP8, team);
-	makeBlock(pos + Vec2f(Block::size, Block::size), 0.0f, Block::MOTHERSHIP9, team);
+	makeBlock(pos + Vec2f(-8, 8), 0.0f, "platform", team);
+	makeBlock(pos + Vec2f(0, 8), 0.0f, "platform", team).getSprite().SetFrame(4);
+	makeBlock(pos + Vec2f(8, 8), 0.0f, "platform", team);
 
 	// surrounding
 
-	makeBlock(pos + Vec2f(-Block::size*2, -Block::size*1), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(-Block::size*2, -Block::size*2), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(-Block::size*1, -Block::size*2), 0.0f, Block::SOLID, team);
+	makeBlock(pos + Vec2f(-8*2, -8*1), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(-8*2, -8*2), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(-8*1, -8*2), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(0, -Block::size*2), 0.0f, Block::PLATFORM, team);
+	makeBlock(pos + Vec2f(0, -8*2), 0.0f, "platform", team);
 
-	makeBlock(pos + Vec2f(Block::size*1, -Block::size*2), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(Block::size*2, -Block::size*2), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(Block::size*2, -Block::size*1), 0.0f, Block::SOLID, team);
+	makeBlock(pos + Vec2f(8*1, -8*2), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(8*2, -8*2), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(8*2, -8*1), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(Block::size*2, 0), 0.0f, Block::PLATFORM, team);
+	makeBlock(pos + Vec2f(8*2, 0), 0.0f, "platform", team);
 
-	makeBlock(pos + Vec2f(Block::size*2, Block::size*1), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(Block::size*2, Block::size*2), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(Block::size*1, Block::size*2), 0.0f, Block::SOLID, team);
+	makeBlock(pos + Vec2f(8*2, 8*1), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(8*2, 8*2), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(8*1, 8*2), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(0, Block::size*2), 0.0f, Block::PLATFORM, team);
+	makeBlock(pos + Vec2f(0, 8*2), 0.0f, "platform", team);
 
-	makeBlock(pos + Vec2f(-Block::size*1, Block::size*2), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(-Block::size*2, Block::size*2), 0.0f, Block::SOLID, team);
-	makeBlock(pos + Vec2f(-Block::size*2, Block::size*1), 0.0f, Block::SOLID, team);
+	makeBlock(pos + Vec2f(-8*1, 8*2), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(-8*2, 8*2), 0.0f, "solid", team);
+	makeBlock(pos + Vec2f(-8*2, 8*1), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(-Block::size*2, 0), 0.0f, Block::PLATFORM, team);
+	makeBlock(pos + Vec2f(-8*2, 0), 0.0f, "platform", team);
 }

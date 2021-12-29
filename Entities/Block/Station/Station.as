@@ -41,7 +41,7 @@ void Capture(CBlob@ this, const int attackerTeam)
 			CBlob@ b = getBlobByNetworkID(isle.blocks[i].blobID);
 			if (b !is null)
 			{
-				int blockType = b.getSprite().getFrame();
+				int blockType = b.getSprite().getFrame(); //temp till sep
 				b.server_setTeamNum(attackerTeam);
 				b.getSprite().SetFrame(blockType);
 			}

@@ -1,5 +1,4 @@
 #include "WaterEffects.as";
-#include "BlockCommon.as";
 #include "IslandsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
@@ -155,7 +154,6 @@ void onTick(CBlob@ this)
 				if (b is null || b is this) continue;
 
 				const int color = b.getShape().getVars().customData;
-				const int blockType = b.getSprite().getFrame();
 				const bool isBlock = b.hasTag("block");
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
 				
@@ -168,10 +166,10 @@ void onTick(CBlob@ this)
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
-						if (blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("solid") || 
-							blockType == Block::DOOR || ((b.hasTag("weapon") || b.hasTag("rocket")) && !sameTeam))
+						if (b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoycore") || b.hasTag("solid") || 
+							b.hasTag("door") || ((b.hasTag("weapon") || b.hasTag("rocket")) && !sameTeam))
 							killed = true;
-						else if (blockType == Block::SEAT)
+						else if (b.hasTag("seat"))
 						{
 							AttachmentPoint@ seat = b.getAttachmentPoint(0);
 							CBlob@ occupier = seat.getOccupied();
@@ -191,11 +189,11 @@ void onTick(CBlob@ this)
 					{
 						CBlob@ blob = owner.getBlob();
 						if (blob !is null)
-							damageBooty(owner, blob, b, b.hasTag("solid") || blockType == Block::DOOR, 15);
+							damageBooty(owner, blob, b, b.hasTag("solid") || b.hasTag("door"), 15);
 					}
 					
 					//f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
-					this.server_Hit(b, pos, Vec2f_zero, getDamage(b, blockType), Hitters::bomb, true);
+					this.server_Hit(b, pos, Vec2f_zero, getDamage(b), Hitters::bomb, true);
 					
 					if (killed)
 					{
@@ -208,53 +206,36 @@ void onTick(CBlob@ this)
 	}
 }
 
-f32 getDamage(CBlob@ hitBlob, int blockType)
+f32 getDamage(CBlob@ hitBlob)
 {
-	f32 damage = 1.5f;
-
-	switch (blockType)
-	{
-		case Block::RAMENGINE:
-		case Block::DOOR:
-			damage = 5.0f;
-			break;
-		case Block::PROPELLER:
-			damage = 2.5f;
-			break;
-		case Block::FAKERAM:
-			damage = 9.0f;
-			break;
-		case Block::ANTIRAM:
-			damage = 2.5f;
-			break;
-		case Block::SEAT:
-			damage = 2.5f;
-			break;
-		case Block::DECOYCORE:
-			damage = 1.5f;
-			break;
-	}
-
 	if (hitBlob.hasTag("rocket"))
 		return 4.0f;
-	else if (hitBlob.hasTag("weapon"))
+	if (hitBlob.hasTag("ramengine") || hitBlob.hasTag("door"))
+		return 5.0f;
+	if (hitBlob.hasTag("propeller"))
+		return 2.0f;
+	if (hitBlob.hasTag("fakeram"))
+		return 9.0f;
+	if (hitBlob.hasTag("antiram") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 		return 2.5f;
+	if (hitBlob.hasTag("decoycore"))
+		return 1.5f;
+	if (hitBlob.hasTag("rocket"))
+		return 4.0f;
 
-	return damage; //solids
+	return 1.5f; //solids
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
 	if (customData == 9) return;
-	
-	const int blockType = hitBlob.getSprite().getFrame();
 
-	if (hitBlob.hasTag("solid")|| blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || 
-			 blockType == Block::SEAT || blockType == Block::DOOR || hitBlob.hasTag("weapon"))
+	if (hitBlob.hasTag("solid")|| hitBlob.hasTag("mothership") || hitBlob.hasTag("secondaryCore") || 
+			 hitBlob.hasTag("seat") || hitBlob.hasTag("door") || hitBlob.hasTag("weapon"))
 	{
 		sparks(worldPoint, 15, 5.0f, 20);
 			
-		if (blockType == Block::MOTHERSHIP5)
+		if (hitBlob.hasTag("mothership"))
 			directionalSoundPlay("Entities/Characters/Knight/ShieldHit.ogg", worldPoint);
 		else
 			directionalSoundPlay("Blast1.ogg", worldPoint);
@@ -289,10 +270,9 @@ void onDie(CBlob@ this)
 			for (uint i = 0; i < blobsInRadius.length; i++)
 			{
 				CBlob @b = blobsInRadius[i];
-				const int blockType = b.getSprite().getFrame();
 				
-				if (!b.hasTag("seat") && !b.hasTag("mothership") && b.hasTag("block") && b.getShape().getVars().customData > 0)
-					this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b, blockType) * SPLASH_DAMAGE, Hitters::bomb, false);
+				if (!b.hasTag("hasSeat") && !b.hasTag("mothership") && b.hasTag("block") && b.getShape().getVars().customData > 0)
+					this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b) * SPLASH_DAMAGE, Hitters::bomb, false);
 			}
 		}
 	}

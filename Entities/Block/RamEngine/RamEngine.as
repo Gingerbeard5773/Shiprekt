@@ -1,9 +1,8 @@
-#include "IslandsCommon.as"
-#include "BlockCommon.as"
-#include "WaterEffects.as"
-#include "PropellerForceCommon.as"
-#include "AccurateSoundPlay.as"
-#include "TileCommon.as"
+#include "IslandsCommon.as";
+#include "WaterEffects.as";
+#include "PropellerForceCommon.as";
+#include "AccurateSoundPlay.as";
+#include "TileCommon.as";
 
 Random _r(133701); //global clientside random object
 
@@ -12,7 +11,8 @@ void onInit(CBlob@ this)
 	this.addCommandID("on/off");
 	this.addCommandID("off");
 	this.addCommandID("stall");
-	this.Tag("propeller");
+	this.Tag("engine");
+	this.Tag("ramengine");
 	this.Tag("solid");
 	this.set_f32("power", 0.0f);
 	this.set_f32("powerFactor", 2.0f);
@@ -27,8 +27,8 @@ void onInit(CBlob@ this)
     	ramEngine.SetRelativeZ(2);
     	ramEngine.SetLighting(false);
         Animation@ animcharge = ramEngine.addAnimation("go", 1, true);
-        animcharge.AddFrame(Block::PROPELLER_A1);
-        animcharge.AddFrame(Block::PROPELLER_A2);
+        animcharge.AddFrame(1);
+        animcharge.AddFrame(2);
         ramEngine.SetAnimation("go");
     }
 
@@ -133,7 +133,7 @@ void onTick(CBlob@ this)
 				//eat stuff
 				Vec2f faceNorm(0,-1);
 				faceNorm.RotateBy(this.getAngleDegrees());
-				CBlob@ victim = getMap().getBlobAtPosition(pos - faceNorm * Block::size);
+				CBlob@ victim = getMap().getBlobAtPosition(pos - faceNorm * 8);
 				if (victim !is null && !victim.isAttached() 
 					 && victim.getShape().getVars().customData > 0
 					       && !victim.hasTag("player"))	

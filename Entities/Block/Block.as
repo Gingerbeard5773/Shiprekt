@@ -1,5 +1,4 @@
 #include "IslandsCommon.as";
-#include "BlockCommon.as";
 #include "MakeDustParticle.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleHeal.as";
@@ -24,16 +23,10 @@ void onTick (CBlob@ this)
 	
 	if (this.getTickSinceCreated() < 1) //accounts for time after block production
 	{
-		const int blockType = thisSprite.getFrame();
-		
-		if (blockType == Block::SOLID || blockType == Block::RAM ||
-			blockType == Block::FAKERAM || blockType == Block::ANTIRAM)
-			this.Tag("solid"); //temporary until seperation
-		
 		if (this.get_f32("current reclaim") == 0.0f)
 		{
 			this.set_f32("initial reclaim", this.getHealth());		
-			if (blockType != Block::STATION && blockType != Block::MINISTATION)
+			if (!this.hasTag("station") && !this.hasTag("ministation"))
 			{
 				this.set_f32("current reclaim", this.getHealth());
 			}
@@ -85,19 +78,16 @@ void onTick (CBlob@ this)
 						
 							if (other_island !is null)
 							{
-								const int blockType = thisSprite.getFrame();
-								const int other_blockType = blob.getSprite().getFrame();
-								
-								bool docking = (blockType == Block::COUPLING || other_blockType == Block::COUPLING) 
+								bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
 													&& ((island.isMothership || other_island.isMothership) || (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
 													&& this.getTeamNum() == blob.getTeamNum()
 													&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
 													
-								bool ramming = ( blockType == Block::RAM || other_blockType == Block::RAM
-													|| blockType == Block::FAKERAM || other_blockType == Block::FAKERAM
-													|| blockType == Block::RAMENGINE || other_blockType == Block::RAMENGINE
-													|| blockType == Block::SEAT || other_blockType == Block::SEAT 
-													|| blockType == Block::COUPLING || other_blockType == Block::COUPLING);
+								bool ramming = (this.hasTag("ram")|| blob.hasTag("ram")
+													|| this.hasTag("fakeram") || blob.hasTag("fakeram")
+													|| this.hasTag("ramengine") || blob.hasTag("ramengine")
+													|| this.hasTag("seat") || blob.hasTag("seat") 
+													|| this.hasTag("coupling") || blob.hasTag("coupling"));
 
 								Vec2f velnorm = island.vel; 
 								velnorm.Normalize();
@@ -136,7 +126,8 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 
 void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
-	if (blob is null || this.hasTag("noCollide") || blob.hasTag("noCollide"))	return;
+	if (blob is null || this.hasTag("noCollide") || blob.hasTag("noCollide"))
+		return;
 
 	const int color = this.getShape().getVars().customData;
 	const int other_color = blob.getShape().getVars().customData;
@@ -146,26 +137,24 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		Island@ island = getIsland(color);
 		Island@ other_island = getIsland(other_color);
 	
-		const int blockType = this.getSprite().getFrame();
-		const int other_blockType = blob.getSprite().getFrame();
 		bool docking;
 		bool ramming;
 		
 		if (island !is null && other_island !is null)
 		{
-			if (island.vel.Length() < 0.01f && other_island.vel.Length() < 0.01f )
+			if (island.vel.Length() < 0.01f && other_island.vel.Length() < 0.01f)
 				return;
 				
-			docking = (blockType == Block::COUPLING || other_blockType == Block::COUPLING) 
-								&& ((island.isMothership || other_island.isMothership) || (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
-								&& this.getTeamNum() == blob.getTeamNum()
-								&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
+			docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
+					&& ((island.isMothership || other_island.isMothership) || (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
+					&& this.getTeamNum() == blob.getTeamNum()
+					&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
 								
-			ramming = (blockType == Block::RAM || other_blockType == Block::RAM
-							|| blockType == Block::FAKERAM || other_blockType == Block::FAKERAM
-							|| blockType == Block::RAMENGINE || other_blockType == Block::RAMENGINE
-							|| blockType == Block::SEAT || other_blockType == Block::SEAT
-							|| blockType == Block::COUPLING || other_blockType == Block::COUPLING);
+			ramming = (this.hasTag("ram") || blob.hasTag("ram") || 
+					   this.hasTag("fakeram") || blob.hasTag("fakeram") || 
+					   this.hasTag("ramengine") || blob.hasTag("ramengine") || 
+					   this.hasTag("seat") || blob.hasTag("seat") || 
+					   this.hasTag("coupling") || blob.hasTag("coupling"));
 		}
 		else docking = false;
 			
@@ -194,113 +183,90 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		}		
 		
 		if (isServer() && 
-			!(blockType == Block::STATION || other_blockType == Block::STATION) && 
-			!(blockType == Block::MINISTATION || other_blockType == Block::MINISTATION) ) // how to clean this up
+			!(this.hasTag("station") || blob.hasTag("station")) && 
+			!(this.hasTag("ministation") || blob.hasTag("ministation"))) // how to clean this up
 		{
 			if (docking)//force island merge
 				getRules().set_bool("dirty islands", true);
 			else
 			{
 				// these are checked separately so that seats/ram engines don't break from coups/repulsors
-				if (blockType == Block::COUPLING || other_blockType == Block::COUPLING) // how to clean this up
+				if (this.hasTag("coupling") || blob.hasTag("coupling")) // how to clean this up
 				{
-					if (blockType == Block::COUPLING) Die(this);
-					if (other_blockType == Block::COUPLING) Die(blob);
+					if (this.hasTag("coupling")) Die(this);
+					if (blob.hasTag("coupling")) Die(blob);
 				}
-				else if (blockType == Block::REPULSOR || other_blockType == Block::REPULSOR) // how to clean this up
+				else if (this.hasTag("repulsor") || blob.hasTag("repulsor")) // how to clean this up
 				{
-					if (blockType == Block::REPULSOR) Die(this);
-					if (other_blockType == Block::REPULSOR) Die(blob);
+					if (this.hasTag("repulsor")) Die(this);
+					if (blob.hasTag("repulsor")) Die(blob);
 				}
 				else
 				{ 
-					switch (blockType)
+					if (this.hasTag("seat") || this.hasTag("fakeram"))
+						Die(this);
+
+					if (this.hasTag("ramengine"))
 					{
-						case Block::SEAT:
-						case Block::FAKERAM:
-							Die(this);
-							break;
-
-						case Block::RAMENGINE:
-							switch (other_blockType)
-							{
-								case Block::ANTIRAM:
-									this.server_Hit(blob, point1, Vec2f_zero, 0.6f, 0, true);
-									break;
-								case Block::PROPELLER:
-									this.server_Hit(blob, point1, Vec2f_zero, 2.1f, 0, true);
-									break;
-								case Block::PLATFORM:
-								case Block::RAMENGINE:
-									Die(blob);
-									break;
-								default:
-									this.server_Hit(blob, point1, Vec2f_zero, 1.1f, 0, true);
-									break;
-							}
-							Die(this);
-							break;
-
-						case Block::RAM:
-							switch (other_blockType)
-							{
-								case Block::ANTIRAM:
-									this.server_Hit(blob, point1, Vec2f_zero, 2.0f, 0, true);
-									Die(this);
-									break;
-
-								case Block::PROPELLER:
-									this.server_Hit( this, point1, Vec2f_zero, 2.2f, 0, true);
-									Die(blob);
-									break;
-
-								case Block::SOLID:
-								case Block::RAM:
-									Die(this);
-									Die(blob);
-									break;
-
-								case Block::MOTHERSHIP5:
-								case Block::SECONDARYCORE:
-								case Block::DECOYCORE:
-									Die(this);
-									break;
-
-								default:
-									if (blob.hasTag("weapon"))
-									{
-										if (blob.getHealth() >= this.getHealth())
-										{
-											Die(this);
-											this.server_Hit(blob, point1, Vec2f_zero, this.hasTag("solid") ? this.getHealth() : this.getHealth()/2.0f, 0, true);
-											break;
-										}
-										else blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
-									}
-									else if (!blob.hasTag("solid") && other_island !is null) 
-										this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
-									Die(blob);
-									break;
-							}
-							break;
-
-						default:
-							if (blockType == Block::BOMB) //bombs annihilate all
-							{
-								if (other_blockType == Block::MOTHERSHIP5)
-									this.server_Hit(blob, point1, Vec2f_zero, 2.7f, 0, true);
-								else Die(blob);
-								Die(this);
-							}
-							break;
-					}
-					switch (other_blockType)
-					{
-						case Block::SEAT:
-						case Block::FAKERAM:
+						if (blob.hasTag("antiram"))
+							this.server_Hit(blob, point1, Vec2f_zero, 0.6f, 0, true);
+						else if (blob.hasTag("propeller"))
+							this.server_Hit(blob, point1, Vec2f_zero, 2.1f, 0, true);
+						else if (blob.hasTag("platform") || blob.hasTag("ramengine"))
 							Die(blob);
-							break;
+						else
+							this.server_Hit(blob, point1, Vec2f_zero, 1.1f, 0, true);
+							
+						Die(this);
 					}
+					else if (this.hasTag("ram"))
+					{
+						if (blob.hasTag("antiram"))
+						{
+							this.server_Hit(blob, point1, Vec2f_zero, 2.0f, 0, true);
+							Die(this);
+						}
+						else if (blob.hasTag("propeller"))
+						{
+							this.server_Hit(this, point1, Vec2f_zero, 2.2f, 0, true);
+							Die(blob);
+						}
+						else if (blob.hasTag("hull") || blob.hasTag("ram"))
+						{
+							Die(this);
+							Die(blob);
+						}
+						else if (blob.hasTag("mothership") || blob.hasTag("secondaryCore") || blob.hasTag("decoycore"))
+						{
+							Die(this);
+						}
+						else if (blob.hasTag("weapon"))
+						{
+							if (blob.getHealth() >= this.getHealth())
+							{
+								Die(this);
+								this.server_Hit(blob, point1, Vec2f_zero, this.hasTag("solid") ? this.getHealth() : this.getHealth()/2.0f, 0, true);
+							}
+							else blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
+						}
+						else if (!blob.hasTag("solid") && other_island !is null)
+						{
+							this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
+							Die(blob);
+						}
+					}
+					else if (this.hasTag("bomb")) //bombs annihilate all
+					{
+						if (blob.hasTag("mothership"))
+							this.server_Hit(blob, point1, Vec2f_zero, 2.7f, 0, true);
+						else Die(blob);
+						Die(this);
+					}
+				}
+				
+				if (blob.hasTag("seat") || blob.hasTag("fakeram"))
+				{
+					Die(blob);
 				}
 			}
 		}
@@ -427,8 +393,7 @@ void onDie(CBlob@ this)
 	if (isClient())
 	{
 		//kill humans standing on top. done locally because lag makes server unable to catch the overlapping playerblobs
-		int type = this.getSprite().getFrame();
-		if (type != Block::COUPLING && type != Block::REPULSOR)
+		if (!this.hasTag("coupling") && !this.hasTag("repulsor"))
 		{
 			CBlob@ localBlob = getLocalPlayerBlob();
 			if (localBlob !is null && localBlob.get_u16("shipID") == this.getNetworkID())
@@ -443,7 +408,7 @@ void onDie(CBlob@ this)
 		}
 	}
 	
-	if (isServer() && this.hasTag("seat"))
+	if (isServer() && this.hasTag("hasSeat"))
 	{
 		AttachmentPoint@ seat = this.getAttachmentPoint(0);
 		CBlob@ b = seat.getOccupied();
@@ -498,7 +463,6 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 		
 		if (isClient())
 		{
-			int blockType = this.getSprite().getFrame();
 			const f32 initHealth = this.getInitialHealth();
 
 			//add damage layers
@@ -507,11 +471,9 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 			
 			if (this.hasTag("solid") && hp < currentStep && hp <= initHealth - step && !isCore) //update frame if past health margins
 			{
-				int bFrame = blockType == Block::RAM ? 9 : blockType == Block::ANTIRAM ? 46 : 5; //5 default- for propellers
-
-				if (blockType != Block::RAMENGINE && blockType != Block::POINTDEFENSE && blockType != Block::FAKERAM)
+				if (!this.hasTag("ramengine") && !this.hasTag("pointdefense") && !this.hasTag("fakeram"))
 				{
-					const int frame = (oldHealth > initHealth * 0.5f) ? bFrame : bFrame + 1;	
+					const int frame = (oldHealth > initHealth * 0.5f) ? 1 : 2;	
 					CSprite@ sprite = this.getSprite();
 					CSpriteLayer@ layer = sprite.addSpriteLayer("dmg"+sprite.getSpriteLayerCount());
 					if (layer !is null)

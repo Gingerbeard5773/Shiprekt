@@ -1,8 +1,7 @@
-#include "BlockCommon.as"
-#include "IslandsCommon.as"
-#include "WaterEffects.as"
-#include "HarpoonForceCommon.as"
-#include "ParticleSparks.as"
+#include "IslandsCommon.as";
+#include "WaterEffects.as";
+#include "HarpoonForceCommon.as";
+#include "ParticleSparks.as";
 #include "TileCommon.as";
 #include "AccurateSoundPlay.as";
 
@@ -307,39 +306,35 @@ void onTick(CBlob@ this)
 				
 				if (b !is null)
 				{
-					if (b.hasTag("block"))
+					if (b.hasTag("block") && b.hasTag("solid"))
 					{
-						const int blockType = b.getSprite().getFrame();
-						if (b.hasTag("solid"))
+						harpoon.grapple_pos = b.getPosition();
+						
+						// Pull the islands together
+						Island@ hitIsland = getIsland(b.getShape().getVars().customData);
+						if (hitIsland !is null)
 						{
-							harpoon.grapple_pos = b.getPosition();
-							
-							// Pull the islands together
-							Island@ hitIsland = getIsland(b.getShape().getVars().customData);
-							if (hitIsland !is null)
+							bool isMyIsland = hitIsland.id == thisIsland.id;
+							bool ropeTooLong = (harpoon.grapple_pos - pos).getLength() > harpoon_grapple_length;
+							if (!isMyIsland && ropeTooLong)
 							{
-								bool isMyIsland = hitIsland.id == thisIsland.id;
-								bool ropeTooLong = (harpoon.grapple_pos - pos).getLength() > harpoon_grapple_length;
-								if (!isMyIsland && ropeTooLong)
-								{
-									Vec2f moveVel;
-									Vec2f moveNorm;
-									float angleVel;	
+								Vec2f moveVel;
+								Vec2f moveNorm;
+								float angleVel;	
+							
+								const f32 hitMass = hitIsland.mass;
+								HarpoonForces(this, b, -1.0f, moveVel, moveNorm, angleVel);
+								moveVel /= hitMass;
+								angleVel /= hitMass;
+								hitIsland.vel += moveVel;
+								hitIsland.angle_vel += angleVel*2.0f;
 								
-									const f32 hitMass = hitIsland.mass;
-									HarpoonForces(this, b, -1.0f, moveVel, moveNorm, angleVel);
-									moveVel /= hitMass;
-									angleVel /= hitMass;
-									hitIsland.vel += moveVel;
-									hitIsland.angle_vel += angleVel*2.0f;
-									
-									const f32 thisMass = thisIsland.mass;
-									HarpoonForces(b, this, -1.0f, moveVel, moveNorm, angleVel);
-									moveVel /= thisMass;
-									angleVel /= thisMass;
-									thisIsland.vel += moveVel;
-									thisIsland.angle_vel += angleVel*2.0f;
-								}
+								const f32 thisMass = thisIsland.mass;
+								HarpoonForces(b, this, -1.0f, moveVel, moveNorm, angleVel);
+								moveVel /= thisMass;
+								angleVel /= thisMass;
+								thisIsland.vel += moveVel;
+								thisIsland.angle_vel += angleVel*2.0f;
 							}
 						}
 					}

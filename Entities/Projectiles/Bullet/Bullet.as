@@ -1,5 +1,4 @@
 #include "WaterEffects.as";
-#include "BlockCommon.as";
 #include "IslandsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
@@ -32,40 +31,26 @@ void onTick(CBlob@ this)
 }
 
 
-f32 getDamage(CBlob@ hitBlob, int blockType)
+f32 getDamage(CBlob@ hitBlob)
 {
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human" || hitBlob.hasTag("weapon"))
 		return 0.4f;
-
-	f32 dmg = 0.25f; //cores | solids
-	switch (blockType)
-	{
-		case Block::BOMB:
-			dmg = 1.35f;
-			break;
-		case Block::PROPELLER:
-			dmg = 0.75f;
-			break;
-		case Block::RAMENGINE:
-			dmg = 1.5f;
-			break;
-		case Block::SEAT:
-		case Block::DECOYCORE:
-		case Block::POINTDEFENSE:
-			dmg = 0.4f;
-			break;
-		case Block::ANTIRAM:
-			dmg = 0.5f;
-			break;
-		case Block::FAKERAM:
-			dmg = 2.0f;
-			break;
-		case Block::DOOR:
-			dmg = 0.7f;
-			break;
-	}
+	if (hitBlob.hasTag("bomb"))
+		return 1.35f;
+	if (hitBlob.hasTag("propeller"))
+		return 0.75f;
+	if (hitBlob.hasTag("ramengine"))
+		return 1.5f;
+	if (hitBlob.hasTag("antiram"))
+		return 0.5f;
+	if (hitBlob.hasTag("fakeram"))
+		return 2.0f;
+	if (hitBlob.hasTag("door"))
+		return 0.7f;
+	if (hitBlob.hasTag("seat") || hitBlob.hasTag("decoycore") || hitBlob.hasTag("pointdefense"))
+		return 0.4f;
 		
-	return dmg;
+	return 0.25f; //cores | solids
 }
 
 void onCollision(CBlob@ this, CBlob@ b, bool solid)
@@ -75,21 +60,20 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 	if (b !is null)
 	{
 		const int color = b.getShape().getVars().customData;
-		const int blockType = b.getSprite().getFrame();
 		const bool isBlock = b.hasTag("block");				
 
 		if (!b.hasTag("booty") && (color > 0 || !isBlock))
 		{
 			if (isBlock || b.hasTag("weapon"))
 			{
-				if (b.hasTag("solid") || blockType == Block::DOOR || (b.getTeamNum() != this.getTeamNum() && 
-				(blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || b.hasTag("weapon") || blockType == Block::BOMB)))//hit these and die
+				if (b.hasTag("solid") || b.hasTag("door") || (b.getTeamNum() != this.getTeamNum() && 
+				(b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoycore") || b.hasTag("weapon") || b.hasTag("bomb"))))//hit these and die
 				{
 					killed = true;
 					sparks(this.getPosition() + this.getVelocity(), 8);
 					directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", this.getPosition(), 0.50f);
 				}
-				else if (b.hasTag("seat") || blockType == Block::FLAK || blockType == Block::HYPERFLAK)
+				else if (b.hasTag("hasSeat"))
 				{
 					AttachmentPoint@ seat = b.getAttachmentPoint(0);
 					CBlob@ occupier = seat.getOccupied();
@@ -118,10 +102,10 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 			{
 				CBlob@ blob = owner.getBlob();
 				if (blob !is null)
-					damageBooty(owner, blob, b, b.hasTag("propeller"), 5);
+					damageBooty(owner, blob, b, b.hasTag("engine"), 5);
 			}
 
-			this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(b, blockType), Hitters::bomb_arrow, true);
+			this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(b), Hitters::bomb_arrow, true);
 			
 			if (killed)
 				this.server_Die();

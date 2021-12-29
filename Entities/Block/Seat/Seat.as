@@ -1,8 +1,7 @@
-#include "IslandsCommon.as"
-#include "HumanCommon.as"
-#include "BlockCommon.as"
-#include "BlockProduction.as"
-#include "PropellerForceCommon.as"
+#include "IslandsCommon.as";
+#include "HumanCommon.as";
+#include "BlockProduction.as";
+#include "PropellerForceCommon.as";
 
 const u16 COUPLINGS_COOLDOWN = 8 * 30;
 const u16 CREW_COUPLINGS_LEASE = 10 * 30;//time till the captain can control crew's couplings
@@ -38,23 +37,21 @@ void onInit(CBlob@ this)
 	this.set_bool("canProduceCoupling", false);
 	this.set_u8("seat icon", 7);
 	this.Tag("control");
+	this.Tag("seat");
 	
 	//anim
-	CSpriteLayer@ layer = this.getSprite().addSpriteLayer("seatfold", 8, 8);
-    if (layer !is null)
-    {
-        //default
-        {
-            Animation@ anim = layer.addAnimation("default", 0, false);
-            anim.AddFrame(Block::SEAT);
-        }
-        //folding
-        {
-            Animation@ anim = layer.addAnimation("fold", 4, false);
-            int[] frames = {Block::SEAT, Block::SEAT+1, Block::SEAT+2, Block::SEAT+3, Block::SEAT+4};
-            anim.AddFrames(frames);
-        }
-    }
+	CSprite@ sprite = this.getSprite();
+	//default
+	{
+		Animation@ anim = sprite.addAnimation("default", 0, false);
+		anim.AddFrame(0);
+	}
+	//folding
+	{
+		Animation@ anim = sprite.addAnimation("fold", 4, false);
+		int[] frames = {0, 1, 2, 3, 4};
+		anim.AddFrames(frames);
+	}
 }
 
 void onTick(CBlob@ this)
@@ -65,8 +62,6 @@ void onTick(CBlob@ this)
 	u32 gameTime = getGameTime();
 	u8 teamNum = this.getTeamNum();
 	string seatOwner = this.get_string("playerOwner");
-	
-	CSprite@ sprite = this.getSprite();
 	
 	if (isServer())
 	{
@@ -86,9 +81,8 @@ void onTick(CBlob@ this)
 		}
 	}
 
-	CSpriteLayer@ layer = sprite.getSpriteLayer("seatfold");
-    if (layer !is null)
-		layer.SetAnimation(seatOwner != "" ? "default": "fold");//update sprite
+	CSprite@ sprite = this.getSprite();
+	sprite.SetAnimation(seatOwner != "" ? "default": "fold");//update sprite
 
 	Island@ island = getIsland(this.getShape().getVars().customData);
 	if (island is null)	return;
@@ -280,7 +274,7 @@ void onTick(CBlob@ this)
 		if (inv && canProduceCoupling && !Human::isHoldingBlocks(occupier))
 		{
 			this.set("couplingCooldown", gameTime + COUPLINGS_COOLDOWN);
-			ProduceBlock(rules, occupier, Block::COUPLING, 2);
+			ProduceBlock(rules, occupier, "coupling", 2);
 		}
 		
 		//update if islands changed
@@ -539,7 +533,7 @@ void updateArrays(CBlob@ this, Island@ island)
 			cannons.push_back(block.getNetworkID());
 		
 		//propellers
-		if (block.hasTag("propeller"))
+		if (block.hasTag("engine"))
 		{
 			Vec2f _veltemp, velNorm;
 			float angleVel;

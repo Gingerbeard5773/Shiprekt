@@ -19,22 +19,19 @@ void onInit(CBlob@ this)
 	this.set_u32("detonationTime", 0);
 	this.server_SetHealth(2.0f);
 
-	CSpriteLayer@ layer =  this.getSprite().addSpriteLayer("repulse", 8, 8);
-    if (layer !is null)
-    {
-		//default animation
-        {
-            Animation@ anim = layer.addAnimation("default", 0, false);
-            anim.AddFrame(Block::REPULSOR);
-        }
-        //activated animation
-        {
-            Animation@ anim = layer.addAnimation("activated", FUSE_TIME/3, false);
+	CSprite@ sprite = this.getSprite();
+	//default animation
+	{
+		Animation@ anim = sprite.addAnimation("default", 0, false);
+		anim.AddFrame(0);
+	}
+	//activated animation
+	{
+		Animation@ anim = sprite.addAnimation("activated", FUSE_TIME/3, false);
 
-            int[] frames = {Block::REPULSOR, Block::REPULSOR_A1, Block::REPULSOR_A2, Block::REPULSOR_A2, Block::REPULSOR_A2};
-            anim.AddFrames(frames);
-        }
-    }
+		int[] frames = {0, 1, 2, 2, 3};
+		anim.AddFrames(frames);
+	}
 }
 
 void Repulse(CBlob@ this)
@@ -55,10 +52,8 @@ void Repulse(CBlob@ this)
 		Island@ isle = getIsland(color);
 		if (isle !is null && isle.mass > 0.0f)
 		{
-			const int blockType = b.getSprite().getFrame();
-			
 			f32 pushMultiplier = 1.0f;
-			if (blockType == Block::RAMENGINE || blockType == Block::PROPELLER)
+			if (b.hasTag("engine"))
 				pushMultiplier = 1.5f;			
 			
 			f32 pushDistance = (b.getPosition() - pos).getLength();
@@ -69,7 +64,7 @@ void Repulse(CBlob@ this)
 		}
 		
 		//turn on props
-		if (isServer() && b.hasTag("propeller") && isle.owner == "")
+		if (isServer() && b.hasTag("engine") && isle.owner == "")
 		{
 			b.set_u32("onTime", getGameTime());
 			b.set_f32("power", -1.0f);
@@ -109,8 +104,7 @@ void Activate(CBlob@ this, u32 time)
 {
     this.Tag("activated");
 	this.set_u32("detonationTime", time);
-    CSpriteLayer@ repulse = this.getSprite().getSpriteLayer("repulse");
-	if (repulse !is null) repulse.SetAnimation("activated");
+	this.getSprite().SetAnimation("activated");
 	directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
 }
 

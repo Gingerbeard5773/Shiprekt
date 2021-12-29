@@ -1,5 +1,4 @@
 #include "Hitters.as";
-#include "BlockCommon.as";
 #include "ExplosionEffects.as";
 #include "IslandsCommon.as";
 #include "Booty.as"
@@ -10,6 +9,7 @@ const f32 BOMB_BASE_DAMAGE = 2.7f;
 
 void onInit(CBlob@ this)
 {
+	this.Tag("bomb");
     this.getCurrentScript().tickFrequency = 60;
     /*CSprite@ sprite = this.getSprite();
     if (sprite !is null)
@@ -17,42 +17,42 @@ void onInit(CBlob@ this)
         //default animation
         {
             Animation@ anim = sprite.addAnimation("default", 0, false);
-            anim.AddFrame(Block::BOMB);
+            anim.AddFrame(0);
         }
         //exploding "warmup" animation
         {
             Animation@ anim = sprite.addAnimation("exploding", 2, true);
 
             int[] frames = {
-                Block::BOMB_A1, Block::BOMB_A1,
-                Block::BOMB_A2, Block::BOMB_A2,
-                Block::BOMB, Block::BOMB,
-                Block::BOMB, Block::BOMB,
+                1, 1,
+                2, 2,
+                0, 0,
+                0, 0,
 
-                Block::BOMB_A1, Block::BOMB_A1,
-                Block::BOMB_A2, Block::BOMB_A2,
-                Block::BOMB, Block::BOMB,
-                Block::BOMB,
+                1, 1,
+                2, 2,
+                0, 0,
+                0,
 
-                Block::BOMB_A1,
-                Block::BOMB_A2,
-                Block::BOMB, Block::BOMB,
+                1,
+                2,
+                0, 0,
 
-                Block::BOMB_A1,
-                Block::BOMB_A2,
-                Block::BOMB, Block::BOMB,
+                1,
+                2,
+                0, 0,
 
-                Block::BOMB_A1,
-                Block::BOMB_A2,
-                Block::BOMB, Block::BOMB,
+                1,
+                2,
+                0, 0,
 
-                Block::BOMB_A1,
-                Block::BOMB_A2,
-                Block::BOMB, Block::BOMB,
+                1,
+                2,
+                0, 0,
 
-                Block::BOMB_A1,
-                Block::BOMB_A2,
-                Block::BOMB, Block::BOMB,
+                1,
+                2,
+                0, 0,
             };
 
             anim.AddFrames(frames);
@@ -122,7 +122,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 				// detonate bomb
 					
-				if (hit_blob.getSprite().getFrame() == Block::BOMB)
+				if (hit_blob.hasTag("bomb"))
 				{
 					hit_blob.server_Die();
 					continue;
@@ -160,7 +160,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
-	if (hitterBlob.hasTag("propeller") && this.getHealth()/this.getInitialHealth() < 0.5f)
+	if (hitterBlob.hasTag("engine") && this.getHealth()/this.getInitialHealth() < 0.5f)
 		this.Tag("disabled");
 		
 	return damage;
@@ -190,7 +190,6 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 {
 	if (victim.hasTag("block"))
 	{
-		const int blockType = victim.getSprite().getFrame();
 		u8 teamNum = attacker.getTeamNum();
 		u8 victimTeamNum = victim.getTeamNum();
 		string attackerName = attacker.getUsername();
@@ -199,7 +198,7 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 		if (victimIsle !is null && victimIsle.blocks.length > 3
 			&& (victimIsle.owner != "" || victimIsle.isMothership) //only inhabited ships
 			&& victimTeamNum != teamNum //cant be own ships
-			&& (blockType != Block::PLATFORM && blockType != Block::COUPLING))
+			&& (!victim.hasTag("platform") && !victim.hasTag("coupling")))
 		{
 			if (attacker.isMyPlayer())
 				directionalSoundPlay("Pinball_3", attackerBlob.getPosition(), 1.2f);
@@ -209,9 +208,9 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 				CRules@ rules = getRules();
 				
 				u16 reward = 15;//propellers, seat, solids
-				if (victim.hasTag("weapon") || blockType == Block::BOMB)
+				if (victim.hasTag("weapon") || victim.hasTag("bomb"))
 					reward += 15;
-				else if (blockType == Block::MOTHERSHIP5)
+				else if (victim.hasTag("mothership"))
 					reward += 15;
 
 				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,

@@ -1,5 +1,4 @@
 #include "WeaponCommon.as";
-#include "BlockCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 
@@ -399,7 +398,7 @@ void Rotate(CBlob@ this, Vec2f aimVector)
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
 {
-	if (this.getDistanceTo(caller) > Block::BUTTON_RADIUS_FLOOR
+	if (this.getDistanceTo(caller) > 6
 		|| this.getShape().getVars().customData <= 0
 		|| this.hasAttached()
 		|| this.getTeamNum() != caller.getTeamNum())

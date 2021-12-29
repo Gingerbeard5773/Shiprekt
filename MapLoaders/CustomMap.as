@@ -438,10 +438,9 @@ namespace CMap
 			map.AddTileFlag(offset, Tile::BACKGROUND);
 			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
 			
-			CBlob@ stationBlob = spawnBlob(map, "station", offset, 10, false);	
+			CBlob@ stationBlob = spawnBlob(map, "station", offset, 255, false);	
 			stationBlob.setPosition(stationBlob.getPosition() + Vec2f(-4.0f, -4.0f));
-			stationBlob.server_setTeamNum(255);
-			stationBlob.getSprite().SetFrame(Block::STATION);
+			stationBlob.getSprite().SetFrame(0);
 		}
 		else if (pixel == color_ministation) 
 		{
@@ -449,16 +448,15 @@ namespace CMap
 			map.AddTileFlag(offset, Tile::BACKGROUND);
 			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
 			
-			CBlob@ ministationBlob = spawnBlob(map, "ministation", offset, 10, false);	
-			ministationBlob.server_setTeamNum(255);
-			ministationBlob.getSprite().SetFrame(Block::MINISTATION);
+			CBlob@ ministationBlob = spawnBlob(map, "ministation", offset, 255, false);	
+			ministationBlob.getSprite().SetFrame(1);
 		}
 		else if (pixel == color_palmtree) 
 		{
 			map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5));
 			map.AddTileFlag(offset, Tile::LIGHT_PASSES );
 			
-			CBlob@ palmtreeBlob = spawnBlob(map, "palmtree", offset, 10, false);	
+			CBlob@ palmtreeBlob = spawnBlob(map, "palmtree", offset, 255, false);	
 		}	
 		else if (pixel == color_sand) 
 		{

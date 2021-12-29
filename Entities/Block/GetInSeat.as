@@ -1,4 +1,3 @@
-#include "BlockCommon.as"
 #include "AccurateSoundPlay.as"
 
 void onInit( CBlob@ this )
@@ -6,13 +5,13 @@ void onInit( CBlob@ this )
 	this.set_string("seat label", "");
 	this.set_u8("seat icon", 0);
 	this.addCommandID("get in seat");
-	this.Tag("seat");
+	this.Tag("hasSeat");
 }
 
 void GetButtonsFor( CBlob@ this, CBlob@ caller )
 {
 	string seatOwner = this.get_string( "playerOwner" );
-	if (this.getDistanceTo(caller) > Block::BUTTON_RADIUS_FLOOR 
+	if (this.getDistanceTo(caller) > 6
 		|| this.getShape().getVars().customData <= 0
 		|| this.hasAttached()
 		|| this.exists("seatEnabled"))

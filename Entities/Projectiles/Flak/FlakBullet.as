@@ -1,6 +1,5 @@
 #include "ExplosionEffects.as";;
 #include "WaterEffects.as";
-#include "BlockCommon.as";
 #include "IslandsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
@@ -73,19 +72,18 @@ void flak(CBlob@ this)
 	for (u8 s = 0; s < 12; s++)
 	{
 		HitInfo@[] hitInfos;
-		if (map.getHitInfosFromRay( pos, angle, FLAK_REACH, this, @hitInfos))
+		if (map.getHitInfosFromRay(pos, angle, FLAK_REACH, this, @hitInfos))
 		{
 			for (uint i = 0; i < hitInfos.length; i++ )//sharpnel trail
 			{
 				CBlob@ b = hitInfos[i].blob;	  
 				if (b is null || b is this) continue;
 									
-				const int blockType = b.getSprite().getFrame();
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
 				if (b.hasTag("solid") || (!sameTeam
-					&& (blockType == Block::SEAT || b.hasTag("weapon") || b.hasTag("rocket") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DECOYCORE || blockType == Block::DOOR || blockType == Block::BOMB || (b.hasTag("player") && !b.isAttached()))))
+					&& (b.hasTag("seat") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoycore") || b.hasTag("door") || b.hasTag("bomb") || (b.hasTag("player") && !b.isAttached()))))
 				{
-					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage(b, blockType), Hitters::bomb, true);
+					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage(b), Hitters::bomb, true);
 					if (owner !is null)
 					{
 						CBlob@ blob = owner.getBlob();
@@ -119,52 +117,38 @@ void onDie(CBlob@ this)
 		flak(this);
 }
 
-f32 getDamage(CBlob@ hitBlob, int blockType)
+f32 getDamage(CBlob@ hitBlob)
 {
 	if (hitBlob.hasTag("rocket"))
 		return 0.25f; 
-
-	if (blockType == Block::PROPELLER)
+	if (hitBlob.hasTag("propeller"))
 		return 0.2f;
-		
-	if (blockType == Block::FAKERAM)
+	if (hitBlob.hasTag("fakeram"))
 		return 4.0f;
-
-	if ( blockType == Block::ANTIRAM )
+	if (hitBlob.hasTag("antiram"))
 		return 0.05f;
-		
-	if ( blockType == Block::RAMENGINE )
+	if (hitBlob.hasTag("ramengine"))
 		return 0.4f;
-
-	if ( blockType == Block::DOOR )
+	if (hitBlob.hasTag("door"))
 		return 0.3f;
-
-	if ( hitBlob.getName() == "shark" || hitBlob.getName() == "human" )
+	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 0.3f;
-
-	if ( blockType == Block::SEAT || (hitBlob.hasTag( "weapon" ) && hitBlob.getName() != "hyperflak" ))
-		return 0.1f;
-
-	if ( hitBlob.getName() == "hyperflak" )
+	if (hitBlob.hasTag("hyperflak"))
 		return 0.07f;
-	
-	if ( blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE)
+	if (hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 		return 0.1f;
-	
-	if ( blockType == Block::BOMB )
+	if (hitBlob.hasTag("mothership") || hitBlob.hasTag("secondaryCore"))
 		return 0.1f;
-
-	if ( blockType == Block::DECOYCORE )
+	if (hitBlob.hasTag("bomb"))
 		return 0.1f;
-	
+	if (hitBlob.hasTag("decoycore"))
+		return 0.1f;
 	return 0.02f;
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
-{	
-	const int blockType = hitBlob.getSprite().getFrame();
-
-	if (hitBlob.hasTag("solid") || blockType == Block::MOTHERSHIP5 || blockType == Block::SECONDARYCORE || blockType == Block::DOOR || blockType == Block::SEAT || hitBlob.hasTag("weapon"))
+{
+	if (hitBlob.hasTag("block"))
 	{
 		Vec2f vel = worldPoint - hitBlob.getPosition();//todo: calculate real bounce angles?
 		ShrapnelParticle(worldPoint, vel);

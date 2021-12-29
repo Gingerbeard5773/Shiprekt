@@ -1,6 +1,5 @@
 // force barrier around edge of map
-#include "IslandsCommon.as"
-#include "BlockCommon.as"
+#include "IslandsCommon.as";
 
 void onTick(CRules@ this)
 {
@@ -51,7 +50,7 @@ void server_turnOffPropellers(Island@ island)
 		if (block is null) continue;
 		
 		//set all propellers off on the island
-		if (block.hasTag("propeller"))
+		if (block.hasTag("engine"))
 		{
 			block.set_f32("power", 0);
 		}

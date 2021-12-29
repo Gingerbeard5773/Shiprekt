@@ -1,5 +1,4 @@
-#include "BlockCommon.as";
-
+//coupling
 void onInit(CBlob@ this)
 {
     this.addCommandID("decouple");
@@ -13,8 +12,8 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
         return;
 
 	//only owners can directly destroy the coupling
-    if (this.getDistanceTo(caller) < Block::BUTTON_RADIUS_FLOOR
-		&& !getMap().isBlobWithTagInRadius("seat", caller.getPosition(), 0.0f)
+    if (this.getDistanceTo(caller) < 6
+		&& !getMap().isBlobWithTagInRadius("hasSeat", caller.getPosition(), 0.0f)
 		&& caller.getPlayer().getUsername() == this.get_string("playerOwner"))
 	{
 		CButton@ button = caller.CreateGenericButton(2, Vec2f(0.0f, 0.0f), this, this.getCommandID("decouple"), "Decouple");

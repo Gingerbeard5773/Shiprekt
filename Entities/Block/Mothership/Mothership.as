@@ -37,12 +37,12 @@ void onInit(CBlob@ this)
     if (layer !is null)
     {
     	layer.SetRelativeZ(1);
-    	layer.SetLighting( false );
+    	layer.SetLighting(false);
      	Animation@ anim = layer.addAnimation("state", 0, false);
-        anim.AddFrame(Block::MOTHERSHIP5);
-        anim.AddFrame(Block::MOTHERSHIP5 + 2);
-        anim.AddFrame(Block::MOTHERSHIP5 + 3);
-        anim.AddFrame(Block::MOTHERSHIP5 + 4);
+        anim.AddFrame(0);
+        anim.AddFrame(1);
+        anim.AddFrame(2);
+        anim.AddFrame(3);
         layer.SetAnimation("state");    	
     }
 }
@@ -54,9 +54,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CBlob@ caller = getBlobByNetworkID(params.read_u16());
 		if (caller is null) return;
 			
-		u8 block = params.read_u8();
-		if (block != Block::DECOYCORE)
-			caller.set_u8("last buy", block);
+		string block = params.read_string();
+		if (block != "decoycore")
+			caller.set_string("last buy", block);
 
 		if (!isServer() || Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
 			return;
@@ -136,7 +136,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 }
 
-void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
+void BuyBlock(CBlob@ this, CBlob@ caller, string bType)
 {
 	CRules@ rules = getRules();
 
@@ -149,15 +149,15 @@ void BuyBlock(CBlob@ this, CBlob@ caller, u8 bType)
 	u8 totalFlaks = 0;
 	u8 teamFlaks = 0;
 
-	if (bType == Block::COUPLING) //coupling gives two blocks
+	if (bType == "coupling") //coupling gives two blocks
 	{
 		amount = 2;
 	}
-	else if (bType == Block::FAKERAM) //fake ram gives three blocks
+	else if (bType == "fakeram") //fake ram gives three blocks
 	{
 		amount = 3;
 	}
-	else if (bType == Block::FLAK)
+	else if (bType == "flak")
 	{
 		//Max turrets to avoid lag
 		CBlob@[] turrets;
@@ -230,9 +230,9 @@ void ReturnBlocks(CBlob@ this)
 				u16 returnBooty = 0;
 				for (uint i = 0; i < blocks.length; ++i)
 				{
-					int type = blocks[i].getSprite().getFrame();
-					if (type != Block::COUPLING && blocks[i].getShape().getVars().customData == -1)
-						returnBooty += Block::getCost(type);
+					CBlob@ block = blocks[i];
+					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
+						returnBooty += Block::getCost(block);
 				}
 				
 				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
@@ -597,8 +597,7 @@ void initiateSelfDestruct(CBlob@ this)
 		CBlob@ b = getBlobByNetworkID( isle_block.blobID);
 		if (b !is null && teamNum == b.getTeamNum())
 		{
-			int bType = b.getSprite().getFrame();
-			if (i % 4 == 0 && bType != Block::MOTHERSHIP5 && bType != Block::COUPLING)
+			if (i % 4 == 0 && !b.hasTag("mothership") && !b.hasTag("coupling"))
 				b.AddScript("Block_Explode.as");
 		}
 	}

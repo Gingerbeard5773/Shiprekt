@@ -1,7 +1,6 @@
 //Common file for getting forces from a propeller
 
-#include "IslandsCommon.as"
-#include "BlockCommon.as"
+#include "IslandsCommon.as";
 
 const f32 PROPELLER_SPEED = 0.9f;//0.9f
 

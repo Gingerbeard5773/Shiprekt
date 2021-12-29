@@ -1,5 +1,4 @@
 #include "WeaponCommon.as";
-#include "BlockCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 
@@ -87,8 +86,8 @@ void onTick(CBlob@ this)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
-  if (cmd == this.getCommandID("fire"))
-  {
+	if (cmd == this.getCommandID("fire"))
+	{
 		if (!this.get_bool("fire ready")) return;
 
 		Vec2f pos = this.getPosition();
@@ -126,7 +125,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
 		if (layer !is null)
 			layer.animation.SetFrameIndex(1);
-  }
+	}
 }
 
 void Fire(CBlob@ this, CBlob@ shooter)
@@ -184,8 +183,7 @@ bool isClear(CBlob@ this)
 		{
 			CBlob@ b =  blobs[i];
 			if (b is null || b is this) continue;
-			const int blockType = b.getSprite().getFrame();
-			if (blockType == Block::SOLID && b.getTeamNum() == teamNum)
+			if (b.hasTag("solid") && b.getTeamNum() == teamNum)
 			{
 				clear = false;
 				break;
