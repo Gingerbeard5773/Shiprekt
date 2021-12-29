@@ -1,30 +1,21 @@
-#include "TeamColour.as"
-#include 'DestructCommon.as';
 
 void onInit(CBlob@ this)
 {
-	this.Tag('decoyCore');
+	this.Tag("decoyCore");
 	this.set_bool("placed", false);
 	//this.Sync("placed", true);
 
 	if (isClient())
 	{
+		//add an additional frame to the damage frames animation
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.addSpriteLayer('damage');
-
-		if (layer !is null)
+		Animation@ animation = sprite.getAnimation("default");
+		if (animation !is null)
 		{
-			layer.SetRelativeZ(1);
-			layer.SetLighting(false);
-			Animation@ animation = layer.addAnimation('default', 0, false);
-			array<int> frames = {97, 99, 100, 101};
+			array<int> frames = {3};
 			animation.AddFrames(frames);
-			layer.SetAnimation('default');
 		}
-
-		updateFrame(this);
 	}
-
 }
 
 void onTick(CBlob@ this)
@@ -46,22 +37,4 @@ void onTick(CBlob@ this)
 		
 		this.set_bool("placed", true);
 	}
-}
-
-void onHealthChange(CBlob@ this, float old)
-{
-	if (isClient())
-	{
-		updateFrame(this);
-	}
-}
-
-void updateFrame(CBlob@ this)
-{
-	float health = this.getHealth();
-	CSprite@ sprite = this.getSprite();
-	CSpriteLayer@ layer = sprite.getSpriteLayer('damage');
-	uint8 frames = layer.animation.getFramesCount();
-	uint8 step = frames - ((health / this.getInitialHealth()) * frames);
-	layer.animation.frame = step;
 }

@@ -19,8 +19,6 @@ void onInit(CBlob@ this)
 
 void onTick (CBlob@ this)
 {
-	CSprite@ thisSprite = this.getSprite();
-	
 	if (this.getTickSinceCreated() < 1) //accounts for time after block production
 	{
 		if (this.get_f32("current reclaim") == 0.0f)
@@ -94,7 +92,7 @@ void onTick (CBlob@ this)
 
 								if ((!docking && !ramming))
 								{
-									CollisionResponse1( island, other_island, this.getPosition()+velnorm, docking );
+									CollisionResponse1(island, other_island, this.getPosition()+velnorm, docking);
 								}
 								dontHitMore = true;
 							}
@@ -449,7 +447,7 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 {
 	if (this.getShape().getVars().customData <= 0) return;
 	
-	const bool isCore = this.hasTag("mothership") || this.hasTag("secondaryCore");
+	const bool isCore = this.hasTag("mothership");
 	const f32 hp = this.getHealth();
 
 	if (hp <= 0.0f && !isCore) this.server_Die();
@@ -466,25 +464,12 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 			const f32 initHealth = this.getInitialHealth();
 
 			//add damage layers
-			f32 step = initHealth / (DAMAGE_FRAMES + 1); //health divided equally into segments which tell when to change dmg frame
+			int frames = this.getSprite().animation !is null ? this.getSprite().animation.getFramesCount() : DAMAGE_FRAMES + 1;
+			f32 step = initHealth / frames; //health divided equally into segments which tell when to change dmg frame
 			f32 currentStep = Maths::Floor(oldHealth/step) * step; //what is the step we are on?
 			
-			if (this.hasTag("solid") && hp < currentStep && hp <= initHealth - step && !isCore) //update frame if past health margins
+			if (this.hasTag("solid") && hp < currentStep && hp <= initHealth - step) //update frame if past health margins
 			{
-				if (!this.hasTag("ramengine") && !this.hasTag("pointdefense") && !this.hasTag("fakeram"))
-				{
-					const int frame = (oldHealth > initHealth * 0.5f) ? 1 : 2;	
-					CSprite@ sprite = this.getSprite();
-					CSpriteLayer@ layer = sprite.addSpriteLayer("dmg"+sprite.getSpriteLayerCount());
-					if (layer !is null)
-					{
-						layer.SetRelativeZ(1+frame);
-						layer.SetLighting(false);
-						layer.SetFrame(frame);
-						layer.RotateBy(XORRandom(4) * 90, Vec2f_zero);
-					}
-				}
-
 				for (int i = 0; i < 2; ++i) //wood chips on frame change
 				{
 					CParticle@ p = makeGibParticle("Woodparts", this.getPosition(), getRandomVelocity(0, 0.3f, XORRandom(360)),
@@ -500,13 +485,6 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 			}
 			else if (hp > oldHealth)
 			{
-				//remove damage frames on heal
-				if (Maths::Floor(hp) > currentStep)
-				{
-					CSprite@ sprite = this.getSprite();
-					sprite.RemoveSpriteLayer("dmg"+(sprite.getSpriteLayerCount()-1));
-				}
-
 				makeHealParticle(this, "HealParticle2"); //cute green particles
 			}
 		}

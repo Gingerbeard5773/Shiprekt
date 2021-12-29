@@ -26,25 +26,23 @@ void onInit(CBlob@ this)
 	this.addCommandID("turnShark");
 	this.addCommandID("turnHuman");
 
-	if(isServer())
+	if (isServer())
 	{
 		SharkQueue[] human_sharks;
 		this.set("human_sharks", @human_sharks);
 	}
 	
-	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("damage", 8, 8);
-    if (layer !is null)
-    {
-    	layer.SetRelativeZ(1);
-    	layer.SetLighting(false);
-     	Animation@ anim = layer.addAnimation("state", 0, false);
-        anim.AddFrame(0);
-        anim.AddFrame(1);
-        anim.AddFrame(2);
-        anim.AddFrame(3);
-        layer.SetAnimation("state");    	
-    }
+	if (isClient())
+	{
+		//add an additional frame to the damage frames animation
+		CSprite@ sprite = this.getSprite();
+		Animation@ animation = sprite.getAnimation("default");
+		if (animation !is null)
+		{
+			array<int> frames = {3};
+			animation.AddFrames(frames);
+		}
+	}
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
@@ -75,20 +73,20 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (caller !is null)
 		{
 			CPlayer@ player = caller.getPlayer();
-			if(player !is null) // only humans with player can turn in to sharks
+			if (player !is null) // only humans with player can turn in to sharks
 			{
 				caller.Tag("no_gib");
-				if(isClient())
+				if (isClient())
 				{
 					Sound::Play("SharkTurn.ogg", caller.getPosition());
-					if(player.isMyPlayer()) // fix camera
+					if (player.isMyPlayer()) // fix camera
 					{
 						CCamera@ camera = getCamera();
 						camera.setTarget(null);
 						camera.setPosition(caller.getPosition());
 					}
 				}
-				if(isServer())
+				if (isServer())
 				{
 					/*CBlob@ shark = server_CreateBlob("shark", caller.getTeamNum(), this.getPosition());
 					if (shark !is null)
@@ -114,11 +112,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (caller !is null)
 		{
 			CPlayer@ player = caller.getPlayer();
-			if(player !is null) // only sharks with player can turn in to humans
+			if (player !is null) // only sharks with player can turn in to humans
 			{
-				if(isClient())
+				if (isClient())
 					Sound::Play("HumanTurn.ogg", caller.getPosition());
-				if(isServer())
+				if (isServer())
 				{
 					CBlob@ human = server_CreateBlobNoInit("human");
 					if (human !is null)
@@ -372,7 +370,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 					}
 				}
 				server_updateTotalBooty(hitterTeamNum, totalReward + BASE_KILL_REWARD);
-				//print ( "MothershipKill: " + thisPlayers + " players; " + ( ( thisPlayers + 1 ) * BASE_KILL_REWARD ) + " to " + rules.getTeam( hitterTeamNum ).getName() );
+				//print ("MothershipKill: " + thisPlayers + " players; " + ((thisPlayers + 1) * BASE_KILL_REWARD) + " to " + rules.getTeam(hitterTeamNum).getName());
 			}
 		}
 
@@ -387,7 +385,7 @@ void onDie(CBlob@ this)
 	selfDestruct(this);
 
 	if (!this.hasTag("cleanDeath"))
-		client_AddToChat( "*** " + getRules().getTeam(this.getTeamNum()).getName() + " had their core bombed - instant death! ***");
+		client_AddToChat("*** " + getRules().getTeam(this.getTeamNum()).getName() + " had their core bombed - instant death! ***");
 }
 
 //healing, repelling, dmgmanaging, selfDestruct, damagesprite
@@ -401,30 +399,30 @@ void onTick(CBlob@ this)
 	
 	//repel
 /* 	CBlob@[] cores;
-	getBlobsByTag( "mothership", @cores );
-	for ( u8 i = 0; i < cores.length; i++ )
+	getBlobsByTag("mothership", @cores);
+	for (u8 i = 0; i < cores.length; i++)
 	{
-		f32 distance = cores[i].getDistanceTo( this );
+		f32 distance = cores[i].getDistanceTo(this);
 		
 		int color2 = cores[i].getShape().getVars().customData;
-		if ( cores[i] !is this && color1 != color2 && distance < 125.0f  )
+		if (cores[i] !is this && color1 != color2 && distance < 125.0f)
 		{
 			//sparks in the direction of the island
-			if ( isle !is null )
+			if (isle !is null)
 			{
 				Vec2f dir = pos - cores[i].getPosition();
 				dir.Normalize();
 				
-				f32 whirlpoolFactor = !getRules().get_bool( "whirlpool" ) ? 2.0f : 1.25f;
-				f32 healthFactor = Maths::Max( 0.25f, hp/this.getInitialHealth() );
+				f32 whirlpoolFactor = !getRules().get_bool("whirlpool") ? 2.0f : 1.25f;
+				f32 healthFactor = Maths::Max( 0.25f, hp/this.getInitialHealth());
 				isle.vel += dir * healthFactor*whirlpoolFactor/distance;
 				
-				dir.RotateBy( -45.0f );
+				dir.RotateBy(-45.0f);
 				dir *= -6.0f * healthFactor;
-				for ( int i = 0; i < 5; i++ )
+				for (int i = 0; i < 5; i++)
 				{
-					CParticle@ p = ParticlePixel( pos, dir.RotateBy( 15 ), getTeamColor( this.getTeamNum() ), true );
-					if(p !is null)
+					CParticle@ p = ParticlePixel(pos, dir.RotateBy(15), getTeamColor(this.getTeamNum()), true);
+					if (p !is null)
 					{
 						p.Z = 10.0f;
 						p.timeout = 4;
@@ -432,7 +430,7 @@ void onTick(CBlob@ this)
 				}
 			}
 		}
-	} */
+	}*/
 
 	//heal
 	if (getGameTime() % 60 == 0)
@@ -461,15 +459,6 @@ void onTick(CBlob@ this)
 		f32 msDMG = rules.get_f32("msDMG" + coreTeam);
 		if (msDMG > 0)
 			rules.set_f32("msDMG" + coreTeam, Maths::Max(msDMG - 0.75f, 0.0f));
-			
-		//damage Sprite (set here so joining clients are updated)
-		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ dmg = sprite.getSpriteLayer("damage");
-		if (dmg !is null)
-		{
-			u8 frame = Maths::Floor((this.getInitialHealth() - hp) / (this.getInitialHealth() / dmg.animation.getFramesCount()));
-			dmg.animation.frame = frame;
-		}
 	}
 
 	//critical Slowdown, selfDestruct and effects

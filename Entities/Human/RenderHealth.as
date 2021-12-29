@@ -24,7 +24,7 @@ void onRender(CSprite@ this)
 		const f32 initialHealth = mBlob.getInitialHealth();
 		if (initialHealth > 0.0f)
 		{
-			const f32 perc = Maths::Clamp(mBlob.getHealth(), 0.0f, 4.0f) / initialHealth;
+			const f32 perc = mBlob.getHealth() / initialHealth;
 			if (perc >= 0.0f)
 			{
 				GUI::DrawRectangle(Vec2f(pos2d.x - dim.x-2, pos2d.y + y-2), Vec2f(pos2d.x +dim.x+2, pos2d.y + y + dim.y+2));
@@ -34,7 +34,7 @@ void onRender(CSprite@ this)
 		const f32 initialReclaim = mBlob.get_f32("initial reclaim");
 		if (initialReclaim > 0.0f)
 		{
-			const f32 perc = Maths::Clamp(mBlob.get_f32("current reclaim"), 0.0f, 8.0f) / initialReclaim;
+			const f32 perc = mBlob.get_f32("current reclaim") / initialReclaim;
 			if (perc >= 0.0f)
 			{
 				GUI::DrawRectangle(Vec2f(pos2d.x - dim.x+2, pos2d.y + y+2), Vec2f(pos2d.x - dim.x + perc*2.0f*dim.x -2, pos2d.y + y + dim.y-2), SColor(255, 36,177,53));

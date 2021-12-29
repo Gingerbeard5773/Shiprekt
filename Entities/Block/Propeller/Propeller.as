@@ -27,8 +27,8 @@ void onInit(CBlob@ this)
     	propeller.SetRelativeZ(2);
     	propeller.SetLighting(false);
         Animation@ animcharge = propeller.addAnimation("go", 1, true);
-        animcharge.AddFrame(1);
-        animcharge.AddFrame(2);
+        animcharge.AddFrame(3);
+        animcharge.AddFrame(4);
         propeller.SetAnimation("go");
     }
 

@@ -12,20 +12,14 @@ void onInit(CBlob@ this)
 
 	if (isClient())
 	{
+		//add an additional frame to the damage frames animation
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.addSpriteLayer('damage');
-
-		if (layer !is null)
+		Animation@ animation = sprite.getAnimation("default");
+		if (animation !is null)
 		{
-			layer.SetRelativeZ(1);
-			layer.SetLighting(false);
-			Animation@ animation = layer.addAnimation('default', 0, false);
-			array<int> frames = {0, 1, 2, 3};
+			array<int> frames = {3};
 			animation.AddFrames(frames);
-			layer.SetAnimation('default');
 		}
-
-		updateFrame(this);
 	}
 }
 
@@ -127,24 +121,6 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 	}
 
 	return damage;
-}
-
-void onHealthChange(CBlob@ this, float old)
-{
-	if (isClient())
-	{
-		updateFrame(this);
-	}
-}
-
-void updateFrame(CBlob@ this)
-{
-	float health = this.getHealth();
-	CSprite@ sprite = this.getSprite();
-	CSpriteLayer@ layer = sprite.getSpriteLayer('damage');
-	uint8 frames = layer.animation.getFramesCount();
-	uint8 step = frames - ((health / this.getInitialHealth()) * frames);
-	layer.animation.frame = step;
 }
 
 void onDie(CBlob@ this)
