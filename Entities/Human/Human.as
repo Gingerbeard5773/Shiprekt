@@ -863,7 +863,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			const int blockType = mBlob.getSprite().getFrame();
 			Island@ island = getIsland(mBlob.getShape().getVars().customData);
 				
-			const f32 mBlobCost = mBlob.get_u16("cost") > 0 ? mBlob.get_u16("cost") : 15;
+			const f32 mBlobCost = mBlob.get_u16("cost") > 0 ? (!mBlob.hasTag("coupling") ? mBlob.get_u16("cost") : 1) : 15;
 			f32 mBlobHealth = mBlob.getHealth();
 			f32 mBlobInitHealth = mBlob.getInitialHealth();
 			const f32 initialReclaim = mBlob.get_f32("initial reclaim");

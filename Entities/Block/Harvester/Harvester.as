@@ -113,7 +113,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 					Island@ island = getIsland(b.getShape().getVars().customData);
 
-					const f32 bCost = b.get_u16("cost") > 0 ? b.get_u16("cost") : 15;
+					const f32 bCost = b.get_u16("cost") > 0 ? (!b.hasTag("coupling") ? b.get_u16("cost") : 1) : 15;
 					f32 bHealth = b.getHealth();
 					f32 bInitHealth = b.getInitialHealth();
 					const f32 initialReclaim = b.get_f32("initial reclaim");
