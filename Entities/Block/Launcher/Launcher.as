@@ -44,12 +44,7 @@ void onInit(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "Launcher.png", 16, 16);
-    if (layer !is null)
-    {
-        layer.SetRelativeZ(2);
-        layer.SetLighting(false);
-    }
+    sprite.SetRelativeZ(2);
 
 	this.set_u32("fire time", 0);
 }

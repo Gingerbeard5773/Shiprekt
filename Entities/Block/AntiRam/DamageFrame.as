@@ -31,8 +31,5 @@ void updateFrame(CBlob@ this)
 
 	uint8 frames = sprite.animation.getFramesCount();
 	uint8 step = frames - ((health / this.getInitialHealth()) * frames);
-	if (sprite.getFrame() < step)
-	{
-		sprite.animation.frame = step;
-	}
+	sprite.animation.frame = step;
 }

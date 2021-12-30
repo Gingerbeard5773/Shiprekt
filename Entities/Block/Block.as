@@ -3,7 +3,6 @@
 #include "AccurateSoundPlay.as";
 #include "ParticleHeal.as";
 
-u8 DAMAGE_FRAMES = 3;
 // onInit: called from engine after blob is created with server_CreateBlob()
 
 void onInit(CBlob@ this)
@@ -464,7 +463,7 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 			const f32 initHealth = this.getInitialHealth();
 
 			//add damage layers
-			int frames = this.getSprite().animation !is null ? this.getSprite().animation.getFramesCount() : DAMAGE_FRAMES + 1;
+			int frames = this.getSprite().animation !is null ? this.getSprite().animation.getFramesCount() : 4;
 			f32 step = initHealth / frames; //health divided equally into segments which tell when to change dmg frame
 			f32 currentStep = Maths::Floor(oldHealth/step) * step; //what is the step we are on?
 			

@@ -45,17 +45,14 @@ void onInit(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "Cannon.png", 16, 16);
-    if (layer !is null)
-    {
-    	layer.SetRelativeZ(2);
-    	layer.SetLighting(false);
-     	Animation@ anim = layer.addAnimation("fire", 0, false);
+    sprite.SetRelativeZ(2);
+	{
+		//shoot anim
+     	Animation@ anim = sprite.addAnimation("fire", 0, false);
         anim.AddFrame(0);
         anim.AddFrame(1);
-        layer.SetAnimation("fire");
-    }
-
+        sprite.SetAnimation("fire");
+	}
 	this.set_u32("fire time", 0);
 }
 
@@ -72,8 +69,7 @@ void onTick(CBlob@ this)
 	//sprite ready
 	if (fireTime + FIRE_RATE - 15 == gameTime)
 	{
-		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-		if (layer !is null) layer.animation.SetFrameIndex(0);
+		this.getSprite().animation.SetFrameIndex(0);
 
 		directionalSoundPlay("Charging.ogg", this.getPosition(), 2.0f);
 	}
@@ -122,9 +118,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		Fire(this, shooter);
 
-		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-		if (layer !is null)
-			layer.animation.SetFrameIndex(1);
+		this.getSprite().animation.SetFrameIndex(1);
 	}
 }
 
@@ -161,8 +155,7 @@ void Fire(CBlob@ this, CBlob@ shooter)
 		}
 	}
 
-	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-	if (layer !is null) layer.animation.SetFrameIndex(0);
+	this.getSprite().animation.SetFrameIndex(0);
 
 	shotParticles(pos + aimVector*9, aimVector.Angle());
 

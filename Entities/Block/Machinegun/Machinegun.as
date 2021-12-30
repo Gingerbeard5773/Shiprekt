@@ -54,22 +54,19 @@ void onInit(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "Machinegun.png", 16, 16);
-    if (layer !is null)
     {
-        layer.SetRelativeZ(2);
-        layer.SetLighting(false);
-        Animation@ anim = layer.addAnimation("fire left", Maths::Round(MIN_FIRE_PAUSE), false);
+        sprite.SetRelativeZ(2);
+        Animation@ anim = sprite.addAnimation("fire left", Maths::Round(MIN_FIRE_PAUSE), false);
         anim.AddFrame(1);
         anim.AddFrame(0);
 
-		Animation@ anim2 = layer.addAnimation("fire right", Maths::Round(MIN_FIRE_PAUSE), false);
+		Animation@ anim2 = sprite.addAnimation("fire right", Maths::Round(MIN_FIRE_PAUSE), false);
         anim2.AddFrame(2);
         anim2.AddFrame(0);
 
-		Animation@ anim3 = layer.addAnimation("default", 1, false);
+		Animation@ anim3 = sprite.addAnimation("default", 1, false);
 		anim3.AddFrame(0);
-        layer.SetAnimation("default");
+        sprite.SetAnimation("default");
     }
 
 	this.set_u32("fire time", 0);
@@ -162,8 +159,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		//effects
 		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ layer = sprite.getSpriteLayer("weapon");
-		layer.SetAnimation("default");
+		sprite.SetAnimation("default");
 
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 
@@ -290,9 +286,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			shotParticles(barrelPos, aimVector.Angle(), false);
 			directionalSoundPlay("Gunshot" + (XORRandom(2) + 2), barrelPos);
 			if (this.get_string("barrel") == "left")
-				layer.SetAnimation("fire left");
-			if (this.get_string("barrel") == "right")
-				layer.SetAnimation("fire right");
+				sprite.SetAnimation("fire left");
+			else if (this.get_string("barrel") == "right")
+				sprite.SetAnimation("fire right");
 		}
 
 		if (!killed)
