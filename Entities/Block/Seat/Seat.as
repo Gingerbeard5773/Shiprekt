@@ -10,6 +10,9 @@ const u8 CANNON_FIRE_CYCLE = 15;
 
 void onInit(CBlob@ this)
 {
+	this.set_u16("cost", 25);
+	this.set_f32("weight", 0.5f);
+	
 	//Set Owner/couplingsCooldown
 	if (isServer())
 	{

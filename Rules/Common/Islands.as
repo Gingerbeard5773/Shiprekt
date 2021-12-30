@@ -1,7 +1,6 @@
-#include "IslandsCommon.as"
-#include "BlockCommon.as"
-#include "AccurateSoundPlay.as"
-#include "TileCommon.as"
+#include "IslandsCommon.as";
+#include "AccurateSoundPlay.as";
+#include "TileCommon.as";
 
 const f32 VEL_DAMPING = 0.96f; //0.96
 const f32 ANGLE_VEL_DAMPING = 0.96; //0.96
@@ -160,7 +159,7 @@ void InitIsland(Island @isle)//called for all islands after a block is placed or
 					@isle.centerBlock = b;
 				}
 				//mass calculation
-				totalMass += Block::getWeight(b);
+				totalMass += b.get_f32("weight");
 				
 				if (b.hasTag("mothership"))
 					isle.isMothership = true;
@@ -402,7 +401,7 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 			{
 				//player-carried blocks add to the island mass (with penalty)
 				for (u8 i = 0; i < blocks.length; i++)
-					isle.carryMass += 2.5f * Block::getWeight(blocks[i]);
+					isle.carryMass += 2.5f * blocks[i].get_f32("weight");
 			}
 		}
 	}

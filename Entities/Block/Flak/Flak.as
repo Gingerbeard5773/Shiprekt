@@ -35,6 +35,10 @@ void onInit(CBlob@ this)
 	this.Tag("flak");
 	this.Tag("weapon");
 	this.Tag("usesAmmo");
+	
+	this.set_u16("cost", 175);
+	this.set_f32("weight", 2.5f);
+	
 	this.addCommandID("fire");
 	this.addCommandID("clear attached");
 

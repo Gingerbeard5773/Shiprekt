@@ -1,4 +1,3 @@
-#include "BlockCommon.as"
 
 CBlob@ makeBlock(Vec2f pos, f32 angle, string blockName, const int team = -1)
 {

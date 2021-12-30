@@ -14,6 +14,10 @@ void onInit(CBlob@ this)
 	this.Tag("engine");
 	this.Tag("ramengine");
 	this.Tag("solid");
+	
+	this.set_u16("cost", 50);
+	this.set_f32("weight", 1.25f);
+	
 	this.set_f32("power", 0.0f);
 	this.set_f32("powerFactor", 2.0f);
 	this.set_u32("onTime", 0);

@@ -11,6 +11,9 @@ void onInit(CBlob@ this)
 {
 	this.Tag("bomb");
     this.getCurrentScript().tickFrequency = 60;
+	
+	this.set_u16("cost", 30);
+	this.set_f32("weight", 2.0f);
     /*CSprite@ sprite = this.getSprite();
     if (sprite !is null)
     {

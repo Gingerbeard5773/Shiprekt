@@ -8,7 +8,10 @@ const float HEAL_AMOUNT = 0.1f;
 
 void onInit(CBlob@ this)
 {
-	this.Tag('secondaryCore');
+	this.set_u16("cost", 800);
+	this.set_f32("weight", 12.0f);
+	
+	this.Tag("secondaryCore");
 
 	if (isClient())
 	{

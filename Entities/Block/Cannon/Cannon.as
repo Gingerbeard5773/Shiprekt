@@ -34,6 +34,9 @@ void onInit(CBlob@ this)
 	this.Tag("usesAmmo");
 	this.Tag("fixed_gun");
 	
+	this.set_u16("cost", 250);
+	this.set_f32("weight", 3.25f);
+	
 	this.addCommandID("fire");
 
 	if (isServer())

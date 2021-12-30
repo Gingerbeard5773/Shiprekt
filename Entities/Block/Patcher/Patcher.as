@@ -1,5 +1,4 @@
 #include "WaterEffects.as";
-#include "BlockCommon.as";
 #include "IslandsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
@@ -20,6 +19,10 @@ void onInit(CBlob@ this)
 	this.Tag("weapon");
 	this.Tag("machinegun");
 	this.Tag("fixed_gun");
+	
+	this.set_u16("cost", 200);
+	this.set_f32("weight", 3.0f);
+	
 	this.addCommandID("fire");
    
 	CSprite@ sprite = this.getSprite();
@@ -120,7 +123,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					u16 cBooty = server_getPlayerBooty(cName);
 					f32 mBlobHealth = b.getHealth();
 					f32 mMaxHealth = b.getInitialHealth();
-					const f32 mBlobCost = Block::getCost(b) > 0 ? Block::getCost(b) : 15;
+					const f32 mBlobCost = b.get_u16("cost") > 0 ? b.get_u16("cost") : 15;
 					const f32 initialReclaim = (b.hasTag("mothership") ? b.getInitialHealth() : b.get_f32("initial reclaim"));
 					f32 currentReclaim = b.get_f32("current reclaim");
 

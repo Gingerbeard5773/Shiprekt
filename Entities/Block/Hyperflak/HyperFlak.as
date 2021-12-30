@@ -32,6 +32,10 @@ void onInit(CBlob@ this)
 	this.Tag("hyperflak");
 	this.Tag("weapon");
 	this.Tag("usesAmmo");
+	
+	this.set_u16("cost", 300);
+	this.set_f32("weight", 5.0f);
+	
 	this.addCommandID("fire1");
 	this.addCommandID("fire2");
 	this.addCommandID("clear attached");

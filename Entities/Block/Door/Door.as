@@ -1,10 +1,12 @@
 //trap block script for devious builders
-#include "BlockCommon.as";
 #include "AccurateSoundPlay.as";
 
 void onInit(CBlob@ this)
 {
 	this.Tag("door");
+	
+	this.set_u16("cost", 60);
+	this.set_f32("weight", 1.0f);
 	
     this.getShape().SetRotationsAllowed(false);
 	this.getShape().getConsts().collidable = true;

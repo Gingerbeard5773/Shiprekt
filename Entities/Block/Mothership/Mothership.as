@@ -1,4 +1,3 @@
-#include "BlockCommon.as";
 #include "IslandsCommon.as";
 #include "ExplosionEffects.as";
 #include "WaterEffects.as";
@@ -16,7 +15,6 @@ const u16 SELF_DESTRUCT_TIME = 8 * 30;
 const f32 BLAST_RADIUS = 25 * 8.0f;
 const u8 MAX_TEAM_FLAKS = 100;
 const u8 MAX_TOTAL_FLAKS = 1000;
-u8 DAMAGE_FRAMES = 3;
 
 void onInit(CBlob@ this)
 {
@@ -25,6 +23,8 @@ void onInit(CBlob@ this)
 	this.addCommandID("returnBlocks");
 	this.addCommandID("turnShark");
 	this.addCommandID("turnHuman");
+	
+	this.set_f32("weight", 12.0f);
 
 	if (isServer())
 	{
@@ -51,15 +51,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
     {
 		CBlob@ caller = getBlobByNetworkID(params.read_u16());
 		if (caller is null) return;
-			
+		
 		string block = params.read_string();
 		if (block != "decoycore")
 			caller.set_string("last buy", block);
 
 		if (!isServer() || Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
 			return;
-			
-		BuyBlock(this, caller, block);
+		
+		u16 cost = params.read_u16();
+		caller.set_u16("last cost", cost);
+		
+		BuyBlock(this, caller, block, cost);
 	}
     else if (cmd == this.getCommandID("returnBlocks"))
 	{
@@ -134,15 +137,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 }
 
-void BuyBlock(CBlob@ this, CBlob@ caller, string bType)
+void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 {
 	CRules@ rules = getRules();
 
 	CPlayer@ player = caller.getPlayer();
 	string pName = player !is null ? player.getUsername() : "";
 	u16 pBooty = server_getPlayerBooty(pName);
-	
-	u16 cost = Block::getCost(bType);
+
 	u8 amount = 1;
 	u8 totalFlaks = 0;
 	u8 teamFlaks = 0;
@@ -230,7 +232,7 @@ void ReturnBlocks(CBlob@ this)
 				{
 					CBlob@ block = blocks[i];
 					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
-						returnBooty += Block::getCost(block);
+						returnBooty += block.get_u16("cost");
 				}
 				
 				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
