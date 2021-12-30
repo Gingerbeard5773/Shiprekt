@@ -217,10 +217,6 @@ void Move(CBlob@ this)
 		{
 			moveVel.RotateBy(camRotation);
 			Vec2f nextPos = (pos + moveVel*4.0f);
-			if (isTouchingRock(nextPos))
-			{
-				moveVel = Vec2f(0,0);
-			}
 			
 			this.setVelocity(moveVel);
 		}

@@ -152,7 +152,7 @@ void MoveTo(CBlob@ this, Vec2f vel)
 		Vec2f fat = vel;
 		fat.Normalize();
 		fat *= 16;
-		if(isTouchingLand(pos + fat) || isTouchingRock(pos + fat))
+		if(isTouchingLand(pos + fat))
 		{
 			moveVel = Vec2f_zero;
 		}

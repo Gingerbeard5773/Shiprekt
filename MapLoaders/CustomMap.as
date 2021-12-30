@@ -1,7 +1,6 @@
 Random map_random(1569815698);
 
 #include "LoadMapUtils.as";
-#include "BlockCommon.as" 
 
 namespace CMap
 {
@@ -1365,8 +1364,7 @@ namespace CMap
 			else
 				map.SetTile(offset, CMap::rock_inland + map_random.NextRanged(5) );	
 			
-			map.AddTileFlag( offset, Tile::SOLID );
-			map.AddTileFlag( offset, Tile::LIGHT_PASSES );
+			map.AddTileFlag( offset, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 		}
 		else if (pixel == color_shoal) 
 		{

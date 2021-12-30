@@ -116,12 +116,12 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 void onDie(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
-	if (isTouchingLand(pos) || isTouchingRock(pos))
+	if (!isInWater(pos))
 	{
 		AngledDirtParticle(pos, -this.getVelocity().Angle() - 90.0f);
 		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", pos, 0.50f);
 	}
-	else
+	else if (this.getTouchingCount() <= 0)
 	{
 		MakeWaterParticle(pos, Vec2f_zero);
 	}

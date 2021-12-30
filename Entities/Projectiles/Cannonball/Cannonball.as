@@ -169,12 +169,12 @@ void onDie(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	
-	if (this.getTouchingCount() > 0 || isTouchingLand(pos) || isTouchingRock(pos))
+	if (!isInWater(pos))
 	{
 		sparks(pos + this.getVelocity(), 15, 2.5, 20);
 		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
 	}
-	else
+	else if (this.getTouchingCount() <= 0)
 	{
 		MakeWaterParticle(pos, Vec2f_zero);
 		directionalSoundPlay("WaterSplashBall.ogg", pos);
