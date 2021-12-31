@@ -302,8 +302,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						f32 blockPosX = cfg.read_f32("block" + i + "positionX");
 						f32 blockPosY = cfg.read_f32("block" + i + "positionY");
 						f32 blockAngle = cfg.read_f32("block" + i + "angle");
-						//fix with sep
-						//CBlob@ b = makeBlock(playerPos + Vec2f(blockPosX, blockPosY), blockAngle, blockType, pBlob.getTeamNum());
+						CBlob@ b = makeBlock(playerPos + Vec2f(blockPosX, blockPosY), blockAngle, blockType, pBlob.getTeamNum());
 					}
 				}
 			}

@@ -4,7 +4,6 @@
 
 const f32 BULLET_SPEED = 3.0f;
 const int FIRE_RATE = 200;
-const f32 PROJECTILE_RANGE = 240.0f;
 
 // Max amount of ammunition
 const uint8 MAX_AMMO = 8;
@@ -57,8 +56,6 @@ void onTick(CBlob@ this)
 	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
 
-	u32 gameTime = getGameTime();
-
 	if (isServer())
 	{
 		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
@@ -72,43 +69,24 @@ bool canShoot(CBlob@ this)
 
 bool isClear(CBlob@ this)
 {
-	Vec2f pos = this.getPosition();
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-	u8 teamNum = this.getTeamNum();
-	bool clear = true;
-	
-	CBlob@[] blobs;
-	if (getMap().getBlobsAtPosition(pos + aimVector*8, @blobs))
-	{
-		for (uint i = 0; i < blobs.length; i++)
-		{
-			CBlob@ b =  blobs[i];
-			if (b is null || b is this) continue;
-			if (b.hasTag("solid") && b.getTeamNum() == teamNum)
-			{
-				clear = false;
-				break;
-			}
-		}
-	}
 	
 	HitInfo@[] hitInfos;
-	if (getMap().getHitInfosFromRay(pos, -aimVector.Angle(), PROJECTILE_RANGE/4, this, @hitInfos))
+	if (getMap().getHitInfosFromRay(this.getPosition(), -aimVector.Angle(), 60.0f, this, @hitInfos))
 	{
 		for (uint i = 0; i < hitInfos.length; i++)
 		{
 			CBlob@ b =  hitInfos[i].blob;
 			if (b is null || b is this) continue;
 
-			if (b.hasTag("weapon") && b.getTeamNum() == teamNum)//team weaps
+			if (this.getShape().getVars().customData == b.getShape().getVars().customData && (b.hasTag("weapon") || b.hasTag("solid"))) //same island
 			{
-				clear = false;
-				break;
+				return false;
 			}
 		}
 	}
 
-	return clear;
+	return true;
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)

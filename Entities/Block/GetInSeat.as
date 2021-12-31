@@ -1,6 +1,6 @@
-#include "AccurateSoundPlay.as"
+#include "AccurateSoundPlay.as";
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.set_string("seat label", "");
 	this.set_u8("seat icon", 0);
@@ -8,9 +8,9 @@ void onInit( CBlob@ this )
 	this.Tag("hasSeat");
 }
 
-void GetButtonsFor( CBlob@ this, CBlob@ caller )
+void GetButtonsFor(CBlob@ this, CBlob@ caller)
 {
-	string seatOwner = this.get_string( "playerOwner" );
+	string seatOwner = this.get_string("playerOwner");
 	if (this.getDistanceTo(caller) > 6
 		|| this.getShape().getVars().customData <= 0
 		|| this.hasAttached()
@@ -26,7 +26,7 @@ void GetButtonsFor( CBlob@ this, CBlob@ caller )
 	}
 }
 
-void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("get in seat"))
     {
@@ -41,12 +41,22 @@ void onCommand( CBlob@ this, u8 cmd, CBitStream @params )
 	}
 }
 
-void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint )
+void onDie(CBlob@ this)
+{
+	if (isServer())
+	{
+		AttachmentPoint@ seat = this.getAttachmentPoint(0);
+		CBlob@ b = seat.getOccupied();
+		if (b !is null) b.server_Die();
+	}
+}
+
+void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 {
 	directionalSoundPlay("GetInVehicle.ogg", this.getPosition());
 }
 
-void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint )
+void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
 {
 	directionalSoundPlay("GetInVehicle.ogg", this.getPosition());
 	this.getShape().getVars().onground = true;

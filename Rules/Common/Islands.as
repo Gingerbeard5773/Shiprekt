@@ -8,7 +8,6 @@ const uint FORCE_UPDATE_TICKS = 21;
 f32 UPDATE_DELTA_SMOOTHNESS = 32.0f;//~16-64
 
 uint color;
-bool updatedThisTick = false;
 void onInit(CRules@ this)
 {
 	Island[] islands;
@@ -34,8 +33,7 @@ void onTick(CRules@ this)
 		if (time < 2) // errors are generated when done on first game tick
 			return;
 
-		const bool dirty = this.get_bool("dirty islands");
-		if (dirty)
+		if (this.get_bool("dirty islands"))
 		{
 			GenerateIslands(this);			
 			setUpdateSeatsArrays();
@@ -48,8 +46,6 @@ void onTick(CRules@ this)
 	}
 	else
 		UpdateIslands(this);//client-side integrate
-		
-	updatedThisTick = false;
 }
 
 void GenerateIslands(CRules@ this)
@@ -96,7 +92,6 @@ void GenerateIslands(CRules@ this)
 void ColorBlocks(CBlob@ blob, Island@ island)
 {
 	blob.getShape().getVars().customData = color;
-	
 	IslandBlock isle_block;
 	isle_block.blobID = blob.getNetworkID();
 	island.blocks.push_back(isle_block);
@@ -211,7 +206,6 @@ void InitIsland(Island @isle)//called for all islands after a block is placed or
 
 void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOwnerSearch = false)
 {
-	updatedThisTick = true;
 	CMap@ map = getMap();
 	
 	Island[]@ islands;
@@ -250,14 +244,13 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 				{
 					Vec2f bPos = b.getPosition();	
 					Tile bTile = map.getTile(bPos);
-					bool onLand = map.isTileBackgroundNonEmpty(bTile);
 					bool onRock = map.isTileSolid(bTile);
 					
 					if (onRock)
 					{
 						TileCollision(isle, bPos);
 						if (!b.hasTag("mothership") || this.get_bool("sudden death"))
-							b.server_Hit(b, bPos, Vec2f_zero, 2.2f, 0, true);
+							b.server_Hit(b, bPos, Vec2f_zero, 1.0f, 0, true);
 					}
 					else if (isTouchingLand(bPos))
 						isle.beached = true;						
@@ -457,16 +450,14 @@ void setIsleTeam(Island @isle, u8 teamNum = 255)
 		CBlob@ b = getBlobByNetworkID(isle.blocks[i].blobID);
 		if (b !is null)
 		{
-			int blockType = b.getSprite().getFrame();
 			b.server_setTeamNum(teamNum);
-			b.getSprite().SetFrame(blockType);
 		}
 	}
 }
 
 void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
 {
-	if (!isServer() && blob.hasTag("block")) //remove after sep
+	if (!isServer() && blob.hasTag("block"))
 		blob.set_u8("frame", blob.getSprite().getFrame());
 }
 
@@ -665,7 +656,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 	return false;
 }
 
-void onCommand( CRules@ this, u8 cmd, CBitStream @params)
+void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 {
 	if (isServer()) return;
 
@@ -728,12 +719,13 @@ void onCommand( CRules@ this, u8 cmd, CBitStream @params)
 						isle_block.offset = pos;
 						isle_block.angle_offset = angle;
 						isle.blocks.push_back(isle_block);	
-	    				b.getShape().getVars().customData = i+1; // color		
-							// safety on desync
-							b.SetVisible(true);
-						    CSprite@ sprite = b.getSprite();
-	    					sprite.asLayer().SetColor(color_white);
-	    					sprite.asLayer().setRenderStyle(RenderStyle::normal);
+	    				b.getShape().getVars().customData = i+1; // color
+
+						// safety on desync
+						b.SetVisible(true);
+						CSprite@ sprite = b.getSprite();
+						sprite.asLayer().SetColor(color_white);
+						sprite.asLayer().setRenderStyle(RenderStyle::normal);
 					}
 					else
 						warn(" Blob not found when creating island, id = " + netid);

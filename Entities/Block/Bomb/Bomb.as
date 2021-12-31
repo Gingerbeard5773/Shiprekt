@@ -78,9 +78,7 @@ void onTick(CBlob@ this)
 			u8 teamNum = this.getTeamNum();
 			if (teamNum != 255 && island.centerBlock.getTeamNum() != teamNum)
 			{
-				int blockType = this.getSprite().getFrame(); //can be removed once seperation
 				this.server_setTeamNum(255);
-				this.getSprite().SetFrame(blockType);
 			}
 		}
 	}

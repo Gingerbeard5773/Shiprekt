@@ -99,7 +99,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				if (b is null || b is this) continue;
 
 				const int color = b.getShape().getVars().customData;
-				const int blockType = b.getSprite().getFrame();
 
 				if (b.hasTag("block") && color > 0)
 				{					
@@ -153,7 +152,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 								if (b.getTeamNum() == 255) //neutral
 								{
 									b.server_setTeamNum(this.getTeamNum());
-									b.getSprite().SetFrame(blockType); //remove after sep
 								}
 							}
 						}

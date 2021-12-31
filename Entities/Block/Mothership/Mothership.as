@@ -437,7 +437,6 @@ void onTick(CBlob@ this)
 	//heal
 	if (getGameTime() % 60 == 0)
 	{
-		CRules@ rules = getRules();
 		u8 coreTeam = this.getTeamNum();
 		
 		if (isServer())

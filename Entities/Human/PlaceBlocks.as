@@ -82,27 +82,34 @@ void onTick(CBlob@ this)
 				CRules@ rules = getRules();
 				bool skipCoreCheck = gameTime > getRules().get_u16("warmup_time") || (island.isMothership && (island.owner == "" || island.owner == "*" || island.owner == player.getUsername()));
 				bool cLinked = false;
+				bool onRock = false;
                 const bool overlappingIsland = blocksOverlappingIsland(@blocks);
 				for (uint i = 0; i < blocks.length; ++i)
 				{
-					if (overlappingIsland)
+					CBlob@ block = blocks[i];
+					
+					Tile bTile = map.getTile(block.getPosition());
+					if (map.isTileSolid(bTile))
+						onRock = true;
+					
+					if (overlappingIsland || onRock)
 					{
-						SetDisplay(blocks[i], SColor(255, 255, 0, 0), RenderStyle::additive);
+						SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
 						continue;
 					}
 					
-					if (skipCoreCheck || blocks[i].hasTag("coupling") || blocks[i].hasTag("repulsor"))
+					if (skipCoreCheck || blocks[i].hasTag("coupling") || block.hasTag("repulsor"))
 						continue;
 						
 					if (!cLinked)
 					{
 						CBlob@ core = getMothership(this.getTeamNum());//could get the core properly based on adjacent blocks
 						if (core !is null)
-							cLinked = coreLinkedDirectional(blocks[i], gameTime, core.getPosition());
+							cLinked = coreLinkedDirectional(block, gameTime, core.getPosition());
 					}
-					
+					 
 					if (cLinked)
-						SetDisplay(blocks[i], SColor(255, 255, 0, 0), RenderStyle::additive);
+						SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
 				}
 				
 				//can'tPlace heltips
@@ -117,7 +124,7 @@ void onTick(CBlob@ this)
                 // place
                 if (this.isKeyJustPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
                 {
-                    if (target_angle == blocks_angle && !overlappingIsland && !cLinked)
+                    if (target_angle == blocks_angle && !overlappingIsland && !cLinked && !onRock)
                     {
                         CBitStream params;
                         params.write_netid(centerBlock.getNetworkID());
@@ -271,8 +278,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					}
 					else
 						b.getShape().getVars().customData = 0; // push on island  
-					
-					b.set_u32("placedTime", getGameTime()); 
+
+					b.set_u32("placedTime", getGameTime());
 				}
 				else
 				{

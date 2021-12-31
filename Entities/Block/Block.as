@@ -1,5 +1,4 @@
 #include "IslandsCommon.as";
-#include "MakeDustParticle.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleHeal.as";
 
@@ -8,15 +7,19 @@
 void onInit(CBlob@ this)
 {
 	this.Tag("block");
+	
 	CSprite @sprite = this.getSprite();
 	sprite.SetZ(510.0f);
-	CShape @shape = this.getShape();
 	sprite.asLayer().SetLighting(false);
-	shape.getConsts().net_threshold_multiplier = -1.0f;
+	
+	ShapeConsts@ consts = this.getShape().getConsts();
+	consts.net_threshold_multiplier = -1.0f;
+    consts.mapCollisions = false; //islands.as gives own collision
+	
 	this.SetMapEdgeFlags(u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
 }
 
-void onTick (CBlob@ this)
+void onTick(CBlob@ this)
 {
 	if (this.getTickSinceCreated() < 1) //accounts for time after block production
 	{
@@ -51,8 +54,8 @@ void onTick (CBlob@ this)
 			Vec2f velnorm = island.vel; 
 			const f32 vellen = velnorm.Normalize();		
 			
-			if (vellen > 4.0f) 
-			{						
+			if (vellen > 8.0f) 
+			{
 				bool dontHitMore = false;
 			
 				HitInfo@[] hitInfos;
@@ -86,7 +89,6 @@ void onTick (CBlob@ this)
 													|| this.hasTag("seat") || blob.hasTag("seat") 
 													|| this.hasTag("coupling") || blob.hasTag("coupling"));
 
-								Vec2f velnorm = island.vel; 
 								velnorm.Normalize();
 
 								if ((!docking && !ramming))
@@ -349,38 +351,6 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 }
 
-void CollisionResponse2( Island@ island, Island@ other_island, Vec2f point1 )
-{
-	if (island is null || other_island is null)
-		return;
-		
-	if (island.mass <= 0 || other_island.mass <= 0)
-		return;
-	
-	Vec2f velnorm = island.vel; 
-	const f32 vellen = velnorm.Normalize();
-	Vec2f other_velnorm = other_island.vel; 
-	const f32 other_vellen = other_velnorm.Normalize();
-
-	Vec2f colvec1 = point1 - island.pos;
-	Vec2f colvec2 = point1 - other_island.pos;
-	colvec1.Normalize();
-	colvec2.Normalize();
-
-	const f32 veltransfer = 1.0f;
-	const f32 veldamp = 1.0f;
-	const f32 dirscale = 0.1f;
-	const f32 massratio1 = other_island.mass/(island.mass+other_island.mass);
-	const f32 massratio2 = island.mass/(island.mass+other_island.mass);
-	
-	island.vel *= veldamp;
-	other_island.vel *= veldamp;
-	island.pos += -colvec1*0.2f;
-	other_island.pos += -colvec2*0.2f;
-	island.vel += colvec1 * -other_vellen * dirscale * massratio1 * veltransfer - colvec1*0.1f;
-	other_island.vel += colvec2 * -vellen * dirscale * massratio2 * veltransfer - colvec2*0.1f;
-}
-
 void onDie(CBlob@ this)
 {
 	//gib the sprite
@@ -403,13 +373,6 @@ void onDie(CBlob@ this)
 				}
 			}
 		}
-	}
-	
-	if (isServer() && this.hasTag("hasSeat"))
-	{
-		AttachmentPoint@ seat = this.getAttachmentPoint(0);
-		CBlob@ b = seat.getOccupied();
-		if (b !is null) b.server_Die();
 	}
 }
 
@@ -441,7 +404,6 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	return damage;
 }
 
-//damage layers
 void onHealthChange(CBlob@ this, f32 oldHealth)
 {
 	if (this.getShape().getVars().customData <= 0) return;
@@ -460,29 +422,7 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 		
 		if (isClient())
 		{
-			const f32 initHealth = this.getInitialHealth();
-
-			//add damage layers
-			int frames = this.getSprite().animation !is null ? this.getSprite().animation.getFramesCount() : 4;
-			f32 step = initHealth / frames; //health divided equally into segments which tell when to change dmg frame
-			f32 currentStep = Maths::Floor(oldHealth/step) * step; //what is the step we are on?
-			
-			if (this.hasTag("solid") && hp < currentStep && hp <= initHealth - step) //update frame if past health margins
-			{
-				for (int i = 0; i < 2; ++i) //wood chips on frame change
-				{
-					CParticle@ p = makeGibParticle("Woodparts", this.getPosition(), getRandomVelocity(0, 0.3f, XORRandom(360)),
-													0, XORRandom(6), Vec2f(8, 8), 0.0f, 0, "");
-					if (p !is null)
-					{
-						//p.Z = 550.0f;
-						p.damping = 0.98f;
-					}
-				}
-				
-				MakeDustParticle(this.getPosition(), "/dust2.png");
-			}
-			else if (hp > oldHealth)
+			if (hp > oldHealth)
 			{
 				makeHealParticle(this, "HealParticle2"); //cute green particles
 			}
@@ -493,7 +433,6 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 void onGib(CSprite@ this)
 {
 	Vec2f pos = this.getBlob().getPosition();
-	//MakeDustParticle(pos, "/DustSmall.png");
 	directionalSoundPlay("destroy_wood", pos);
 }
 // network
@@ -508,12 +447,13 @@ bool onReceiveCreateData(CBlob@ this, CBitStream@ stream)
 {
 	u8 type = 0;
 	u16 ownerID = 0;
-
+	
 	if (!stream.saferead_u8(type))
 	{
 		warn("Block::onReceiveCreateData - missing type");
 		return false;	
 	}
+
 	if (!stream.saferead_u16(ownerID))
 	{
 		warn("Block::onReceiveCreateData - missing ownerID");

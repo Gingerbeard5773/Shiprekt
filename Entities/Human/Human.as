@@ -860,7 +860,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		if (mBlob !is null)
 		{
-			const int blockType = mBlob.getSprite().getFrame();
 			Island@ island = getIsland(mBlob.getShape().getVars().customData);
 				
 			const f32 mBlobCost = mBlob.get_u16("cost") > 0 ? (!mBlob.hasTag("coupling") ? mBlob.get_u16("cost") : 1) : 15;
@@ -913,7 +912,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							if (mBlob.getTeamNum() != this.getTeamNum() && mBlob.getTeamNum() != 255)
 							{
 								mBlob.server_setTeamNum(255);
-								mBlob.getSprite().SetFrame(blockType); //remove once sep
 							}
 						}
 						else
@@ -973,7 +971,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							if (mBlob.getTeamNum() == 255) //neutral
 							{
 								mBlob.server_setTeamNum(this.getTeamNum());
-								mBlob.getSprite().SetFrame(blockType); //remove once sep
 							}
 						}
 						
