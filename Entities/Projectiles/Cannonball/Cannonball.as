@@ -40,7 +40,7 @@ void onTick(CBlob@ this)
 	}
 }
 
-void onCollision(CBlob@ this, CBlob@ b, bool solid)
+void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 {
 	if (b is null || b is this) return;
 
@@ -107,7 +107,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 			if (blob !is null) damageBooty(owner, blob, b, b.hasTag("solid"), 4);
 		}
 		
-		this.server_Hit(b, this.getPosition(), Vec2f_zero, getDamage(this, b), Hitters::ballista, true);
+		this.server_Hit(b, point1, Vec2f_zero, getDamage(this, b), Hitters::ballista, true);
 		
 		if (killed) 
 		{

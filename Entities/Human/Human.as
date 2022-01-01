@@ -1217,6 +1217,13 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	}
 }
 
+bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
+{
+	return (this.getTeamNum() != blob.getTeamNum() || 
+			(blob.hasTag("solid") && blob.getShape().getVars().customData > 0) || 
+			(blob.getShape().isStatic() && !blob.getShape().getConsts().platform));
+}
+
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);

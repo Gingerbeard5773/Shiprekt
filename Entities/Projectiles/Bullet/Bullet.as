@@ -53,7 +53,7 @@ f32 getDamage(CBlob@ hitBlob)
 	return 0.25f; //cores | solids
 }
 
-void onCollision(CBlob@ this, CBlob@ b, bool solid)
+void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 {
 	bool killed = false;
 
@@ -70,7 +70,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid)
 				(b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoycore") || b.hasTag("weapon") || b.hasTag("bomb"))))//hit these and die
 				{
 					killed = true;
-					sparks(this.getPosition() + this.getVelocity(), 8);
+					sparks(point1, 8);
 					directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", this.getPosition(), 0.50f);
 				}
 				else if (b.hasTag("hasSeat"))

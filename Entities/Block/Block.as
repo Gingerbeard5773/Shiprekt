@@ -123,6 +123,11 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 // blob is null when it is a tilemap collision
 // needs to be redone!!
 
+bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
+{
+	return (this.getShape().getVars().customData > 0 && this.getTickSinceCreated() > 0);
+}
+
 void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
 	if (blob is null || this.hasTag("noCollide") || blob.hasTag("noCollide"))
@@ -275,8 +280,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		// solid block vs player
 		if (this.hasTag("solid"))
 		{
-			Vec2f pos = blob.getPosition();
-			
 			if (isClient() && !blob.isAttached() && blob.getName() == "human" && blob.isMyPlayer())
 			{
 				//kill by impact
@@ -294,7 +297,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 				}
 				
 				//set position collision
-				blob.setPosition(pos + normal * -blob.getRadius() * 0.55f);
+				//blob.setPosition(blob.getPosition() + normal * -blob.getRadius() * 0.55f);
 			}
 		}
 	}
