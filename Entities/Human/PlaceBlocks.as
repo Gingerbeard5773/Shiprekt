@@ -1,5 +1,6 @@
 #include "IslandsCommon.as";
 #include "AccurateSoundPlay.as";
+#include "BlockHooks.as";
 
 const f32 rotate_speed = 30.0f;
 const f32 max_build_distance = 32.0f;
@@ -277,8 +278,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						island.blocks.push_back(isle_block);	
 					}
 					else
-						b.getShape().getVars().customData = 0; // push on island  
+						b.getShape().getVars().customData = 0; // push on island
 
+					BlockHooks@ blockHooks;
+					b.get("BlockHooks", @blockHooks);
+					if (blockHooks !is null)
+						blockHooks.update("onBlockPlaced", @b); //Activate hook onBlockPlaced for all blobs that have it
+					
 					b.set_u32("placedTime", getGameTime());
 				}
 				else
