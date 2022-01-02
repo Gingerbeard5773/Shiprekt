@@ -992,11 +992,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						
 						if ((currentReclaim + reconstructAmount > mBlobHealth) && cBooty >= reconstructCost)
 						{
-							mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
+							mBlob.server_SetHealth(Maths::Clamp(mBlobHealth + reconstructAmount, 0.0f, mBlob.getInitialHealth()));
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 							server_addPlayerBooty(cName, -reconstructCost);
 						}
-						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
+						else if ((currentReclaim + reconstructAmount) <= mBlobHealth)
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
 				}

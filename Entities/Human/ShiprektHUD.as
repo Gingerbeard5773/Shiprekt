@@ -144,9 +144,7 @@ void onRender(CSprite@ this)
 	}
 	
 	if (rules.get_bool("display_flak_team_max"))
-		GUI::DrawText("Sorry but you reached the limit of flaks allowed for a team", Vec2f(screenWidth/2 - 205, 40), tipsColor);
-	if (rules.get_bool("display_flak_total_max"))
-		GUI::DrawText("Sorry but the limit of active flaks on the server is reached. Try destroying some of them first",  Vec2f(screenWidth/2 - 320, 60), tipsColor);
+		GUI::DrawText("Flaks limit reached!", Vec2f(screenWidth/2 - 205, 40), tipsColor);
 	
 	//mothership alerts
 	if (teamCore !is null)

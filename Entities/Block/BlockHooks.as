@@ -11,8 +11,8 @@ class BlockHooks
 		Hook@[] key1;
 		Hook@[] key2;
 		//initialize the dictionary when a BlockHooks object is constructed
-		HooksDict.set("onBlockPlaced", @key1);
-		HooksDict.set("onCockZucc", @key2);
+		HooksDict.set("onBlockPlaced", @key1); //called when the block is placed down from a human
+		HooksDict.set("onColored", @key2); //called when the block's color is changed
 	}
 
 	void addHook(string key, Hook@ hook)
@@ -24,7 +24,7 @@ class BlockHooks
 		{
 			if (hook is Hooks[i]) return;
 		}
-
+		
 		Hooks.push_back(hook);
 	}
 

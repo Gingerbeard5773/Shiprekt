@@ -146,7 +146,6 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 	u16 pBooty = server_getPlayerBooty(pName);
 
 	u8 amount = 1;
-	u8 totalFlaks = 0;
 	u8 teamFlaks = 0;
 
 	if (bType == "coupling") //coupling gives two blocks
@@ -166,11 +165,10 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 		{
 			if (turrets[i].getTeamNum() == this.getTeamNum())
 				teamFlaks++;
-			totalFlaks++;
 		}
 	}
 
-	if (teamFlaks < MAX_TEAM_FLAKS && totalFlaks < MAX_TOTAL_FLAKS)
+	if (teamFlaks < MAX_TEAM_FLAKS)
 	{
 		if (getPlayersCount() == 1 || rules.get_bool("freebuild"))
 			ProduceBlock(getRules(), caller, bType, amount);
@@ -180,38 +178,13 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 		
 			ProduceBlock(getRules(), caller, bType, amount);
 		}
-		//warning for flaks. We dont check block type since teamFlaks and totalFlaks are equals to 0 if type is not a flak.
-		if (MAX_TEAM_FLAKS - teamFlaks <= 3)
-		{
-			rules.set_bool("display_flak_team_warn", false);
-			rules.SyncToPlayer("display_flak_team_warn", player);
-			rules.set_bool("display_flak_team_warn", true);
-			rules.SyncToPlayer("display_flak_team_warn", player);
-		}
-		if (MAX_TOTAL_FLAKS - totalFlaks <= 3)
-		{
-				rules.set_bool("display_flak_total_warn", false);
-				rules.Sync("display_flak_total_warn", true);
-				rules.set_bool("display_flak_total_warn", true);
-				rules.Sync("display_flak_total_warn", true);
-		}
 	}
-	else
+	else if (teamFlaks >= MAX_TEAM_FLAKS)
 	{
-		if (teamFlaks >= MAX_TEAM_FLAKS)
-		{
-			rules.set_bool("display_flak_team_max", false);
-			rules.SyncToPlayer("display_flak_team_max", player);
-			rules.set_bool("display_flak_team_max", true);
-			rules.SyncToPlayer("display_flak_team_max", player);
-		}
-		else
-		{
-			rules.set_bool("display_flak_total_max", false);
-			rules.SyncToPlayer("display_flak_total_max", player);
-			rules.set_bool("display_flak_total_max", true);
-			rules.SyncToPlayer("display_flak_total_max", player);
-		}
+		rules.set_bool("display_flak_team_max", false);
+		rules.SyncToPlayer("display_flak_team_max", player);
+		rules.set_bool("display_flak_team_max", true);
+		rules.SyncToPlayer("display_flak_team_max", player);
 	}
 }
 
@@ -490,52 +463,30 @@ void onTick(CBlob@ this)
 			}
 		}
 	}
-	//flaks warnings
-	if (rules.get_bool("display_flak_team_warn"))
-	{
-		client_AddToChat("Beware! You almost reached the limit of flaks allowed for a team.");
-		rules.set_bool("display_flak_team_warn", false);
-	}
-	if (rules.get_bool("display_flak_total_warn"))
-	{
-		client_AddToChat("Beware! You almost reached the limit of flaks active at the same time on the server (all teams together).");
-		rules.set_bool("display_flak_total_warn", false);
-	}
 	
 	//displayed by ShiprektHUD.as
 	if (rules.get_bool("display_flak_team_max"))
 	{
-		rules.set_u8("flak_team_max_timer", rules.get_u8("flak_team_max_timer")+1);
+		rules.add_u8("flak_team_max_timer", 1);
 		if (rules.get_u8("flak_team_max_timer") == 2)
-			client_AddToChat("Sorry but you reached the limit of flaks allowed for a team.");
+			client_AddToChat("Too many team flaks!");
 		if (rules.get_u8("flak_team_max_timer") >= 30*5)
 		{
 			rules.set_bool("display_flak_team_max", false);
 			rules.set_u8("flak_team_max_timer", 0);
 		}
 	}
-	if (rules.get_bool("display_flak_total_max"))
-	{
-		rules.set_u8("flak_total_max_timer", rules.get_u8("flak_total_max_timer")+1);
-		if (rules.get_u8("display_flak_total_max") == 2)
-			client_AddToChat("Sorry but the limit of active flaks on the server is reached. Try destroying some of them first.");
-		if (rules.get_u8("flak_total_max_timer") >= 30*5)
-		{
-			rules.set_bool("display_flak_total_max", false);
-			rules.set_u8("flak_total_max_timer", 0);
-		}
-	}
 
 	// check human sharks to spawn
-	if(isServer())
+	if (isServer())
 	{
 		SharkQueue[]@ human_sharks;
 		this.get("human_sharks", @human_sharks);
-		for(int i = 0; i < human_sharks.size(); i++) // loop trough all, but process only one
+		for (int i = 0; i < human_sharks.size(); i++) // loop trough all, but process only one
 		{
 			SharkQueue new_shark = human_sharks[i];
 			CPlayer@ pl = getPlayerByNetworkId(new_shark.netid);
-			if(pl is null)
+			if (pl is null)
 			{
 				human_sharks.removeAt(i);
 				this.set("human_sharks", @human_sharks);
@@ -543,7 +494,7 @@ void onTick(CBlob@ this)
 			}
 			else
 			{
-				if(new_shark.supposed_time <= getGameTime()) // crate sharko
+				if (new_shark.supposed_time <= getGameTime()) // crate sharko
 				{
 					CBlob@ shark = server_CreateBlob("shark", pl.getTeamNum(), this.getPosition());
 					if (shark !is null)
@@ -569,7 +520,7 @@ void initiateSelfDestruct(CBlob@ this)
 	this.set_u32("dieTime", getGameTime() + SELF_DESTRUCT_TIME);
 	
 	//effects
-	directionalSoundPlay("ShipExplosion.ogg", pos);
+	directionalSoundPlay("ShipExplosion.ogg", pos, 1.5f);
     makeLargeExplosionParticle(pos);
 
 	//add block explosion scripts
@@ -599,7 +550,7 @@ void selfDestruct(CBlob@ this)
 	Vec2f pos = this.getPosition();
 	
 	//effects
-	directionalSoundPlay("ShipExplosion", pos);
+	directionalSoundPlay("ShipExplosion", pos, 2.0f);
 	makeWaveRing(pos, 4.5f, 15);
     makeHugeExplosionParticle(pos);
     ShakeScreen(90, 80, pos);
@@ -630,7 +581,7 @@ void selfDestruct(CBlob@ this)
 		if (blastBlobs[i] !is this)
 		{
 			f32 maxHealth = blastBlobs[i].getInitialHealth();
-			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo( blastBlobs[i] ))/BLAST_RADIUS;
+			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlobs[i]))/BLAST_RADIUS;
 			this.server_Hit(blastBlobs[i], pos, Vec2f_zero, damage, Hitters::bomb, true);
 		}
 

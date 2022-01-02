@@ -1,6 +1,7 @@
 #include "IslandsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
+#include "BlockHooks.as";
 
 const f32 VEL_DAMPING = 0.96f; //0.96
 const f32 ANGLE_VEL_DAMPING = 0.96; //0.96
@@ -76,7 +77,7 @@ void GenerateIslands(CRules@ this)
 				Island@ p_island;
 				this.getLast("islands", @p_island);
 
-				ColorBlocks(b, p_island);			
+				ColorBlocks(b, p_island);
 			}
 		}	
 		for (uint i = 0; i < blocks.length; ++i)
@@ -95,6 +96,14 @@ void ColorBlocks(CBlob@ blob, Island@ island)
 	IslandBlock isle_block;
 	isle_block.blobID = blob.getNetworkID();
 	island.blocks.push_back(isle_block);
+	
+	if (blob.get_u16("last color") != blob.getShape().getVars().customData)
+	{
+		BlockHooks@ blockHooks;
+		blob.get("BlockHooks", @blockHooks);
+		if (blockHooks !is null)
+			blockHooks.update("onColored", @blob); //Activate hook onBlockPlaced for all blobs that have it
+	}
 
 	CBlob@[] overlapping;
     if (blob.getOverlapping(@overlapping))
@@ -103,8 +112,7 @@ void ColorBlocks(CBlob@ blob, Island@ island)
         {
             CBlob@ b = overlapping[i];
 			
-            if (b.getShape().getVars().customData == 0 
-				&& b.hasTag("block") 
+            if (b.getShape().getVars().customData == 0 && b.hasTag("block") 
 				&& (b.getPosition() - blob.getPosition()).LengthSquared() < 78 // avoid "corner" overlaps
 				&& ((b.get_u16("last color") == blob.get_u16("last color")) || (b.hasTag("coupling")) || (blob.hasTag("coupling")) 
 				|| ((getGameTime() - b.get_u32("placedTime")) < 10) || ((getGameTime() - blob.get_u32("placedTime")) < 10) 
