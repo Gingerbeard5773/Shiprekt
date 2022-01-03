@@ -123,8 +123,6 @@ f32 getDamage(CBlob@ hitBlob)
 		return 0.25f; 
 	if (hitBlob.hasTag("propeller"))
 		return 0.2f;
-	if (hitBlob.hasTag("fakeram"))
-		return 4.0f;
 	if (hitBlob.hasTag("antiram"))
 		return 0.05f;
 	if (hitBlob.hasTag("ramengine"))

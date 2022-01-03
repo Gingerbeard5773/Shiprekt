@@ -214,8 +214,6 @@ f32 getDamage(CBlob@ hitBlob)
 		return 5.0f;
 	if (hitBlob.hasTag("propeller"))
 		return 2.0f;
-	if (hitBlob.hasTag("fakeram"))
-		return 9.0f;
 	if (hitBlob.hasTag("antiram") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 		return 2.5f;
 	if (hitBlob.hasTag("decoycore"))

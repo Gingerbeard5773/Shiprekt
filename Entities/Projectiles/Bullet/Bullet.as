@@ -43,8 +43,6 @@ f32 getDamage(CBlob@ hitBlob)
 		return 1.5f;
 	if (hitBlob.hasTag("antiram"))
 		return 0.5f;
-	if (hitBlob.hasTag("fakeram"))
-		return 2.0f;
 	if (hitBlob.hasTag("door"))
 		return 0.7f;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("decoycore") || hitBlob.hasTag("pointdefense"))

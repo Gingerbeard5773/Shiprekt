@@ -16,7 +16,7 @@ const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
 const u8 BUILD_MENU_COOLDOWN = 30;
-const Vec2f BUILD_MENU_SIZE = Vec2f(5, 5);
+const Vec2f BUILD_MENU_SIZE = Vec2f(7, 3);
 const Vec2f MINI_BUILD_MENU_SIZE = Vec2f(3, 2);
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 Random _shotspreadrandom(0x11598); //clientside
@@ -573,10 +573,6 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 			{ //Missile Launcher
 				description = "A fixed tube that fires a slow missile with short-ranged guidance. Best used for close-ranged bombing, but can be used at range. Very effective against armored ships.\nAmmoCap: low";
 				AddBlock(this, menu, "launcher", "$LAUNCHER$", "Missile Launcher", description, core, 400, 4.5f, gameTime < WARMUP_TIME);
-			}
-			{ //Fake Ram Hull
-				description = "Sometimes the threat of ramming is an effective tool. Bought in 3s for quick construction.";
-				AddBlock(this, menu, "fakeram", "$RAM$", "Fake Ram Hull", description, core, 30, 0.5f);
 			}
 			{ //Decoy Core
 				description = "A fake core to fool enemies.\nLimit of 3 per team per match. Currently bought: " + rules.get_u8("decoyCoreCount" + this.getTeamNum()) + "/3";

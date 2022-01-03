@@ -84,7 +84,6 @@ void onTick(CBlob@ this)
 													&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
 													
 								bool ramming = (this.hasTag("ram")|| blob.hasTag("ram")
-													|| this.hasTag("fakeram") || blob.hasTag("fakeram")
 													|| this.hasTag("ramengine") || blob.hasTag("ramengine")
 													|| this.hasTag("seat") || blob.hasTag("seat") 
 													|| this.hasTag("coupling") || blob.hasTag("coupling"));
@@ -155,7 +154,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
 								
 			ramming = (this.hasTag("ram") || blob.hasTag("ram") || 
-					   this.hasTag("fakeram") || blob.hasTag("fakeram") || 
 					   this.hasTag("ramengine") || blob.hasTag("ramengine") || 
 					   this.hasTag("seat") || blob.hasTag("seat") || 
 					   this.hasTag("coupling") || blob.hasTag("coupling"));
@@ -207,7 +205,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 				}
 				else
 				{ 
-					if (this.hasTag("seat") || this.hasTag("fakeram"))
+					if (this.hasTag("seat"))
 						Die(this);
 
 					if (this.hasTag("ramengine"))
@@ -268,7 +266,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					}
 				}
 				
-				if (blob.hasTag("seat") || blob.hasTag("fakeram"))
+				if (blob.hasTag("seat"))
 				{
 					Die(blob);
 				}

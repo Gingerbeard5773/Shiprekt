@@ -152,10 +152,6 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 	{
 		amount = 2;
 	}
-	else if (bType == "fakeram") //fake ram gives three blocks
-	{
-		amount = 3;
-	}
 	else if (bType == "flak")
 	{
 		//Max turrets to avoid lag
