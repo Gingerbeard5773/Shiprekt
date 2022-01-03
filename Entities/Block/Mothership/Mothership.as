@@ -55,12 +55,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		string block = params.read_string();
 		if (block != "decoycore")
 			caller.set_string("last buy", block);
+			
+		u16 cost = params.read_u16();
+		caller.set_u16("last cost", cost);
 
 		if (!isServer() || Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
 			return;
-		
-		u16 cost = params.read_u16();
-		caller.set_u16("last cost", cost);
 		
 		BuyBlock(this, caller, block, cost);
 	}

@@ -55,6 +55,7 @@ void onInit(CBlob@ this)
 	this.set_u32("menu time", 0);
 	this.set_bool("build menu open", false);
 	this.set_string("last buy", "coupling");
+	this.set_u16("last cost", 5);
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
