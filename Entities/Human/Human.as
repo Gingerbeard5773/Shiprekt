@@ -570,10 +570,6 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, b
 				description = "A fixed cannon that fires momentum-bearing armor-piercing shells. Can penetrate up to 2 solid blocks, but deals less damage after each penetration. Effective against engines, flak cannons, and other weapons.\nAmmoCap: medium";
 				AddBlock(this, menu, "cannon", "$CANNON$", "AP Cannon", description, core, 250, 3.25f, gameTime < WARMUP_TIME);
 			}
-			{ //Hyper Flak
-				description = "A flak cannon built to aggressive specifications. An advanced weapons system that must be manned. Comes standard with 2 ammunition types: Bulk-grade fragmentation shells ideal for engines and equipment OR Titanium break-wedge bombs to plough through ship armour.\nAmmoCap: medium";
-				AddBlock(this, menu, "hyperflak", "$HYPERFLAK$", "Hyper-Flak", description, core, 300, 5.0f, gameTime < WARMUP_TIME);
-			}
 			{ //Missile Launcher
 				description = "A fixed tube that fires a slow missile with short-ranged guidance. Best used for close-ranged bombing, but can be used at range. Very effective against armored ships.\nAmmoCap: low";
 				AddBlock(this, menu, "launcher", "$LAUNCHER$", "Missile Launcher", description, core, 400, 4.5f, gameTime < WARMUP_TIME);

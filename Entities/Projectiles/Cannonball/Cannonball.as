@@ -143,8 +143,6 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 		return 1.75f * damageFactor;
 	if (hitBlob.hasTag("weapon"))
 		return 1.75f * damageFactor;
-	if (hitBlob.getName() == "hyperflak")
-		return 1.15f * damageFactor;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 0.75f * damageFactor;
 

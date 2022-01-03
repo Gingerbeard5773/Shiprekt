@@ -133,8 +133,6 @@ f32 getDamage(CBlob@ hitBlob)
 		return 0.3f;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 0.3f;
-	if (hitBlob.hasTag("hyperflak"))
-		return 0.07f;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 		return 0.1f;
 	if (hitBlob.hasTag("mothership") || hitBlob.hasTag("secondaryCore"))
