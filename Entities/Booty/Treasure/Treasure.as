@@ -4,12 +4,12 @@
 #include "TileCommon.as";
 
 const s32 timerMax = 10; //amount of tokens to tick through
-const s32 treasureTick = 30; //time it takes to take 1 token off the timer (30 = 1 second)
+const s32 treasureTick = 50; //time it takes to take 1 token off the timer (30 = 1 second)
 const f32 findRadius = 100.0f; //radius a player needs to be in for the treasure to be initially spotted
 
 void onInit(CBlob@ this)
 {
-	client_AddToChat("$ A treasure chest been hiddened! $", SColor(255, 250, 250, 100));
+	client_AddToChat("$ A treasure chest been hiddened! $", SColor(255, 250, 20, 20));
 
 	this.set_s32("treasureScale", 0);
 	this.set_s32("treasureToken", timerMax);

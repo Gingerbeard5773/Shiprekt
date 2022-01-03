@@ -410,7 +410,7 @@ void PlayerControls(CBlob@ this)
 						{
 							Sound::Play("buttonclick.ogg");
 							this.set_u32("menu time", gameTime);
-							BuildShopMenu(this, core, "", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
+							BuildShopMenu(this, core, "Components", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
 						}
 						else
 							Sound::Play("/Sounds/bone_fall1.ogg");
@@ -473,11 +473,11 @@ void turnToShark(CBlob@ this)
 	}
 }
 
-void BuildShopMenu(CBlob@ this, CBlob@ core, string description, Vec2f offset, bool isStation = false, bool isMiniStation = false)
+void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isStation = false, bool isMiniStation = false)
 {
 	CRules@ rules = getRules();
 		
-	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : BUILD_MENU_SIZE, description);
+	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : BUILD_MENU_SIZE, desc);
 	u32 gameTime = getGameTime();
 	u16 WARMUP_TIME = getPlayersCount() > 1 && !rules.get_bool("freebuild") ? rules.get_u16("warmup_time") : 0;
 	

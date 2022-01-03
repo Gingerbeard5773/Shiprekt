@@ -89,25 +89,20 @@ void onRender(CRules@ this)
 		" [ " + pick_key + " ] OR [ " + taunts_key + " ]  <hold> toggle engines strafe mode.";
 
 		Vec2f infoSize;
-		GUI::GetTextDimensions( textInfo, infoSize );
+		GUI::GetTextDimensions(textInfo, infoSize);
 		
 		bool fitsVertically = sHeight > 2*imageSize.y + infoSize.y + 2 * boxMargin;
 
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Shiprekt Version 1.44\n"
+		string lastChangesInfo = "Shiprekt Version 1.45\n"
 		
 		+ "Last changes :\n"
-		+ "- 12-16-2021 - v1.43 By GoldenGuy\n"
-		+ "  * True spectator mode is now available.\n"
-		+ "  * Respawn timer added.\n"
-		+ "  * You can become a shark by holding [" +use_key +" ] on your mothership core.\n"
-		+ "- 12-16-2021 - By Gingerbeard\n"
-		+ "  * Better effects, new particles.\n"
-		+ "- 12-13-2021 - v1.41\n"
-		+ "  * Added kill messages.\n"
-		+ "  * Bomb blocks will give booty if an enemy was hit.\n";
+		+ "- 1-2-2022 - v1.45 By Gingerbeard\n"
+		+ "  * Collisions have been improved on.\n"
+		+ "  * Updated voting system.\n"
+		+ "  * Accessibility improvements.\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
@@ -151,14 +146,13 @@ void onRender(CRules@ this)
 		
 		if (localBlob is null || (controls.getMouseScreenPos() - tl - Vec2f(125, 20)).Length() > 50.0f)
 		{
-			SColor arrowColor = SColor( 150, 255, 255, 255 );
+			SColor arrowColor = SColor(150, 255, 255, 255);
 			GUI::DrawText("Click these Icons for Control and Booty functions",  tl + Vec2f(225, 5), tipsColor);
-			GUI::DrawSplineArrow2D( tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
+			GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
 		}
 		
 		//Add social links
-		makeWebsiteLink(100.0f, "Go to the Shiprekt Discord Server", "https://discord.gg/k5dvxFj2yW");
-		makeWebsiteLink(150.0f, "Go to the Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
+		makeWebsiteLink(100.0f, "Go to the Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
 	}
 }
 

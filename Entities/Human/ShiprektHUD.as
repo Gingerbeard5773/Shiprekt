@@ -111,8 +111,7 @@ void onRender(CSprite@ this)
 	
 	//Can't place blocks on mothership
 	if (blob.get_bool("blockPlacementWarn"))
-		GUI::DrawText("You can only place Couplings and Repulsors directly on the Mothership during warm-up\n"
-					+ "press [F] to get a refund on your blocks", controls.getMouseScreenPos() + Vec2f(-200, -40), tipsColor);
+		GUI::DrawText("You can only place Couplings and Repulsors on the Mothership during warm-up", controls.getMouseScreenPos() + Vec2f(-200, -40), tipsColor);
 	
 	//Seat couplings help
 	if (blob.isAttached() && blob.get_bool("drawSeatHelp"))
@@ -210,17 +209,17 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 		GUI::DrawIconByName("$SEA$", tl + Vec2f(67, -12));
 		
 	//GUI buttons text/function
-	if ((controls.getMouseScreenPos() - tl - Vec2f(100, 20) ).Length() < 15.0f)
+	if ((controls.getMouseScreenPos() - tl - Vec2f(100, 20)).Length() < 15.0f)
 	{
 		GUI::DrawText("Click to relinquish ownership of a nearby seat", tl + Vec2f(-25, -25), tipsColor);
 	}
 }
 
-void DrawCoreStatus( CBlob@ core, Vec2f tl, CControls@ controls )
+void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 {
 	if (core is null) return;
 	
-    GUI::DrawIcon("InteractionIconsBig.png", 30, Vec2f(32,32), tl + Vec2f( -12, -12), 1.0f, core.getTeamNum());
+    GUI::DrawIcon("InteractionIconsBig.png", 30, Vec2f(32,32), tl + Vec2f(-12, -12), 1.0f, core.getTeamNum());
 
 	u8 health = Maths::Min(100, Maths::Round(core.getHealth()/8.0f * 100));
 	
@@ -232,11 +231,11 @@ void DrawCoreStatus( CBlob@ core, Vec2f tl, CControls@ controls )
 	else
 		col = SColor(255, 255, 255, 255);
 
-	GUI::DrawText( health + "%", tl + Vec2f(37, 11), col );
+	GUI::DrawText(health + "%", tl + Vec2f(37, 11), col);
 	
 	//GUI buttons text/function
 	if ((controls.getMouseScreenPos() - (tl + Vec2f(17, 20))).Length() < 15.0f)
-		GUI::DrawText( "Team Core Health",  tl + Vec2f(-45, -25), tipsColor);
+		GUI::DrawText("Team Core Health",  tl + Vec2f(-45, -25), tipsColor);
 }
 
 void DrawStationStatus(CBlob@ station, Vec2f tl, CControls@ controls)
@@ -273,8 +272,8 @@ void DrawStationStatus(CBlob@ station, Vec2f tl, CControls@ controls)
 	GUI::DrawText(teamStationCount + "/" + totalStationCount + " (+"+teamStationCount*4+")", tl + Vec2f(246, 6), col);
 	
 	//GUI buttons text/function
-	if ((controls.getMouseScreenPos() - (tl + Vec2f(-98, 20))).Length() < 15.0f)
-		GUI::DrawText("Captured Bases",  tl + Vec2f(-156, -25), tipsColor);
+	if ((controls.getMouseScreenPos() - (tl + Vec2f(245, 20))).Length() < 35.0f)
+		GUI::DrawText("Captured Bases",  tl + Vec2f(200, -25), tipsColor);
 }
 
 void DrawMiniStationStatus(CBlob@ ministation, Vec2f tl, CControls@ controls)
@@ -306,11 +305,7 @@ void DrawMiniStationStatus(CBlob@ ministation, Vec2f tl, CControls@ controls)
 			teamMiniStationCount++;
 	}
 
-	GUI::DrawText( teamMiniStationCount + "/" + totalMiniStationCount + " (+"+teamMiniStationCount+")", tl + Vec2f(246, 18), col);
-	
-	//GUI buttons text/function
-	if ((controls.getMouseScreenPos() - (tl + Vec2f(-98, 20))).Length() < 15.0f)
-		GUI::DrawText("Captured Mini Bases", tl + Vec2f(-156, -25), tipsColor);
+	GUI::DrawText(teamMiniStationCount + "/" + totalMiniStationCount + " (+"+teamMiniStationCount+")", tl + Vec2f(246, 18), col);
 }
 
 void DrawResources(CBlob@ this, u16 pBooty, bool isCaptain, Vec2f tl, CControls@ controls)
@@ -330,7 +325,7 @@ void DrawResources(CBlob@ this, u16 pBooty, bool isCaptain, Vec2f tl, CControls@
 	if ((controls.getMouseScreenPos() - tl - Vec2f(146, 20)).Length() < 15.0f)
 	{
 		CRules@ rules = getRules();
-		u16 BOOTY_TRANSFER = rules.get_u16( "booty_transfer");
+		u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
 		f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
 		u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
 		if (getGameTime() > rules.get_u16("warmup_time"))
