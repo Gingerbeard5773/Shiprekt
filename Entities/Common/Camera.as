@@ -52,8 +52,8 @@ void onTick(CBlob@ this)
 	if (this.getName() != "shark") CameraRotation(angle);//set rotation
 	
 	CControls@ controls = getControls();
-	bool zoomIn = controls.isKeyJustPressed( controls.getActionKeyKey(AK_ZOOMIN));
-	bool zoomOut = controls.isKeyJustPressed( controls.getActionKeyKey(AK_ZOOMOUT));
+	bool zoomIn = controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMIN));
+	bool zoomOut = controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMOUT));
 	// zoom
 	if (zoom == 2.0f)	
 	{
@@ -126,7 +126,7 @@ void CameraRotation(f32 angle)
 	}
 }
 
-void onSetPlayer( CBlob@ this, CPlayer@ player )
+void onSetPlayer(CBlob@ this, CPlayer@ player)
 {
 	if (player !is null && player.isMyPlayer()) // setup camera to follow
 	{
