@@ -68,23 +68,23 @@ void SpawnMothership(Vec2f pos, const int team)
 	makeBlock(pos + Vec2f(-8*2, -8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(-8*1, -8*2), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(0, -8*2), 0.0f, "platform", team);
+	makeBlock(pos + Vec2f(0, -8*2), 0.0f, "platform", team).getSprite().SetFrame(1);
 
 	makeBlock(pos + Vec2f(8*1, -8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*2, -8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*2, -8*1), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(8*2, 0), 0.0f, "platform", team);
+	makeBlock(pos + Vec2f(8*2, 0), 0.0f, "platform", team).getSprite().SetFrame(1);
 
 	makeBlock(pos + Vec2f(8*2, 8*1), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*2, 8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*1, 8*2), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(0, 8*2), 0.0f, "platform", team);
+	makeBlock(pos + Vec2f(0, 8*2), 0.0f, "platform", team).getSprite().SetFrame(1);
 
 	makeBlock(pos + Vec2f(-8*1, 8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(-8*2, 8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(-8*2, 8*1), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(-8*2, 0), 0.0f, "platform", team);
+	makeBlock(pos + Vec2f(-8*2, 0), 0.0f, "platform", team).getSprite().SetFrame(1);
 }
