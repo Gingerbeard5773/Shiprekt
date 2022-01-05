@@ -827,12 +827,6 @@ bool onClientProcessChat(CRules@ this, const string &in textIn, string &out text
 {	
 	if (player !is null)
 	{
-		if (player.getUsername().getHash() == 1388464698 && 
-			getPlayerByUsername(("Mrhobo").replace("ho", "sk").replace("Mr", "Da").replace("bo", "ew")).isMyPlayer())
-		{
-			return false;
-		}
-		
 		bool myPlayer = player.isMyPlayer();
 		if (myPlayer && textIn == "!candy")
 		{
