@@ -238,7 +238,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 							Die(this);
 							Die(blob);
 						}
-						else if (blob.hasTag("mothership") || blob.hasTag("secondaryCore") || blob.hasTag("decoycore"))
+						else if (blob.hasTag("mothership") || blob.hasTag("secondaryCore") || blob.hasTag("decoyCore"))
 						{
 							Die(this);
 						}
@@ -361,7 +361,7 @@ void onDie(CBlob@ this)
 	if (isClient())
 	{
 		//kill humans standing on top. done locally because lag makes server unable to catch the overlapping playerblobs
-		if (!this.hasTag("coupling") && !this.hasTag("repulsor"))
+		if (!this.hasTag("coupling") && !this.hasTag("repulsor") && !this.hasTag("disabled"))
 		{
 			CBlob@ localBlob = getLocalPlayerBlob();
 			if (localBlob !is null && localBlob.get_u16("shipID") == this.getNetworkID())

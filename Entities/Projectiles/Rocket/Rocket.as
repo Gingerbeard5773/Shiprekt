@@ -166,7 +166,7 @@ void onTick(CBlob@ this)
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
-						if (b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoycore") || b.hasTag("solid") || 
+						if (b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoyCore") || b.hasTag("solid") || 
 							b.hasTag("door") || ((b.hasTag("weapon") || b.hasTag("rocket")) && !sameTeam))
 							killed = true;
 						else if (b.hasTag("seat"))
@@ -216,7 +216,7 @@ f32 getDamage(CBlob@ hitBlob)
 		return 2.0f;
 	if (hitBlob.hasTag("antiram") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 		return 2.5f;
-	if (hitBlob.hasTag("decoycore"))
+	if (hitBlob.hasTag("decoyCore"))
 		return 1.5f;
 	if (hitBlob.hasTag("rocket"))
 		return 4.0f;

@@ -62,7 +62,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	{
 		if (isBlock)
 		{
-			if (b.hasTag("solid") || b.hasTag("door") || ((b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoycore") || b.hasTag("weapon")) && !sameTeam))
+			if (b.hasTag("solid") || b.hasTag("door") || ((b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoyCore") || b.hasTag("weapon")) && !sameTeam))
 			{
 				if (piercedCount >= MAX_PIERCED)
 					killed = true;
@@ -137,7 +137,7 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 		return 5.0f * damageFactor;
 	if (hitBlob.hasTag("seat"))
 		return 1.0f * damageFactor;
-	if (hitBlob.hasTag("decoycore"))
+	if (hitBlob.hasTag("decoyCore"))
 		return 1.75f * damageFactor;
 	if (hitBlob.hasTag("weapon"))
 		return 1.75f * damageFactor;
@@ -151,7 +151,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 {	
 	if (customData == 9 || damage <= 0.0f) return;
 
-	if (hitBlob.hasTag("solid") || hitBlob.hasTag("mothership") || hitBlob.hasTag("secondaryCore") || hitBlob.hasTag("decoycore") || hitBlob.hasTag("door") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
+	if (hitBlob.hasTag("solid") || hitBlob.hasTag("mothership") || hitBlob.hasTag("secondaryCore") || hitBlob.hasTag("decoyCore") || hitBlob.hasTag("door") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 	{
 		sparksDirectional(worldPoint + this.getVelocity(), this.getVelocity(), 7);
 		directionalSoundPlay("Pierce1.ogg", worldPoint);
