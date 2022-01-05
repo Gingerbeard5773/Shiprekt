@@ -883,6 +883,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername() //we own the block
 						|| mBlob.hasTag("station") || mBlob.hasTag("ministation")) //its a station
 					{
+						if (mBlob.hasTag("weapon")) fullConstructAmount *= 3;
 						deconstructAmount = fullConstructAmount; 
 					}
 					else
