@@ -238,7 +238,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 							Die(this);
 							Die(blob);
 						}
-						else if (blob.hasTag("mothership") || blob.hasTag("secondaryCore") || blob.hasTag("decoyCore"))
+						else if (blob.hasTag("core"))
 						{
 							Die(this);
 						}

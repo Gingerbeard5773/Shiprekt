@@ -166,7 +166,7 @@ void onTick(CBlob@ this)
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
-						if (b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoyCore") || b.hasTag("solid") || 
+						if (b.hasTag("core") || b.hasTag("solid") || 
 							b.hasTag("door") || ((b.hasTag("weapon") || b.hasTag("rocket")) && !sameTeam))
 							killed = true;
 						else if (b.hasTag("seat"))
@@ -228,12 +228,12 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 {
 	if (customData == 9) return;
 
-	if (hitBlob.hasTag("solid")|| hitBlob.hasTag("mothership") || hitBlob.hasTag("secondaryCore") || 
+	if (hitBlob.hasTag("solid") || hitBlob.hasTag("core") || 
 			 hitBlob.hasTag("seat") || hitBlob.hasTag("door") || hitBlob.hasTag("weapon"))
 	{
 		sparks(worldPoint, 15, 5.0f, 20);
 			
-		if (hitBlob.hasTag("mothership"))
+		if (hitBlob.hasTag("core"))
 			directionalSoundPlay("Entities/Characters/Knight/ShieldHit.ogg", worldPoint);
 		else
 			directionalSoundPlay("Blast1.ogg", worldPoint);

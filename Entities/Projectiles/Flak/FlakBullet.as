@@ -81,7 +81,7 @@ void flak(CBlob@ this)
 									
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
 				if (b.hasTag("solid") || (!sameTeam
-					&& (b.hasTag("seat") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoyCore") || b.hasTag("door") || b.hasTag("bomb") || (b.hasTag("player") && !b.isAttached()))))
+					&& (b.hasTag("seat") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("core") || b.hasTag("door") || b.hasTag("bomb") || (b.hasTag("player") && !b.isAttached()))))
 				{
 					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage(b), Hitters::bomb, true);
 					if (owner !is null)

@@ -65,7 +65,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 			if (isBlock || b.hasTag("weapon"))
 			{
 				if (b.hasTag("solid") || b.hasTag("door") || (b.getTeamNum() != this.getTeamNum() && 
-				(b.hasTag("mothership") || b.hasTag("secondaryCore") || b.hasTag("decoyCore") || b.hasTag("weapon") || b.hasTag("bomb"))))//hit these and die
+				(b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb"))))//hit these and die
 				{
 					killed = true;
 					sparks(point1, 8);
