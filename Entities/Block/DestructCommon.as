@@ -13,17 +13,13 @@ namespace Destruct
 	{
 		Vec2f position = this.getPosition();
 
+		//effects
 		directionalSoundPlay('ShipExplosion', position);
-
 		makeWaveRing(position, 4.5f, 7);
-
 		makeLargeExplosionParticle(position);
-
 		ShakeScreen(45, 40, position);
 
 		if (!isServer()) return;
-
-		uint8 team = this.getTeamNum();
 
 		// Damage nearby entities
 		CMap@ map = getMap();
@@ -34,7 +30,6 @@ namespace Destruct
 		for (uint16 i = 0; i < surrounding.length; ++ i)
 		{
 			CBlob@ blob = surrounding[i];
-
 			if (this is blob) continue;
 
 			float initial = blob.getInitialHealth();
@@ -46,26 +41,21 @@ namespace Destruct
 
 		// Kill island
 		int color = this.getShape().getVars().customData;
-
 		if (color == 0) return;
 
 		Island@ isle = getIsland(color);
-
-		if (isle is null) return;
-
-		if (isle.blocks.length < 10) return;
+		if (isle is null || isle.blocks.length < 10) return;
+		
+		if (this.hasTag("secondaryCore") && isle.isMothership) return; //dont kill mothership if this is a secondaryCore
 
 		for (uint i = 0; i < isle.blocks.length; ++ i)
 		{
 			IslandBlock@ block = isle.blocks[i];
-
 			CBlob@ blob = getBlobByNetworkID(block.blobID);
 
-			if (blob is null) continue;
+			if (blob is null || blob is this) continue;
 
-			if (blob is this) continue;
-
-			if (team != blob.getTeamNum()) continue;
+			if (this.getTeamNum() != blob.getTeamNum()) continue;
 
 			blob.server_Die();
 		}

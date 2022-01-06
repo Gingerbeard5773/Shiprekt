@@ -41,17 +41,15 @@ void onTick(CBlob@ this)
 			{
 				CBlob@ human = humans[i];
 
-				if (human.getTeamNum() != team) continue;
+				if (human.getTeamNum() != team || human.getHealth() >= human.getInitialHealth())
+					continue;
 
-				if (human.getHealth() >= human.getInitialHealth()) continue;
-
-				Island@ isle = getIsland(human);
-
+				Island@ isle = getIsland(this);
 				if (isle is null) continue;
 
 				if (isle.isMothership) continue;
 
-				if (not this.isOverlapping(human)) continue;
+				if (!this.isOverlapping(human)) continue;
 
 				human.server_Heal(HEAL_AMOUNT);  
 			}
@@ -94,16 +92,10 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 		this.AddScript('Block_Explode.as');
 
 		const int color = this.getShape().getVars().customData;
-
 		if (color == 0) return 0.0f;
 
 		Island@ isle = getIsland(color);
-
-		if (isle is null || isle.blocks.length < 10) return 0.0f;
-
-		if (isle.isMothership) return 0.0f;
-
-		uint8 team = this.getTeamNum();
+		if (isle is null || isle.blocks.length < 10 || isle.isMothership) return 0.0f;
 
 		for (uint i = 0; i < isle.blocks.length; ++ i)
 		{
@@ -111,7 +103,7 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 
 			CBlob@ blob = getBlobByNetworkID(block.blobID);
 
-			if (blob !is null && team == blob.getTeamNum())
+			if (blob !is null && this.getTeamNum() == blob.getTeamNum())
 			{
 				if (i % 4 == 0 && !blob.hasTag("coupling"))
 				{
