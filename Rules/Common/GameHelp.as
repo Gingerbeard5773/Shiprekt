@@ -153,6 +153,7 @@ void onRender(CRules@ this)
 		
 		//Add social links
 		makeWebsiteLink(100.0f, "Go to the Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
+		makeWebsiteLink(150.0f, "Go to the Shiprekt Discord", "https://discord.gg/V29BBeba3C");
 	}
 }
 

@@ -7,7 +7,7 @@ Shiprekt is a <a href="https://github.com/transhumandesign/kag-base">King Arthur
 </p>
 
 Discord -
-https://discord.gg/qUENfkAX3u
+https://discord.gg/V29BBeba3C
 <br>
 
 <h2>Credits</h2>
