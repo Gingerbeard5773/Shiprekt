@@ -5,24 +5,31 @@ void onInit(CBlob@ this)
 	
 	BlockHooks@ blockHooks;
 	this.get("BlockHooks", @blockHooks);
-	blockHooks.addHook("onBlockPlaced", @onBlockPlaced); //add onBlockPlaced hook
+	blockHooks.addHook("onColored", @onColored); //add onBlockPlaced hook
 }
 
-void onBlockPlaced(CBlob@ this) //activate when the block is placed
+void onColored(CBlob@ this) //activate when the block is placed
 {
-	//find nearby platforms and see if they can change their frame
-	CBlob@[] overlapping;
-	this.getOverlapping(@overlapping);
+	if (this.get_u32("placedTime") > getGameTime() + 2) return; //bootleg onBlockPlaced due to inaccuracies in island.as
 	
-	for (uint i = 0; i < overlapping.length; i++)
+	//find nearby platforms and see if they can change their frame
+	CMap@ map = getMap();
+	
+	CBlob@[] blobs;
+	map.getBlobsAtPosition(this.getPosition() + Vec2f(8,0).RotateBy(this.getAngleDegrees()), @blobs);
+	map.getBlobsAtPosition(this.getPosition() + Vec2f(0,8).RotateBy(this.getAngleDegrees()), @blobs);
+	map.getBlobsAtPosition(this.getPosition() + Vec2f(-8,0).RotateBy(this.getAngleDegrees()), @blobs);
+	map.getBlobsAtPosition(this.getPosition() + Vec2f(0,-8).RotateBy(this.getAngleDegrees()), @blobs);
+	
+	for (int i = 0; i < blobs.length; i++)
 	{
-		CBlob@ b = overlapping[i];
+		CBlob@ b = blobs[i];
 		if (b.hasTag("platform"))
 		{
 			BlockHooks@ blockHooks;
 			b.get("BlockHooks", @blockHooks);
 			if (blockHooks !is null)
-				blockHooks.update("onBlockPlaced", @b);
+				blockHooks.update("onColored", @b);
 		}
 	}
 }

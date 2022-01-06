@@ -8,18 +8,18 @@ void onInit(CBlob@ this)
 	
 	BlockHooks@ blockHooks;
 	this.get("BlockHooks", @blockHooks);
-	blockHooks.addHook("onBlockPlaced", @onBlockPlaced); //add onBlockPlaced hook
+	blockHooks.addHook("onColored", @onColored); //add onBlockPlaced hook
 }
 
-void onBlockPlaced(CBlob@ this) //activate when the block is placed
+void onColored(CBlob@ this) //activate when the block is placed
 {
-	CBlob@[] overlapping;
-	this.getOverlapping(@overlapping);
-	
 	//SCUFFED CODE BELOW!! please redo it for me if you want LOL
 	
 	//this is for changing the frame of the platform touching a core, made difficult due to shit rotation problems and different sprite frames.
 	//probably would be much easier if only 1 'special' frame was used instead of the 4, & if I wasn't brain dead.
+	
+	CBlob@[] overlapping;
+	this.getOverlapping(@overlapping);
 	
 	for (uint i = 0; i < overlapping.length; i++)
 	{

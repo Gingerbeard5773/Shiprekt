@@ -99,10 +99,11 @@ void ColorBlocks(CBlob@ blob, Island@ island)
 	
 	if (blob.get_u16("last color") != blob.getShape().getVars().customData)
 	{
+		//Activate hook onColored for all blobs that have it (server)
 		BlockHooks@ blockHooks;
 		blob.get("BlockHooks", @blockHooks);
 		if (blockHooks !is null)
-			blockHooks.update("onColored", @blob); //Activate hook onBlockPlaced for all blobs that have it
+			blockHooks.update("onColored", @blob);
 	}
 
 	CBlob@[] overlapping;
@@ -728,6 +729,15 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 						isle_block.angle_offset = angle;
 						isle.blocks.push_back(isle_block);	
 	    				b.getShape().getVars().customData = i+1; // color
+						
+						if (b.get_u16("last color") != b.getShape().getVars().customData)
+						{
+							//Activate hook onColored for all blobs that have it (client)
+							BlockHooks@ blockHooks;
+							b.get("BlockHooks", @blockHooks);
+							if (blockHooks !is null)
+								blockHooks.update("onColored", @b);
+						}
 
 						// safety on desync
 						b.SetVisible(true);
