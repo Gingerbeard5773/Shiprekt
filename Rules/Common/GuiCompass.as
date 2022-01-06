@@ -34,9 +34,6 @@ class CompassVars
 	f32 booty_angle;
 	f32 booty_distance;
 	
-	f32 treasure_angle;
-	f32 treasure_distance;
-	
 	//f32 isle_angle;
 	//f32 isle_distance;
 
@@ -66,8 +63,6 @@ class CompassVars
         human_distances.clear();
 		booty_angle = 0.0f;
 		booty_distance = -1.0f;
-		treasure_angle = 0.0f;
-		treasure_distance = -1.0f;
 		//isle_angle = 0.0f;
 		//isle_distance = -1.0f;
     }
@@ -206,36 +201,6 @@ void onTick(CRules@ this)
 		_vars.booty_distance = bootyOffset.Length();
 	}
 	
-	//treasure
-	CBlob@[] treasure;
-    getBlobsByTag("revealed treasure", @treasure);	
-	f32 closestTreasureDist = 999999.9f;
-	s16 closestTreasureIndex = -1;
-    for (uint i = 0; i < treasure.length; i++)
-    {
-        CBlob@ currTreasure = treasure[i];
-		Vec2f treasurePos = currTreasure.getPosition();
-		f32 distToPlayer = (treasurePos - pos).getLength();
-		f32 dist = distToPlayer;	
-		if (dist < closestTreasureDist)
-		{
-			closestTreasureDist = dist;
-			closestTreasureIndex = i;
-		}
-		if (closestTreasureIndex >= 999) 
-		{
-			break;
-		}
-    }
-	
-	if (closestTreasureIndex > -1 )
-	{
-		Vec2f treasureOffset = (treasure[closestTreasureIndex].getPosition() - pos);
-
-		_vars.treasure_angle = treasureOffset.Angle() * -1.0f; 
-		_vars.treasure_distance = treasureOffset.Length();
-	}
-	
 	//islands
 	/*Island[]@ islands;
 	f32 closestIsleDist = 999999.9f;
@@ -343,18 +308,6 @@ void onRender(CRules@ this)
         pos.RotateBy(_vars.booty_angle - camangle);
 
         GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
-    }
-	
-	//closest treasure
-	if (_vars.treasure_distance > 0.0f)
-	{
-        Vec2f pos(Maths::Min(18.0f, _vars.treasure_distance / 48.0f), 0.0f);
-
-        Vec2f thisframesize = Vec2f(16,16);
-
-        pos.RotateBy(_vars.treasure_angle - camangle);
-
-        GUI::DrawIcon("WhilrpoolIcon.png", 0, Vec2f(16,16), (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 1);
     }
 	
 	//closest island

@@ -376,17 +376,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					client_AddToChat("Toggled freebuild "+ (this.get_bool("freebuild") ? "off" : "on"),  SColor(255, 255, 255, 0));
 					this.set_bool("freebuild", !this.get_bool("freebuild"));
 				}
-				else if (tokens[0] == "!findtreasure") //tp player to treasure
-				{
-					CBlob@ pBlob = player.getBlob();
-					if (pBlob is null) return false;
-					
-					CBlob@[] treasure;
-					getBlobsByName("treasure", @treasure);
-					
-					if (treasure.length > 0)
-						pBlob.setPosition(treasure[0].getPosition());
-				}
 				else if (tokens[0] == "!booty")
 				{
 					server_setPlayerBooty(player.getUsername(), 800);
