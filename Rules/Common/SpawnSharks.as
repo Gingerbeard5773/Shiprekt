@@ -16,7 +16,7 @@ void onTick(CRules@ this)
 	for (uint i=0; i < humans.length; i++)
 	{
 		CBlob@ human = humans[i];		
-		if (!human.get_bool("onGround"))
+		if (!human.isOnGround())
 		{
 			SpawnShark( this, human.getPosition());
 		}

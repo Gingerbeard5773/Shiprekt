@@ -31,9 +31,6 @@ void onInit(CBlob@ this)
 	this.addCommandID("giveBooty");
 	this.addCommandID("releaseOwnership");
 	this.addCommandID("swap tool");
-	//this.set_f32("cam rotation", 0.0f);
-
-	this.getShape().getVars().waterDragScale = 0; // fix
 	
 	this.chatBubbleOffset = Vec2f(0.0f, 10.0f);
 
@@ -52,16 +49,16 @@ void onInit(CBlob@ this)
 		u8(CBlob::map_collide_down) |
 		u8(CBlob::map_collide_sides));
 	
-	this.set_u32("menu time", 0);
 	this.set_bool("build menu open", false);
 	this.set_string("last buy", "coupling");
-	this.set_u16("last cost", 5);
 	this.set_string("current tool", "pistol");
+	this.set_u16("last cost", 5);
+	this.set_u32("menu time", 0);
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
-	this.set_u32("groundTouch time", 0);
 	this.set_s32("sharkTurn time", 0);
-	this.set_bool("onGround", true);//for syncing
+	this.set_f32("cam rotation", 0.0f);
+	
 	this.getShape().getVars().onground = true;
 	directionalSoundPlay("Respawn", this.getPosition(), 2.5f);
 }
@@ -69,31 +66,17 @@ void onInit(CBlob@ this)
 void onTick(CBlob@ this)
 {
 	Move(this);
-	
-	u32 gameTime = getGameTime();
 
 	if (this.isMyPlayer())
 	{
 		PlayerControls(this);
-
-		if (gameTime % 10 == 0)
-		{
-			this.set_bool("onGround", this.isOnGround());
-			this.Sync("onGround", false); //1954602763
-		}
 	}
 
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
-
-	//kill laser after a certain time
-	if (laser !is null && !this.isKeyPressed(key_action2) && this.get_u32("fire time") + Human::CONSTRUCT_RATE < gameTime)
-	{
-		sprite.RemoveSpriteLayer("laser");
-	}
 	
 	// stop reclaim effects
-	if (this.isKeyJustReleased(key_action2) || this.isAttached())
+	if (this.isKeyJustReleased(key_action2) || (!this.isKeyPressed(key_action2) && laser !is null ? laser.isVisible() : false) || this.isAttached())
 	{
 		this.set_bool("reclaimPropertyWarn", false);
 		if (!sprite.getEmitSoundPaused())
@@ -107,8 +90,8 @@ void onTick(CBlob@ this)
 void Move(CBlob@ this)
 {
 	const bool myPlayer = this.isMyPlayer();
-	//const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
-	const f32 camRotation = myPlayer ? getCamera().getRotation() : 0.0f;
+	const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
+	//const f32 camRotation = myPlayer ? getCamera().getRotation() : 0.0f;
 	const bool attached = this.isAttached();
 	Vec2f pos = this.getPosition();	
 	Vec2f aimpos = this.getAimPos();
@@ -118,11 +101,11 @@ void Move(CBlob@ this)
 	
 	string currentTool = this.get_string("current tool");
 
-	/*if (myPlayer)
+	if (myPlayer)
 	{
-		this.set_f32("cam rotation", camRotation);
-		this.Sync("cam rotation", false); //1732223106
-	}*/
+		this.set_f32("cam rotation", getCamera().getRotation());
+		//this.Sync("cam rotation", false); //1732223106 //causes bad deltas
+	}
 	
 	if (!attached)
 	{
@@ -133,11 +116,8 @@ void Move(CBlob@ this)
 		const bool punch = this.isKeyPressed(key_action1);
 		const bool shoot = this.isKeyPressed(key_action2);
 		const u32 time = getGameTime();
-		const f32 vellen = shape.vellen;
 		Island@ isle = getIsland(this);
 		const bool solidGround = shape.getVars().onground = attached || isle !is null || isTouchingLand(pos);
-		if (!this.wasOnGround() && solidGround)
-			this.set_u32("groundTouch time", time);//used on collisions
 
 		// move
 		Vec2f moveVel;
@@ -392,7 +372,7 @@ void PlayerControls(CBlob@ this)
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null && !core.hasTag("critical"))
 		{
-			Island@ pIsle = getIsland( this );
+			Island@ pIsle = getIsland(this);
 			bool canShop = pIsle !is null && pIsle.centerBlock !is null 
 							&& ((pIsle.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
 							|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
@@ -466,7 +446,7 @@ void PlayerControls(CBlob@ this)
 void turnToShark(CBlob@ this)
 {
 	CBlob@ core = getMothership(this.getTeamNum());
-    if(core !is null)
+    if (core !is null)
     {
     	CBitStream params;
 		params.write_u16(this.getNetworkID());

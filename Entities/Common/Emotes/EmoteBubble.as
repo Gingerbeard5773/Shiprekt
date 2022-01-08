@@ -17,7 +17,8 @@ void onInit(CBlob@ blob)
         {
             Animation@ anim = emote.addAnimation("default", 0, true);
 
-            for (int i = 0; i < Emotes::emotes_total; i++) {
+            for (int i = 0; i < Emotes::emotes_total; i++)
+			{
                 anim.AddFrame(i);
             }
         }
@@ -28,7 +29,7 @@ void onInit(CBlob@ blob)
     AddBubblesToMenu(blob); 	
 }
 
-void onTick( CBlob@ blob )
+void onTick(CBlob@ blob)
 {
 	blob.getCurrentScript().tickFrequency = 6;
    // if (blob.exists("emote"))	 will show skull if none existant
@@ -42,10 +43,10 @@ void onTick( CBlob@ blob )
 			blob.getCurrentScript().tickFrequency = 1;
 			if (emote !is null)
 			{
-				emote.SetVisible( true );
+				emote.SetVisible(true);
 				emote.animation.frame = index;
 				emote.ResetTransform();
-				emote.SetFacingLeft( false );
+				emote.SetFacingLeft(false);
 				
 				CCamera@ camera = getCamera();
 				if (camera !is null)
@@ -61,8 +62,8 @@ void onTick( CBlob@ blob )
 						emote.animation.frame = Emotes::up;
 						Vec2f aimVec;
 						const int direction = blob.getAimDirection(aimVec);
-						//const f32 camRotation = blob.isMyPlayer() ? camera.getRotation() : blob.get_f32("cam rotation");
-						const f32 camRotation = camera.getRotation();
+						const f32 camRotation = blob.isMyPlayer() ? camera.getRotation() : blob.get_f32("cam rotation");
+						//const f32 camRotation = camera.getRotation();
 						Vec2f blobCamVec = Vec2f(0.0f, 1.0f);
 							blobCamVec.RotateBy(camRotation);
 						Vec2f localCamVec = Vec2f(0.0f, 1.0f);
@@ -99,44 +100,44 @@ void AddBubblesToMenu(CBlob@ this)
     //    }
     //}
 
-	this.AddBubble( "", Emotes::right );	
+	this.AddBubble("", Emotes::right);	
 
-	this.AddBubble( "", Emotes::cross );
-	this.AddBubble( "", Emotes::laugh );	
-	this.AddBubble( "", Emotes::smile );
-	this.AddBubble( "", Emotes::check );
-	this.AddBubble( "", Emotes::troll );
-	this.AddBubble( "", Emotes::wat );	
+	this.AddBubble("", Emotes::cross);
+	this.AddBubble("", Emotes::laugh);	
+	this.AddBubble("", Emotes::smile);
+	this.AddBubble("", Emotes::check);
+	this.AddBubble("", Emotes::troll);
+	this.AddBubble("", Emotes::wat);	
 	
-	this.AddBubble( "", Emotes::down );	
+	this.AddBubble("", Emotes::down);	
 
-	this.AddBubble( "", Emotes::derp );
-	this.AddBubble( "", Emotes::mad );	
-	this.AddBubble( "", Emotes::disappoint );
-	this.AddBubble( "", Emotes::frown );	
-	this.AddBubble( "", Emotes::cry );	
-	this.AddBubble( "", Emotes::archer );
-	this.AddBubble( "", Emotes::knight );	
-	this.AddBubble( "", Emotes::builder );	
+	this.AddBubble("", Emotes::derp);
+	this.AddBubble("", Emotes::mad);	
+	this.AddBubble("", Emotes::disappoint);
+	this.AddBubble("", Emotes::frown);	
+	this.AddBubble("", Emotes::cry);	
+	this.AddBubble("", Emotes::archer);
+	this.AddBubble("", Emotes::knight);	
+	this.AddBubble("", Emotes::builder);	
 
-	this.AddBubble( "", Emotes::left );
+	this.AddBubble("", Emotes::left);
 
-	this.AddBubble( "", Emotes::sweat );
-	this.AddBubble( "", Emotes::heart );
-	this.AddBubble( "", Emotes::skull );
-	this.AddBubble( "", Emotes::flex );		
-	this.AddBubble( "", Emotes::finger );
-	this.AddBubble( "", Emotes::thumbsdown );
-	this.AddBubble( "", Emotes::thumbsup );
+	this.AddBubble("", Emotes::sweat);
+	this.AddBubble("", Emotes::heart);
+	this.AddBubble("", Emotes::skull);
+	this.AddBubble("", Emotes::flex);		
+	this.AddBubble("", Emotes::finger);
+	this.AddBubble("", Emotes::thumbsdown);
+	this.AddBubble("", Emotes::thumbsup);
 
-	this.AddBubble( "", Emotes::up );
+	this.AddBubble("", Emotes::up);
 
-	this.AddBubble( "", Emotes::ladder );
-	this.AddBubble( "", Emotes::attn );	
-	this.AddBubble( "", Emotes::question );
-	this.AddBubble( "", Emotes::fire );
-	this.AddBubble( "", Emotes::wall );
-	this.AddBubble( "", Emotes::note );	
+	this.AddBubble("", Emotes::ladder);
+	this.AddBubble("", Emotes::attn);	
+	this.AddBubble("", Emotes::question);
+	this.AddBubble("", Emotes::fire);
+	this.AddBubble("", Emotes::wall);
+	this.AddBubble("", Emotes::note);	
 
 	//derp note
 }

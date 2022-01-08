@@ -172,7 +172,7 @@ void damageBlobs(CBlob@ this)
 		int blobsNum = nearby.length();
 		for (int i = 0; i < blobsNum; i++)
 		{
-			if ((nearby[i].hasTag("block") && XORRandom(2) == 0) || (nearby[i].getName() == "human" && !nearby[i].get_bool("onGround")))
+			if ((nearby[i].hasTag("block") && XORRandom(2) == 0) || (nearby[i].getName() == "human" && !nearby[i].isOnGround()))
 				this.server_Hit(nearby[i], Vec2f_zero, Vec2f_zero, this.getInitialHealth()/4.0f, Hitters::drown, true);
 			
 			if (nearby[i] !is this && this.getDistanceTo(nearby[i]) < 15.0f)
