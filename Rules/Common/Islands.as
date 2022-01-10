@@ -245,6 +245,10 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 			//check for beached or slowed islands
 			isle.beached = false;
 			isle.slowed = false;
+			
+			int beachedBlocks = 1;
+			int slowedBlocks = 1;
+			
 			for (uint q = 0; q < isle.blocks.length; ++q)
 			{
 				IslandBlock@ isle_block = isle.blocks[q];
@@ -262,21 +266,29 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 							b.server_Hit(b, bPos, Vec2f_zero, 1.0f, 0, true);
 					}
 					else if (isTouchingLand(bPos))
-						isle.beached = true;						
+					{
+						isle.beached = true;
+						beachedBlocks++;
+					}
 					else if (isTouchingShoal(bPos))
+					{
 						isle.slowed = true;
+						slowedBlocks++;
+					}
 				}
 			}
 			
 			if (isle.beached)
 			{
-				isle.vel *= 0.25f;
-				isle.angle_vel *= 0.25f;
+				f32 velocity = Maths::Clamp(beachedBlocks / isle.mass, 0.0f, 0.4f);
+				isle.vel *= 1.0f - velocity;
+				isle.angle_vel *= 1.0f - velocity;
 			}
 			else if (isle.slowed)
 			{
-				isle.vel *= 0.9f;
-				isle.angle_vel *= 0.9f;
+				f32 velocity = Maths::Clamp((slowedBlocks) / (isle.mass * 2), 0.0f, 0.1f);
+				isle.vel *= 1.0f - velocity;
+				isle.angle_vel *= 1.0f - velocity;
 			}
 
 			while(isle.angle < 0.0f)
@@ -434,14 +446,6 @@ void TileCollision(Island@ island, Vec2f tilePos)
 	
 	Vec2f colvec1 = tilePos - island.pos;
 	colvec1.Normalize();
-
-	const f32 veltransfer = 1.0f;
-	const f32 veldamp = 1.0f;
-	const f32 dirscale = 1.0f;
-	f32 reactionScale2 = 1.0f;
-	if (island.beached)
-		reactionScale2 *= 2;
-	island.vel *= veldamp;
 	
 	island.vel = -colvec1*1.0f;
 	
@@ -523,7 +527,7 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 					}
 				}
 			}
-			//if (isle.blocks.length == 0)
+			if (isle.blocks.length > 1)
 				this.set_bool("dirty islands", true);			
 		}
 	}
@@ -534,7 +538,7 @@ void setUpdateSeatsArrays()
 	CBlob@[] seats;
 	if (getBlobsByTag("seat", @seats))
 	{
-		for (uint i = 0; i < seats.length; i++ )
+		for (uint i = 0; i < seats.length; i++)
 		{
 			seats[i].set_bool("updateArrays", true);
 		}
