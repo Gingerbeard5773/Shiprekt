@@ -17,6 +17,7 @@ const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
 const u8 BUILD_MENU_COOLDOWN = 30;
 const Vec2f BUILD_MENU_SIZE = Vec2f(7, 3);
+const Vec2f BUILD_MENU_TEST = Vec2f(6, 4);
 const Vec2f MINI_BUILD_MENU_SIZE = Vec2f(3, 2);
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 Random _shotspreadrandom(0x11598); //clientside
@@ -458,7 +459,7 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 {
 	CRules@ rules = getRules();
 		
-	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : BUILD_MENU_SIZE, desc);
+	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : sv_test ? BUILD_MENU_TEST : BUILD_MENU_SIZE, desc);
 	u32 gameTime = getGameTime();
 	u16 WARMUP_TIME = getPlayersCount() > 1 && !rules.get_bool("freebuild") ? rules.get_u16("warmup_time") : 0;
 	
@@ -497,6 +498,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			{ //Wooden Door
 				description = "A wooden door. Useful for ship security.";
 				AddBlock(this, menu, "door", "$DOOR$", "Wooden Door", description, core, 60, 1.0f);
+			}
+			if (sv_test)
+			{ //Piston
+				description = "A piston. Can be used to push and pull segments of a ship.";
+				AddBlock(this, menu, "piston", "$PISTON$", "Wooden Piston", description, core, 50, 0.85f);
 			}
 			{ //Harpoon
 				description = "A manual-fire harpoon launcher. Can be used for grabbing, towing, or water skiing!";
