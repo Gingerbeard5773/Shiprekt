@@ -1,5 +1,8 @@
+//Gingerbeard @ 1/11/2022
+
 #include "AccurateSoundPlay.as";
 #include "IslandsCommon.as";
+//#include "ParticleSparks.as";
 
 void onInit(CBlob@ this)
 {
@@ -8,7 +11,11 @@ void onInit(CBlob@ this)
 	
 	this.set_u16("cost", 50);
 	this.set_f32("weight", 0.85f);
+	
 	this.set_bool("toggled", false);
+	
+	CBlob@[] pushblocks; //blocks that the piston can push
+    this.set("pushBlocks", pushblocks);
 
 	this.addCommandID("togglepiston");
 }
@@ -31,95 +38,135 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("togglepiston"))
-    {
+    {	
 		CSprite@ sprite = this.getSprite();
 		CShape@ shape = this.getShape();
 		
-		if (canMoveBlocks(this, this))
+		Vec2f aimVector = Vec2f(0, -1).RotateBy(this.getAngleDegrees());
+		
+		CBlob@[] blobs; //get block directly infront of piston
+		getMap().getBlobsAtPosition(this.getPosition() + Vec2f(5 + (this.get_bool("toggled") ? 10 : 0), 0).RotateBy(-aimVector.Angle()), @blobs);
+		for (int i = 0; i < blobs.length; i++)
 		{
-			moveBlocks(this, this);
+			CBlob@ blob = blobs[i];
+			if (blob is this || !blob.hasTag("block") || blob.getShape().getVars().customData == 0) continue;
+			
+			this.push("pushBlocks", @blob); //add block to piston's pushblocks
+			AddLinked(blob, this, getGameTime()); //start search loop
+		}
+		
+		CBlob@[]@ pushBlocks;
+		this.get("pushBlocks", @pushBlocks);
+		//print(pushBlocks.length+"");
+		
+		if (pushBlocks.length > 0 && !this.get_bool("locked"))
+		{
+			CBlob@[] frontblobs;
+			if (this.get_bool("toggled")) //make sure there is no block touching front of the piston while toggled on
+			{
+				getMap().getBlobsAtPosition(this.getPosition() + Vec2f(5, 0).RotateBy(-aimVector.Angle()), @frontblobs);
+				for (int i = 0; i < frontblobs.length; i++)
+				{
+					if (!frontblobs[i].hasTag("block") || frontblobs[i].getShape().getVars().customData == 0 || frontblobs[i] is this)
+						frontblobs.erase(i);
+				}
+			}
+			
+			//move blocks!
+			if (frontblobs.length <= 0)
+			{
+				for (int i = 0; i < pushBlocks.length; i++)
+				{
+					CBlob@ blob = pushBlocks[i];
+					
+					Island@ island = getIsland(blob);
+					if (island !is null)
+					{
+						for (uint i = 0; i < island.blocks.length; ++i)
+						{
+							IslandBlock@ isle_block = island.blocks[i];
+							CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+							if (block is null || block !is blob) continue;
+							
+							Vec2f movePos = Vec2f(0, -8 * (this.get_bool("toggled") ? -1 : 1)).RotateBy(this.getAngleDegrees() - island.angle);
+							isle_block.offset += movePos;
+						}
+					}
+				}
+			}
 		}
 		
 		if (!this.get_bool("toggled"))
 		{
-			Vec2f[] points = {Vec2f(2, 0), Vec2f(6, 0), Vec2f(6, -8), Vec2f(2, -8)};
-			shape.AddShape(points);
-			directionalSoundPlay("DispenserFire.ogg", this.getPosition());
-			sprite.SetFrame(1);
-			this.set_bool("toggled", true);
+			if (!this.get_bool("locked"))
+			{
+				Vec2f[] points = {Vec2f(-4, 4), Vec2f(4, 4), Vec2f(4, -12), Vec2f(-4, -12)}; //enlarge shape to include piston arm
+				shape.SetShape(points);
+				
+				//AngledDirtParticle(this.getPosition() + Vec2f(5, 0).RotateBy(-aimVector.Angle()), -aimVector.Angle(), "MediumSteam.png");
+				directionalSoundPlay("DispenserFire.ogg", this.getPosition());
+				sprite.SetFrame(1);
+				this.set_bool("toggled", true);
+			}
+			else
+			{
+				directionalSoundPlay("dry_hit.ogg", this.getPosition());
+			}
 		}
 		else
 		{
-			shape.RemoveShape(1);
+			Vec2f[] points = {Vec2f(-4, -4), Vec2f(4, -4), Vec2f(4, 4), Vec2f(-4, 4)}; //set shape back to normal
+			shape.SetShape(points);
+			
 			directionalSoundPlay("LoadingTick2.ogg", this.getPosition());
 			sprite.SetFrame(0);
 			this.set_bool("toggled", false);
 		}
+		
+		this.clear("pushBlocks");
+		this.set_bool("locked", false);
     }
 }
 
-bool canMoveBlocks(CBlob@ this, CBlob@ piston, u16 counter = 0)
+void AddLinked(CBlob@ this, CBlob@ piston, u16 checkToken)
 {
-	Vec2f aimVector = Vec2f(1, 0).RotateBy(piston.getAngleDegrees() - 90);
-	HitInfo@[] hitInfos;
-	f32 toggleFactor = (this.hasTag("piston") && this.get_bool("toggled") ? 8.0f : 0.0f); //add distance to ray if we are toggled on
-	if (getMap().getHitInfosFromRay(this.getPosition() + Vec2f(5 + toggleFactor, 0).RotateBy(-aimVector.Angle()), -aimVector.Angle(), 5.0f, this, @hitInfos))
+	Vec2f aimVector = Vec2f(0, -1).RotateBy(this.getAngleDegrees());
+	CMap@ map = getMap();
+	
+	CBlob@[] blobs;
+	//add blobs from each side of this block
+	if (this.hasTag("piston") && this.get_bool("toggled")) //account for piston 'toggled' distance
+		map.getBlobsAtPosition(this.getPosition() + Vec2f(14, 0).RotateBy(-aimVector.Angle()), @blobs); //front farther
+	else
+		map.getBlobsAtPosition(this.getPosition() + Vec2f(5, 0).RotateBy(-aimVector.Angle()), @blobs); //front
+		
+	map.getBlobsAtPosition(this.getPosition() + Vec2f(0, 5).RotateBy(-aimVector.Angle()), @blobs); //left
+	map.getBlobsAtPosition(this.getPosition() + Vec2f(-5, 0).RotateBy(-aimVector.Angle()), @blobs); //right
+	map.getBlobsAtPosition(this.getPosition() + Vec2f(0, -5).RotateBy(-aimVector.Angle()), @blobs); //back
+	
+	Island@ island = getIsland(this);
+	if (island !is null && island.centerBlock !is null)
 	{
-		for (uint i = 0; i < hitInfos.length; i++)
-		{
-			CBlob@ b = hitInfos[i].blob;
-			if (b is null || !b.hasTag("block")) continue;
-			
-			if (counter >= 10) return false;
-			
-			return canMoveBlocks(b, piston, counter + 1);
-		}
-	}
-	return counter < 10;
-}
-
-void moveBlocks(CBlob@ this, CBlob@ piston)
-{
-	Vec2f aimVector = Vec2f(1, 0).RotateBy(piston.getAngleDegrees() - 90);
-	if (piston is this && this.get_bool("toggled")) //stop move process if a new block appeared at piston front
-	{
-		CBlob@[] blobs;
-		getMap().getBlobsAtPosition(this.getPosition() + Vec2f(5 ,0).RotateBy(-aimVector.Angle()), @blobs);
-		for (uint i = 0; i < blobs.length; i++)
+		this.set_u16("checkToken", checkToken);
+		for (int i = 0; i < blobs.length; i++)
 		{
 			CBlob@ blob = blobs[i];
-			if (blob is this) continue;
 			
-			if (blob.hasTag("block")) return;
-		}
-	}
-	
-	HitInfo@[] hitInfos;
-	f32 toggleFactor = (this.hasTag("piston") && this.get_bool("toggled") ? 8.0f : 0.0f); //add distance to ray if we are toggled on
-	if (getMap().getHitInfosFromRay(this.getPosition() + Vec2f(5 + toggleFactor,0).RotateBy(-aimVector.Angle()), -aimVector.Angle(), 5.0f, this, @hitInfos))
-	{
-		for (uint i = 0; i < hitInfos.length; i++)
-		{
-			CBlob@ b = hitInfos[i].blob;
-			if (b is null) continue;
+			if (blob is piston || !blob.hasTag("block") || blob.getShape().getVars().customData == 0) //don't pass
+				continue;
 			
-			Island@ island = getIsland(b);
-			if (island !is null)
+			if (blob is island.centerBlock)
 			{
-				for (uint i = 0; i < island.blocks.length; ++i)
-				{
-					IslandBlock@ isle_block = island.blocks[i];
-					CBlob@ block = getBlobByNetworkID(isle_block.blobID);
-					if (block is null || block !is b) continue;
-					
-					if (block.getShape().getVars().customData == this.getShape().getVars().customData)
-					{
-						moveBlocks(b, piston); //repeat until end is reached
-						
-						Vec2f movePos = Vec2f(0, -8 * (piston.get_bool("toggled") ? -1 : 1)).RotateBy(piston.getAngleDegrees() - island.angle);
-						isle_block.offset += movePos;
-					}
-				}
+				//don't move any blocks (piston is locked)
+				piston.clear("pushBlocks");
+				piston.set_bool("locked", true);
+				return;
+			}
+			
+			if (blob.getShape().getVars().customData > 0 && blob.get_u16("checkToken") != checkToken)
+			{
+				piston.push("pushBlocks", @blob); //add blob block to piston's pushblocks
+				AddLinked(blob, piston, checkToken); //repeat until we find the centerBlock
 			}
 		}
 	}
