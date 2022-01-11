@@ -97,7 +97,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 
 void AngledDirtParticle(Vec2f pos, f32 angle = 0.0f, string fileName = "DustSmall")
 {
-	CParticle@ p = ParticleAnimated("DustSmall", pos, Vec2f(0, 0), angle, 1.0f, 3, 0.0f, false);
+	CParticle@ p = ParticleAnimated(fileName, pos, Vec2f(0, 0), angle, 1.0f, 3, 0.0f, false);
 	if (p !is null)
 	{
 		p.width = 8;
