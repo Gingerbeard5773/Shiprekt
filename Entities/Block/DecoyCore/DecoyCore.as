@@ -1,8 +1,7 @@
-
+#include "BlockHooks.as";
 void onInit(CBlob@ this)
 {
 	this.Tag("decoyCore");
-	this.set_bool("placed", false);
 	
 	this.set_u16("cost", 150);
 	this.set_f32("weight", 6.0f);
@@ -18,25 +17,22 @@ void onInit(CBlob@ this)
 			animation.AddFrames(frames);
 		}
 	}
+	
+	BlockHooks@ blockHooks;
+	this.get("BlockHooks", @blockHooks);
+	blockHooks.addHook("onBlockPlaced", @onBlockPlaced);
 }
 
-void onTick(CBlob@ this)
+void onBlockPlaced(CBlob@ this) //called when the block has been placed
 {
-	if (this.getShape().getVars().customData <= 0)//not placed yet
-		return;
-
-	if (!this.get_bool("placed"))
+	int teamNum = this.getTeamNum();
+	CRules@ rules = getRules();
+	if (!rules.exists("decoyCoreCount" + teamNum))
 	{
-		CRules@ rules = getRules();
-		if (!rules.exists("decoyCoreCount" + this.getTeamNum()))
-		{
-			rules.set_u8("decoyCoreCount" + this.getTeamNum(), 0);
-			rules.Sync("decoyCoreCount" + this.getTeamNum(), true);
-		}
-
-		rules.set_u8("decoyCoreCount" + this.getTeamNum(), rules.get_u8("decoyCoreCount" + this.getTeamNum()) + 1);
-		rules.Sync("decoyCoreCount" + this.getTeamNum(), true);
-		
-		this.set_bool("placed", true);
+		rules.set_u8("decoyCoreCount" + teamNum, 0);
+		rules.Sync("decoyCoreCount" + teamNum, true);
 	}
+
+	rules.add_u8("decoyCoreCount" + teamNum, 1);
+	rules.Sync("decoyCoreCount" + teamNum, true);
 }

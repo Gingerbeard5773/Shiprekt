@@ -36,6 +36,10 @@ void onInit(CBlob@ this)
 	this.Tag("weapon");
 	this.Tag("usesAmmo");
 	
+	this.Tag("noEnemyEntry");
+	this.set_string("seat label", "Control Flak");
+	this.set_u8("seat icon", 7);
+	
 	this.set_u16("cost", 175);
 	this.set_f32("weight", 2.5f);
 	
@@ -48,9 +52,6 @@ void onInit(CBlob@ this)
 		this.set_u16("maxAmmo", MAX_AMMO);
 		this.Sync("ammo", true);
 		this.Sync("maxAmmo", true);
-		
-		this.set_bool("seatEnabled", true);
-		this.Sync("seatEnabled", true);
 	}
 
 	this.set_u32("fire time", 0);
@@ -102,34 +103,6 @@ void onTick(CBlob@ this)
 				childFlak.set_u16("parentID", thisID);
 			}
 		}
-
-		//owned repulsors managing
-		if (occupier.isKeyJustPressed(key_action3))
-		{
-			CPlayer@ player = occupier.getPlayer();
-			if (player !is null)
-			{
-				string occupierName = player.getUsername();
-				CBlob@[] repulsors;
-				getBlobsByTag("repulsor", @repulsors);
-				for (uint b_iter = 0; b_iter < repulsors.length; ++b_iter)
-				{
-					CBlob@ r = repulsors[b_iter];
-					if (r.getShape().getVars().customData > 0 && r.isOnScreen() && !r.hasTag("activated") && r.get_string("playerOwner") == occupierName)
-					{
-						CButton@ button = occupier.CreateGenericButton(8, Vec2f(0.0f, 0.0f), r, r.getCommandID("chainReaction"), "Activate");
-
-						if (button !is null)
-						{
-							button.enableRadius = 999.0f;
-							button.radius = 3.3f; //engine fix
-						}
-					}
-				}
-			}
-		}
-		else if (occupier.isKeyJustReleased(key_action3))
-			occupier.ClearButtons();
 	}
 	else if (this.get_u16("childID") != 0)//free child; parent
 	{
@@ -187,7 +160,7 @@ void Auto(CBlob@ this)
 
 	if (isServer() && this.getMap().getBlobsInRadius(this.getPosition(), AUTO_RADIUS, @blobsInRadius))
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++ )
+		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
 			CBlob @b = blobsInRadius[i];
 			if (b.getTeamNum() != this.getTeamNum()
@@ -400,21 +373,6 @@ void Rotate(CBlob@ this, Vec2f aimVector)
 	}
 }
 
-void GetButtonsFor(CBlob@ this, CBlob@ caller)
-{
-	if (this.getDistanceTo(caller) > 6
-		|| this.getShape().getVars().customData <= 0
-		|| this.hasAttached()
-		|| this.getTeamNum() != caller.getTeamNum())
-		return;
-
-	CBitStream params;
-	params.write_u16(caller.getNetworkID());
-
-	CButton@ button = caller.CreateGenericButton(7, Vec2f(0.0f, 0.0f), this, this.getCommandID("get in seat"), "Control Flak", params);
-	if (button !is null) button.radius = 3.3f; //engine fix
-}
-
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire"))
@@ -427,7 +385,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		if (ammo == 0)
 		{
-			directionalSoundPlay( "LoadingTick1", pos, 1.0f );
+			directionalSoundPlay("LoadingTick1", pos, 1.0f);
 			return;
 		}
 

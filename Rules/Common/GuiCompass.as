@@ -295,7 +295,7 @@ void onRender(CRules@ this)
 		if ( !getRules().get_bool("whirlpool"))
 			GUI::DrawIcon(gui_image_fname, 13, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
 		else
-			GUI::DrawIcon("WhilrpoolIcon.png", 0, Vec2f(16,16), (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
+			GUI::DrawIcon("WhirlpoolIcon.png", 0, Vec2f(16,16), (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
     }
 	
 	//closest booty

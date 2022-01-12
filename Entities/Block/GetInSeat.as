@@ -14,7 +14,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	if (this.getDistanceTo(caller) > 6
 		|| this.getShape().getVars().customData <= 0
 		|| this.hasAttached()
-		|| this.exists("seatEnabled"))
+		|| (this.hasTag("noEnemyEntry") && this.getTeamNum() != caller.getTeamNum()))
 		return;
 
 	CBitStream params;
