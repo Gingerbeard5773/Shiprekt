@@ -2,14 +2,13 @@
 
 #include "AccurateSoundPlay.as";
 #include "IslandsCommon.as";
-//#include "ParticleSparks.as";
 
 void onInit(CBlob@ this)
 {
 	this.Tag("piston");
     this.Tag("solid");
 	
-	this.set_u16("cost", 50);
+	this.set_u16("cost", 40);
 	this.set_f32("weight", 0.85f);
 	
 	this.set_bool("toggled", false);
@@ -96,32 +95,30 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			}
 		}
 		
-		if (!this.get_bool("toggled"))
+		if (!this.get_bool("locked"))
 		{
-			if (!this.get_bool("locked"))
+			if (!this.get_bool("toggled"))
 			{
 				Vec2f[] points = {Vec2f(-4, 4), Vec2f(4, 4), Vec2f(4, -12), Vec2f(-4, -12)}; //enlarge shape to include piston arm
 				shape.SetShape(points);
-				
-				//AngledDirtParticle(this.getPosition() + Vec2f(5, 0).RotateBy(-aimVector.Angle()), -aimVector.Angle(), "MediumSteam.png");
+				shape.getConsts().radius = 5.6f; //counter shape radius (engine adds onto it but we dont want that)
+
 				directionalSoundPlay("DispenserFire.ogg", this.getPosition());
 				sprite.SetFrame(1);
 				this.set_bool("toggled", true);
 			}
 			else
 			{
-				directionalSoundPlay("dry_hit.ogg", this.getPosition());
+				Vec2f[] points = {Vec2f(-4, -4), Vec2f(4, -4), Vec2f(4, 4), Vec2f(-4, 4)}; //set shape back to normal
+				shape.SetShape(points);
+				
+				directionalSoundPlay("LoadingTick2.ogg", this.getPosition());
+				sprite.SetFrame(0);
+				this.set_bool("toggled", false);
 			}
 		}
 		else
-		{
-			Vec2f[] points = {Vec2f(-4, -4), Vec2f(4, -4), Vec2f(4, 4), Vec2f(-4, 4)}; //set shape back to normal
-			shape.SetShape(points);
-			
-			directionalSoundPlay("LoadingTick2.ogg", this.getPosition());
-			sprite.SetFrame(0);
-			this.set_bool("toggled", false);
-		}
+			directionalSoundPlay("dry_hit.ogg", this.getPosition());
 		
 		this.clear("pushBlocks");
 		this.set_bool("locked", false);
@@ -147,15 +144,15 @@ void AddLinked(CBlob@ this, CBlob@ piston, u16 checkToken)
 	Island@ island = getIsland(this);
 	if (island !is null && island.centerBlock !is null)
 	{
-		this.set_u16("checkToken", checkToken);
+		this.set_u16("pistonToken", checkToken);
 		for (int i = 0; i < blobs.length; i++)
 		{
 			CBlob@ blob = blobs[i];
 			
-			if (blob is piston || !blob.hasTag("block") || blob.getShape().getVars().customData == 0) //don't pass
+			if (blob.getShape().getVars().customData != piston.getShape().getVars().customData) //don't pass
 				continue;
-			
-			if (blob is island.centerBlock)
+				
+			if (blob is getIslandCenter(island))
 			{
 				//don't move any blocks (piston is locked)
 				piston.clear("pushBlocks");
@@ -163,11 +160,23 @@ void AddLinked(CBlob@ this, CBlob@ piston, u16 checkToken)
 				return;
 			}
 			
-			if (blob.getShape().getVars().customData > 0 && blob.get_u16("checkToken") != checkToken)
+			if (blob is piston || !blob.hasTag("block")) //don't pass
+				continue;
+			
+			if (blob.getShape().getVars().customData > 0 && blob.get_u16("pistonToken") != checkToken)
 			{
 				piston.push("pushBlocks", @blob); //add blob block to piston's pushblocks
 				AddLinked(blob, piston, checkToken); //repeat until we find the centerBlock
 			}
 		}
 	}
+}
+
+CBlob@ getIslandCenter(Island@ island)
+{
+	//use mothership core if present, otherwise use the centerblock
+	if (island.isMothership)
+		return getMothership(island.centerBlock.getTeamNum());
+		
+	return island.centerBlock;
 }

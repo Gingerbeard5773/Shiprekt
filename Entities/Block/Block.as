@@ -233,7 +233,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 							this.server_Hit(this, point1, Vec2f_zero, 2.2f, 0, true);
 							Die(blob);
 						}
-						else if (blob.hasTag("hull") || blob.hasTag("ram"))
+						else if (blob.hasTag("hull") || blob.hasTag("ram") || blob.hasTag("piston"))
 						{
 							Die(this);
 							Die(blob);

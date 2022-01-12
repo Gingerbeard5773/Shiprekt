@@ -502,7 +502,7 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			if (sv_test)
 			{ //Piston
 				description = "A piston. Can be used to push and pull segments of a ship.";
-				AddBlock(this, menu, "piston", "$PISTON$", "Wooden Piston", description, core, 50, 0.85f);
+				AddBlock(this, menu, "piston", "$PISTON$", "Wooden Piston", description, core, 40, 0.85f);
 			}
 			{ //Harpoon
 				description = "A manual-fire harpoon launcher. Can be used for grabbing, towing, or water skiing!";

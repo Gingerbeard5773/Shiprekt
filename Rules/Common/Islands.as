@@ -90,39 +90,44 @@ void GenerateIslands(CRules@ this)
 	//print("Generated " + color + " islands");
 }
 
-void ColorBlocks(CBlob@ blob, Island@ island)
+void ColorBlocks(CBlob@ this, Island@ island)
 {
-	blob.getShape().getVars().customData = color;
+	this.getShape().getVars().customData = color;
 	IslandBlock isle_block;
-	isle_block.blobID = blob.getNetworkID();
+	isle_block.blobID = this.getNetworkID();
 	island.blocks.push_back(isle_block);
 	
-	if (blob.get_u16("last color") != blob.getShape().getVars().customData)
+	if (this.get_u16("last color") != this.getShape().getVars().customData)
 	{
 		//Activate hook onColored for all blobs that have it (server)
 		BlockHooks@ blockHooks;
-		blob.get("BlockHooks", @blockHooks);
+		this.get("BlockHooks", @blockHooks);
 		if (blockHooks !is null)
-			blockHooks.update("onColored", @blob);
+			blockHooks.update("onColored", @this);
 	}
-
+	
 	CBlob@[] overlapping;
-    if (blob.getOverlapping(@overlapping))
-    {
-        for (uint i = 0; i < overlapping.length; i++)
-        {
-            CBlob@ b = overlapping[i];
-			
-            if (b.getShape().getVars().customData == 0 && b.hasTag("block") 
-				&& (b.getPosition() - blob.getPosition()).LengthSquared() < 78 // avoid "corner" overlaps
-				&& ((b.get_u16("last color") == blob.get_u16("last color")) || (b.hasTag("coupling")) || (blob.hasTag("coupling")) 
-				|| ((getGameTime() - b.get_u32("placedTime")) < 10) || ((getGameTime() - blob.get_u32("placedTime")) < 10) 
-				|| (getMap().getTimeSinceStart() < 100)))
-				{
-					ColorBlocks(b, island); 
-				}
-        }
-    }
+	this.getOverlapping(@overlapping);
+
+	if (this.hasTag("piston") && this.get_bool("toggled")) //account for piston 'toggled' distance
+	{
+		Vec2f aimVector = Vec2f(0, -1).RotateBy(this.getAngleDegrees());
+		getMap().getBlobsAtPosition(this.getPosition() + Vec2f(14, 0).RotateBy(-aimVector.Angle()), @overlapping);
+	}
+	
+	for (uint i = 0; i < overlapping.length; i++)
+	{
+		CBlob@ b = overlapping[i];
+		
+		if (b.getShape().getVars().customData == 0 && b.hasTag("block")
+			&& ((b.getPosition() - this.getPosition()).LengthSquared() < 78 || (b.getPosition() - this.getPosition()).LengthSquared() > 230)// avoid "corner" overlaps
+			&& ((b.get_u16("last color") == this.get_u16("last color")) || (b.hasTag("coupling")) || (this.hasTag("coupling")) 
+			|| ((getGameTime() - b.get_u32("placedTime")) < 10) || ((getGameTime() - this.get_u32("placedTime")) < 10) 
+			|| (getMap().getTimeSinceStart() < 100)))
+		{
+			ColorBlocks(b, island); 
+		}
+	}
 }
 
 void InitIsland(Island @isle)//called for all islands after a block is placed or collides

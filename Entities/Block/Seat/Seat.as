@@ -206,7 +206,7 @@ void onTick(CBlob@ this)
 				{
 					CBlob@ p = pistons[i];
 					int color = p.getShape().getVars().customData;
-					if (color > 0 && p.isOnScreen() && p.get_string("playerOwner") == occupierName || (isCaptain && seatColor == color))
+					if (color > 0 && seatColor == color && p.isOnScreen() && (p.get_string("playerOwner") == occupierName || isCaptain))
 					{
 						CButton@ button = occupier.CreateGenericButton(p.get_bool("toggled") ? 1 : 8, Vec2f_zero, p, p.getCommandID("togglepiston"), p.get_bool("toggled") ? "Retract" : "Extend");
 						if (button !is null)
