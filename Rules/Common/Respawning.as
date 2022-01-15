@@ -5,7 +5,7 @@ const string PLAYER_BLOB = "human";
 const string SPAWN_TAG = "mothership";
 
 const u32 standartRespawnTime = 7.5f*getTicksASecond();
-const u32 specToTeamRespawnTime = 60*getTicksASecond(); // one minute
+const u32 specToTeamRespawnTime = 10.0f*getTicksASecond(); // one minute
 
 bool oneTeamLeft = false;
 

@@ -16,8 +16,8 @@ const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
 const u8 BUILD_MENU_COOLDOWN = 30;
-const Vec2f BUILD_MENU_SIZE = Vec2f(7, 3);
-const Vec2f BUILD_MENU_TEST = Vec2f(6, 4);
+const Vec2f BUILD_MENU_SIZE = Vec2f(6, 4);
+const Vec2f BUILD_MENU_TEST = Vec2f(6, 4); //for testing, only activates when sv_test is on
 const Vec2f MINI_BUILD_MENU_SIZE = Vec2f(3, 2);
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 Random _shotspreadrandom(0x11598); //clientside
@@ -499,7 +499,6 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 				description = "A wooden door. Useful for ship security.";
 				AddBlock(this, menu, "door", "$DOOR$", "Wooden Door", description, core, 60, 1.0f);
 			}
-			if (sv_test)
 			{ //Piston
 				description = "A piston. Can be used to push and pull segments of a ship.";
 				AddBlock(this, menu, "piston", "$PISTON$", "Wooden Piston", description, core, 40, 0.85f);

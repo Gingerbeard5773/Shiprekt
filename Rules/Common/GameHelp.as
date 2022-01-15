@@ -96,13 +96,14 @@ void onRender(CRules@ this)
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Shiprekt Version 1.45\n"
+		string lastChangesInfo = "Shiprekt Version 1.46\n"
 		
 		+ "Last changes :\n"
-		+ "- 1-2-2022 - v1.45 By Gingerbeard\n"
-		+ "  * Collisions have been improved on.\n"
-		+ "  * Updated voting system.\n"
-		+ "  * Accessibility improvements.\n";
+		+ "- 1-15-2022 - v1.46 By Gingerbeard\n"
+		+ "  * Added new block: Pistons.\n"
+		+ "  * Ship speed on land depends on how many blocks are touching.\n"
+		+ "  * Reduced spectator to player respawn time.\n"
+		+ "  * Fixed issue with secondarycore blowing up mothership instantly.\n";
 
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
