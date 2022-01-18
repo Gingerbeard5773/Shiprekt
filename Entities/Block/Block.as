@@ -16,7 +16,7 @@ void onInit(CBlob@ this)
 	consts.net_threshold_multiplier = -1.0f;
     consts.mapCollisions = false; //islands.as gives own collision
 	
-	this.SetMapEdgeFlags(u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
+	//this.SetMapEdgeFlags(u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
 }
 
 void onTick(CBlob@ this)

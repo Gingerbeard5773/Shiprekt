@@ -259,7 +259,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					return false;
 				}
-				else if (tokens[0] == "!findblob") //could help with finding delta/bad snapshot errors? '!findBlob 12345'
+				else if (tokens[0] == "!tp") //teleport to blob, uses blob's ID
 				{
 					CBlob@ b = getBlobByNetworkID(parseInt(tokens[1]));
 					if (b is null) 
@@ -287,6 +287,11 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					player.server_setTeamNum(parseInt(tokens[1]));
 					pBlob.server_setTeamNum(parseInt(tokens[1]));
+				}
+				else if (tokens[0] == "!playsound") //play a sound
+				{
+					Sound::Play(tokens[1]);
+					return false;
 				}
 				else if (tokens[0] == "!g_debug")
 				{
@@ -412,6 +417,19 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					CBlob@ mothershipBlue = getMothership(0);
 					mothershipBlue.server_Hit(mothershipBlue, mothershipBlue.getPosition(), Vec2f_zero, 50.0f, 0, true);
+				}
+				else if (tokens[0] == "!pinball") //pinball machine
+				{
+					Island[]@ islands;
+					if (!this.get("islands", @islands)) return false;
+					
+					for (uint i = 0; i < islands.length; ++i)
+					{
+						//commence pain
+						Island@ isle = islands[i];
+						isle.angle_vel += (180 + XORRandom(180)) * (XORRandom(2) == 0 ? 1 : -1);
+						isle.vel += Vec2f(XORRandom(50) * (XORRandom(2) == 0 ? 1 : -1), XORRandom(50)* (XORRandom(2) == 0 ? 1 : -1));
+					}
 				}
 			}
 		}
