@@ -97,17 +97,12 @@ void onRender(CSprite@ this)
 	f32 screenWidth = getScreenWidth();
 	u32 gameTime = getGameTime();
 	
-	//			Draw HUD Icons and Status text
-	DrawShipStatus(blob, name, tl, controls);
-	DrawCoreStatus(teamCore, tl, controls);
-	DrawStationStatus(teamCore, tl, controls);
-	DrawMiniStationStatus(teamCore, tl, controls);
-	DrawResources(blob, pBooty, isCaptain, tl, controls);
+	GUI::SetFont("none"); //shite fix but works
 	
 	//			Gameplay Tips
 	//Seat produce couplings help
 	if (blob.isAttached() && blob.get_bool("drawCouplingsHelp"))
-		GUI::DrawText("Couplings ready. Press the Inventory key to take.",  tl + Vec2f(240, 20), tipsColor);
+		GUI::DrawText("Couplings ready.\nPress ["+getControls().getActionKeyKeyName(AK_INVENTORY)+"] to take.",  tl + Vec2f(350, 10), tipsColor);
 	
 	//Can't place blocks on mothership
 	if (blob.get_bool("blockPlacementWarn"))
@@ -128,7 +123,7 @@ void onRender(CSprite@ this)
 	
 	//warm-up/freebuild
 	if (getPlayersCount() == 1)
-		GUI::DrawText("Free Building Mode - Waiting for players to join.", Vec2f(screenWidth/2 - 240, 15), tipsColor);
+		GUI::DrawText("Free Building Mode - Waiting for players to join.", Vec2f(screenWidth/2 - 125, 15), tipsColor);
 	else if (rules.get_bool("freebuild"))
 		GUI::DrawText("Free Building Mode", Vec2f(screenWidth/2 - 75, 15), tipsColor);
 	else
@@ -168,7 +163,16 @@ void onRender(CSprite@ this)
 		//poor and no captain: sharks for income
 		if (mShipOnScreen && captainName == "" && pBooty < rules.get_u16("bootyRefillLimit") && mShipDMG == 0)
 			GUI::DrawText("[ Kill Sharks to gain some Booty ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
-	}		
+	}
+	
+	//			Draw HUD Icons and Status text
+	DrawShipStatus(blob, name, tl, controls);
+	
+	GUI::SetFont("menu");
+	DrawCoreStatus(teamCore, tl, controls);
+	DrawStationStatus(teamCore, tl, controls);
+	DrawMiniStationStatus(teamCore, tl, controls);
+	DrawResources(blob, pBooty, isCaptain, tl, controls);
 }
 
 void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
@@ -211,6 +215,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 	//GUI buttons text/function
 	if ((controls.getMouseScreenPos() - tl - Vec2f(100, 20)).Length() < 15.0f)
 	{
+		GUI::SetFont("menu");
 		GUI::DrawText("Click to relinquish ownership of a nearby seat", tl + Vec2f(-25, -25), tipsColor);
 	}
 }

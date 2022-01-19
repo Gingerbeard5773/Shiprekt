@@ -49,20 +49,11 @@ void onRender(CRules@ this)
 	CControls@ controls = getControls();
 	
 	if (showHelp)
-	{
-		//CCamera@ camera = getCamera();
-		//if (camera is null) return;
-		//camera.setRotation(0.0f);//for the the arrows to work
-		
+	{	
 		SColor tipsColor = SColor(255, 255, 255, 255);
 		f32 sWidth = getScreenWidth();
 		f32 sHeight = getScreenHeight();
 		u32 gameTime = getGameTime();
-		
-		//
-		string intro =  "Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\n Last changes and fixes by Gingerbeard.";
-		Vec2f introSize;
-		GUI::GetTextDimensions(intro, introSize);
 
 		Vec2f imageSize;
 		GUI::GetIconDimensions("$HELP$", imageSize);
@@ -91,52 +82,66 @@ void onRender(CRules@ this)
 		Vec2f infoSize;
 		GUI::GetTextDimensions(textInfo, infoSize);
 		
-		bool fitsVertically = sHeight > 2*imageSize.y + infoSize.y + 2 * boxMargin;
+		//bool fitsVertically = sHeight > 2*imageSize.y + infoSize.y + 2 * boxMargin;
 
 		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
-		string lastChangesInfo = "Shiprekt Version 1.46\n"
-		
-		+ "Last changes :\n"
-		+ "- 1-15-2022 - v1.46 By Gingerbeard\n"
-		+ "  * Added new block: Pistons.\n"
-		+ "  * Ship speed on land depends on how many blocks are touching.\n"
-		+ "  * Reduced spectator to player respawn time.\n"
-		+ "  * Fixed issue with secondarycore blowing up mothership instantly.\n";
-
-		Vec2f lastChangesSize;
-		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
-		
-		Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
-		Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
+		//draw box
+		GUI::DrawButtonPressed(tlBox, brBox);
 		
 		//welcome
-		//Draw box
-		GUI::DrawButtonPressed(tlBox, brBox);
 		if (justJoined)
 		{
+			string intro =  "Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\n Last changes and fixes by Gingerbeard.";
+			
+			Vec2f introSize;
+			GUI::GetTextDimensions(intro, introSize);
+			
 			GUI::DrawText(intro, Vec2f(Maths::Max(tlBox.x, sWidth/2 - introSize.x/2), tlBox.y + 20), tipsColor);
 		} 
+		
 		//helptoggle, image && textInfo
-		string helpToggle = (!justJoined || localBlob !is null) ? ">> Press Left Click to change page | F1 to toggle this Help Box (or type !help) <<" : ">> Press Left Click to change page <<";
-		Vec2f toggleSize;
-		GUI::GetTextDimensions(helpToggle, toggleSize);
 		if (!justJoined || gameTime % 90 > 30)
 		{
+			string helpToggle = (!justJoined || localBlob !is null) ? ">> Press Left Click to change page | F1 to toggle this Help Box (or type !help) <<" : ">> Press Left Click to change page <<";
+			
+			Vec2f toggleSize;
+			GUI::GetTextDimensions(helpToggle, toggleSize);
+			
 			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 40), tipsColor);
 			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 2*imageSize.y  + boxMargin + 25), tipsColor);
 		}
 		
 		if (page1)
 		{
+			//PAGE 1
+			
+			string lastChangesInfo = "Shiprekt Version 1.46\n"
+		
+			+ "Last changes :\n"
+			+ "- 1-15-2022 - v1.46 By Gingerbeard\n"
+			+ "  * Added new block: Pistons.\n"
+			+ "  * Ship speed on land depends on how many blocks are touching.\n"
+			+ "  * Reduced spectator to player respawn time.\n"
+			+ "  * Fixed issue with secondarycore blowing up mothership instantly.\n";
+			
+			Vec2f lastChangesSize;
+			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
+		
+			Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
+			Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
+			
+			GUI::SetFont("menu");
 			GUI::DrawText(lastChangesInfo, Vec2f(sWidth/2 - imageSize.x,  tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
 			GUI::DrawIconByName("$HELP$", Vec2f(sWidth/2 - imageSize.x,  tlBox.y + boxMargin + 10));
 		}
 		else
-			GUI::DrawText(textInfo, Vec2f(sWidth/2 - infoSize.x/2,  tlBox.y + boxMargin + 40), tipsColor);
+		{
+			GUI::SetFont("menu");
+			GUI::DrawText(textInfo, Vec2f(sWidth/2 - infoSize.x/2 -60,  tlBox.y + boxMargin + 40), tipsColor);
+		}
 	
-		
 		//hud icons
 		Vec2f tl = getActorHUDStartPosition(null, 6);
 		if (localBlob is null)
@@ -145,11 +150,11 @@ void onRender(CRules@ this)
 			GUI::DrawIconByName("$CREW$", tl + Vec2f(67, 11));
 		}
 		
-		if (localBlob is null || (controls.getMouseScreenPos() - tl - Vec2f(125, 20)).Length() > 50.0f)
+		if (localBlob is null || (controls.getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
 		{
 			SColor arrowColor = SColor(150, 255, 255, 255);
-			GUI::DrawText("Click these Icons for Control and Booty functions",  tl + Vec2f(225, 5), tipsColor);
-			GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
+			GUI::DrawTextCentered("Click these Icons for Control and Booty functions",  tl + Vec2f(90, -15), tipsColor);
+			//GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
 		}
 		
 		//Add social links
@@ -163,6 +168,8 @@ void makeWebsiteLink(f32 yPos, string text, string website)
 	f32 width;
 	f32 height = 40;
 
+	GUI::SetFont("menu");
+	
 	Vec2f dim;
 	GUI::GetTextDimensions(text, dim);
 
