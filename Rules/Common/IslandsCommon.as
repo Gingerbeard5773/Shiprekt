@@ -110,8 +110,8 @@ Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
 
 void SetNextId(CRules@ this, Island@ island)
 {
-	island.id = this.get_u32("islands id")+1;
-	this.set_u32("islands id", island.id);
+	this.add_s32("islands id", 1);
+	island.id = this.get_s32("islands id");
 }
 
 CBlob@ getMothership(const u8 team) //Gets the mothership core block on determined team 

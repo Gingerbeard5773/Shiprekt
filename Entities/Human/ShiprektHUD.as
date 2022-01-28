@@ -170,9 +170,9 @@ void onRender(CSprite@ this)
 	
 	GUI::SetFont("menu");
 	DrawCoreStatus(teamCore, tl, controls);
-	DrawStationStatus(teamCore, tl, controls);
-	DrawMiniStationStatus(teamCore, tl, controls);
-	DrawResources(blob, pBooty, isCaptain, tl, controls);
+	DrawStationStatus(teamNum, tl, controls);
+	DrawMiniStationStatus(tl, controls);
+	DrawResources(pBooty, isCaptain, tl, controls);
 }
 
 void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
@@ -226,7 +226,7 @@ void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 	
     GUI::DrawIcon("InteractionIconsBig.png", 30, Vec2f(32,32), tl + Vec2f(-12, -12), 1.0f, core.getTeamNum());
 
-	u8 health = Maths::Min(100, Maths::Round(core.getHealth()/8.0f * 100));
+	u8 health = core.hasTag("critical") ? 0 : Maths::Min(100, Maths::Round(core.getHealth()/core.getInitialHealth() * 100));
 	
 	SColor col;
 	if (health <= 10)
@@ -243,21 +243,9 @@ void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 		GUI::DrawText("Team Core Health",  tl + Vec2f(-45, -25), tipsColor);
 }
 
-void DrawStationStatus(CBlob@ station, Vec2f tl, CControls@ controls)
+void DrawStationStatus(int teamnum, Vec2f tl, CControls@ controls)
 {
-	if (station is null) return;
-	
-    GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, station.getTeamNum());
-
-	u8 health = Maths::Min( 100, Maths::Round(station.getHealth()/8.0f * 100));
-	
-	SColor col;
-	if (health <= 10)
-		col = SColor(255, 255, 0, 0);
-	else if (health < 50)
-		col = SColor(255, 255, 255, 0);
-	else
-		col = SColor(255, 255, 255, 255);
+    GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, teamnum);
 		
 	CBlob@[] stations;
 	getBlobsByTag("station", @stations);
@@ -274,27 +262,15 @@ void DrawStationStatus(CBlob@ station, Vec2f tl, CControls@ controls)
 			teamStationCount++;
 	}
 
-	GUI::DrawText(teamStationCount + "/" + totalStationCount + " (+"+teamStationCount*4+")", tl + Vec2f(246, 6), col);
+	GUI::DrawText(teamStationCount + "/" + totalStationCount + " (+"+teamStationCount*4+")", tl + Vec2f(246, 6), tipsColor);
 	
 	//GUI buttons text/function
 	if ((controls.getMouseScreenPos() - (tl + Vec2f(245, 20))).Length() < 35.0f)
 		GUI::DrawText("Captured Bases",  tl + Vec2f(200, -25), tipsColor);
 }
 
-void DrawMiniStationStatus(CBlob@ ministation, Vec2f tl, CControls@ controls)
+void DrawMiniStationStatus(Vec2f tl, CControls@ controls)
 {
-	if (ministation is null) return;
-
-	u8 health = Maths::Min(100, Maths::Round(ministation.getHealth()/8.0f * 100));
-	
-	SColor col;
-	if (health <= 10)
-		col = SColor(255, 255, 0, 0);
-	else if (health < 50)
-		col = SColor(255, 255, 255, 0);
-	else
-		col = SColor(255, 255, 255, 255);
-		
 	CBlob@[] ministations;
 	getBlobsByTag("ministation", @ministations);
 	
@@ -310,10 +286,10 @@ void DrawMiniStationStatus(CBlob@ ministation, Vec2f tl, CControls@ controls)
 			teamMiniStationCount++;
 	}
 
-	GUI::DrawText(teamMiniStationCount + "/" + totalMiniStationCount + " (+"+teamMiniStationCount+")", tl + Vec2f(246, 18), col);
+	GUI::DrawText(teamMiniStationCount + "/" + totalMiniStationCount + " (+"+teamMiniStationCount+")", tl + Vec2f(246, 18), tipsColor);
 }
 
-void DrawResources(CBlob@ this, u16 pBooty, bool isCaptain, Vec2f tl, CControls@ controls)
+void DrawResources(u16 pBooty, bool isCaptain, Vec2f tl, CControls@ controls)
 {
 	GUI::DrawIconByName("$BOOTY$", tl + Vec2f(111, -12));
 

@@ -86,7 +86,8 @@ void onTick(CBlob@ this)
 								bool ramming = (this.hasTag("ram")|| blob.hasTag("ram")
 													|| this.hasTag("ramengine") || blob.hasTag("ramengine")
 													|| this.hasTag("seat") || blob.hasTag("seat") 
-													|| this.hasTag("coupling") || blob.hasTag("coupling"));
+													|| this.hasTag("coupling") || blob.hasTag("coupling")
+													|| this.hasTag("bomb") || blob.hasTag("bomb"));
 
 								velnorm.Normalize();
 
@@ -319,15 +320,8 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 	colvec1.Normalize();
 	colvec2.Normalize();
 
-	const f32 veltransfer = 1.0f;
 	const f32 veldamp = 1.0f;
-	const f32 dirscale = 1.0f;
-	f32 reactionScale1 = 1.0f;
-	if (other_island.beached)
-		reactionScale1 *= 2;
-	f32 reactionScale2 = 1.0f;
-	if (island.beached )
-		reactionScale2 *= 2;
+	
 	const f32 massratio1 = other_island.mass/(island.mass+other_island.mass);
 	const f32 massratio2 = island.mass/(island.mass+other_island.mass);
 	island.vel *= veldamp;
@@ -336,14 +330,14 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 	if (other_island.isStation || other_island.isMiniStation)
 	{
 		if (island.beached)
-			island.vel += colvec1 * -vellen * dirscale * veltransfer - colvec1*1.0f;
+			island.vel += colvec1 * -vellen - colvec1*1.0f;
 		else
-			island.vel += colvec1 * -vellen * dirscale * veltransfer - colvec1*0.4f;
+			island.vel += colvec1 * -vellen - colvec1*0.4f;
 	}
 	else
 	{
-		island.vel += colvec1 * -other_vellen * dirscale * massratio1 * veltransfer * reactionScale1 - colvec1*0.2f;
-		other_island.vel += colvec2 * -vellen * dirscale * massratio2 * veltransfer * reactionScale2 - colvec2*0.2f;
+		island.vel += colvec1 * -other_vellen * massratio1 * 2 - colvec1*0.2f;
+		other_island.vel += colvec2 * -vellen * massratio2 * 2 - colvec2*0.2f;
 	}
 	
 	//effects

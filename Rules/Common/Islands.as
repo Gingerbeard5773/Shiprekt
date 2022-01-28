@@ -15,7 +15,7 @@ void onInit(CRules@ this)
 	this.set("islands", islands);
 	this.addCommandID("islands sync");
 	this.addCommandID("islands update");
-	this.set_u32("islands id", 0);
+	this.set_s32("islands id", 0);
 	this.set_bool("dirty islands", true);
 }
 
@@ -475,7 +475,7 @@ void setIsleTeam(Island @isle, u8 teamNum = 255)
 
 void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
 {
-	if (!isServer() && blob.hasTag("block"))
+	if (!isServer() && blob.hasTag("block") && blob.getSprite().getFrame() > 0)
 		blob.set_u8("frame", blob.getSprite().getFrame());
 }
 
@@ -524,16 +524,10 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 						isle.initialized = false;
 					}
 					i = 0;
-
-					if (blob.hasTag("coupling"))
-					{
-						this.set_bool("dirty islands", true);		
-						return;
-					}
 				}
 			}
 			if (isle.blocks.length > 1)
-				this.set_bool("dirty islands", true);			
+				this.set_bool("dirty islands", true);
 		}
 	}
 }
@@ -898,6 +892,8 @@ void onRender(CRules@ this)
 					Vec2f iVel = isle.vel * 20;
 					iVel.RotateBy(-camRotation);					
 					GUI::DrawArrow2D(cbPos, cbPos + iVel, SColor(175, 0, 200, 0));
+					if (camera.targetDistance <= 1.0f)
+						GUI::DrawText("" + isle.centerBlock.getShape().getVars().customData, cbPos, SColor(255,255,255,255));
 					//GUI::DrawText("" + isle.vel.Length(), cbPos, SColor( 255,255,255,255));
 				}
 					
@@ -910,7 +906,8 @@ void onRender(CRules@ this)
 						int c = b.getShape().getVars().customData;
 						GUI::DrawRectangle(getDriver().getScreenPosFromWorldPos(b.getPosition() - Vec2f(4, 4).RotateBy(camRotation)), 
 										   getDriver().getScreenPosFromWorldPos(b.getPosition() + Vec2f(4, 4).RotateBy(camRotation)), SColor(100, c*50, -c*90, 93*c));
-						GUI::DrawText("" + isle_block.blobID, getDriver().getScreenPosFromWorldPos(b.getPosition()), SColor(255,255,255,255));
+						if (camera.targetDistance > 1.0f)
+							GUI::DrawText("" + isle_block.blobID, getDriver().getScreenPosFromWorldPos(b.getPosition()), SColor(255,255,255,255));
 					}
 				}
 			}
