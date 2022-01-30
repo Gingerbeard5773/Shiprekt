@@ -239,7 +239,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         const f32 island_angle = params.read_f32();
 
         Island@ island = getIsland(centerBlock.getShape().getVars().customData);
-        if (island is null && island.centerBlock !is null)
+        if (island is null || island.centerBlock !is null)
         {
             warn("place cmd: island not found");
             return;
