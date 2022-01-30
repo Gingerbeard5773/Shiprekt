@@ -196,7 +196,7 @@ void InitIsland(Island @isle)//called for all islands after a block is placed or
 	
 	if (isle.centerBlock is null)
 	{
-		if (!isClient())
+		//if (!isClient())
 			warn("isle.centerBlock is null");
 		return;
 	}
@@ -526,7 +526,7 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 					i = 0;
 				}
 			}
-			if (isle.blocks.length > 1)
+			if (isle.blocks.length != 1)
 				this.set_bool("dirty islands", true);
 		}
 	}
