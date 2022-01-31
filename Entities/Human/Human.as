@@ -1110,13 +1110,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 }
 
-void onAttached(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
-{
-	this.ClearMenus();
-}
-
 void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
 {
+	this.getShape().getVars().onground = true;
 	this.set_u16("shipID", detached.getNetworkID());
 	this.set_s8("stay count", 3);
 }
