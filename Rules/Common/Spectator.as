@@ -135,7 +135,7 @@ void Spectator(CRules@ this)
 				if (blob.hasTag("block"))
 				{
 					//set an island as the target
-					Island@ island = getIsland(blob);
+					Island@ island = getIsland(blob.getShape().getVars().customData);
 					if (island is null || island.centerBlock is null) return;
 					
 					camera.setTarget(island.centerBlock);

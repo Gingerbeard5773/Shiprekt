@@ -44,7 +44,7 @@ void onTick(CBlob@ this)
 				if (human.getTeamNum() != team || human.getHealth() >= human.getInitialHealth())
 					continue;
 
-				Island@ isle = getIsland(this);
+				Island@ isle = getIsland(this.getShape().getVars().customData);
 				if (isle is null) continue;
 
 				if (isle.isMothership) continue;
