@@ -141,7 +141,7 @@ void AddLinked(CBlob@ this, CBlob@ piston, u16 checkToken)
 	map.getBlobsAtPosition(this.getPosition() + Vec2f(-5, 0).RotateBy(-aimVector.Angle()), @blobs); //right
 	map.getBlobsAtPosition(this.getPosition() + Vec2f(0, -5).RotateBy(-aimVector.Angle()), @blobs); //back
 	
-	Island@ island = getIsland(this.getShape.getVars().customData);
+	Island@ island = getIsland(this.getShape().getVars().customData);
 	if (island !is null && island.centerBlock !is null)
 	{
 		this.set_u16("pistonToken", checkToken);
