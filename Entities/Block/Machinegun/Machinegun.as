@@ -7,8 +7,8 @@
 #include "ParticleSparks.as";
 
 const f32 BULLET_SPREAD = 2.5f;
-const f32 BULLET_RANGE = 275.0F;
-const f32 MIN_FIRE_PAUSE = 2.75f; //min wait between shots
+const f32 BULLET_RANGE = 240.0F;
+const f32 MIN_FIRE_PAUSE = 2.85f; //min wait between shots
 const f32 MAX_FIRE_PAUSE = 8.0f; //max wait between shots
 const f32 FIRE_PAUSE_RATE = 0.08f; //higher values = higher recover
 
@@ -92,7 +92,7 @@ void onTick(CBlob@ this)
     CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 
 	//kill laser after a certain time
-	if (laser !is null && this.get_u32("fire time") + 2.5f < gameTime)
+	if (laser !is null && this.get_u32("fire time") + 3.0f < gameTime)
 		sprite.RemoveSpriteLayer("laser");
 
 	if (isServer())
@@ -295,36 +295,33 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				sprite.SetAnimation("fire right");
 		}
 
-		if (!killed)
+		if (!killed && isClient())
 		{
-			if (isClient())
+			sprite.RemoveSpriteLayer("laser");
+			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
+			if (laser !is null)
 			{
-				sprite.RemoveSpriteLayer("laser");
-				CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
-				if (laser !is null)
-				{
-					Vec2f solidPos;
-					bool hitStone = map.rayCastSolid(pos, pos + aimVector * (BULLET_RANGE + rangeOffset), solidPos);
-					
-					Animation@ anim = laser.addAnimation("default", 1, false);
-					int[] frames = {0, 1, 2, 3, 4, 5};
-					anim.AddFrames(frames);
-					laser.SetVisible(true);
-					f32 laserLength = Maths::Max(0.1f, (hitStone ? solidPos - barrelPos : (aimVector * (BULLET_RANGE + rangeOffset))).getLength() / 16.0f);
-					laser.ResetTransform();
-					laser.ScaleBy(Vec2f(laserLength, 0.5f));
-					laser.TranslateBy(Vec2f(laserLength * 8.0f + 8.0f, barrelOffsetRelative.y));
-					laser.RotateBy(offsetAngle, Vec2f());
-					laser.setRenderStyle(RenderStyle::light);
-					laser.SetRelativeZ(1);
-					
-					Vec2f endPos = barrelPos + aimVector * (BULLET_RANGE + rangeOffset);
-					
-					if (hitStone) hitEffects(this, solidPos);
-					else if (isInWater(endPos))
-						MakeWaterParticle(endPos, Vec2f_zero);
-					else AngledDirtParticle(endPos, this.getAngleDegrees()-90);
-				}
+				Vec2f solidPos;
+				bool hitStone = map.rayCastSolid(pos, pos + aimVector * (BULLET_RANGE + rangeOffset), solidPos);
+				
+				Animation@ anim = laser.addAnimation("default", 1, false);
+				int[] frames = {0, 1, 2, 3, 4, 5};
+				anim.AddFrames(frames);
+				laser.SetVisible(true);
+				f32 laserLength = Maths::Max(0.1f, (hitStone ? solidPos - barrelPos : (aimVector * (BULLET_RANGE + rangeOffset))).getLength() / 16.0f);
+				laser.ResetTransform();
+				laser.ScaleBy(Vec2f(laserLength, 0.5f));
+				laser.TranslateBy(Vec2f(laserLength * 8.0f + 8.0f, barrelOffsetRelative.y));
+				laser.RotateBy(offsetAngle, Vec2f());
+				laser.setRenderStyle(RenderStyle::light);
+				laser.SetRelativeZ(1);
+				
+				Vec2f endPos = barrelPos + aimVector * (BULLET_RANGE + rangeOffset);
+				
+				if (hitStone) hitEffects(this, solidPos);
+				else if (isInWater(endPos))
+					MakeWaterParticle(endPos, Vec2f_zero);
+				else AngledDirtParticle(endPos, this.getAngleDegrees()-90);
 			}
 		}
     }
@@ -351,7 +348,7 @@ f32 getDamage(CBlob@ hitBlob)
 	if (hitBlob.hasTag("weapon"))
 		return 0.075f;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
-		return 0.1f;
+		return 0.2f;
 
 	return damage;//cores, solids
 }
