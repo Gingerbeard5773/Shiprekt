@@ -305,20 +305,19 @@ void PlayerControls(CBlob@ this)
 			this.ClearButtons();
 	        this.ShowInteractButtons();
 
-	        CBlob@ core = getMothership(this.getTeamNum());
-	        if(core !is null)
+	        /*CBlob@ core = getMothership(this.getTeamNum());
+	        if (core !is null)
 	        {
-		        if((this.getPosition() - core.getPosition()).Length() <= 4.5f) // standing on core
+		        if ((this.getPosition() - core.getPosition()).Length() <= 4.5f) // standing on core
 		        {
 		        	this.add_s32("sharkTurn time", 1);
-		        	if(this.get_s32("sharkTurn time") >= 15) // turn
+		        	if (this.get_s32("sharkTurn time") >= 15) // turn
 	    			{
 	    				turnToShark(this);
 	    				this.set_s32("sharkTurn time", -1);
 	    			}
 		        }
-	        }
-	        
+	        }*/
 	    }
 	    else if (this.isKeyJustReleased(key_use))
 	    {
