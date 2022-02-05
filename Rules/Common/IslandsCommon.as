@@ -57,7 +57,7 @@ Island@ getIsland(const int colorIndex)
 	return null;
 }
 
-Island@ getIsland(CBlob@ this)
+Island@ getIsland(CBlob@ this) //reference an island from a non-block (e.g human)
 {
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius)) 
@@ -147,7 +147,7 @@ string getCaptainName(u8 team) //Gets the name of the mothership's captain
 	{
 		if (cores[i].getTeamNum() != team) continue;
 			
-		Island@ isle = getIsland( cores[i].getShape().getVars().customData);
+		Island@ isle = getIsland(cores[i].getShape().getVars().customData);
 		if (isle !is null && isle.owner != "")
 			return isle.owner;
 	}
@@ -184,7 +184,7 @@ bool blockOverlappingIsland(CBlob@ blob)
     return false;
 }
 
-bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos )//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
+bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos)//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
 {
 	if (this.hasTag("mothership"))
 		return true;

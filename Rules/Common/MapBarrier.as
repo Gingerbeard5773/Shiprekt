@@ -1,6 +1,9 @@
 // force barrier around edge of map
 #include "IslandsCommon.as";
 
+CBlob@[] hitBlobs;
+uint[] islandTimes;
+
 void onTick(CRules@ this)
 {
 	CMap@ map = getMap();
@@ -29,10 +32,50 @@ void onTick(CRules@ this)
 				//determine bounce direction
 				f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : island.vel.x;
 				f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : island.vel.y;
-				island.vel = Vec2f(bounceX, bounceY);
-
-				server_turnOffPropellers(island);
+				
+				if (island.blocks.length < 3)
+				{
+					//pinball machine!!!
+					bool bounce = true;
+					for (uint i = 0; i < hitBlobs.length; i++)
+					{
+						//make sure islands don't bounce again too soon after first bounce
+						if (hitBlobs[i] is b)
+							bounce = false;
+					}
+					
+					if (bounce)
+					{
+						for (uint i = 0; i < island.blocks.length; ++i)
+						{
+							CBlob@ b = getBlobByNetworkID(island.blocks[i].blobID);
+							if (b !is null)
+							{
+								hitBlobs.push_back(b);
+								islandTimes.push_back(getGameTime());
+							}
+						}
+						
+						f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
+						island.angle = Vec2f(-island.vel.y * bounceFactor, island.vel.x * bounceFactor).Angle(); //calculate perpendicular angle
+					}
+					island.vel = Vec2f(bounceX / 1.5f, bounceY / 1.5f);
+				}
+				else
+				{
+					island.vel = Vec2f(bounceX, bounceY);
+					server_turnOffPropellers(island);
+				}
 			}
+		}
+	}
+	
+	for (uint i = 0; i < islandTimes.length; i++)
+	{
+		if (getGameTime() > islandTimes[i]+4) //timer to let islands bounce again
+		{
+			hitBlobs.erase(i);
+			islandTimes.erase(i);
 		}
 	}
 }

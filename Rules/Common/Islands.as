@@ -227,6 +227,20 @@ void InitIsland(Island @isle)//called for all islands after a block is placed or
 		//find center block and mass and if it's mothership
 		f32 totalMass = 0.0f;
 		f32 maxDistance = 999999.9f;
+		bool choseCenterBlock = false;
+		if (isle.blocks.length == 2) //choose engine as centerblock for 2 block torpedos
+		{
+			for (uint i = 0; i < isle.blocks.length; ++i) //shitty fix for torpedo bouncing
+			{
+				CBlob@ b = getBlobByNetworkID(isle.blocks[i].blobID);
+				if (b !is null && b.hasTag("engine"))
+				{
+					choseCenterBlock = true;
+					@isle.centerBlock = b;
+					break;
+				}
+			}
+		}
 		for (uint i = 0; i < isle.blocks.length; ++i)
 		{
 			CBlob@ b = getBlobByNetworkID(isle.blocks[i].blobID);
@@ -234,7 +248,7 @@ void InitIsland(Island @isle)//called for all islands after a block is placed or
 			{
 				Vec2f vec = b.getPosition() - center;
 				f32 dist = vec.LengthSquared();
-				if (dist < maxDistance)
+				if (dist < maxDistance && !choseCenterBlock)
 				{
 					maxDistance = dist;
 					@isle.centerBlock = b;
