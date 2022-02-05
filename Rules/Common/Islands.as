@@ -13,6 +13,8 @@ void onInit(CRules@ this)
 {
 	Island[] islands;
 	this.set("islands", islands);
+	CBlob@[] placedBlocks;
+	this.set("placedBlocks", placedBlocks);
 	this.addCommandID("islands sync");
 	this.addCommandID("islands update");
 	this.set_s32("islands id", 0);
@@ -33,13 +35,29 @@ void onTick(CRules@ this)
 		const int time = getMap().getTimeSinceStart();
 		if (time < 2) // errors are generated when done on first game tick
 			return;
-
+		
+		CBlob@[]@ placedBlocks;
+		if (this.get("placedBlocks", @placedBlocks) && placedBlocks.length > 0)
+		{
+			for (uint i = 0; i < placedBlocks.length; i++)
+			{
+				// add a placed block onto an existing island, otherwise update all islands
+				if (!AddToIsland(placedBlocks[i]))
+				{
+					this.set_bool("dirty islands", true);
+					break;
+				}
+			}
+			full_sync = true;
+			this.clear("placedBlocks");
+		}
+		
 		if (this.get_bool("dirty islands"))
 		{
-			GenerateIslands(this);			
-			setUpdateSeatsArrays();
-			this.set_bool("dirty islands", false);
+			// remove existing islands and create new ones in their place
+			GenerateIslands(this);
 			full_sync = true;
+			this.set_bool("dirty islands", false);
 		}
 
 		UpdateIslands(this, true, full_sync);
@@ -49,10 +67,63 @@ void onTick(CRules@ this)
 		UpdateIslands(this);//client-side integrate
 }
 
+bool AddToIsland(CBlob@ this) //reference from nearby block and copy onto island
+{
+	Island@[] touchingIslands;
+	
+	CBlob@[] overlapping;
+	this.getOverlapping(@overlapping);
+	
+	for (uint i = 0; i < overlapping.length; i++)
+	{
+		CBlob@ b = overlapping[i];
+		Island@ island = getIsland(b.getShape().getVars().customData);
+		if (island is null || (b.getPosition() - this.getPosition()).LengthSquared() > 78) continue;
+		
+		bool pushIsland = true;
+		for (uint i = 0; i < touchingIslands.length; i++)
+		{
+			if (island is touchingIslands[i])
+			{
+				pushIsland = false;
+				break;
+			}
+		}
+		if (pushIsland)
+			touchingIslands.push_back(island);
+	}
+	
+	if (touchingIslands.length != 1)
+		return false;
+	
+	Island@ island = touchingIslands[0];
+	if (island.centerBlock is null)
+		return false;
+	
+	//set block information
+	IslandBlock isle_block;
+	isle_block.blobID = this.getNetworkID();
+	island.blocks.push_back(isle_block);
+	
+	int islandColor = island.centerBlock.getShape().getVars().customData;
+	this.getShape().getVars().customData = islandColor;
+	this.set_u16("last color", islandColor);
+	setUpdateSeatArrays(islandColor);
+	@island.centerBlock = null; //reset island so positions update
+	StoreVelocities(island);
+	
+	return true;
+}
+
 void GenerateIslands(CRules@ this)
 {
-	StoreVelocities(this);
-
+	Island[]@ islands;
+	this.get("islands", @islands);
+	for (uint i = 0; i < islands.length; ++i)
+	{
+		StoreVelocities(islands[i]);
+	}
+	
 	CBlob@[] blocks;
 	this.clear("islands");
 	if (getBlobsByTag("block", @blocks))
@@ -76,8 +147,9 @@ void GenerateIslands(CRules@ this)
 				this.push("islands", island);
 				Island@ p_island;
 				this.getLast("islands", @p_island);
-
+				
 				ColorBlocks(b, p_island);
+				setUpdateSeatArrays(color);
 			}
 		}	
 		for (uint i = 0; i < blocks.length; ++i)
@@ -196,7 +268,7 @@ void InitIsland(Island @isle)//called for all islands after a block is placed or
 	
 	if (isle.centerBlock is null)
 	{
-		//if (!isClient())
+		if (!isClient())
 			warn("isle.centerBlock is null");
 		return;
 	}
@@ -313,7 +385,7 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 			for (uint q = 0; q < isle.blocks.length; ++q)
 			{
 				IslandBlock@ isle_block = isle.blocks[q];
-				CBlob@ b = getBlobByNetworkID( isle_block.blobID);
+				CBlob@ b = getBlobByNetworkID(isle_block.blobID);
 				if (b !is null)
 				{
 					UpdateIslandBlob(b, isle, isle_block);
@@ -438,29 +510,29 @@ void UpdateIslandBlob(CBlob@ blob, Island @isle, IslandBlock@ isle_block)
 	blob.setAngularVelocity(0.0f);
 }
 
-void TileCollision(Island@ island, Vec2f tilePos)
+void TileCollision(Island@ isle, Vec2f tilePos)
 {
-	if (island is null)
+	if (isle is null)
 		return;
 		
-	if (island.mass <= 0)
+	if (isle.mass <= 0)
 		return;
 	
-	Vec2f velnorm = island.vel; 
+	Vec2f velnorm = isle.vel; 
 	const f32 vellen = velnorm.Normalize();
 	
-	Vec2f colvec1 = tilePos - island.pos;
+	Vec2f colvec1 = tilePos - isle.pos;
 	colvec1.Normalize();
 	
-	island.vel = -colvec1*1.0f;
+	isle.vel = -colvec1*1.0f;
 	
 	//effects
-	int shake = (vellen * island.mass + vellen * island.mass)*0.5f;
+	int shake = (vellen * isle.mass + vellen * isle.mass)*0.5f;
 	ShakeScreen(shake, 12, tilePos);
 	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", tilePos);
 }
 
-void setIsleTeam(Island @isle, u8 teamNum = 255)
+void setIsleTeam(Island@ isle, u8 teamNum = 255)
 {
 	//print ("setting team for " + isle.owner + "'s " + isle.id + " to " + teamNum);
 	for (uint i = 0; i < isle.blocks.length; ++i)
@@ -473,35 +545,39 @@ void setIsleTeam(Island @isle, u8 teamNum = 255)
 	}
 }
 
+void StoreVelocities(Island@ isle)
+{	
+	if (!isle.isStation && !isle.isMiniStation)
+	{
+		for (uint i = 0; i < isle.blocks.length; ++i)
+		{
+			CBlob@ b = getBlobByNetworkID(isle.blocks[i].blobID);
+			if (b !is null)
+			{
+				b.setVelocity(isle.vel);
+				b.setAngularVelocity(isle.angle_vel);	
+			}
+		}
+	}
+}
+
+void setUpdateSeatArrays(int isleColor)
+{
+	CBlob@[] seats;
+	if (getBlobsByTag("seat", @seats))
+	{
+		for (uint i = 0; i < seats.length; i++)
+		{
+			if (seats[i].getShape().getVars().customData == isleColor)
+				seats[i].set_bool("updateArrays", true);
+		}
+	}
+}
+
 void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
 {
 	if (!isServer() && blob.hasTag("block") && blob.getSprite().getFrame() > 0)
 		blob.set_u8("frame", blob.getSprite().getFrame());
-}
-
-void StoreVelocities(CRules@ this)
-{
-	Island[]@ islands;
-	if (this.get("islands", @islands))
-	{
-		for (uint i = 0; i < islands.length; ++i)
-		{
-			Island @isle = islands[i];
-			
-			if (!isle.isStation && !isle.isMiniStation)
-			{
-				for (uint q = 0; q < isle.blocks.length; ++q)
-				{
-					CBlob@ b = getBlobByNetworkID(isle.blocks[q].blobID);
-					if (b !is null)
-					{
-						b.setVelocity(isle.vel);
-						b.setAngularVelocity(isle.angle_vel);	
-					}
-				}
-			}
-		}
-	}
 }
 
 void onBlobDie(CRules@ this, CBlob@ blob)
@@ -531,19 +607,6 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 		}
 	}
 }
-
-void setUpdateSeatsArrays()
-{
-	CBlob@[] seats;
-	if (getBlobsByTag("seat", @seats))
-	{
-		for (uint i = 0; i < seats.length; i++)
-		{
-			seats[i].set_bool("updateArrays", true);
-		}
-	}
-}
-
 
 // network
 

@@ -286,6 +286,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						blockHooks.update("onBlockPlaced", @b); //Activate hook onBlockPlaced for all blobs that have it
 					
 					b.set_u32("placedTime", getGameTime());
+					getRules().push("placedBlocks", @b);
 				}
 				else
 				{
@@ -301,7 +302,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         }
 		
 		blocks.clear();//releases the blocks (they are placed)
-		getRules().set_bool("dirty islands", true);
 		directionalSoundPlay("build_ladder.ogg", this.getPosition());
     }
 }
