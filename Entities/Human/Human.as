@@ -56,7 +56,6 @@ void onInit(CBlob@ this)
 	this.set_u16("last cost", 5);
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
-	this.set_s32("sharkTurn time", 0);
 	this.set_f32("cam rotation", 0.0f);
 	
 	this.getShape().getVars().onground = true;
@@ -117,7 +116,7 @@ void Move(CBlob@ this)
 		const bool shoot = this.isKeyPressed(key_action2);
 		const u32 time = getGameTime();
 		Island@ isle = getIsland(this);
-		const bool solidGround = shape.getVars().onground = attached || isle !is null || isTouchingLand(pos);
+		shape.getVars().onground = isle !is null || isTouchingLand(pos);
 
 		// move
 		Vec2f moveVel;
@@ -140,7 +139,7 @@ void Move(CBlob@ this)
 			moveVel.x += Human::walkSpeed;
 		}
 
-		if (!solidGround)
+		if (!this.isOnGround())
 		{
 			if (isTouchingShoal(pos))
 			{
@@ -194,7 +193,7 @@ void Move(CBlob@ this)
 		}		
 
 		//canmove check
-		if (!getRules().get_bool("whirlpool") || solidGround)
+		if (!getRules().get_bool("whirlpool") || this.isOnGround())
 		{
 			moveVel.RotateBy(camRotation);
 			Vec2f nextPos = (pos + moveVel*4.0f);
@@ -303,35 +302,12 @@ void PlayerControls(CBlob@ this)
 	        this.ClearMenus();
 			this.ClearButtons();
 	        this.ShowInteractButtons();
-
-	        /*CBlob@ core = getMothership(this.getTeamNum());
-	        if (core !is null)
-	        {
-		        if ((this.getPosition() - core.getPosition()).Length() <= 4.5f) // standing on core
-		        {
-		        	this.add_s32("sharkTurn time", 1);
-		        	if (this.get_s32("sharkTurn time") >= 15) // turn
-	    			{
-	    				turnToShark(this);
-	    				this.set_s32("sharkTurn time", -1);
-	    			}
-		        }
-	        }*/
 	    }
 	    else if (this.isKeyJustReleased(key_use))
 	    {
 	    	bool tapped = (getGameTime() - useClickTime) < 10; 
 			this.ClickClosestInteractButton(tapped ? this.getPosition() : this.getAimPos(), this.getRadius()*2);
-
 	        this.ClearButtons();
-
-	        if(this.get_s32("sharkTurn time") > 0)
-	        	this.set_s32("sharkTurn time", 0);
-	    }
-	    else
-	    {
-	    	if(this.get_s32("sharkTurn time") > 0)
-	        	this.set_s32("sharkTurn time", 0);
 	    }
 
 	    // default cursor
@@ -433,17 +409,6 @@ void PlayerControls(CBlob@ this)
 			this.ClearMenus();
 			Sound::Play("buttonclick.ogg");
 		}
-	}
-}
-
-void turnToShark(CBlob@ this)
-{
-	CBlob@ core = getMothership(this.getTeamNum());
-    if (core !is null)
-    {
-    	CBitStream params;
-		params.write_u16(this.getNetworkID());
-		core.SendCommand(core.getCommandID("turnShark"), params);
 	}
 }
 

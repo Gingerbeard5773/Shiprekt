@@ -21,16 +21,8 @@ void onInit(CBlob@ this)
 	this.Tag("mothership");
 	this.addCommandID("buyBlock");
 	this.addCommandID("returnBlocks");
-	this.addCommandID("turnShark");
-	this.addCommandID("turnHuman");
 	
 	this.set_f32("weight", 12.0f);
-
-	if (isServer())
-	{
-		SharkQueue[] human_sharks;
-		this.set("human_sharks", @human_sharks);
-	}
 	
 	if (isClient())
 	{
@@ -72,71 +64,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CBlob@ caller = getBlobByNetworkID(params.read_u16());
 		if (caller !is null)
 			ReturnBlocks(caller);
-	}
-	else if (cmd == this.getCommandID("turnShark"))
-	{
-		CBlob@ caller = getBlobByNetworkID(params.read_u16());
-		if (caller !is null)
-		{
-			CPlayer@ player = caller.getPlayer();
-			if (player !is null) // only humans with player can turn in to sharks
-			{
-				caller.Tag("no_gib");
-				if (isClient())
-				{
-					Sound::Play("SharkTurn.ogg", caller.getPosition());
-					if (player.isMyPlayer()) // fix camera
-					{
-						CCamera@ camera = getCamera();
-						camera.setTarget(null);
-						camera.setPosition(caller.getPosition());
-					}
-				}
-				if (isServer())
-				{
-					/*CBlob@ shark = server_CreateBlob("shark", caller.getTeamNum(), this.getPosition());
-					if (shark !is null)
-					{
-						shark.server_SetPlayer(player);
-						shark.Tag("just spawned");
-					}*/
-					SharkQueue new_shark = SharkQueue(player.getNetworkID(), getGameTime() + 15); // just half a second :\
-					SharkQueue[]@ human_sharks;
-					this.get("human_sharks", @human_sharks);
-					human_sharks.push_back(new_shark);
-					this.set("human_sharks", @human_sharks);
-					caller.server_SetPlayer(null);
-				    caller.server_Die();
-				}
-			}
-			
-		}
-	}
-	else if (cmd == this.getCommandID("turnHuman"))
-	{
-		CBlob@ caller = getBlobByNetworkID(params.read_u16());
-		if (caller !is null)
-		{
-			CPlayer@ player = caller.getPlayer();
-			if (player !is null) // only sharks with player can turn in to humans
-			{
-				if (isClient())
-					Sound::Play("HumanTurn.ogg", caller.getPosition());
-				if (isServer())
-				{
-					CBlob@ human = server_CreateBlobNoInit("human");
-					if (human !is null)
-					{
-						human.server_SetPlayer(player);
-						human.server_setTeamNum(caller.getTeamNum());
-						human.setPosition(this.getPosition());
-						human.Init();
-					}
-				    caller.server_Die();
-				}
-			}
-			
-		}
 	}
 }
 
@@ -443,16 +370,7 @@ void onTick(CBlob@ this)
 			this.server_Die();
 		
 		//particles
-		{
-			CParticle@ p = ParticlePixel(pos, getRandomVelocity(90, 4, 360), getTeamColor(this.getTeamNum()), true);
-			if (p !is null)
-			{
-				p.Z = 10.0f;
-				p.timeout = XORRandom(3) + 2;
-			}
-		}
-		
-		if (v_fastrender)
+		if (!v_fastrender)
 		{
 			CParticle@ p = ParticlePixel(pos, getRandomVelocity(90, 4, 360), getTeamColor(this.getTeamNum()), true);
 			if (p !is null)
@@ -473,39 +391,6 @@ void onTick(CBlob@ this)
 		{
 			rules.set_bool("display_flak_team_max", false);
 			rules.set_u8("flak_team_max_timer", 0);
-		}
-	}
-
-	// check human sharks to spawn
-	if (isServer())
-	{
-		SharkQueue[]@ human_sharks;
-		this.get("human_sharks", @human_sharks);
-		for (int i = 0; i < human_sharks.size(); i++) // loop trough all, but process only one
-		{
-			SharkQueue new_shark = human_sharks[i];
-			CPlayer@ pl = getPlayerByNetworkId(new_shark.netid);
-			if (pl is null)
-			{
-				human_sharks.removeAt(i);
-				this.set("human_sharks", @human_sharks);
-				break;
-			}
-			else
-			{
-				if (new_shark.supposed_time <= getGameTime()) // crate sharko
-				{
-					CBlob@ shark = server_CreateBlob("shark", pl.getTeamNum(), this.getPosition());
-					if (shark !is null)
-					{
-						shark.server_SetPlayer(pl);
-						shark.Tag("just spawned");
-					}
-					human_sharks.removeAt(i);
-					this.set("human_sharks", @human_sharks);
-					break;
-				}
-			}
 		}
 	}
 }
@@ -597,17 +482,5 @@ void selfDestruct(CBlob@ this)
 		CBlob@ b = getBlobByNetworkID(isle_block.blobID);
 		if (b !is null && b !is this && teamNum == b.getTeamNum())
 			b.server_Die();
-	}
-}
-
-class SharkQueue
-{
-	u16 netid;
-	u32 supposed_time;
-
-	SharkQueue(u16 _netid, u32 _supposed_time)
-	{
-		netid = _netid;
-		supposed_time = _supposed_time;
 	}
 }

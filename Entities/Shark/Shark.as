@@ -87,33 +87,6 @@ void onTick(CBlob@ this)
 
 		if (this.isMyPlayer())
 		{
-		    CBlob@ core = getMothership(this.getTeamNum());
-	        if(core !is null)
-	        {
-	        	if(!this.hasTag("just spawned"))
-	        	{
-	        		if(!this.hasTag("changing to human"))
-	        		{
-		        		if((this.getPosition() - core.getPosition()).Length() < 32)
-		        		{
-		        			this.Untag("just spawned");
-		        			this.Tag("changing to human");
-		        			CBitStream params;
-							params.write_u16(this.getNetworkID());
-							core.SendCommand(core.getCommandID("turnHuman"), params);
-		        		}
-	        		}
-	        		
-	        	}
-	        	else
-	        	{
-	        		if((this.getPosition() - core.getPosition()).Length() > 64)
-	        		{
-	        			this.Untag("just spawned");
-	        		}
-	        	}
-	        }
-
 		    if (this.isKeyJustPressed(key_bubbles))
 			{
 				this.CreateBubbleMenu();
@@ -164,7 +137,7 @@ void MoveTo(CBlob@ this, Vec2f vel)
 		this.setAngleDegrees(-angle);	
 
 		// water effect
-		if ((getGameTime() + this.getNetworkID()) % 9 == 0)
+		if ((getGameTime() + this.getNetworkID()) % (v_fastrender ? 13 : 9) == 0)
 		{
 			MakeWaterWave(pos, Vec2f_zero, -angle + (_anglerandom.NextRanged(100) > 50 ? 180 : 0)); 
 		}
