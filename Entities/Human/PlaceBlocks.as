@@ -309,7 +309,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		directionalSoundPlay("build_ladder.ogg", this.getPosition());
 		
 		//Grab another block
-		if (this.isMyPlayer())
+		if (this.isMyPlayer() && !this.isAttached())
 		{
 			CBlob@ core = getMothership(this.getTeamNum());
 			if (core !is null && !core.hasTag("critical"))
