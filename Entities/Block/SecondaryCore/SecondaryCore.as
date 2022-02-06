@@ -58,8 +58,8 @@ void onTick(CBlob@ this)
 
 	if (this.hasTag('critical'))
 	{
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-		isle.vel *= 0.8f;
+		//Island@ isle = getIsland(this.getShape().getVars().customData);
+		//isle.vel *= 0.8f;
 
 		if (!v_fastrender)
 		{

@@ -364,7 +364,7 @@ void onTick(CBlob@ this)
 	//critical Slowdown, selfDestruct and effects
 	if (this.hasTag("critical"))
 	{
-		isle.vel *= 0.8f;
+		//isle.vel *= 0.8f;
 
 		if (isServer() && getGameTime() > this.get_u32("dieTime"))
 			this.server_Die();
