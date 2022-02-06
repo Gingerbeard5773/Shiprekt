@@ -54,7 +54,6 @@ void onInit(CBlob@ this)
 	this.set_string("last buy", "coupling");
 	this.set_string("current tool", "pistol");
 	this.set_u16("last cost", 5);
-	this.set_u32("menu time", 0);
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
 	this.set_s32("sharkTurn time", 0);
@@ -386,15 +385,9 @@ void PlayerControls(CBlob@ this)
 						this.set_bool("build menu open", true);
 
 						u32 gameTime = getGameTime();
-						
-						if (gameTime - this.get_u32("menu time") > BUILD_MENU_COOLDOWN)
-						{
-							Sound::Play("buttonclick.ogg");
-							this.set_u32("menu time", gameTime);
-							BuildShopMenu(this, core, "Components", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
-						}
-						else
-							Sound::Play("/Sounds/bone_fall1.ogg");
+
+						Sound::Play("buttonclick.ogg");
+						BuildShopMenu(this, core, "Components", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
 					}
 					else
 						Sound::Play("/Sounds/bone_fall1.ogg");

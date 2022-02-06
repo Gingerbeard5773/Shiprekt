@@ -59,6 +59,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		u16 cost = params.read_u16();
 		caller.set_u16("last cost", cost);
 
+		if (getGameTime() - caller.get_u32("placedTime") > 26)
+			caller.set_u32("placedTime", getGameTime() - 20);
+
 		if (!isServer() || Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
 			return;
 		

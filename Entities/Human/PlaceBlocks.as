@@ -123,23 +123,28 @@ void onTick(CBlob@ this)
 				this.set_bool("blockPlacementWarn", crewCantPlace && crewCantPlaceCounter > 15);
 				
                 // place
-                if (this.isKeyJustPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
+                if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
                 {
-                    if (target_angle == blocks_angle && !overlappingIsland && !cLinked && !onRock)
-                    {
-                        CBitStream params;
-                        params.write_netid(centerBlock.getNetworkID());
-                        params.write_netid(refBlob.getNetworkID());
-                        params.write_Vec2f(pos - islandPos);
-                        params.write_Vec2f(aimPos - islandPos);
-                        params.write_f32(target_angle);
-                        params.write_f32(centerBlock.getAngleDegrees());
-                        this.SendCommand(this.getCommandID("place"), params);
-                    }
-                    else
-                    {
-                        this.getSprite().PlaySound("Denied.ogg");
-                    }
+					if (getGameTime() - this.get_u32("placedTime") > 25)
+					{
+						if (target_angle == blocks_angle && !overlappingIsland && !cLinked && !onRock)
+						{
+							CBitStream params;
+							params.write_netid(centerBlock.getNetworkID());
+							params.write_netid(refBlob.getNetworkID());
+							params.write_Vec2f(pos - islandPos);
+							params.write_Vec2f(aimPos - islandPos);
+							params.write_f32(target_angle);
+							params.write_f32(centerBlock.getAngleDegrees());
+							this.SendCommand(this.getCommandID("place"), params);
+							this.set_u32("placedTime", getGameTime());
+						}
+						else
+						{
+							this.getSprite().PlaySound("Denied.ogg");
+							this.set_u32("placedTime", getGameTime() - 10);
+						}
+					}
                 }
 
                 // rotate
@@ -293,7 +298,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					warn("place cmd: blob not found");
 				}
 			}
-			this.set_u32("placedTime", getGameTime());
         }
         else
         {
@@ -303,6 +307,27 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		blocks.clear();//releases the blocks (they are placed)
 		directionalSoundPlay("build_ladder.ogg", this.getPosition());
+		
+		//Grab another block
+		if (this.isMyPlayer())
+		{
+			CBlob@ core = getMothership(this.getTeamNum());
+			if (core !is null && !core.hasTag("critical"))
+			{
+				Island@ pIsle = getIsland(this);
+				bool canShop = pIsle !is null && pIsle.centerBlock !is null 
+								&& ((pIsle.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
+								|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
+				if (canShop)
+				{
+					CBitStream params;
+					params.write_u16(this.getNetworkID());
+					params.write_string(this.get_string("last buy"));
+					params.write_u16(this.get_u16("last cost"));
+					core.SendCommand(core.getCommandID("buyBlock"), params);
+				}
+			}
+		}
     }
 }
 
