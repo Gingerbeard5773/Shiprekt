@@ -319,9 +319,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				Vec2f endPos = barrelPos + aimVector * (BULLET_RANGE + rangeOffset);
 				
 				if (hitStone) hitEffects(this, solidPos);
-				else if (isInWater(endPos))
+				else if (isInWater(endPos) && !v_fastrender)
 					MakeWaterParticle(endPos, Vec2f_zero);
-				else AngledDirtParticle(endPos, this.getAngleDegrees()-90);
+				else if (!v_fastrender) AngledDirtParticle(endPos, this.getAngleDegrees()-90);
 			}
 		}
     }
@@ -357,7 +357,7 @@ void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 {
 	if (hitBlob.hasTag("block"))
 	{
-		sparks(worldPoint, 4);
+		sparks(worldPoint, v_fastrender ? 1 : 4);
 		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", worldPoint, 0.50f);
 	}
 }

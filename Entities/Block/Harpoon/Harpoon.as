@@ -573,7 +573,7 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 			SyncGrapple(this);
 			
 			directionalSoundPlay("crowbar_impact2.ogg", harpoon.grapple_pos);
-			sparks1(harpoon.grapple_pos, 0, 3.0f);
+			sparks(harpoon.grapple_pos, v_fastrender ? 7 : 9, 3.0f);
 			
 			return true;
 		}

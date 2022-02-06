@@ -35,7 +35,7 @@ void onTick(CBlob@ this)
 	if (isTouchingRock(pos))
 	{
 		this.server_Die();
-		sparks(pos, 15, 2.5f, 20);
+		sparks(pos, v_fastrender ? 5 : 15, 2.5f, 20);
 		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
 	}
 }
@@ -153,7 +153,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 
 	if (hitBlob.hasTag("solid") || hitBlob.hasTag("core") || hitBlob.hasTag("door") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 	{
-		sparksDirectional(worldPoint + this.getVelocity(), this.getVelocity(), 7);
+		sparksDirectional(worldPoint + this.getVelocity(), this.getVelocity(), v_fastrender ? 4 : 7);
 		directionalSoundPlay("Pierce1.ogg", worldPoint);
 			
 		if (hitBlob.hasTag("mothership"))
@@ -167,7 +167,7 @@ void onDie(CBlob@ this)
 	
 	if (!isInWater(pos))
 	{
-		sparks(pos + this.getVelocity(), 15, 2.5, 20);
+		sparks(pos + this.getVelocity(), v_fastrender ? 5 : 15, 2.5, 20);
 		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
 	}
 	else if (this.getTouchingCount() <= 0)

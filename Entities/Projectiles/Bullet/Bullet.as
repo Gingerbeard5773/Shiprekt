@@ -68,7 +68,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 				(b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb"))))//hit these and die
 				{
 					killed = true;
-					sparks(point1, 8);
+					sparks(point1, v_fastrender ? 3 : 8);
 					directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", this.getPosition(), 0.50f);
 				}
 				else if (b.hasTag("hasSeat"))

@@ -34,8 +34,8 @@ void onTick(CBlob@ this)
 	{ 
 		if (getGameTime() % 60 == 0)
 		{
-			array<CBlob@> humans;
-			getBlobsByName('human', humans);
+			CBlob@[] humans;
+			getBlobsByName("human", humans);
 
 			for (uint i = 0; i < humans.length; ++ i)
 			{
@@ -58,18 +58,17 @@ void onTick(CBlob@ this)
 
 	if (this.hasTag('critical'))
 	{
-		int color = this.getShape().getVars().customData;
-		Island@ isle = getIsland(color);
-
+		Island@ isle = getIsland(this.getShape().getVars().customData);
 		isle.vel *= 0.8f;
 
-		Vec2f position = this.getPosition();
-
-		CParticle@ particle = ParticlePixel(position, getRandomVelocity(90, 4, 360), getTeamColor(team), true);
-		if (particle !is null)
+		if (!v_fastrender)
 		{
-			particle.Z = 10.0f;
-			particle.timeout = XORRandom(3) + 2;
+			CParticle@ particle = ParticlePixel(this.getPosition(), getRandomVelocity(90, 4, 360), getTeamColor(team), true);
+			if (particle !is null)
+			{
+				particle.Z = 10.0f;
+				particle.timeout = XORRandom(3) + 2;
+			}
 		}
 	}
 }

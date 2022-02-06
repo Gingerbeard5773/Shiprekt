@@ -35,7 +35,7 @@ void onInit(CBlob@ this)
 	this.getSprite().SetEmitSoundVolume(0.5f);
 	this.getSprite().SetEmitSoundPaused(true);
 	
-	this.set_u32("last smoke puff", 0 );
+	this.set_u32("last smoke puff", 0);
 }
 
 void onTick(CBlob@ this)
@@ -64,7 +64,7 @@ void onTick(CBlob@ this)
 			
 			const u32 gametime = getGameTime();
 			u32 lastSmokeTime = this.get_u32("last smoke puff");
-			int ticksTillSmoke = 1;
+			int ticksTillSmoke = v_fastrender ? 5 : 2;
 			int diff = gametime - (lastSmokeTime + ticksTillSmoke);
 			if (diff > 0)
 			{
@@ -75,7 +75,7 @@ void onTick(CBlob@ this)
 												1.0f, 
 												3, 
 												0.0f, 
-												false );
+												false);
 				if (p !is null) p.damping = 0.9f;
 			
 				lastSmokeTime = gametime;
@@ -134,9 +134,9 @@ void onTick(CBlob@ this)
 	if (isTouchingRock(pos) || pos.y < 0.0f)
 	{
 		this.server_Die();
-		sparks(pos, 15, 5.0f, 20);
-		smoke(pos, 5);	
-		blast(pos, 5);															
+		sparks(pos, v_fastrender ? 5 : 15, 5.0f, 20);
+		smoke(pos, v_fastrender ? 1 : 3);	
+		blast(pos, v_fastrender ? 1 : 3);															
 		directionalSoundPlay("Blast2.ogg", pos);
 	}
 	
@@ -231,7 +231,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	if (hitBlob.hasTag("solid") || hitBlob.hasTag("core") || 
 			 hitBlob.hasTag("seat") || hitBlob.hasTag("door") || hitBlob.hasTag("weapon"))
 	{
-		sparks(worldPoint, 15, 5.0f, 20);
+		sparks(worldPoint, v_fastrender ? 5 : 15, 5.0f, 20);
 			
 		if (hitBlob.hasTag("core"))
 			directionalSoundPlay("Entities/Characters/Knight/ShieldHit.ogg", worldPoint);
@@ -254,8 +254,8 @@ void onDie(CBlob@ this)
 	
 	if (isClient())
 	{
-		smoke(this.getPosition(), 5);	
-		blast(this.getPosition(), 5);															
+		smoke(this.getPosition(), v_fastrender ? 1 : 3);	
+		blast(this.getPosition(), v_fastrender ? 1 : 3);															
 		directionalSoundPlay("Blast2.ogg", pos);
 	}
 
@@ -284,14 +284,14 @@ void smoke(Vec2f pos, int amount)
         Vec2f vel(2.0f + _smoke_r.NextFloat() * 2.0f, 0);
         vel.RotateBy(_smoke_r.NextFloat() * 360.0f);
 
-        CParticle@ p = ParticleAnimated( CFileMatcher("GenericSmoke3.png").getFirst(), 
+        CParticle@ p = ParticleAnimated(CFileMatcher("GenericSmoke3.png").getFirst(), 
 									pos, 
 									vel, 
 									float(XORRandom(360)), 
 									1.0f, 
 									4 + XORRandom(8), 
 									0.0f, 
-									false );
+									false);
 									
         if (p is null) return; //bail if we stop getting particles
 		
@@ -309,14 +309,14 @@ void blast(Vec2f pos, int amount)
         Vec2f vel(_blast_r.NextFloat() * 2.5f, 0);
         vel.RotateBy(_blast_r.NextFloat() * 360.0f);
 
-        CParticle@ p = ParticleAnimated( CFileMatcher("GenericBlast6.png").getFirst(), 
+        CParticle@ p = ParticleAnimated(CFileMatcher("GenericBlast6.png").getFirst(), 
 									pos, 
 									vel, 
 									float(XORRandom(360)), 
 									1.0f, 
 									2 + XORRandom(4), 
 									0.0f, 
-									false );
+									false);
 									
         if (p is null) return; //bail if we stop getting particles
 		

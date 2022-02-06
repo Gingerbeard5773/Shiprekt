@@ -37,18 +37,21 @@ void updateFrame(CBlob@ this)
 	
 	if (sprite.animation.frame < step)
 	{
-		for (int i = 0; i < 2; ++i) //wood chips on frame change
+		if (!v_fastrender)
 		{
-			CParticle@ p = makeGibParticle("Woodparts", this.getPosition(), getRandomVelocity(0, 0.3f, XORRandom(360)),
-											0, XORRandom(6), Vec2f(8, 8), 0.0f, 0, "");
-			if (p !is null)
+			for (int i = 0; i < 2; ++i) //wood chips on frame change
 			{
-				//p.Z = 550.0f;
-				p.damping = 0.98f;
+				CParticle@ p = makeGibParticle("Woodparts", this.getPosition(), getRandomVelocity(0, 0.3f, XORRandom(360)),
+												0, XORRandom(6), Vec2f(8, 8), 0.0f, 0, "");
+				if (p !is null)
+				{
+					//p.Z = 550.0f;
+					p.damping = 0.98f;
+				}
 			}
+			
+			MakeDustParticle(this.getPosition(), "/dust2.png");
 		}
-		
-		MakeDustParticle(this.getPosition(), "/dust2.png");
 	}
 
 	sprite.animation.frame = step;

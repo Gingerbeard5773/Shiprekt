@@ -10,7 +10,7 @@ void onGib(CSprite@ this)
 
     const u8 team = blob.getTeamNum();
     
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < (v_fastrender ? 2 : 3); i++)
     {
     	Vec2f veladd(0,_r.NextFloat() + 0.1f * (i+1));
     	veladd.RotateBy(_r.NextFloat() * 360.0f, Vec2f());

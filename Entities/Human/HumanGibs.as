@@ -11,7 +11,7 @@ void onGib(CSprite@ this)
 	string effectname = "BV: Emit Blood";
 	if(!CustomEmitEffectExists(effectname))
 	{
-		SetupCustomEmitEffect( effectname, "HumanGibs.as", "EmitBlood", 10, 5, 45 );
+		SetupCustomEmitEffect(effectname, "HumanGibs.as", "EmitBlood", 10, 5, 45);
 	}
 	u8 emiteffect = GetCustomEmitEffectID(effectname);
 
@@ -21,23 +21,23 @@ void onGib(CSprite@ this)
 
     const u8 team = blob.getTeamNum();
     
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < (v_fastrender ? 5 : 10); i++)
     {
     	Vec2f veladd(0,_r.NextFloat() + 0.1f * (i+1));
     	veladd.RotateBy(_r.NextFloat() * 360.0f, Vec2f());
 
-	    CParticle@ gib     = makeGibParticle( "worker_gibs.png",
-	    										pos,
-	    										vel + veladd,
-	    										(i < 4 ? i : _r.NextRanged(4)),
-	    										(i < 4 ? 0 : 2) + _r.NextRanged(2),
-	    										Vec2f (8,8),
-	    										0.0f,
-	    										20,
-	    										"/BodyGibFall",
-	    										team );
+	    CParticle@ gib = makeGibParticle("worker_gibs.png",
+	    									pos,
+	    									vel + veladd,
+	    									(i < 4 ? i : _r.NextRanged(4)),
+	    									(i < 4 ? 0 : 2) + _r.NextRanged(2),
+	    									Vec2f (8,8),
+	    									0.0f,
+	    									20,
+	    									"/BodyGibFall",
+	    									team);
 
-	    if(gib !is null)
+	    if (gib !is null)
 	    {
 	    	gib.damping = 0.95f;
 	    	

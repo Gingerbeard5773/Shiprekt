@@ -104,7 +104,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{					
 					if (isClient())//effects
 					{
-						sparks(hi.hitpos, 4);
+						sparks(hi.hitpos, v_fastrender ? 1 : 4);
 					}			
 
 					if (count >= NUM_HEALS) continue;

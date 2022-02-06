@@ -106,10 +106,10 @@ void onDie(CBlob@ this)
 	
 	if (isClient())
 	{
-		directionalSoundPlay( "FlakExp"+XORRandom(2), pos, 2.0f );
-		for (u8 i = 0; i < 3; i++)
+		directionalSoundPlay("FlakExp"+XORRandom(2), pos, 2.0f);
+		for (u8 i = 0; i < (v_fastrender ? 1 : 3); i++)
 		{
-			makeSmallExplosionParticle( pos + getRandomVelocity( 90, 12, 360 ) );
+			makeSmallExplosionParticle(pos + getRandomVelocity(90, 12, 360));
 		}
 	}
 
