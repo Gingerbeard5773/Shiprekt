@@ -34,7 +34,6 @@ void onInit(CBlob@ this)
 	this.Tag("usesAmmo");
 	this.Tag("solid");
 	
-	this.set_u16("cost", 160);
 	this.set_f32("weight", 3.5f);
 	
 	this.addCommandID("fire");

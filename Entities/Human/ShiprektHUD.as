@@ -134,6 +134,8 @@ void onRender(CSprite@ this)
 			u8 seconds = Maths::Round(WARMUP_TIME/30 % 60);
 			string warmupText = "Warm-UP time " + Maths::Round(WARMUP_TIME/30/60) + ":" + (seconds > 9 ? "" : "0") + seconds;
 			GUI::DrawText(warmupText, Vec2f(screenWidth/2 - 75, 15), tipsColor);
+			if (blob.get_bool("build menu open") && getGridMenuByName("Components") !is null)
+				GUI::DrawText("Costs reduced during warm-up", Vec2f(screenWidth/2 - 75, 35 + Maths::Sin(gameTime/6.5f) * 3.5f), tipsColor);
 		}
 	}
 	

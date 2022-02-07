@@ -3,7 +3,6 @@ void onInit(CBlob@ this)
 {
 	this.Tag("decoyCore");
 	
-	this.set_u16("cost", 150);
 	this.set_f32("weight", 6.0f);
 
 	if (isClient())

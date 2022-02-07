@@ -5,7 +5,6 @@ void onInit(CBlob@ this)
     this.Tag("coupling");
 	this.Tag("removable");//for corelinked checks
 	
-	this.set_u16("cost", 5);
 	this.set_f32("weight", 0.1f);
 }
 

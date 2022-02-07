@@ -14,7 +14,6 @@ void onInit(CBlob@ this)
 	this.Tag("repulsor");
 	this.Tag("removable");//for corelinked checks
 	
-	this.set_u16("cost", 15);
 	this.set_f32("weight", 0.25f);
 	
     this.addCommandID("chainReaction");

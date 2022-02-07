@@ -3,7 +3,6 @@
 
 void onInit(CBlob@ this)
 {
-	this.set_u16("cost", 100);
 	this.Tag("station"); 
 	
 	CSprite@ sprite = this.getSprite();

@@ -4,6 +4,7 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
+#include "BlockCosts.as";
  
 const f32 BULLET_RANGE = 100.0f;
 const f32 DECONSTRUCT_RATE = 10.0f; //higher values = higher recover
@@ -19,7 +20,6 @@ void onInit(CBlob@ this)
 	this.Tag("machinegun");
 	this.Tag("fixed_gun");
 	
-	this.set_u16("cost", 75);
 	this.set_f32("weight", 2.0f);
 	
 	this.addCommandID("fire");
@@ -111,18 +111,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					
 					if (b.hasTag("station") || b.hasTag("ministation")) continue;
 
-					Island@ island = getIsland(b.getShape().getVars().customData);
-
-					const f32 bCost = b.get_u16("cost") > 0 ? (!b.hasTag("coupling") ? b.get_u16("cost") : 1) : 15;
-					f32 bHealth = b.getHealth();
-					f32 bInitHealth = b.getInitialHealth();
+					const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
 					const f32 initialReclaim = b.get_f32("initial reclaim");
 					f32 currentReclaim = b.get_f32("current reclaim");
-					
-					f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim; //fastest reclaim possible
 
+					Island@ island = getIsland(b.getShape().getVars().customData);
 					if (island !is null && bCost > 0)
 					{
+						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim; //fastest reclaim possible
 						string islandOwnerName = island.owner;
 						
 						if (!b.hasTag("mothership"))
@@ -144,7 +140,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							{
 								string cName = thisPlayer.getUsername();
 
-								server_addPlayerBooty(cName, bCost*(bHealth/bInitHealth));
+								server_addPlayerBooty(cName, getCost(b.getName())*(b.getHealth()/b.getInitialHealth()));
 								directionalSoundPlay("/ChaChing.ogg", barrelPos);
 
 								b.Tag("disabled");

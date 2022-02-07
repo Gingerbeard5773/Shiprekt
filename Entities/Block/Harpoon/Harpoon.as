@@ -40,7 +40,6 @@ void onInit(CBlob@ this)
 	this.Tag("harpoon");
 	this.Tag("weapon");
 	
-	this.set_u16("cost", 65);
 	this.set_f32("weight", 2.0f);
 	
 	this.set_string("seat label", "Control Harpoon");

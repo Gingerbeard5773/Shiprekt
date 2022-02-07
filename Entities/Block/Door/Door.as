@@ -5,7 +5,6 @@ void onInit(CBlob@ this)
 {
 	this.Tag("door");
 	
-	this.set_u16("cost", 60);
 	this.set_f32("weight", 1.0f);
 	
     this.getShape().SetRotationsAllowed(false);

@@ -32,7 +32,6 @@ void onInit(CBlob@ this)
 	this.Tag("usesAmmo");
 	this.Tag("machinegun"); //for seat.as
 	
-	this.set_u16("cost", 400);
 	this.set_f32("weight", 4.5f);
 	
 	this.addCommandID("fire");

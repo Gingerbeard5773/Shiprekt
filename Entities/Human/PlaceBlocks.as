@@ -1,6 +1,7 @@
 #include "IslandsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "BlockHooks.as";
+#include "BlockCosts.as";
 
 const f32 rotate_speed = 30.0f;
 const f32 max_build_distance = 32.0f;
@@ -323,7 +324,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					CBitStream params;
 					params.write_u16(this.getNetworkID());
 					params.write_string(this.get_string("last buy"));
-					params.write_u16(this.get_u16("last cost"));
+					params.write_u16(getCost(this.get_string("last buy")));
 					core.SendCommand(core.getCommandID("buyBlock"), params);
 				}
 			}

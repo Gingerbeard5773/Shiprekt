@@ -4,6 +4,7 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
+#include "BlockCosts.as";
  
 const f32 BULLET_RANGE = 100.0f;
 const f32 CONSTRUCT_RATE = 14.0f; //higher values = higher recover
@@ -20,7 +21,6 @@ void onInit(CBlob@ this)
 	this.Tag("machinegun");
 	this.Tag("fixed_gun");
 	
-	this.set_u16("cost", 200);
 	this.set_f32("weight", 3.0f);
 	
 	this.addCommandID("fire");
@@ -122,7 +122,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					u16 cBooty = server_getPlayerBooty(cName);
 					f32 mBlobHealth = b.getHealth();
 					f32 mMaxHealth = b.getInitialHealth();
-					const f32 mBlobCost = b.get_u16("cost") > 0 ? b.get_u16("cost") : 15;
+					const f32 mBlobCost = getCost(b.getName());
 					const f32 initialReclaim = (b.hasTag("mothership") ? b.getInitialHealth() : b.get_f32("initial reclaim"));
 					f32 currentReclaim = b.get_f32("current reclaim");
 

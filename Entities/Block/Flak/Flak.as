@@ -40,7 +40,6 @@ void onInit(CBlob@ this)
 	this.set_string("seat label", "Control Flak");
 	this.set_u8("seat icon", 7);
 	
-	this.set_u16("cost", 175);
 	this.set_f32("weight", 2.5f);
 	
 	this.addCommandID("fire");

@@ -8,7 +8,6 @@ void onInit(CBlob@ this)
 	this.Tag("piston");
     this.Tag("solid");
 	
-	this.set_u16("cost", 40);
 	this.set_f32("weight", 0.85f);
 	
 	this.set_bool("toggled", false);

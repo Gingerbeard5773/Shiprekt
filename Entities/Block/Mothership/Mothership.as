@@ -7,6 +7,7 @@
 #include "HumanCommon.as";
 #include "AccurateSoundPlay.as";
 #include "Hitters.as";
+#include "BlockCosts.as";
 
 const u16 BASE_KILL_REWARD = 275;
 const f32 HEAL_AMMOUNT = 0.1f;
@@ -49,7 +50,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			caller.set_string("last buy", block);
 			
 		u16 cost = params.read_u16();
-		caller.set_u16("last cost", cost);
 
 		if (getGameTime() - caller.get_u32("placedTime") > 26)
 			caller.set_u32("placedTime", getGameTime() - 20);
@@ -131,7 +131,7 @@ void ReturnBlocks(CBlob@ this)
 				{
 					CBlob@ block = blocks[i];
 					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
-						returnBooty += block.get_u16("cost");
+						returnBooty += getCost(block.getName());
 				}
 				
 				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
