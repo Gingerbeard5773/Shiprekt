@@ -243,7 +243,16 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				CBlob@ pBlob = player.getBlob();
 				if (pBlob is null) return false;
 				
-				if (tokens[0] == "!team")
+				if (tokens[0] =="!addbot") //add a bot to the server. Supports names & teams
+				{
+					if (tokens.length > 2)
+						AddBot(tokens[1], parseInt(tokens[2]), 0);
+					else
+						AddBot(tokens[1]);
+					
+					return true;
+				}
+				else if (tokens[0] == "!team")
 				{
 					player.server_setTeamNum(parseInt(tokens[1]));
 					if (player.getBlob() !is null)
@@ -287,6 +296,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					player.server_setTeamNum(parseInt(tokens[1]));
 					pBlob.server_setTeamNum(parseInt(tokens[1]));
+				}
+				else if (tokens[0] == "!crit") //kill blue mothership
+				{
+					CBlob@ mothership = getMothership(parseInt(tokens[1]));
+					if (mothership !is null)
+						mothership.server_Hit(mothership, mothership.getPosition(), Vec2f_zero, 50.0f, 0, true);
 				}
 				else if (tokens[0] == "!playsound") //play a sound
 				{
@@ -412,11 +427,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					CMap@ map = getMap();
 					Vec2f mapCenter = Vec2f(map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
 					server_CreateBlob("whirlpool", 0, mapCenter);
-				}
-				else if (tokens[0] == "!crit") //kill blue mothership
-				{
-					CBlob@ mothershipBlue = getMothership(0);
-					mothershipBlue.server_Hit(mothershipBlue, mothershipBlue.getPosition(), Vec2f_zero, 50.0f, 0, true);
 				}
 				else if (tokens[0] == "!pinball") //pinball machine
 				{
