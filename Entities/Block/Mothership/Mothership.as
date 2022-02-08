@@ -156,16 +156,11 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	
 	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900 && hitterBlob.hasTag("block"))
 	{
-		CPlayer@ player = getLocalPlayer();
-		if (player !is null && player.isMod() && !getRules().isGameOver())
+		if (!getRules().isGameOver())
 		{
-			CBlob@ BlobID = getBlobByNetworkID(hitterBlob.get_u16("ownerID"));
-			if (BlobID !is null)
-			{
-				CPlayer@ owner = getPlayerByNetworkId(BlobID.getPlayer().getNetworkID());
-				if (owner !is null)
-					error(">Core teamHit (" + hitterTeamNum+ "): " + owner.getUsername()); 
-			}
+			CPlayer@ owner = getPlayerByUsername(hitterBlob.get_string("playerOwner"));
+			if (owner !is null)
+				error(">Core teamHit (" +hitterTeamNum+ "): " + owner.getUsername()); 
 		}
 		
 		damage /= 2;
@@ -219,10 +214,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 							
 			CBlob@ hitterCore = getMothership(hitterTeamNum);
 			if (hitterPlayers == 0 || hitterCore is null)//in case of suicide against leftover/empty team ship
-				return Maths::Max( 0.0f, hp - 1.0f );//no rewards
-
-			//got a winner team
-			this.Tag("cleanDeath");	
+				return Maths::Max(0.0f, hp - 1.0f);//no rewards
 			
 			//winSound
 			CPlayer@ myPlayer = getLocalPlayer();
@@ -284,9 +276,6 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 void onDie(CBlob@ this)
 {
 	selfDestruct(this);
-
-	if (!this.hasTag("cleanDeath"))
-		client_AddToChat("*** " + getRules().getTeam(this.getTeamNum()).getName() + " had their core bombed - instant death! ***");
 }
 
 //healing, repelling, dmgmanaging, selfDestruct, damagesprite

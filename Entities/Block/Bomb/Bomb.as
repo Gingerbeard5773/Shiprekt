@@ -94,15 +94,18 @@ void onColored(CBlob@ this) //activate when the block changes color
 void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 {
     Vec2f pos = this.getPosition();
-    CMap@ map = this.getMap();
 
 	directionalSoundPlay("Bomb.ogg", pos);
     makeLargeExplosionParticle(pos);
     ShakeScreen(4*radius, 45, pos);
+	
+	CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
+	if (owner !is null)
+		this.SetDamageOwnerPlayer(owner);
 
 	//hit blobs
 	CBlob@[] blobs;
-	map.getBlobsInRadius(pos, radius, @blobs);
+	getMap().getBlobsInRadius(pos, radius, @blobs);
 
 	for (uint i = 0; i < blobs.length; i++)
 	{
@@ -146,10 +149,8 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 			//print(hit_blob.getNetworkID() + " for: " + BOMB_BASE_DAMAGE * distanceFactor + " dFctr: " + distanceFactor + ", dist: " + this.getDistanceTo(hit_blob));
 		}
 		
-		CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
 		if (owner !is null)
 		{
-			this.SetDamageOwnerPlayer(owner);
 			CBlob@ blob = owner.getBlob();
 			if (blob !is null)
 				damageBootyBomb(owner, blob, hit_blob);
