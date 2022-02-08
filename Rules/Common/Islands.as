@@ -106,11 +106,18 @@ bool AddToIsland(CBlob@ this) //reference from nearby block and copy onto island
 	island.blocks.push_back(isle_block);
 	
 	int islandColor = island.centerBlock.getShape().getVars().customData;
-	this.getShape().getVars().customData = islandColor;
+	this.getShape().getVars().customData = islandColor;	
 	this.set_u16("last color", islandColor);
 	setUpdateSeatArrays(islandColor);
 	@island.centerBlock = null; //reset island so positions update
 	StoreVelocities(island);
+	
+	//Activate hook onColored for all blobs that have it (server)
+	BlockHooks@ blockHooks;
+	this.get("BlockHooks", @blockHooks);
+	if (blockHooks !is null)
+		blockHooks.update("onColored", @this);
+
 	
 	return true;
 }
@@ -866,7 +873,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 					if (params.read_bool())
 					{
 						Vec2f dDelta = params.read_Vec2f() - isle.pos;
-						if ( dDelta.LengthSquared() < 512 )//8 blocks threshold
+						if (dDelta.LengthSquared() < 512)//8 blocks threshold
 							isle.pos = isle.pos + dDelta/UPDATE_DELTA_SMOOTHNESS;
 						else
 							isle.pos += dDelta; 
