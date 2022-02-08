@@ -24,6 +24,11 @@ void onInit(CRules@ this)
 	Vec2f imageSize = Vec2f(image.getWidth(), image.getHeight());
 	AddIconToken("$HELP$", "GameHelp.png", imageSize, 0);
 	u_showtutorial = true;// for ShowTipOnDeath to work
+	
+	if (!GUI::isFontLoaded("thick font"))
+	{
+        GUI::LoadFont("thick font", "GUI/Fonts/AveriaSerif-Bold.ttf", 30, true);
+    }
 }
 
 void onTick(CRules@ this)
@@ -84,7 +89,7 @@ void onRender(CRules@ this)
 		
 		//bool fitsVertically = sHeight > 2*imageSize.y + infoSize.y + 2 * boxMargin;
 
-		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
+		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
 		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
 		
 		//draw box
@@ -110,21 +115,21 @@ void onRender(CRules@ this)
 			GUI::GetTextDimensions(helpToggle, toggleSize);
 			
 			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 40), tipsColor);
-			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 2*imageSize.y  + boxMargin + 25), tipsColor);
+			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
 		}
 		
 		if (page1)
 		{
 			//PAGE 1
-			
-			string lastChangesInfo = "Shiprekt Version 1.46\n"
-		
-			+ "Last changes :\n"
-			+ "- 1-15-2022 - v1.46 By Gingerbeard\n"
-			+ "  * Added new block: Pistons.\n"
-			+ "  * Ship speed on land depends on how many blocks are touching.\n"
-			+ "  * Reduced spectator to player respawn time.\n"
-			+ "  * Fixed issue with secondarycore blowing up mothership instantly.\n";
+			string shiprektVersion = "Shiprekt++ Version 1.47\n";
+			string lastChangesInfo = "Last changes :\n"
+			+ "- 2-7-2022 - v1.47 By Gingerbeard\n"
+			+ "  * Drastically improved block placing.\n"
+			+ "  * Block costs are reduced during warm-up.\n"
+			+ "  * Smaller torpedoes can bounce off the walls and change direction.\n"
+			+ "  * Exploding ships don't lose speed.\n"
+			+ "  * Added additional support for Fast Rendering from KAG settings.\n"
+			+ "  * Removed the ability to become a shark.\n";
 			
 			Vec2f lastChangesSize;
 			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
@@ -132,14 +137,23 @@ void onRender(CRules@ this)
 			Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
 			Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
 			
+			GUI::SetFont("thick font");
+			GUI::DrawText(shiprektVersion, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
+			
 			GUI::SetFont("menu");
-			GUI::DrawText(lastChangesInfo, Vec2f(sWidth/2 - imageSize.x,  tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
-			GUI::DrawIconByName("$HELP$", Vec2f(sWidth/2 - imageSize.x,  tlBox.y + boxMargin + 10));
+			GUI::DrawText(lastChangesInfo, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
+			GUI::DrawIconByName("$HELP$", Vec2f(sWidth/2 - imageSize.x, tlBox.y + boxMargin + 10));
 		}
 		else
 		{
 			GUI::SetFont("menu");
-			GUI::DrawText(textInfo, Vec2f(sWidth/2 - infoSize.x/2 -60,  tlBox.y + boxMargin + 40), tipsColor);
+			GUI::DrawText(textInfo, Vec2f(sWidth/2 - infoSize.x/2 -60, tlBox.y + boxMargin + 40), tipsColor);
+			
+			if (!v_fastrender)
+			{
+				string lagTip = "<> Having lag issues? Turn on Faster Graphics in KAG video settings for possible improvement! <>";
+				GUI::DrawText(lagTip, Vec2f(sWidth/2 - infoSize.x/2 -130, tlBox.y + boxMargin *8), tipsColor);
+			}
 		}
 	
 		//hud icons
@@ -153,19 +167,18 @@ void onRender(CRules@ this)
 		if (localBlob is null || (controls.getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
 		{
 			SColor arrowColor = SColor(150, 255, 255, 255);
-			GUI::DrawTextCentered("Click these Icons for Control and Booty functions",  tl + Vec2f(90, -15), tipsColor);
+			GUI::DrawTextCentered("[ Click these Icons for Control and Booty functions! ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), tipsColor);
 			//GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
 		}
 		
 		//Add social links
-		makeWebsiteLink(100.0f, "Go to the Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
-		makeWebsiteLink(150.0f, "Go to the Shiprekt Discord", "https://discord.gg/V29BBeba3C");
+		makeWebsiteLink(Vec2f(brBox.x, 100.0f), "Go to the Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
+		makeWebsiteLink(Vec2f(brBox.x, 150.0f), "Go to the Shiprekt Discord", "https://discord.gg/V29BBeba3C");
 	}
 }
 
-void makeWebsiteLink(f32 yPos, string text, string website)
+void makeWebsiteLink(Vec2f pos, string text, string website)
 {
-	f32 width;
 	f32 height = 40;
 
 	GUI::SetFont("menu");
@@ -173,10 +186,10 @@ void makeWebsiteLink(f32 yPos, string text, string website)
 	Vec2f dim;
 	GUI::GetTextDimensions(text, dim);
 
-	width = dim.x + 20;
+	f32 width = dim.x + 20;
 
-	Vec2f tl = Vec2f(getScreenWidth() - 10 - width, yPos);
-	Vec2f br = Vec2f(getScreenWidth() - 10, tl.y + height);
+	Vec2f tl = Vec2f(getScreenWidth() - 10 - width - pos.x, pos.y);
+	Vec2f br = Vec2f(getScreenWidth() - 10 - pos.x, tl.y + height);
 
 	CControls@ controls = getControls();
 	Vec2f mousePos = controls.getMouseScreenPos();
