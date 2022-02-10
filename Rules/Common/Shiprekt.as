@@ -131,7 +131,7 @@ void onTick(CRules@ this)
 			f32 compensate = median/teamPlayers[team];
 			if (compensate > 1)
 			{
-				u16 balance = Maths::Round( initBooty * compensate/teamPlayers[team] - initBooty);
+				u16 balance = Maths::Round(initBooty * compensate/teamPlayers[team] - initBooty);
 				string name = player.getUsername();
 				server_setPlayerBooty(name, balance);
 			}
@@ -194,42 +194,6 @@ bool isDev(CPlayer@ player)
 bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
 	if (player is null) return true;
-	
-	if (text_in.substr(0,1) == "!")
-	{
-		string[]@ tokens = text_in.split(" ");
-		if (tokens.length > 1)
-		{
-			if (tokens[0] == "!saveship") //all players can save their ship
-			{
-				ConfigFile cfg;
-				
-				CBlob@ pBlob = player.getBlob();
-				if (pBlob is null)
-					return false;
-				
-				Vec2f playerPos = pBlob.getPosition();
-				Island@ isle = getIsland(player.getBlob());
-				int numBlocks = isle.blocks.length;
-				cfg.add_u16("total blocks", numBlocks);
-				for (uint i = 0; i < numBlocks; ++i)
-				{
-					IslandBlock@ isle_block = isle.blocks[i];
-					if (isle_block is null) continue;
-
-					CBlob@ block = getBlobByNetworkID(isle_block.blobID);
-					if (block is null) continue;
-					
-					cfg.add_string("block" + i + "type", block.getName());
-					cfg.add_f32("block" + i + "positionX", (block.getPosition().x - playerPos.x));
-					cfg.add_f32("block" + i + "positionY", (block.getPosition().y - playerPos.y));
-					cfg.add_f32("block" + i + "angle", block.getAngleDegrees());
-				}
-				
-				cfg.saveFile("SHIP_" + tokens[1] + ".cfg");
-			}
-		}
-	}
 
 	//for testing
 	if (sv_test || player.isMod() || isDev(player))
@@ -254,9 +218,22 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!team")
 				{
-					player.server_setTeamNum(parseInt(tokens[1]));
-					if (player.getBlob() !is null)
-						player.getBlob().server_Die();
+					if (tokens.length > 2)
+					{
+						CPlayer@ nameplayer = getPlayerByUsername(tokens[1]);
+						if (nameplayer !is null)
+						{
+							nameplayer.server_setTeamNum(parseInt(tokens[2]));
+							if (nameplayer.getBlob() !is null)
+								nameplayer.getBlob().server_Die();
+						}
+					}
+					else
+					{
+						player.server_setTeamNum(parseInt(tokens[1]));
+						if (player.getBlob() !is null)
+							player.getBlob().server_Die();
+					}
 					
 					return false;
 				}
@@ -297,13 +274,13 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					player.server_setTeamNum(parseInt(tokens[1]));
 					pBlob.server_setTeamNum(parseInt(tokens[1]));
 				}
-				else if (tokens[0] == "!crit") //kill blue mothership
+				else if (tokens[0] == "!crit") //kill defined mothership
 				{
 					CBlob@ mothership = getMothership(parseInt(tokens[1]));
 					if (mothership !is null)
 						mothership.server_Hit(mothership, mothership.getPosition(), Vec2f_zero, 50.0f, 0, true);
 				}
-				else if (tokens[0] == "!playsound") //play a sound
+				else if (tokens[0] == "!playsound") //play a sound (only works localhost)
 				{
 					Sound::Play(tokens[1]);
 					return false;
@@ -313,6 +290,34 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					g_debug = parseInt(tokens[1]);
 					print("Setting g_debug to "+tokens[1]);
 					return false;
+				}
+				else if (tokens[0] == "!saveship") //all players can save their ship
+				{
+					ConfigFile cfg;
+					
+					CBlob@ pBlob = player.getBlob();
+					if (pBlob is null)
+						return false;
+					
+					Vec2f playerPos = pBlob.getPosition();
+					Island@ isle = getIsland(player.getBlob());
+					int numBlocks = isle.blocks.length;
+					cfg.add_u16("total blocks", numBlocks);
+					for (uint i = 0; i < numBlocks; ++i)
+					{
+						IslandBlock@ isle_block = isle.blocks[i];
+						if (isle_block is null) continue;
+
+						CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+						if (block is null) continue;
+						
+						cfg.add_string("block" + i + "type", block.getName());
+						cfg.add_f32("block" + i + "positionX", (block.getPosition().x - playerPos.x));
+						cfg.add_f32("block" + i + "positionY", (block.getPosition().y - playerPos.y));
+						cfg.add_f32("block" + i + "angle", block.getAngleDegrees());
+					}
+					
+					cfg.saveFile("SHIP_" + tokens[1] + ".cfg");
 				}
 				else if (tokens[0] == "!loadship")
 				{
