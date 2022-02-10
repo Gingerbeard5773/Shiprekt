@@ -49,9 +49,6 @@ void onRender(CRules@ this)
 {
 	CPlayer@ player = getLocalPlayer();
 	if (player is null) return;
-		
-	CBlob@ localBlob = getLocalPlayerBlob();
-	CControls@ controls = getControls();
 	
 	if (showHelp)
 	{	
@@ -63,7 +60,8 @@ void onRender(CRules@ this)
 		Vec2f imageSize;
 		GUI::GetIconDimensions("$HELP$", imageSize);
 
-		string textInfo = "- Motherships:\n"+
+		string infoTitle = "How to Play";
+		string textInfo = "- Motherships:\n" +
 		" * Gather Xs for Booty. Xs have more Booty the closer they spawn to the map center.\n"+
 		" * Engines are very weak! Use Solid blocks as armor or Miniships will eat through them!\n\n"+
 		"- Miniships:\n"+
@@ -72,9 +70,11 @@ void onRender(CRules@ this)
 		"- Other Tips:\n"+
 		" * The higher a team is on the leaderboard, the more Booty you get for attacking them.\n"+  
 		" * Each block has a different weight. The heavier, the more they slow your ship down.\n"+
-		" * Get a refund on Blocks you bought by bringing up the buy window again.\n\n"+
-		"- Default Controls:\n" +
-		" [ " + inv_key + " ] get Blocks while aboard your Mothership. Produces couplings while in a seat.\n"+
+		" * Get a refund on Blocks you bought by bringing up the buy window again.";
+		
+		//Controls
+		string controlsTitle = "Controls";
+		string controlsInfo = " [ " + inv_key + " ] get Blocks while aboard your Mothership. Produces couplings while in a seat.\n"+
 		" [ " + action3_key + " ]  rotate blocks while building or release couplings when sitting.\n"+
 		" [ " + action1_key + " ] punch when standing or fire Machineguns when sitting.\n"+
 		" [ " + action2_key + " ]  <hold> fire handgun.\n"+
@@ -85,12 +85,12 @@ void onRender(CRules@ this)
 		" [ " + pick_key + " ] OR [ " + taunts_key + " ]  <hold> toggle engines strafe mode.";
 
 		Vec2f infoSize;
-		GUI::GetTextDimensions(textInfo, infoSize);
-		
-		//bool fitsVertically = sHeight > 2*imageSize.y + infoSize.y + 2 * boxMargin;
+		GUI::GetTextDimensions(infoTitle + textInfo, infoSize);
+		Vec2f controlsSize;
+		GUI::GetTextDimensions(controlsTitle + controlsInfo, controlsSize);
 
-		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - boxMargin));
-		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2);
+		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin, Maths::Max(10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - controlsSize.y/2 - boxMargin));
+		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2 + controlsSize.y/2);
 		
 		//draw box
 		GUI::DrawButtonPressed(tlBox, brBox);
@@ -102,20 +102,22 @@ void onRender(CRules@ this)
 			
 			Vec2f introSize;
 			GUI::GetTextDimensions(intro, introSize);
-			
-			GUI::DrawText(intro, Vec2f(Maths::Max(tlBox.x, sWidth/2 - introSize.x/2), tlBox.y + 20), tipsColor);
+			GUI::SetFont("normal");
+			GUI::DrawText(intro, Vec2f(Maths::Max(tlBox.x, sWidth/2 - tlBox.x/2), tlBox.y + 20), tipsColor);
 		} 
 		
 		//helptoggle, image && textInfo
 		if (!justJoined || gameTime % 90 > 30)
 		{
-			string helpToggle = (!justJoined || localBlob !is null) ? ">> Press Left Click to change page | F1 to toggle this Help Box (or type !help) <<" : ">> Press Left Click to change page <<";
+			string helpToggle = ">> Press Left Click to change page | F1 to toggle this Help Box (or type !help) <<";
 			
 			Vec2f toggleSize;
 			GUI::GetTextDimensions(helpToggle, toggleSize);
 			
+			GUI::SetFont("normal");
 			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 40), tipsColor);
-			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
+			if (page1)
+				GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
 		}
 		
 		if (page1)
@@ -146,25 +148,26 @@ void onRender(CRules@ this)
 		}
 		else
 		{
+			//PAGE 2
+			GUI::SetFont("thick font");
+			GUI::DrawText(infoTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 20), tipsColor);
+			GUI::DrawText(controlsTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 240), tipsColor);
+			
 			GUI::SetFont("menu");
-			GUI::DrawText(textInfo, Vec2f(sWidth/2 - infoSize.x/2 -60, tlBox.y + boxMargin + 40), tipsColor);
+			GUI::DrawText(textInfo, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 60), tipsColor);
+			GUI::DrawText(controlsInfo, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 280), tipsColor);
 			
 			if (!v_fastrender)
 			{
 				string lagTip = "<> Having lag issues? Turn on Faster Graphics in KAG video settings for possible improvement! <>";
-				GUI::DrawText(lagTip, Vec2f(sWidth/2 - infoSize.x/2 -130, tlBox.y + boxMargin *8), tipsColor);
+				GUI::DrawText(lagTip, Vec2f(sWidth/2 - tlBox.x/1.4f, tlBox.y + boxMargin *10), tipsColor);
 			}
 		}
 	
 		//hud icons
 		Vec2f tl = getActorHUDStartPosition(null, 6);
-		if (localBlob is null)
-		{
-			GUI::DrawIconByName("$BOOTY$", tl + Vec2f(111, 12));
-			GUI::DrawIconByName("$CREW$", tl + Vec2f(67, 11));
-		}
-		
-		if (localBlob is null || (controls.getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
+	
+		if (getLocalPlayerBlob() !is null && (getControls().getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
 		{
 			SColor arrowColor = SColor(150, 255, 255, 255);
 			GUI::DrawTextCentered("[ Click these Icons for Control and Booty functions! ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), tipsColor);
