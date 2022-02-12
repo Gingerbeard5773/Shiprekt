@@ -56,7 +56,12 @@ void onInit(CBlob@ this)
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
-	this.set_f32("cam rotation", 0.0f);
+	
+	if (this.isMyPlayer())
+	{
+		this.set_f32("cam rotation", getCamera().getRotation());
+		this.Sync("cam rotation", true);
+	}
 	
 	this.getShape().getVars().onground = true;
 	directionalSoundPlay("Respawn", this.getPosition(), 2.5f);
@@ -91,22 +96,19 @@ void Move(CBlob@ this)
 	const bool myPlayer = this.isMyPlayer();
 	const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
 	//const f32 camRotation = myPlayer ? getCamera().getRotation() : 0.0f;
-	const bool attached = this.isAttached();
 	Vec2f pos = this.getPosition();	
 	Vec2f aimpos = this.getAimPos();
 	Vec2f forward = aimpos - pos;
 	CShape@ shape = this.getShape();
 	CSprite@ sprite = this.getSprite();
-	
-	string currentTool = this.get_string("current tool");
 
 	if (myPlayer)
 	{
 		this.set_f32("cam rotation", getCamera().getRotation());
-		//this.Sync("cam rotation", false); //1732223106 //causes bad deltas
+		this.Sync("cam rotation", true); //1732223106 !! can cause bad deltas if set as false !!
 	}
 	
-	if (!attached)
+	if (!this.isAttached())
 	{
 		const bool up = this.isKeyPressed(key_up);
 		const bool down = this.isKeyPressed(key_down);
@@ -114,7 +116,6 @@ void Move(CBlob@ this)
 		const bool right = this.isKeyPressed(key_right);	
 		const bool punch = this.isKeyPressed(key_action1);
 		const bool shoot = this.isKeyPressed(key_action2);
-		const u32 time = getGameTime();
 		Island@ isle = getIsland(this);
 		shape.getVars().onground = isle !is null || isTouchingLand(pos);
 
@@ -150,15 +151,16 @@ void Move(CBlob@ this)
 				moveVel *= Human::swimSlow;
 			}
 
+			const u32 gameTime = getGameTime();
 			u8 tickStep = v_fastrender ? 15 : 5;
 
-			if ((time + this.getNetworkID()) % tickStep == 0)
+			if ((gameTime + this.getNetworkID()) % tickStep == 0)
 				MakeWaterParticle(pos, Vec2f()); 
 
-			if (this.wasOnGround() && time - this.get_u32("lastSplash") > 45)
+			if (this.wasOnGround() && gameTime - this.get_u32("lastSplash") > 45)
 			{
 				directionalSoundPlay("SplashFast", pos);
-				this.set_u32("lastSplash", time);
+				this.set_u32("lastSplash", gameTime);
 			}
 		}
 		else
@@ -181,6 +183,8 @@ void Move(CBlob@ this)
 		//tool actions
 		if (shoot && !punch)
 		{
+			string currentTool = this.get_string("current tool");
+			
 			if (currentTool == "pistol" && canShootPistol(this)) // shoot
 			{
 				ShootPistol(this);
@@ -250,8 +254,8 @@ void Move(CBlob@ this)
 					}
 					else if (!shipBlob.hasTag("solid") && !up && !left && !right && !down)
 					{
-						Island@ isle = getIsland(shipBlob.getShape().getVars().customData);
-						if (isle !is null && isle.vel.Length() > 1.0f)
+						Island@ island = getIsland(shipBlob.getShape().getVars().customData);
+						if (island !is null && island.vel.Length() > 1.0f)
 							this.setPosition(shipBlob.getPosition());
 					}
 					this.set_s8("stay count", count);		
@@ -270,7 +274,6 @@ void PlayerControls(CBlob@ this)
 	CHUD@ hud = getHUD();
 	CControls@ controls = getControls();
 	bool toolsKey = controls.isKeyJustPressed(controls.getActionKeyKey(AK_PARTY));
-	CSprite@ sprite = this.getSprite();
 	
 	// bubble menu
 	if (this.isKeyJustPressed(key_bubbles))
@@ -359,8 +362,6 @@ void PlayerControls(CBlob@ this)
 					if (canShop)
 					{
 						this.set_bool("build menu open", true);
-
-						u32 gameTime = getGameTime();
 
 						Sound::Play("buttonclick.ogg");
 						BuildShopMenu(this, core, "Components", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
@@ -628,7 +629,7 @@ void ShootPistol(CBlob@ this)
 
 	Vec2f pos = this.getPosition();
 	Vec2f aimVector = this.getAimPos() - pos;
-	const f32 aimdist = aimVector.Normalize();
+	aimVector.Normalize();
 
 	Vec2f offset(_shotspreadrandom.NextFloat() * BULLET_SPREAD,0);
 	offset.RotateBy(_shotspreadrandom.NextFloat() * 360.0f, Vec2f());
@@ -664,15 +665,11 @@ void Construct(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	Vec2f aimPos = this.getAimPos();
-	CBlob@ mBlob = getMap().getBlobAtPosition(aimPos);
 	Vec2f aimVector = aimPos - pos;
 
-	Vec2f offset(_shotspreadrandom.NextFloat() * BULLET_SPREAD,0);
-	offset.RotateBy(_shotspreadrandom.NextFloat() * 360.0f, Vec2f());
 	CSprite@ sprite = this.getSprite();
-	
-	string currentTool = this.get_string("current tool");
 
+	CBlob@ mBlob = getMap().getBlobAtPosition(aimPos);
 	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && aimVector.getLength() <= CONSTRUCT_RANGE)
 	{
 		if (this.isMyPlayer())
@@ -701,10 +698,11 @@ void Construct(CBlob@ this)
 				laser.RotateBy(offsetAngle, Vec2f());
 				laser.setRenderStyle(RenderStyle::light);
 			}
-		}
-		if (sprite.getEmitSoundPaused())
-		{
-			sprite.SetEmitSoundPaused(false);
+			
+			if (sprite.getEmitSoundPaused())
+			{
+				sprite.SetEmitSoundPaused(false);
+			}
 		}	
 	}
 	else
@@ -712,10 +710,11 @@ void Construct(CBlob@ this)
 		if (isClient())//effects
 		{
 			sprite.RemoveSpriteLayer("laser");
-		}
-		if (!sprite.getEmitSoundPaused())
-		{
-			sprite.SetEmitSoundPaused(true);
+			
+			if (!sprite.getEmitSoundPaused())
+			{
+				sprite.SetEmitSoundPaused(true);
+			}
 		}
 	}
 }
@@ -733,8 +732,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		{
 			Vec2f pos = b.getPosition();
 			this.set_u32("punch time", getGameTime());
-			directionalSoundPlay("Kick.ogg", pos);
-			ParticleBloodSplat(pos, false);
+			if (isClient())
+			{
+				directionalSoundPlay("Kick.ogg", pos);
+				ParticleBloodSplat(pos, false);
+			}
 
 			if (isServer())
 				this.server_Hit(b, pos, Vec2f_zero, 0.25f, Hitters::muscles, false);
@@ -856,14 +858,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						{
 							string cName = thisPlayer.getUsername();
 
-							server_addPlayerBooty(cName, getCost(mBlob.getName()) *(mBlobHealth/mBlobInitHealth));
+							server_addPlayerBooty(cName, (!mBlob.hasTag("coupling") ? getCost(mBlob.getName()) : 1) *(mBlobHealth/mBlobInitHealth));
 							directionalSoundPlay("/ChaChing.ogg", pos);
 							mBlob.Tag("disabled");
 							mBlob.server_Die();
 						}
 					}
 					else
-						mBlob.set_f32("current reclaim", currentReclaim - deconstructAmount);
+						mBlob.sub_f32("current reclaim", deconstructAmount);
 				}
 				else if (currentTool == "reconstructor")
 				{			
@@ -875,19 +877,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if (mBlob.hasTag("mothership"))
 					{
 						//mothership
-						const f32 motherInitHealth = 8.0f;
-						if ((mBlobHealth + reconstructAmount) <= motherInitHealth)
+						if ((mBlobHealth + reconstructAmount) <= mBlobInitHealth)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ((mBlobHealth + reconstructAmount) > motherInitHealth)
+						else if ((mBlobHealth + reconstructAmount) > mBlobInitHealth)
 						{
-							reconstructAmount = motherInitHealth - mBlobHealth;
+							reconstructAmount = mBlobInitHealth - mBlobHealth;
 							reconstructCost = (CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount));
 						}
 						
-						if (cBooty >= reconstructCost && mBlobHealth < motherInitHealth)
+						if (cBooty >= reconstructCost && mBlobHealth < mBlobInitHealth)
 						{
 							mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
 							server_addPlayerBooty(cName, -reconstructCost);
@@ -1054,15 +1055,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	{
 		u16 netID = params.read_u16();
 		string tool = params.read_string();
-		CPlayer@ player = this.getPlayer();
 		
+		CPlayer@ player = this.getPlayer();
 		if (player is null) return;
 		
 		if (tool == "deconstructor" || tool == "reconstructor")
 		{
-			this.getSprite().SetEmitSound("/ReclaimSound.ogg");
-			this.getSprite().SetEmitSoundVolume(0.5f);
-			this.getSprite().SetEmitSoundPaused(true);
+			if (isClient())
+			{
+				this.getSprite().SetEmitSound("/ReclaimSound.ogg");
+				this.getSprite().SetEmitSoundVolume(0.5f);
+				this.getSprite().SetEmitSoundPaused(true);
+			}
 		}
 		
 		this.set_string("current tool", tool);
@@ -1176,7 +1180,6 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 		if (isClient())
 		{
 			directionalSoundPlay("Heal.ogg", this.getPosition(), 2.0f);
-			
 			makeHealParticle(this);
 		}
 	}

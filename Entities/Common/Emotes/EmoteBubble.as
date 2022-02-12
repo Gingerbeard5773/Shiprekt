@@ -36,7 +36,7 @@ void onTick(CBlob@ blob)
 	if (!blob.getShape().isStatic())
     {
 		CSprite@ sprite = blob.getSprite();
-		CSpriteLayer@ emote = sprite.getSpriteLayer( "bubble");	
+		CSpriteLayer@ emote = sprite.getSpriteLayer("bubble");	
 		const u8 index = blob.get_u8("emote");
 		if (is_emote(blob, index) && !blob.hasTag("dead"))
 		{
