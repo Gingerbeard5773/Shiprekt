@@ -88,3 +88,28 @@ void SpawnMothership(Vec2f pos, const int team)
 
 	makeBlock(pos + Vec2f(-8*2, 0), 0.0f, "platform", team).getSprite().SetFrame(1);
 }
+
+bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
+{
+	if (player is null) return true;
+
+	if (sv_test || player.isMod())
+	{
+		if (text_in.substr(0,1) == "!" )
+		{
+			string[]@ tokens = text_in.split(" ");
+
+			if (tokens.length > 1)
+			{
+				CBlob@ pBlob = player.getBlob();
+				if (pBlob is null) return false;
+				
+				if (tokens[0] == "!spawnmothership") //spawn a mothership
+				{
+					SpawnMothership(pBlob.getPosition(), parseInt(tokens[1]));
+				}
+			}
+		}
+	}
+	return true;
+}

@@ -353,21 +353,24 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					Vec2f playerPos = pBlob.getPosition();
 					Island@ isle = getIsland(player.getBlob());
-					int numBlocks = isle.blocks.length;
-					if (isServer()) 
+					if (isle !is null)
 					{
-						for (uint i = 0; i < numBlocks; ++i)
+						int numBlocks = isle.blocks.length;
+						if (isServer()) 
 						{
-							IslandBlock@ isle_block = isle.blocks[i];
-							if (isle_block is null) continue;
-
-							CBlob@ block = getBlobByNetworkID(isle_block.blobID);
-							if (block is null) continue;
-							
-							if (!block.hasTag("mothership"))
+							for (uint i = 0; i < numBlocks; ++i)
 							{
-								block.Tag("noCollide");
-								block.server_Die();
+								IslandBlock@ isle_block = isle.blocks[i];
+								if (isle_block is null) continue;
+
+								CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+								if (block is null) continue;
+								
+								if (!block.hasTag("mothership") || numBlocks == 1)
+								{
+									block.Tag("noCollide");
+									block.server_Die();
+								}
 							}
 						}
 					}
@@ -408,6 +411,11 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 							client_AddToChat(filename, SColor(255, 255, 0, 0));
 						}
 					}
+					return false;
+				}
+				else if (tokens[0] == "!dirty") //activate dirty islands 
+				{
+					this.set_bool("dirty islands", true);
 					return false;
 				}
 				else if (tokens[0] == "!sv_test")
