@@ -150,7 +150,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 				return;
 				
 			docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
-					&& ((island.isMothership || other_island.isMothership) || (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
+					&& ((island.isMothership || other_island.isMothership) || (island.isSecondaryCore || other_island.isSecondaryCore)
+					|| (island.isStation || other_island.isStation) || (island.isMiniStation || other_island.isMiniStation))
 					&& this.getTeamNum() == blob.getTeamNum()
 					&& ((!island.isMothership && island.owner != "") || (!other_island.isMothership && other_island.owner != ""));
 								
@@ -185,13 +186,15 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			}
 		}		
 		
-		if (isServer() && 
-			!(this.hasTag("station") || blob.hasTag("station")) && 
+		if (!(this.hasTag("station") || blob.hasTag("station")) && 
 			!(this.hasTag("ministation") || blob.hasTag("ministation"))) // how to clean this up
 		{
 			if (docking)//force island merge
+			{	
 				getRules().set_bool("dirty islands", true);
-			else
+				directionalSoundPlay("mechanical_click", blob.getPosition());
+			}
+			else if (isServer())
 			{
 				// these are checked separately so that seats/ram engines don't break from coups/repulsors
 				if (this.hasTag("coupling") || blob.hasTag("coupling")) // how to clean this up
