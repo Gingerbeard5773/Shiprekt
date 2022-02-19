@@ -1,49 +1,51 @@
-#define CLIENT_ONLY
+//#define CLIENT_ONLY
 #include "IslandsCommon.as";
 #include "TileCommon.as";
 
 //saving local values because the ones provied by sv aren't correct after a desync
-u16 currentCenterBlockID = 0;
-f32 islandOldAngle = 0;
-Vec2f islandOldPos = Vec2f_zero;
 
 void onInit(CBlob@ this)
 {
-	this.getCurrentScript().runFlags |= Script::tick_myplayer;
-	currentCenterBlockID = 0;
-	islandOldAngle = 0;
-	islandOldPos = Vec2f_zero;
+	//this.getCurrentScript().runFlags |= Script::tick_myplayer;
+	if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
+	{
+		this.set_u16("isleCenterBlockID", 0);
+		this.set_f32("isleOldAngle", 0);
+		this.set_Vec2f("isleOldPos", Vec2f_zero);
+	}
 }
 
 void onTick(CBlob@ this)
 {
 	if (!this.isOnGround())
 		return;
-		
-	Island@ island = getIsland(this);
-	if (island !is null && island.centerBlock !is null)
+	
+	if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
 	{
-		u16 id = island.centerBlock.getNetworkID();
-		if (id != currentCenterBlockID || !this.wasOnGround())//island changed: set cached values to current
+		Island@ island = getIsland(this);
+		if (island !is null && island.centerBlock !is null)
 		{
-			islandOldPos = island.centerBlock.getPosition();
-			islandOldAngle = island.centerBlock.getAngleDegrees();
-			currentCenterBlockID = id;
-		}
-		
-    	Vec2f pos = this.getPosition();
-		f32 islandAngle = island.centerBlock.getAngleDegrees();
-		Vec2f islandPos = island.centerBlock.getPosition();
-		Vec2f islandDisplacement = islandPos - islandOldPos;
-		f32 islandAngleDelta = islandAngle - islandOldAngle;
-		Vec2f islandToBlob = pos - islandPos + islandDisplacement;
-		islandToBlob.RotateBy(islandAngleDelta);
-		
-		islandOldPos = islandPos;
-		islandOldAngle = islandAngle;
+			u16 id = island.centerBlock.getNetworkID();
+			if (id != this.get_u16("isleCenterBlockID") || !this.wasOnGround())//island changed: set cached values to current
+			{
+				this.set_Vec2f("isleOldPos", island.centerBlock.getPosition());
+				this.set_f32("isleOldAngle", island.centerBlock.getAngleDegrees());
+				this.set_u16("isleCenterBlockID", id);
+			}
+			
+			f32 islandAngle = island.centerBlock.getAngleDegrees();
+			Vec2f islandPos = island.centerBlock.getPosition();
+			Vec2f islandDisplacement = islandPos - this.get_Vec2f("isleOldPos");
+			f32 islandAngleDelta = islandAngle - this.get_f32("isleOldAngle");
+			Vec2f islandToBlob = this.getPosition() - islandPos + islandDisplacement;
+			islandToBlob.RotateBy(islandAngleDelta);
+			
+			this.set_Vec2f("isleOldPos", islandPos);
+			this.set_f32("isleOldAngle", islandAngle);
 
-		CBlob@ islandBlock = getMap().getBlobAtPosition(islandPos + islandToBlob);
-		if (isTouchingLand(this.getPosition()) ? islandBlock !is null : true) //Only move player if there is a block to move onto
-			this.setPosition(islandPos + islandToBlob);
+			CBlob@ islandBlock = getMap().getBlobAtPosition(islandPos + islandToBlob);
+			if (isTouchingLand(this.getPosition()) ? islandBlock !is null : true) //Only move player if there is a block to move onto
+				this.setPosition(islandPos + islandToBlob);
+		}
 	}
 }

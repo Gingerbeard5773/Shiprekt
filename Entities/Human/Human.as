@@ -324,12 +324,9 @@ void PlayerControls(CBlob@ this)
 	}
 	
 	// click action1 to click buttons
-	if (hud.hasButtons() && this.isKeyPressed(key_action1) && !this.ClickClosestInteractButton(this.getAimPos(), 2.0f))
-	{
-	}
+	if (hud.hasButtons() && this.isKeyPressed(key_action1) && !this.ClickClosestInteractButton(this.getAimPos(), 2.0f)) {}
 
 	// click grid menus
-
     if (hud.hasButtons())
     {
         if (this.isKeyJustPressed(key_action1))
@@ -337,11 +334,7 @@ void PlayerControls(CBlob@ this)
 		    CGridMenu @gmenu;
 		    CGridButton @gbutton;
 		    this.ClickGridMenu(0, gmenu, gbutton); 
-	    } 
-		else if (this.isKeyJustPressed(key_inventory))
-		{
-			
-		}
+	    }
 	}
 	
 	//build menu
