@@ -332,10 +332,7 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 	
 	if (other_island.isStation || other_island.isMiniStation)
 	{
-		if (island.beached)
-			island.vel += colvec1 * -vellen - colvec1*1.0f;
-		else
-			island.vel += colvec1 * -vellen - colvec1*0.4f;
+		island.vel += colvec1 * -vellen - colvec1*0.7f;
 	}
 	else
 	{

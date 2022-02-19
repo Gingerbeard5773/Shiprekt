@@ -13,8 +13,8 @@ void onInit(CRules@ this)
 {
 	Island[] islands;
 	this.set("islands", islands);
-	CBlob@[] placedBlocks;
-	this.set("placedBlocks", placedBlocks);
+	CBlob@[] dirtyBlocks;
+	this.set("dirtyBlocks", dirtyBlocks);
 	this.addCommandID("islands sync");
 	this.addCommandID("islands update");
 	this.set_s32("islands id", 0);
@@ -36,20 +36,20 @@ void onTick(CRules@ this)
 		if (time < 2) // errors are generated when done on first game tick
 			return;
 		
-		CBlob@[]@ placedBlocks;
-		if (this.get("placedBlocks", @placedBlocks) && placedBlocks.length > 0)
+		CBlob@[]@ dirtyBlocks;
+		if (this.get("dirtyBlocks", @dirtyBlocks) && dirtyBlocks.length > 0)
 		{
-			for (uint i = 0; i < placedBlocks.length; i++)
+			for (uint i = 0; i < dirtyBlocks.length; i++)
 			{
 				// add a placed block onto an existing island, otherwise update all islands
-				if (!AddToIsland(placedBlocks[i]))
+				if (!AddToIsland(dirtyBlocks[i]))
 				{
 					this.set_bool("dirty islands", true);
 					break;
 				}
 			}
 			full_sync = true;
-			this.clear("placedBlocks");
+			this.clear("dirtyBlocks");
 		}
 		
 		if (this.get_bool("dirty islands"))
@@ -341,11 +341,9 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 			isle.angle_vel *= ANGLE_VEL_DAMPING;
 			
 			//check for beached or slowed islands
-			isle.beached = false;
-			isle.slowed = false;
 			
-			int beachedBlocks = 1;
-			int slowedBlocks = 1;
+			int beachedBlocks = 0;
+			int slowedBlocks = 0;
 			
 			for (uint q = 0; q < isle.blocks.length; ++q)
 			{
@@ -364,25 +362,19 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 							b.server_Hit(b, bPos, Vec2f_zero, 1.0f, 0, true);
 					}
 					else if (isTouchingLand(bPos))
-					{
-						isle.beached = true;
 						beachedBlocks++;
-					}
 					else if (isTouchingShoal(bPos))
-					{
-						isle.slowed = true;
 						slowedBlocks++;
-					}
 				}
 			}
 			
-			if (isle.beached)
+			if (beachedBlocks > 0)
 			{
 				f32 velocity = Maths::Clamp(beachedBlocks / isle.mass, 0.0f, 0.4f);
 				isle.vel *= 1.0f - velocity;
 				isle.angle_vel *= 1.0f - velocity;
 			}
-			else if (isle.slowed)
+			else if (slowedBlocks > 0)
 			{
 				f32 velocity = Maths::Clamp((slowedBlocks) / (isle.mass * 2), 0.0f, 0.1f);
 				isle.vel *= 1.0f - velocity;
@@ -527,6 +519,7 @@ void UpdateIslandBlob(CBlob@ blob, Island @isle, IslandBlock@ isle_block)
  	blob.setPosition(isle.pos + offset);
  	blob.setAngleDegrees(isle.angle + isle_block.angle_offset);
 
+	//don't collide with borders
 	blob.setVelocity(Vec2f_zero);
 	blob.setAngularVelocity(0.0f);
 }

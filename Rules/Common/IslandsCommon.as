@@ -15,8 +15,6 @@ shared class Island
 	bool isStation;           //is the ship connected to a station?
 	bool isMiniStation;       //is the ship connected to a mini station?
 	bool isSecondaryCore;     //is the ship connected to an auxillary core?
-	bool beached;             //is the ship touching land?
-	bool slowed;              //is the ship touching a shoal?
 	
 	Vec2f net_pos, net_vel;        //network
 	f32 net_angle, net_angle_vel;  //network
@@ -29,8 +27,6 @@ shared class Island
 		isStation = false;
 		isMiniStation = false;
 		isSecondaryCore = false;
-		beached = false;
-		slowed = false;
 		@centerBlock = null;
 		soundsPlayed = 0;
 		owner = "";

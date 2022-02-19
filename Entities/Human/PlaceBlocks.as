@@ -292,7 +292,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						blockHooks.update("onBlockPlaced", @b); //Activate hook onBlockPlaced for all blobs that have it
 					
 					b.set_u32("placedTime", getGameTime());
-					getRules().push("placedBlocks", @b);
+					getRules().push("dirtyBlocks", @b);
 				}
 				else
 				{
