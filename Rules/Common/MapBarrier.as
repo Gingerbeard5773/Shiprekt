@@ -4,6 +4,11 @@
 CBlob@[] hitBlobs;
 uint[] islandTimes;
 
+void onInit(CRules@ this)
+{
+	this.addCommandID("island bounce");
+}
+
 void onTick(CRules@ this)
 {
 	CMap@ map = getMap();
@@ -25,7 +30,7 @@ void onTick(CRules@ this)
 		{
 			CBlob @b = blobsAtBorder[i];
 			Island@ island = getIsland(b.getShape().getVars().customData);
-			if (island !is null && (isServer() || island.vel.LengthSquared() > 0))
+			if (island !is null && island.vel.LengthSquared() > 0)
 			{
 				Vec2f pos = b.getPosition();
 
@@ -40,11 +45,11 @@ void onTick(CRules@ this)
 					for (uint i = 0; i < hitBlobs.length; i++)
 					{
 						//make sure islands don't bounce again too soon after first bounce
-						if (hitBlobs[i] is b)
+						if (hitBlobs[i] !is null && hitBlobs[i] is b)
 							bounce = false;
 					}
 					
-					if (bounce)
+					if (bounce && island.centerBlock !is null)
 					{
 						for (uint i = 0; i < island.blocks.length; ++i)
 						{
@@ -55,9 +60,11 @@ void onTick(CRules@ this)
 								islandTimes.push_back(getGameTime());
 							}
 						}
-						
 						f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
-						island.angle = Vec2f(-island.vel.y * bounceFactor, island.vel.x * bounceFactor).Angle(); //calculate perpendicular angle
+						CBitStream bs;
+						bs.write_netid(island.centerBlock.getNetworkID());
+						bs.write_f32(Vec2f(-island.vel.y * bounceFactor, island.vel.x * bounceFactor).Angle()); //calculate perpendicular angle
+						this.SendCommand(this.getCommandID("island bounce"), bs); //synchronize
 					}
 					island.vel = Vec2f(bounceX / 1.5f, bounceY / 1.5f);
 				}
@@ -97,5 +104,19 @@ void server_turnOffPropellers(Island@ island)
 		{
 			block.set_f32("power", 0);
 		}
+	}
+}
+
+void onCommand(CRules@ this, u8 cmd, CBitStream @params)
+{
+	if (cmd == this.getCommandID("island bounce"))
+	{
+		CBlob@ centerblock = getBlobByNetworkID(params.read_netid());
+		if (centerblock is null) return;
+		
+		Island@ island = getIsland(centerblock.getShape().getVars().customData);
+		if (island is null) return;
+		
+		island.angle = params.read_f32();
 	}
 }
