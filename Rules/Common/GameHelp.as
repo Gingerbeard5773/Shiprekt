@@ -20,6 +20,8 @@ const string zoomOut_key = getControls().getActionKeyKeyName(AK_ZOOMOUT);
 		
 void onInit(CRules@ this)
 {
+	sv_contact_info = "\ngithub.com/Gingerbeard5773/shiprekt"; //when errors appear
+	
 	CFileImage@ image = CFileImage("GameHelp.png");
 	Vec2f imageSize = Vec2f(image.getWidth(), image.getHeight());
 	AddIconToken("$HELP$", "GameHelp.png", imageSize, 0);
@@ -125,18 +127,19 @@ void onRender(CRules@ this)
 			//PAGE 1
 			string shiprektVersion = "Shiprekt++ Version 1.47\n";
 			string lastChangesInfo = "Last changes :\n"
-			+ "- 2-7-2022 - v1.47 By Gingerbeard\n"
+			+ "- 2-21-2022 - v1.47 By Gingerbeard\n"
 			+ "  * Drastically improved block placing.\n"
 			+ "  * Block costs are reduced during warm-up.\n"
 			+ "  * Smaller torpedoes can bounce off the walls and change direction.\n"
 			+ "  * Exploding ships don't lose speed.\n"
-			+ "  * Added additional support for Fast Rendering from KAG settings.\n"
+			+ "  * Added additional support for Fast Graphics from KAG settings.\n"
+			+ "  * Couplings will dock on auxillary core ships.\n"
 			+ "  * Removed the ability to become a shark.\n";
 			
 			Vec2f lastChangesSize;
 			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
 		
-			Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max( 10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
+			Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
 			Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
 			
 			GUI::SetFont("thick font");

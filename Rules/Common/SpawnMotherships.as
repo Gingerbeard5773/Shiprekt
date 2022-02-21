@@ -29,14 +29,7 @@ void onRestart(CRules@ this)
 			
 			for (u8 s = 0; s < mShipsToSpawn; s ++)
 			{
-				//quick fix: cyan looks too much like blue
-				u8 team = s;
-				if (team == 5)
-					team = 7;
-				else if (team == 7)
-					team = 5;
-					
-        		SpawnMothership(spawns[s] + spawnOffset, team);
+        		SpawnMothership(spawns[s] + spawnOffset, s);
 			}
     	}
     }
