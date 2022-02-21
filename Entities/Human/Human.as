@@ -52,6 +52,7 @@ void onInit(CBlob@ this)
 		u8(CBlob::map_collide_sides));
 	
 	this.set_bool("build menu open", false);
+	this.set_bool("getting block", false);
 	this.set_string("last buy", "coupling");
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
@@ -385,6 +386,21 @@ void PlayerControls(CBlob@ this)
 				core.SendCommand(core.getCommandID("returnBlocks"), params);
 			}
 		}
+	}
+	
+	//required so block placing doesn't happen on same tick as block returning
+	if (this.get_bool("getting block"))
+	{
+		CBlob@ core = getMothership(this.getTeamNum());
+		if (core !is null && !core.hasTag("critical"))
+		{
+			CBitStream params;
+			params.write_u16(this.getNetworkID());
+			params.write_string(this.get_string("last buy"));
+			params.write_u16(getCost(this.get_string("last buy")));
+			core.SendCommand(core.getCommandID("buyBlock"), params);
+		}
+		this.set_bool("getting block", false);
 	}
 
 	//tools menu

@@ -144,7 +144,7 @@ void ReturnBlocks(CBlob@ this)
 		this.set_bool("blockPlacementWarn", false);
 	}
 	else
-		warn("returnBlocks cmd: no blocks");
+		warn("returnBlocks cmd: no blocks"); //happens when block placing & block returning happens at same time
 }
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)

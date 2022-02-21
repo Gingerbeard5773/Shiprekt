@@ -302,6 +302,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         }
         else
         {
+			//can happen when placing and returning blocks at same time
             warn("place cmd: no blocks");
             return;
         }
@@ -321,11 +322,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 								|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
 				if (canShop)
 				{
-					CBitStream params;
-					params.write_u16(this.getNetworkID());
-					params.write_string(this.get_string("last buy"));
-					params.write_u16(getCost(this.get_string("last buy")));
-					core.SendCommand(core.getCommandID("buyBlock"), params);
+					this.set_bool("getting block", true);
 				}
 			}
 		}
