@@ -2,7 +2,6 @@
 #include "WaterEffects.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
-#include "CustomMap.as";
 #include "Hitters.as";
 #include "ParticleSparks.as";
 

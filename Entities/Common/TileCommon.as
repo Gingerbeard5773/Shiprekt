@@ -1,5 +1,5 @@
 //Tile Common
-#include "CustomMap.as";
+#include "CustomTiles.as";
 
 bool isTouchingLand(Vec2f pos)
 {
