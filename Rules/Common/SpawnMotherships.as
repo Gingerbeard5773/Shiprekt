@@ -9,7 +9,8 @@ void onRestart(CRules@ this)
 {
 	if (isServer())
 	{
-		Vec2f[] spawns;			 
+		Vec2f[] spawns;
+		Vec2f spawnOffset(4.0f, 4.0f); //align to tilegrid
     	if (getMap().getMarkers("spawn", spawns))
 		{
 			u8 pCount = getPlayerCount();
@@ -35,7 +36,7 @@ void onRestart(CRules@ this)
 				else if (team == 7)
 					team = 5;
 					
-        		SpawnMothership(spawns[s], team);
+        		SpawnMothership(spawns[s] + spawnOffset, team);
 			}
     	}
     }
