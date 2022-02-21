@@ -434,20 +434,28 @@ namespace CMap
 		{
 			CBlob@ stationBlob = spawnBlob(map, "station", offset, 255, false);	
 			stationBlob.getSprite().SetFrame(0);
-			PlaceMostLikelyTile(map, offset);
+			
+			map.SetTile(offset, CMap::sand_inland);	
+			map.AddTileFlag(offset, Tile::BACKGROUND);
+			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
 		}
 		else if (pixel == color_ministation) 
 		{
 			CBlob@ ministationBlob = spawnBlob(map, "ministation", offset, 255, false);	
 			ministationBlob.getSprite().SetFrame(1);
-			PlaceMostLikelyTile(map, offset);
+			
+			map.SetTile(offset, CMap::sand_inland);	
+			map.AddTileFlag(offset, Tile::BACKGROUND);
+			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
+			
 		}
 		else if (pixel == color_palmtree) 
 		{
-			map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5));
-			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
-			
 			CBlob@ palmtreeBlob = spawnBlob(map, "palmtree", offset, 255, false);	
+			
+			map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5));
+			map.AddTileFlag(offset, Tile::BACKGROUND);
+			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
 		}	
 		else if (pixel == color_sand) 
 		{
@@ -500,32 +508,32 @@ namespace CMap
 				map.SetTile(offset, CMap::sand_shoal_border_panhandleL_D1);
 				
 			//right handed panhandle
-			else if ( pixel_R == color_shoal && pixel_LD == color_shoal 
+			else if (pixel_R == color_shoal && pixel_LD == color_shoal 
 						&& pixel_U != color_shoal && pixel_LU != color_shoal && pixel_L != color_shoal && pixel_D != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_R1 );
-			else if ( pixel_U == color_shoal && pixel_RD == color_shoal
+				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_R1);
+			else if (pixel_U == color_shoal && pixel_RD == color_shoal
 						&& pixel_R != color_shoal && pixel_L != color_shoal && pixel_LD != color_shoal && pixel_D != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_U1 );
-			else if ( pixel_RU == color_shoal && pixel_L == color_shoal
+				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_U1);
+			else if (pixel_RU == color_shoal && pixel_L == color_shoal
 						&& pixel_R != color_shoal && pixel_U != color_shoal && pixel_D != color_shoal && pixel_RD != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_L1 );
-			else if ( pixel_LU == color_shoal && pixel_D == color_shoal 
+				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_L1);
+			else if (pixel_LU == color_shoal && pixel_D == color_shoal 
 						&& pixel_R != color_shoal && pixel_RU != color_shoal && pixel_U != color_shoal && pixel_L != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_D1 );
+				map.SetTile(offset, CMap::sand_shoal_border_panhandleR_D1);
 				
 			//splitting strips
 			else if (pixel_RU == color_shoal && pixel_LU == color_shoal && pixel_RD == color_shoal
 						&& pixel_R != color_shoal && pixel_U != color_shoal && pixel_L != color_shoal && pixel_LD != color_shoal && pixel_D != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_split_RU1 );
+				map.SetTile(offset, CMap::sand_shoal_border_split_RU1);
 			else if (pixel_RU == color_shoal && pixel_LU == color_shoal && pixel_LD == color_shoal 
 						&& pixel_R != color_shoal && pixel_U != color_shoal && pixel_L != color_shoal && pixel_D != color_shoal && pixel_RD != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_split_LU1 );
+				map.SetTile(offset, CMap::sand_shoal_border_split_LU1);
 			else if (pixel_LU == color_shoal && pixel_LD == color_shoal && pixel_RD == color_shoal 
 						&& pixel_R != color_shoal && pixel_RU != color_shoal && pixel_U != color_shoal && pixel_L != color_shoal && pixel_D != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_split_LD1 );
+				map.SetTile(offset, CMap::sand_shoal_border_split_LD1);
 			else if (pixel_RU == color_shoal && pixel_LD == color_shoal && pixel_RD == color_shoal 
 						&& pixel_R != color_shoal && pixel_U != color_shoal && pixel_LU != color_shoal && pixel_L != color_shoal && pixel_D != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_split_RD1 );
+				map.SetTile(offset, CMap::sand_shoal_border_split_RD1);
 				
 			//choke points
 			else if (pixel_RU == color_shoal && pixel_RD == color_shoal 
@@ -571,7 +579,7 @@ namespace CMap
 				map.SetTile(offset, CMap::sand_shoal_border_straight_R1);	
 			else if (pixel_U == color_shoal
 						&& pixel_R != color_shoal && pixel_L != color_shoal && pixel_LD != color_shoal && pixel_D != color_shoal && pixel_RD != color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_straight_U1 );	
+				map.SetTile(offset, CMap::sand_shoal_border_straight_U1);	
 			else if (pixel_L == color_shoal
 						&& pixel_R != color_shoal && pixel_RU != color_shoal && pixel_U != color_shoal && pixel_D != color_shoal && pixel_RD != color_shoal)
 				map.SetTile(offset, CMap::sand_shoal_border_straight_L1);	
