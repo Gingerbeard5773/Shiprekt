@@ -100,15 +100,10 @@ void assignTeam(CRules@ this, CPlayer@ player)
 {
 	//finds the team with the lowest amount of players
 	
-    int[] playersperteam;
-    for (int i = 0; i < this.getTeamsNum(); i++)
-	{
-        playersperteam.push_back(0);
-	}
+    int[] playersperteam(this.getTeamsNum());
 
     //gather the per team player counts
-    const int playersCount = getPlayersCount();
-    for (int i = 0; i < playersCount; i++)
+    for (int i = 0; i < getPlayersCount(); i++)
     {
         CPlayer@ p = getPlayer(i);
         s32 pteam = p.getTeamNum();
