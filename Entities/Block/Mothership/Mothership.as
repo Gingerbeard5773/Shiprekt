@@ -154,11 +154,11 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	u8 thisTeamNum = this.getTeamNum();
 	u8 hitterTeamNum = hitterBlob.getTeamNum();
 	
-	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900 && hitterBlob.hasTag("block"))
+	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900)
 	{
 		if (!getRules().isGameOver())
 		{
-			CPlayer@ owner = getPlayerByUsername(hitterBlob.get_string("playerOwner"));
+			CPlayer@ owner = hitterBlob.getDamageOwnerPlayer();
 			if (owner !is null)
 				error(">Core teamHit (" +hitterTeamNum+ "): " + owner.getUsername()); 
 		}
@@ -182,14 +182,16 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			initiateSelfDestruct(this);
 			
 			//increase captain deaths
+			/*
 			string defeatedCaptainName = getCaptainName(thisTeamNum);
 			CPlayer@ defeatedCaptain = getPlayerByUsername(defeatedCaptainName);
 			if (defeatedCaptain !is null)
 			{
 				defeatedCaptain.setDeaths(defeatedCaptain.getDeaths() + 1);
 				if (defeatedCaptain.isMyPlayer())
-					client_AddToChat("You lost your Mothership! A Core Death was added to your Scoreboard.");
+					client_AddToChat("You lost your Mothership! A Core Death was added to your Scoreboard.", SColor(0xfffa5a00));
 			}
+			*/
 			
 			//rewards if they apply
 			CRules@ rules = getRules();
@@ -197,7 +199,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 				if (getGameTime() - this.get_u32("lastHitterTime") < 450)//15 seconds lease
 					hitterTeamNum = this.get_u8("lastHitterTeam");
 				else
-					return Maths::Max( 0.0f, hp - 1.0f );//no rewards
+					return Maths::Max(0.0f, hp - 1.0f);//no rewards
 					
 			//got a possible winner team
 			u8 thisPlayers = 0;
@@ -224,14 +226,13 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 				Sound::Play("ResearchComplete.ogg");
 			}
 			
-			//increase winner captain kills
-			string captainName = getCaptainName(hitterTeamNum);
-			CPlayer@ captain = getPlayerByUsername(captainName);
-			if (captain !is null)
+			//increase core kills for player who struck last blow
+			CPlayer@ owner = hitterBlob.getDamageOwnerPlayer();
+			if (owner !is null && owner.getTeamNum() != thisTeamNum)
 			{
-				captain.setKills(captain.getKills() + 1);
-				if (captain.isMyPlayer())
-					client_AddToChat("Congratulations! A Core Kill was added to your Scoreboard.");
+				owner.setAssists(owner.getAssists() + 1);
+				if (owner.isMyPlayer())
+					client_AddToChat("Congratulations! A Core Kill was added to your Scoreboard.", SColor(0xfffa5a00));
 			}
 			
 			f32 ratio = Maths::Max(0.25f, Maths::Min(1.75f,
@@ -251,7 +252,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 					if (teamNum == hitterTeamNum)//winning tam
 					{
 						string name = player.getUsername();
-						server_addPlayerBooty(name, (name == captainName ? 2 * reward : reward));
+						server_addPlayerBooty(name, (name == getCaptainName(hitterTeamNum) ? 2 * reward : reward));
 					}
 					else if (teamNum == thisTeamNum)//losing team consolation money
 					{

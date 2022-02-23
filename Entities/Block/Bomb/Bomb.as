@@ -70,10 +70,14 @@ void onInit(CBlob@ this)
 
 void onColored(CBlob@ this) //activate when the block changes color
 {
-	//go neutral if bomb is placed on an enemy owned island
 	int color = this.getShape().getVars().customData;
 	if (color == 0) return;
 	
+	CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
+	if (owner !is null)
+		this.SetDamageOwnerPlayer(owner);
+	
+	//go neutral if bomb is placed on an enemy owned island
 	if (isServer())
 	{
 		CBlob@[] overlapping;
@@ -98,10 +102,6 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 	directionalSoundPlay("Bomb.ogg", pos);
     makeLargeExplosionParticle(pos);
     ShakeScreen(4*radius, 45, pos);
-	
-	CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
-	if (owner !is null)
-		this.SetDamageOwnerPlayer(owner);
 
 	//hit blobs
 	CBlob@[] blobs;
@@ -124,7 +124,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 				// move the island
 
-				Island@ isle = getIsland(hit_blob);
+				Island@ isle = getIsland(hit_blob.getShape().getVars().customData);
 				if (isle !is null && isle.mass > 0.0f)
 				{
 					Vec2f impact = (hit_blob_pos - pos) * 0.15f / isle.mass;
@@ -140,7 +140,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 				}
 			}
 		
-			//f32 distanceFactor = Maths::Min( 1.0f, Maths::Max( 0.0f, BOMB_RADIUS - this.getDistanceTo( hit_blob ) + 8.0f ) / BOMB_RADIUS );
+			//f32 distanceFactor = Maths::Min(1.0f, Maths::Max(0.0f, BOMB_RADIUS - this.getDistanceTo( hit_blob ) + 8.0f ) / BOMB_RADIUS);
 			f32 distanceFactor = 1.0f;
 			f32 damageFactor = (hit_blob.hasTag("mothership") || hit_blob.hasTag("player")) ? 0.25f : 1.0f;
 
@@ -149,13 +149,14 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 			//print(hit_blob.getNetworkID() + " for: " + BOMB_BASE_DAMAGE * distanceFactor + " dFctr: " + distanceFactor + ", dist: " + this.getDistanceTo(hit_blob));
 		}
 		
+		CPlayer@ owner = this.getDamageOwnerPlayer();
 		if (owner !is null)
 		{
 			CBlob@ blob = owner.getBlob();
 			if (blob !is null)
 				damageBootyBomb(owner, blob, hit_blob);
 		}
-	}  
+	}
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)

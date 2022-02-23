@@ -78,8 +78,11 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 	{
 		if (this.hasTag('critical')) return 0.0f;
 
+		CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
+		if (owner !is null)
+			this.SetDamageOwnerPlayer(owner);
+		
 		this.Tag('critical');
-
 		this.server_SetTimeToDie(SELF_DESTRUCT_SECONDS);
 
 		Vec2f position = this.getPosition();

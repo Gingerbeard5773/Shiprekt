@@ -274,6 +274,10 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					player.server_setTeamNum(parseInt(tokens[1]));
 					pBlob.server_setTeamNum(parseInt(tokens[1]));
 				}
+				else if (tokens[0] == "!setcorekills") //change your player core kills
+				{
+					player.setAssists(parseInt(tokens[1]));
+				}
 				else if (tokens[0] == "!crit") //kill defined mothership
 				{
 					CBlob@ mothership = getMothership(parseInt(tokens[1]));

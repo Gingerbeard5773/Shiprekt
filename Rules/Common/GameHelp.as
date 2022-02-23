@@ -85,7 +85,9 @@ void onRender(CRules@ this)
 		" [ " + party_key + " ]  access the tools menu.\n"+
 		" [ " + map_key + " ]  scale the Compass 2x. Tap to toggle. Hold for a quick view.\n"+
 		" [ " + pick_key + " ] OR [ " + taunts_key + " ]  <hold> toggle engines strafe mode.";
-
+		
+		GUI::SetFont("menu");
+		
 		Vec2f infoSize;
 		GUI::GetTextDimensions(infoTitle + textInfo, infoSize);
 		Vec2f controlsSize;
