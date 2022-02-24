@@ -245,17 +245,39 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					return false;
 				}
-				else if (tokens[0] == "!tp") //teleport to blob, uses blob's ID
+				else if (tokens[0] == "!tp") //teleport to blob or player, uses blob's ID or player name
 				{
+					
 					CBlob@ b = getBlobByNetworkID(parseInt(tokens[1]));
+					CPlayer@ ply = getPlayerByUsername(tokens[1]);
+					if (ply !is null)
+					{
+						@b = ply.getBlob();
+					}
 					if (b is null) 
 					{
-						print("Blob not found: "+ tokens[1]);
+						warn("!tp:: Blob not found: "+ tokens[1]);
 						return false;
 					}
 					
 					print("Teleported "+player.getUsername()+" to "+b.getName()+" "+b.getNetworkID());
 					pBlob.setPosition(b.getPosition()); //teleport to blob!
+					return false;
+				}
+				else if (tokens[0] == "!tphere") //teleport player here, uses playername
+				{
+					CPlayer@ ply = getPlayerByUsername(tokens[1]);
+					if (ply is null) 
+					{
+						warn("!tphere:: Player not found: "+ tokens[1]);
+						return false;
+					}
+					
+					CBlob@ b = ply.getBlob();
+					if (b is null) return false;
+					
+					print("Teleported "+ply.getUsername()+" to "+player.getUsername()+" "+ply.getNetworkID());
+					b.setPosition(pBlob.getPosition()); //teleport to blob!
 					return false;
 				}
 				else if (tokens[0] == "!class") //change your player blob (shark etc)
