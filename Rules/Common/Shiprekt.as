@@ -439,6 +439,35 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					}
 					return false;
 				}
+				else if (tokens[0] == "!debugship") //print ship infos
+				{
+					if (player.getBlob() is null) return true;
+					
+					Island@ isle = getIsland(player.getBlob());
+					if (isle is null || isle.centerBlock is null)
+					{
+						warn("!debugship:: no island found");
+						return false;
+					}
+					
+					string isleType;
+					if (isle.isMothership) isleType += "Mothership";
+					if (isle.isSecondaryCore) isleType += (isleType.length > 0 ? ", " : "")+"Secondary Core";
+					if (isle.isStation) isleType += (isleType.length > 0 ? ", " : "")+"Station";
+					if (isle.isMiniStation) isleType += (isleType.length > 0 ? ", " : "")+"Ministation";
+					
+					//RGB cause cool
+					print("---- ISLAND "+isle.centerBlock.getShape().getVars().customData+" ----", color_white);
+					print("ID: "+isle.id, SColor(255, 235, 30, 30));
+					print("Type: "+isleType, SColor(255, 255, 165, 0));
+					print("Owner: "+isle.owner, SColor(255, 235, 235, 0));
+					print("Speed: "+isle.vel.LengthSquared(), SColor(255, 30, 220, 30));
+					print("Angle: "+isle.angle, SColor(255, 173, 216, 200));
+					print("Mass: "+isle.mass, SColor(255, 77, 100, 195));
+					print("Blocks: "+isle.blocks.length, SColor(255, 168, 50, 168));
+					
+					return false;
+				}
 				else if (tokens[0] == "!dirty") //activate dirty islands 
 				{
 					this.set_bool("dirty islands", true);
