@@ -35,17 +35,6 @@ void onInit(CBlob@ this)
 	this.addCommandID("swap tool");
 	
 	this.chatBubbleOffset = Vec2f(0.0f, 10.0f);
-
-	if (isClient())
-	{
-		CBlob@ core = getMothership(this.getTeamNum());
-		if (core !is null) 
-		{
-			this.setPosition(core.getPosition());
-			this.set_u16("shipID", core.getNetworkID());
-			this.set_s8("stay count", 3);
-		}
-	}
 	
 	this.SetMapEdgeFlags(u8(CBlob::map_collide_up) |
 		u8(CBlob::map_collide_down) |
@@ -62,6 +51,14 @@ void onInit(CBlob@ this)
 	{
 		this.set_f32("cam rotation", getCamera().getRotation());
 		this.Sync("cam rotation", true);
+		
+		CBlob@ core = getMothership(this.getTeamNum());
+		if (core !is null) 
+		{
+			this.setPosition(core.getPosition());
+			this.set_u16("shipID", core.getNetworkID());
+			this.set_s8("stay count", 3);
+		}
 	}
 	
 	this.getShape().getVars().onground = true;
@@ -211,7 +208,7 @@ void Move(CBlob@ this)
 		f32 angle = camRotation;
 		forward.Normalize();
 		
-		if (sprite.isAnimation("shoot") || sprite.isAnimation("reclaim") || sprite.isAnimation("repair"))
+		if (!sprite.isAnimation("walk") && !sprite.isAnimation("swim"))
 			angle = -forward.Angle();
 		else
 		{
@@ -1136,34 +1133,6 @@ void onDie(CBlob@ this)
 	SetScreenFlash(0, 0, 0, 0, 0.0f);
 }
 
-void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
-{
-	//when enemy is killed: reward this player if hitBlob was on their mothership
-	if (hitBlob.getName() == "human" && hitBlob !is this && hitBlob.getHealth() <= 0)
-	{
-		Island@ pIsle = getIsland(hitBlob);
-		CPlayer@ thisPlayer = this.getPlayer();
-		u8 teamNum = this.getTeamNum();
-		if (thisPlayer !is null && pIsle !is null &&
-			pIsle.isMothership && //enemy was on a mothership
-			pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum) //enemy was on our mothership
-		{
-			if (thisPlayer.isMyPlayer())
-				Sound::Play("snes_coin.ogg");
-
-			if (isServer())
-			{
-				string defenderName = thisPlayer.getUsername();
-				u16 reward = 50;
-				if (getRules().get_bool("whirlpool")) reward *= 3;
-				
-				server_addPlayerBooty(defenderName, reward);
-				server_updateTotalBooty(teamNum, reward);
-			}
-		}
-	}
-}
-
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
 	return (this.getTeamNum() != blob.getTeamNum() || 
@@ -1173,13 +1142,51 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
+	if (this.getTickSinceCreated() < 60) //invincible for a few seconds after spawning
+		return 0.0f;
+	
+	//when this is killed: reward hitter player, done in onHit to reward from owned blobs
+	if (hitterBlob !is null && this.getHealth() - damage <= 0)
+	{
+		CPlayer@ hitterPlayer = hitterBlob.getDamageOwnerPlayer();
+		u8 teamNum = this.getTeamNum();
+		u8 hitterTeam = hitterBlob.getTeamNum();
+		if (hitterPlayer !is null && hitterTeam != teamNum)
+		{
+			u16 reward = 15;
+			
+			if (hitterPlayer.getBlob() !is null)
+			{
+				Island@ pIsle = getIsland(hitterPlayer.getBlob());
+				if (pIsle !is null && pIsle.isMothership && //this is on a mothership
+					pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum) //hitter is on this mothership
+				{
+					if (hitterPlayer.isMyPlayer() && isClient())
+						Sound::Play("snes_coin.ogg");
+					
+					//reward extra if hitter is on our mothership
+					reward = 50;
+				}
+				else
+				{
+					if (hitterPlayer.isMyPlayer() && isClient())
+						Sound::Play("coinpick.ogg");
+				}
+			}
+			
+			if (isServer())
+			{
+				if (getRules().get_bool("whirlpool")) reward *= 3;
+				server_addPlayerBooty(hitterPlayer.getUsername(), reward);
+				server_updateTotalBooty(hitterTeam, reward);
+			}
+		}
+	}
+	
 	if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
 	ParticleBloodSplat(worldPoint, false);
 	
-	if (this.getTickSinceCreated() > 60) //invincible for a few seconds after spawning
-		return damage;
-	else
-		return 0.0f;
+	return damage;
 }
 
 void onHealthChange(CBlob@ this, f32 oldHealth)
