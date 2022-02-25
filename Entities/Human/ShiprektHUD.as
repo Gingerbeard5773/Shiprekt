@@ -31,23 +31,25 @@ void onTick(CSprite@ this)
 	// seat relinquish
 	if ((controls.getMouseScreenPos() - tl - Vec2f(100, 20)).Length() < 15.0f)
 	{
-		if (controls.isKeyJustPressed(KEY_LBUTTON) && !blob.isAttached())
+		if (controls.isKeyJustPressed(KEY_LBUTTON))
 		{
 			u16 seatID = 0;
 			CBlob@[] blobs;
 			getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @blobs);
 			for (int i = 0; i < blobs.length(); i++)
+			{
 				if (blobs[i].hasTag("control") && blobs[i].get_string("playerOwner") == name)
 				{
 					seatID = blobs[i].getNetworkID();
 					break;
 				}
+			}
 			
 			if (seatID > 0)
 			{
 				CBitStream params;
 				params.write_u16(seatID);
-				blob.SendCommand( blob.getCommandID("releaseOwnership"), params);
+				blob.SendCommand(blob.getCommandID("releaseOwnership"), params);
 				Sound::Play("LoadingTick2.ogg");
 			}
 		}

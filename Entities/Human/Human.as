@@ -986,6 +986,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		if (player is null || seat is null) return;
 		
+		if (this.isAttached()) this.server_DetachFromAll();
 		string owner = seat.get_string("playerOwner");
 		if (owner == player.getUsername())
 		{
