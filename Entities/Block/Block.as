@@ -280,26 +280,34 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	else if (other_color == 0 && color > 0)
 	{
 		// solid block vs player
-		if (this.hasTag("solid"))
+		if (this.hasTag("solid") && blob.getName() == "human")
 		{
-			if (isClient() && !blob.isAttached() && blob.getName() == "human" && blob.isMyPlayer())
+			if (isClient() && !blob.isAttached() && blob.getAirTime() > 4) //air time is time spent on water
 			{
 				//kill by impact
 				Island@ island = getIsland(color);
-				if (island !is null && this.getTeamNum() != blob.getTeamNum()
-					&& (island.vel.LengthSquared() > 4.0f || Maths::Abs(island.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
+				if (island !is null && (island.vel.LengthSquared() > 5.0f || Maths::Abs(island.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
 				{
-
+					Vec2f blockSide(5.0f, 0.0f);
+					blockSide.RotateBy(-island.vel.Angle());
+					const bool noSideHits = ((this.getPosition() + blockSide) - point1).Length() < 4.15f; //dont die if we arent in block's path
+					
+					if (!noSideHits)
+						directionalSoundPlay("Scrape1", point1);
+					
 					CPlayer@ player = blob.getPlayer();
-					if (player !is null)
+					if (player !is null && noSideHits && blob.getTeamNum() != this.getTeamNum())
 					{
-						player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
-						blob.Tag("dead");
+						directionalSoundPlay("WoodHeavyHit2", point1, 1.2f); //oof
+						if (XORRandom(5) == 0) directionalSoundPlay("Wilhelm", blob.getPosition());
+						
+						if (blob.isMyPlayer())
+						{
+							player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
+							blob.Tag("dead");
+						}
 					}
 				}
-				
-				//set position collision
-				//blob.setPosition(blob.getPosition() + normal * -blob.getRadius() * 0.55f);
 			}
 		}
 	}
@@ -363,6 +371,7 @@ void onDie(CBlob@ this)
 				CPlayer@ player = localBlob.getPlayer();
 				if (player !is null && localBlob.getDistanceTo(this) < 6.5f)
 				{
+					directionalSoundPlay("destroy_ladder", this.getPosition());
 					player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
 					localBlob.Tag("dead");
 				}
