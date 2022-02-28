@@ -62,7 +62,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	{
 		if (isBlock)
 		{
-			if (b.hasTag("solid") || b.hasTag("door") || ((b.hasTag("core") || b.hasTag("weapon")) && !sameTeam))
+			if (b.hasTag("solid") || b.hasTag("door") || ((b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb")) && !sameTeam))
 			{
 				if (piercedCount >= MAX_PIERCED)
 					killed = true;

@@ -167,7 +167,7 @@ void onTick(CBlob@ this)
 					if (isBlock || b.hasTag("rocket"))
 					{
 						if (b.hasTag("core") || b.hasTag("solid") || 
-							b.hasTag("door") || ((b.hasTag("weapon") || b.hasTag("rocket")) && !sameTeam))
+							b.hasTag("door") || ((b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb")) && !sameTeam))
 							killed = true;
 						else if (b.hasTag("seat"))
 						{
