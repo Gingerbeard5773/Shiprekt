@@ -448,15 +448,15 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 		
 		string description;
 		{ //Seat
-			description = "Use it to control your ship. It can also release and produce Couplings. Breaks on impact.";
+			description = "Use it to control your ship. It can also release and produce Couplings.\nBreaks on impact.";
 			AddBlock(this, menu, "seat", "$SEAT$", "Seat", description, core, 0.5f);
 		}
 		{ //Propeller
-			description = "A ship motor with some armor plating for protection. Reliable and resists flak.";
+			description = "A ship motor with some armor plating for protection.";
 			AddBlock(this, menu, "propeller", "$PROPELLER$", "Standard Engine", description, core, 1.0f);
 		}
 		{ //Ram Engine
-			description = "An engine that trades protection for extra power. Will break on impact with anything!";
+			description = "An engine that trades protection for extra power.";
 			AddBlock(this, menu, "ramengine", "$RAMENGINE$", "Ram Engine", description, core, 1.25f);
 		}
 		{ //Coupling
@@ -467,12 +467,12 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 		if (!isMiniStation)
 		{
 			{ //Wooden Hull
-				description = "A very tough block for protecting delicate components. Can effectively negate damage from bullets, flak, and to some extent cannons.";
+				description = "A very tough block for protecting delicate components.";
 				AddBlock(this, menu, "solid", "$SOLID$", "Wooden Hull", description, core, 0.75f);
 			}
 			{ //Wooden Platform
 				description = "A good quality wooden floor panel. Get that deck shining.";
-				AddBlock(this, menu, "platform", "$WOOD$", "Wooden Hull", description, core, 0.2f);
+				AddBlock(this, menu, "platform", "$WOOD$", "Wooden Platform", description, core, 0.2f);
 			}
 			{ //Wooden Door
 				description = "A wooden door. Useful for ship security.";
@@ -487,15 +487,15 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 				AddBlock(this, menu, "harpoon", "$HARPOON$", "Harpoon", description, core, 2.0f);
 			}
 			{ //Harvester
-				description = "An industrial-sized deconstructor that allows you to quickly mine resources from ship debris. Largely ineffective against owned ships.\nAmmoCap: infinite";
+				description = "An industrial-sized deconstructor that allows you to quickly mine resources from ship debris.\nAmmoCap: infinite";
 				AddBlock(this, menu, "harvester", "$HARVESTER$", "Harvester", description, core, 2.0f);
 			}
 			{ //Patcher
-				description = "An industrial-sized reconstructor that shoots a green restoration beem through a ship, repairing multiple ship parts concomitantly.\nAmmoCap: infinite";
+				description = "Emits a regenerative beam that can repair multiple components at once.\nAmmoCap: infinite";
 				AddBlock(this, menu, "patcher", "$PATCHER$", "Patcher", description, core, 3.0f);
 			}
 			{ //Anti Ram Hull
-				description = "An excellent defence against enemy rammers. Can absorb multiple ram components. Partially weaker against gunfire than Wood Hull.";
+				description = "Can absorb and negate multiple ram components, however weak against projectiles.";
 				AddBlock(this, menu, "antiram", "$ANTIRAM$", "Anti-Ram Hull", description, core, 0.75f);
 			}
 			{ //Repulsor
@@ -503,12 +503,12 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 				AddBlock(this, menu, "repulsor", "$REPULSOR$", "Repulsor", description, core, 0.25f);
 			}
 			{ //Ram Hull
-				description = "A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits. Can effectively negate damage from bullets, flak, and to some extent cannons.";
+				description = "A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits.";
 				AddBlock(this, menu, "ram", "$RAM$", "Ram Hull", description, core, 2.0f, gameTime < WARMUP_TIME);
 			}
 			if (!isStation)
 			{ //Auxilliary Core
-				description = "Similar to the Mothership core. Very powerful - gives greater independence to support ships. Can be improvised into a mega-yield explosive.";
+				description = "Similar to the Mothership core. Very powerful - gives greater independence to support ships.";
 				AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", "Auxilliary Core", description, core, 12.0f, gameTime < WARMUP_TIME);
 			}
 			{ //Bomb
@@ -517,26 +517,26 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			}
 		}
 		{ //Point Defense
-			description = "A short-ranged automated defensive turret that fires lasers with pin-point accuracy. Able to deter enemy personnel and neutralize incoming projectiles such as flak.\nAmmoCap: medium";
+			description = "A short-ranged automated defensive turret. Neutralizes airborne projectiles such as flak.\nAmmoCap: medium";
 			AddBlock(this, menu, "pointdefense", "$POINTDEFENSE$", "Point Defense", description, core, 3.5f, gameTime < WARMUP_TIME);
 		}
 		{ //Flak
-			description = "A long-ranged automated defensive turret that fires high-explosive fragmentation shells with a proximity fuse. Best used as an unarmored ship deterrent. Effective against missiles, engines, and cores.\nAmmoCap: medium";
+			description = "A long-ranged automated defensive turret that fires explosive shells with a proximity fuse.\nAmmoCap: medium";
 			AddBlock(this, menu, "flak", "$FLAK$", "Flak Cannon", description, core, 2.5f, gameTime < WARMUP_TIME);
 		}
 
 		if (!isMiniStation)
 		{
 			{ //Machinegun
-				description = "A fixed rapid-fire, lightweight, machinegun that fires high-velocity projectiles uncounterable by point defense. Effective against engines, flak cannons, and other weapons. However ineffectual against armour.\nAmmoCap: high";
+				description = "A fixed rapid-fire, lightweight, machinegun that fires high-velocity projectiles.\nEffective against engines.\nAmmoCap: high";
 				AddBlock(this, menu, "machinegun", "$MACHINEGUN$", "Machinegun", description, core, 2.0f, gameTime < WARMUP_TIME);
 			}
 			{ //AP Cannon
-				description = "A fixed cannon that fires momentum-bearing armor-piercing shells. Can penetrate up to 2 solid blocks, but deals less damage after each penetration. Effective against engines, flak cannons, and other weapons.\nAmmoCap: medium";
+				description = "A fixed cannon that fires momentum-bearing armor-piercing shells.\nAmmoCap: medium";
 				AddBlock(this, menu, "cannon", "$CANNON$", "AP Cannon", description, core, 3.25f, gameTime < WARMUP_TIME);
 			}
 			{ //Missile Launcher
-				description = "A fixed tube that fires a slow missile with short-ranged guidance. Best used for close-ranged bombing, but can be used at range. Very effective against armored ships.\nAmmoCap: low";
+				description = "A fixed tube that fires a slow missile with short-ranged guidance.\nVery effective against armored ships.\nAmmoCap: low";
 				AddBlock(this, menu, "launcher", "$LAUNCHER$", "Missile Launcher", description, core, 4.5f, gameTime < WARMUP_TIME);
 			}
 			{ //Decoy Core
