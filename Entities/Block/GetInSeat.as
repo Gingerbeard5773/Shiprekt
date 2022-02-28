@@ -1,10 +1,12 @@
 #include "AccurateSoundPlay.as";
+#include "IslandsCommon.as";
 
 void onInit(CBlob@ this)
 {
 	this.set_string("seat label", "");
 	this.set_u8("seat icon", 0);
 	this.addCommandID("get in seat");
+	this.addCommandID("clear attached");
 	this.Tag("hasSeat");
 }
 
@@ -13,16 +15,28 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	string seatOwner = this.get_string("playerOwner");
 	if (this.getDistanceTo(caller) > 6
 		|| this.getShape().getVars().customData <= 0
-		|| this.hasAttached()
 		|| (this.hasTag("noEnemyEntry") && this.getTeamNum() != caller.getTeamNum()))
 		return;
-
-	CBitStream params;
-	params.write_u16(caller.getNetworkID());
-	CButton@ button = caller.CreateGenericButton(this.get_u8("seat icon"), Vec2f(0.0f, 0.0f), this, this.getCommandID("get in seat"), this.get_string("seat label"), params);
-	if (button !is null)
+	
+	CPlayer@ player = caller.getPlayer();
+	if (this.hasAttached() && player !is null && getCaptainName(this.getTeamNum()) == player.getUsername())
 	{
-		button.radius = 3.3f;
+		//push someone out of a seat if you are captain
+		CButton@ button = caller.CreateGenericButton(5, Vec2f_zero, this, this.getCommandID("clear attached"), "Push Crewmate Out" );
+		if (button !is null)
+		{
+			button.radius = 3.3f;
+		}
+	}
+	else
+	{
+		CBitStream params;
+		params.write_u16(caller.getNetworkID());
+		CButton@ button = caller.CreateGenericButton(this.get_u8("seat icon"), Vec2f_zero, this, this.getCommandID("get in seat"), this.get_string("seat label"), params);
+		if (button !is null)
+		{
+			button.radius = 3.3f;
+		}
 	}
 }
 
@@ -38,6 +52,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				this.server_AttachTo(caller, "SEAT");
 			}
 		}
+	}
+	else if (cmd == this.getCommandID("clear attached"))
+	{
+		AttachmentPoint@ seat = this.getAttachmentPoint(0);
+		CBlob@ crewmate = seat.getOccupied();
+		if (crewmate !is null && crewmate.getTeamNum() == this.getTeamNum())
+			crewmate.SendCommand(crewmate.getCommandID("get out"));
 	}
 }
 

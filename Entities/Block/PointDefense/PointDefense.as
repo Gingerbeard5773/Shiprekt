@@ -37,7 +37,6 @@ void onInit(CBlob@ this)
 	this.set_f32("weight", 3.5f);
 	
 	this.addCommandID("fire");
-	this.addCommandID("clear attached");
 
 	if (isServer())
 	{

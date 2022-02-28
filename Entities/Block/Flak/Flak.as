@@ -43,7 +43,6 @@ void onInit(CBlob@ this)
 	this.set_f32("weight", 2.5f);
 	
 	this.addCommandID("fire");
-	this.addCommandID("clear attached");
 
 	if (isServer())
 	{
@@ -418,11 +417,4 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (layer !is null)
 			layer.animation.SetFrameIndex(0);
     }
-	else if (cmd == this.getCommandID("clear attached"))
-	{
-		AttachmentPoint@ seat = this.getAttachmentPoint(0);
-		CBlob@ crewmate = seat.getOccupied();
-		if (crewmate !is null)
-			crewmate.SendCommand(crewmate.getCommandID("get out"));
-	}
 }
