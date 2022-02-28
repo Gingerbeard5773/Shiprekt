@@ -296,7 +296,7 @@ CBlob@ SpawnAsShark(CRules@ this, CPlayer@ player)
     if (shark !is null)
 	{
         shark.server_SetPlayer(player);
-		player.server_setTeamNum(9); //set to shark team
+		//player.server_setTeamNum(this.getSpectatorTeamNum());
     }
     return shark;
 }

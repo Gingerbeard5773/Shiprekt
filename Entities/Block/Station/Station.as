@@ -16,7 +16,7 @@ void onInit(CBlob@ this)
 
 void onChangeTeam(CBlob@ this, const int oldTeam)
 {
-	if (this.getTeamNum() >= 0 && this.getTeamNum() <= 10)
+	if (this.getTeamNum() >= 0 && this.getTeamNum() <= 8)
 	{
 		Sound::Play("Captured.ogg");
 	}
@@ -30,7 +30,7 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 
 void Capture(CBlob@ this, const int attackerTeam)
 {
-	Island@ isle = getIsland(this);
+	Island@ isle = getIsland(this.getShape().getVars().customData);
 	if (isle is null) return;
 	
 	if (!isle.isMothership)
