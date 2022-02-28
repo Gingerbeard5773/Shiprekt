@@ -53,9 +53,6 @@ void onTick(CBlob@ this)
     if (this.get("blocks", @blocks) && blocks.size() > 0)
     {
 		Vec2f pos = this.getPosition();
-		CMap@ map = getMap();
-		Tile tile = map.getTile(pos);
-		bool onLand = map.isTileBackgroundNonEmpty(tile) || map.isTileSolid(tile);
 	
         Island@ island = getIsland(this);
 		if (island !is null && island.centerBlock !is null)
@@ -77,7 +74,7 @@ void onTick(CBlob@ this)
 				PositionBlocks(@blocks, pos, aimPos, blocks_angle, centerBlock, refBlob);
 
 			CPlayer@ player = this.getPlayer();
-            if (player !is null && player.isMyPlayer()) 
+            if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
             {
 				//checks for canPlace
 				u32 gameTime = getGameTime();
@@ -89,7 +86,7 @@ void onTick(CBlob@ this)
 				for (uint i = 0; i < blocks.length; ++i)
 				{
 					CBlob@ block = blocks[i];
-					
+					CMap@ map = getMap();
 					Tile bTile = map.getTile(block.getPosition());
 					if (map.isTileSolid(bTile))
 						onRock = true;
@@ -114,7 +111,7 @@ void onTick(CBlob@ this)
 						SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
 				}
 				
-				//can'tPlace heltips
+				//can't Place heltips
 				bool crewCantPlace = !overlappingIsland && cLinked;
 				if (crewCantPlace)
 					crewCantPlaceCounter++;
@@ -126,7 +123,7 @@ void onTick(CBlob@ this)
                 // place
                 if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
                 {
-					if (getGameTime() - this.get_u32("placedTime") > 25)
+					if (gameTime - this.get_u32("placedTime") > 22)
 					{
 						if (target_angle == blocks_angle && !overlappingIsland && !cLinked && !onRock)
 						{
@@ -245,11 +242,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         const f32 island_angle = params.read_f32();
 
         Island@ island = getIsland(centerBlock.getShape().getVars().customData);
-        if (island is null && island.centerBlock !is null)
+        if (island is null)
         {
             warn("place cmd: island not found");
             return;
         }
+		
+		if (island.centerBlock is null)
+		{
+			warn("place cmd: island centerBlock not found");
+			return;
+		}
 		
 		Vec2f islandPos = centerBlock.getPosition();
 		f32 islandAngle = island.centerBlock.getAngleDegrees();

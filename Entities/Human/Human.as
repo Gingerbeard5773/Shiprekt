@@ -10,7 +10,6 @@
 #include "ParticleHeal.as";
 #include "BlockCosts.as";
 
-int useClickTime = 0;
 const int CONSTRUCT_VALUE = 5;
 const int CONSTRUCT_RANGE = 48;
 const f32 BULLET_SPREAD = 0.2f;
@@ -22,6 +21,10 @@ const Vec2f BUILD_MENU_TEST = Vec2f(6, 4); //for testing, only activates when sv
 const Vec2f MINI_BUILD_MENU_SIZE = Vec2f(3, 2);
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 Random _shotspreadrandom(0x11598); //clientside
+
+//global is fine since only used with isMyPlayer
+int useClickTime = 0;
+bool buildMenuOpen = false;
 
 void onInit(CBlob@ this)
 {
@@ -40,7 +43,7 @@ void onInit(CBlob@ this)
 		u8(CBlob::map_collide_down) |
 		u8(CBlob::map_collide_sides));
 	
-	this.set_bool("build menu open", false);
+	this.set_bool("justMenuClicked", false);
 	this.set_bool("getting block", false);
 	this.set_string("last buy", "coupling");
 	this.set_string("current tool", "pistol");
@@ -49,8 +52,11 @@ void onInit(CBlob@ this)
 	
 	if (this.isMyPlayer())
 	{
-		this.set_f32("cam rotation", getCamera().getRotation());
-		this.Sync("cam rotation", true);
+		if (isClient())
+		{
+			this.set_f32("cam rotation", getCamera().getRotation());
+			this.Sync("cam rotation", true);
+		}
 		
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null) 
@@ -81,11 +87,14 @@ void onTick(CBlob@ this)
 	if (this.isKeyJustReleased(key_action2) || (!this.isKeyPressed(key_action2) && laser !is null ? laser.isVisible() : false) || this.isAttached())
 	{
 		this.set_bool("reclaimPropertyWarn", false);
-		if (!sprite.getEmitSoundPaused())
+		if (isClient())
 		{
-			sprite.SetEmitSoundPaused(true);
+			if (!sprite.getEmitSoundPaused())
+			{
+				sprite.SetEmitSoundPaused(true);
+			}
+			sprite.RemoveSpriteLayer("laser");
 		}
-		sprite.RemoveSpriteLayer("laser");
 	}
 }
 
@@ -100,7 +109,7 @@ void Move(CBlob@ this)
 	CShape@ shape = this.getShape();
 	CSprite@ sprite = this.getSprite();
 
-	if (myPlayer)
+	if (myPlayer && isClient())
 	{
 		this.set_f32("cam rotation", getCamera().getRotation());
 		this.Sync("cam rotation", true); //1732223106 !! can cause bad deltas if set as false !!
@@ -350,22 +359,21 @@ void PlayerControls(CBlob@ this)
 			{
 				if (!hud.hasButtons())
 				{
-					if (canShop)
+					if (canShop && !this.get_bool("getting block"))
 					{
-						this.set_bool("build menu open", true);
+						buildMenuOpen = true;
+						this.set_bool("justMenuClicked", true);
 
 						Sound::Play("buttonclick.ogg");
 						BuildShopMenu(this, core, "Components", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
 					}
-					else
-						Sound::Play("/Sounds/bone_fall1.ogg");
 				} 
 				else if (hud.hasMenus())
 				{
 					this.ClearMenus();
 					Sound::Play("buttonclick.ogg");
 					
-					if (this.get_bool("build menu open"))
+					if (buildMenuOpen)
 					{
 						CBitStream params;
 						params.write_u16(this.getNetworkID());
@@ -373,7 +381,9 @@ void PlayerControls(CBlob@ this)
 						params.write_u16(getCost(this.get_string("last buy")));
 						core.SendCommand(core.getCommandID("buyBlock"), params);
 					}
-					this.set_bool("build menu open", false);
+					
+					buildMenuOpen = false;
+					this.set_bool("justMenuClicked", false);
 				}
 			}
 			else if (Human::isHoldingBlocks(this))
@@ -399,13 +409,18 @@ void PlayerControls(CBlob@ this)
 		}
 		this.set_bool("getting block", false);
 	}
+	
+	if (this.isKeyJustReleased(key_action1))
+	{
+		this.set_bool("justMenuClicked", false);
+	}
 
 	//tools menu
 	if (toolsKey && !this.isAttached())
 	{
 		if (!hud.hasButtons())
-		{	
-			this.set_bool("build menu open", false);
+		{
+			buildMenuOpen = false;
 			
 			Sound::Play("buttonclick.ogg");
 			BuildToolsMenu(this, "Tools Menu", Vec2f(0,0));
@@ -1070,9 +1085,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		{
 			if (isClient())
 			{
-				this.getSprite().SetEmitSound("/ReclaimSound.ogg");
-				this.getSprite().SetEmitSoundVolume(0.5f);
-				this.getSprite().SetEmitSoundPaused(true);
+				CSprite@ sprite = this.getSprite();
+				sprite.SetEmitSound("/ReclaimSound.ogg");
+				sprite.SetEmitSoundVolume(0.5f);
+				sprite.SetEmitSoundPaused(true);
 			}
 		}
 		

@@ -60,7 +60,7 @@ void onTick(CSprite@ this)
 	{
 		CRules@ rules = getRules();
 		u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
-		f32 BOOTY_TRANSFER_FEE = rules.get_f32( "booty_transfer_fee");//% of transfer
+		f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
 		u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
 		if (getGameTime() > rules.get_u16("warmup_time"))
 		{
@@ -136,7 +136,7 @@ void onRender(CSprite@ this)
 			u8 seconds = Maths::Round(WARMUP_TIME/30 % 60);
 			string warmupText = "Warm-UP time " + Maths::Round(WARMUP_TIME/30/60) + ":" + (seconds > 9 ? "" : "0") + seconds;
 			GUI::DrawText(warmupText, Vec2f(screenWidth/2 - 75, 15), tipsColor);
-			if (blob.get_bool("build menu open") && getGridMenuByName("Components") !is null)
+			if (getGridMenuByName("Components") !is null)
 				GUI::DrawText("Costs reduced during warm-up", Vec2f(screenWidth/2 - 75, 35 + Maths::Sin(gameTime/6.5f) * 3.5f), tipsColor);
 		}
 	}

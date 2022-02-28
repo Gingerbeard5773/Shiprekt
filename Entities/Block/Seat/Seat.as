@@ -291,7 +291,7 @@ void onTick(CBlob@ this)
 		this.set_bool("canProduceCoupling", canProduceCoupling);
 		this.Sync("canProduceCoupling", true);
 		
-		if (inv && canProduceCoupling && !Human::isHoldingBlocks(occupier))
+		if (inv && canProduceCoupling && !Human::wasHoldingBlocks(occupier))
 		{
 			this.set("couplingCooldown", gameTime + COUPLINGS_COOLDOWN);
 			ProduceBlock(rules, occupier, "coupling", 2);
@@ -506,14 +506,14 @@ void onTick(CBlob@ this)
 	else if (isServer() && island.owner == seatOwner)//captain seats release rates
 	{
 		if (island.pos != island.old_pos)//keep extra seats alive while the mothership moves
-			this.set_u32("lastActive", gameTime );
+			this.set_u32("lastActive", gameTime);
 		else//release seat faster for when captain abandons the ship
 			this.set_u32("lastActive", Maths::Max(0, this.get_u32("lastActive") - 2));
 	}
 }
 
 //stop props on sit down if possible
-void onAttach( CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint )
+void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 {
 	if (isServer())
 	{
@@ -570,11 +570,11 @@ void updateArrays(CBlob@ this, Island@ island)
 			else if (angleVel > angleLimit || (velNorm.y > forceLimit_side && angleVel > -angleLimit))
 				left_propellers.push_back(block.getNetworkID());
 			
-			if (Maths::Abs( velNorm.x ) < forceLimit)
+			if (Maths::Abs(velNorm.x) < forceLimit)
 			{
 				if (velNorm.y < -forceLimit_side)
 					strafe_right_propellers.push_back(block.getNetworkID());
-				else if ( velNorm.y > forceLimit_side)
+				else if (velNorm.y > forceLimit_side)
 					strafe_left_propellers.push_back(block.getNetworkID());
 			}
 					

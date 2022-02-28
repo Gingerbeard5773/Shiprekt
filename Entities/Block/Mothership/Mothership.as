@@ -139,9 +139,12 @@ void ReturnBlocks(CBlob@ this)
 			}
 		}
 		
-		this.getSprite().PlaySound("join.ogg");
 		Human::clearHeldBlocks(this);
 		this.set_bool("blockPlacementWarn", false);
+		this.set_u32("placedTime", getGameTime());
+		
+		if (this.isMyPlayer())
+			this.getSprite().PlaySound("join");
 	}
 	else
 		warn("returnBlocks cmd: no blocks"); //happens when block placing & block returning happens at same time
