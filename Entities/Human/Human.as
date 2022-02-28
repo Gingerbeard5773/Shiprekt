@@ -540,9 +540,8 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 				AddBlock(this, menu, "launcher", "$LAUNCHER$", "Missile Launcher", description, core, 4.5f, gameTime < WARMUP_TIME);
 			}
 			{ //Decoy Core
-				description = "A fake core to fool enemies.\nLimit of 3 per team per match. Currently bought: " + rules.get_u8("decoyCoreCount" + this.getTeamNum()) + "/3";
+				description = "A fake core to fool enemies. Replaces the Mothership on the compass.";
 				CGridButton@ button = AddBlock(this, menu, "decoycore", "$DECOYCORE$", "Decoy Core", description, core, 6.0f);
-				button.SetEnabled(rules.get_u8("decoyCoreCount" + this.getTeamNum()) < 3);
 			}
 		}
 	}

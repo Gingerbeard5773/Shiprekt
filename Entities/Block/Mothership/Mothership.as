@@ -46,8 +46,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (caller is null) return;
 		
 		string block = params.read_string();
-		if (block != "decoycore")
-			caller.set_string("last buy", block);
+		caller.set_string("last buy", block);
 			
 		u16 cost = params.read_u16();
 
