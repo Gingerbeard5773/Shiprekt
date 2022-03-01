@@ -16,5 +16,7 @@ https://discord.gg/V29BBeba3C
   <li><b>Strathos</b> - Creator</li>
   <li><b>Gingerbeard</b> - Maintainer, scripting</li>
   <li><b>GoldenGuy</b> - Scripting</li>
+  <li><b>Darkslayer</b> - Scripting</li>
   <li><b>Daskew</b> - Mapper</li>
+  <li><b>Moz</b> - Translator</li>
 </ul>
