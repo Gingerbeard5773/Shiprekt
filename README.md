@@ -14,9 +14,10 @@ https://discord.gg/V29BBeba3C
 <ul>
   <li><b>Chrispin</b> - Creator</li>
   <li><b>Strathos</b> - Creator</li>
-  <li><b>Gingerbeard</b> - Maintainer, scripting</li>
-  <li><b>GoldenGuy</b> - Scripting</li>
+  <li><b>Gingerbeard</b> - Maintainer, Scripting</li>
+  <li><b>GoldenGuy</b> - Scripting, Translator</li>
   <li><b>Darkslayer</b> - Scripting</li>
+  <li><b>Zable</b> - Current Hoster</li>
   <li><b>Daskew</b> - Mapper</li>
   <li><b>Moz</b> - Translator</li>
 </ul>
