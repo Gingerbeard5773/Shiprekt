@@ -1,3 +1,4 @@
+#include "ShiprektTranslation.as";
 
 void onInit(CRules@ this)
 {
@@ -21,16 +22,11 @@ void onRender(CRules@ this)
 	{
 		GUI::SetFont("menu");
 		string text;
-		if (time_left <= 0) text = "Respawning...";
-		else if (time_left > 60) text = "Respawning soon...";
+		if (time_left <= 0) text = Trans::Respawn;
+		else if (time_left > 60) text = Trans::RespawnSoon;
 		else text = getTranslatedString("Respawning in: {SEC}").replace("{SEC}", "" + time_left);
 		GUI::DrawTextCentered(text, Vec2f(getScreenWidth()/2, 200 + Maths::Cos(getGameTime()/10.0f)*8), SColor(0xFFE0BA16));
 	}
-}
-
-string textFromNumber(int num) // lol
-{
-	return getTranslatedString("second"+ (num == 1 ? "" : "s"));
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream @params)

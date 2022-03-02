@@ -1,6 +1,7 @@
 //shiprekt HUD
-#include "ActorHUDStartPos.as"
-#include "IslandsCommon.as"
+#include "ActorHUDStartPos.as";
+#include "IslandsCommon.as";
+#include "ShiprektTranslation.as";
 
 const int slotsSize = 8;
 const SColor tipsColor = SColor(255, 255, 255, 255);
@@ -91,7 +92,6 @@ void onRender(CSprite@ this)
 	u8 teamNum = player.getTeamNum();
 	string name = player.getUsername();
 	string captainName = getCaptainName(teamNum);
-	bool isCaptain = name == captainName;
 	u16 pBooty = rules.get_u16("booty" + name);
 	CBlob@ teamCore = getMothership(teamNum);
 	CControls@ controls = getControls();
@@ -104,45 +104,45 @@ void onRender(CSprite@ this)
 	//			Gameplay Tips
 	//Seat produce couplings help
 	if (blob.isAttached() && blob.get_bool("drawCouplingsHelp"))
-		GUI::DrawText("Couplings ready.\nPress ["+getControls().getActionKeyKeyName(AK_INVENTORY)+"] to take.",  tl + Vec2f(350, 10), tipsColor);
+		GUI::DrawText(Trans::CouplingRDY.replace("{key}",""+getControls().getActionKeyKeyName(AK_INVENTORY)),  tl + Vec2f(350, 10), tipsColor);
 	
 	//Can't place blocks on mothership
 	if (blob.get_bool("blockPlacementWarn"))
-		GUI::DrawText("You can only place Couplings and Repulsors on the Mothership during warm-up", controls.getMouseScreenPos() + Vec2f(-200, -40), tipsColor);
+		GUI::DrawText(Trans::WarmupPlacing, controls.getMouseScreenPos() + Vec2f(-200, -40), tipsColor);
 	
 	//Seat couplings help
 	if (blob.isAttached() && blob.get_bool("drawSeatHelp"))
 	{
-		GUI::DrawText("PRESS AND HOLD SPACEBAR TO RELEASE COUPLINGS", Vec2f(screenWidth/2 - 150, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
-		GUI::DrawText("Use left click to release them individually or right click to release all the couplings you've placed", Vec2f(screenWidth/2 - 300, screenHeight/3 + 15 + Maths::Sin(gameTime/4.5f ) * 4.5f ), tipsColor );
+		GUI::DrawText(Trans::ReleaseCoup2, Vec2f(screenWidth/2 - 150, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
+		GUI::DrawText(Trans::ReleaseCoup1, Vec2f(screenWidth/2 - 300, screenHeight/3 + 15 + Maths::Sin(gameTime/4.5f ) * 4.5f ), tipsColor);
 	}
 
 	//Reclaiming other property is slower
 	if (blob.get_bool("reclaimPropertyWarn"))
 	{
-		GUI::DrawText("You are reclaiming someone else's property. Progress will be slower.", Vec2f(screenWidth/2 - 340, screenHeight/2 + 310 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
+		GUI::DrawText(Trans::Reclaiming, Vec2f(screenWidth/2 - 340, screenHeight/2 + 310 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 	}	
 	
 	//warm-up/freebuild
 	if (getPlayersCount() == 1)
-		GUI::DrawText("Free Building Mode - Waiting for players to join.", Vec2f(screenWidth/2 - 125, 15), tipsColor);
+		GUI::DrawText(Trans::FreeMode, Vec2f(screenWidth/2 - 125, 15), tipsColor);
 	else if (rules.get_bool("freebuild"))
-		GUI::DrawText("Free Building Mode", Vec2f(screenWidth/2 - 75, 15), tipsColor);
+		GUI::DrawText(Trans::FreebuildMode, Vec2f(screenWidth/2 - 75, 15), tipsColor);
 	else
 	{
 		int WARMUP_TIME = rules.get_u16("warmup_time") - gameTime;
 		if (WARMUP_TIME > 0)
 		{
 			u8 seconds = Maths::Round(WARMUP_TIME/30 % 60);
-			string warmupText = "Warm-UP time " + Maths::Round(WARMUP_TIME/30/60) + ":" + (seconds > 9 ? "" : "0") + seconds;
+			string warmupText = getTranslatedString("WARMUP")+" "+ Maths::Round(WARMUP_TIME/30/60) + ":" + (seconds > 9 ? "" : "0") + seconds;
 			GUI::DrawText(warmupText, Vec2f(screenWidth/2 - 75, 15), tipsColor);
-			if (getGridMenuByName("Components") !is null)
-				GUI::DrawText("Costs reduced during warm-up", Vec2f(screenWidth/2 - 75, 35 + Maths::Sin(gameTime/6.5f) * 3.5f), tipsColor);
+			if (getGridMenuByName(Trans::Components) !is null) //has to be translated otherwise it wont work
+				GUI::DrawText(Trans::ReducedCosts, Vec2f(screenWidth/2 - 75, 35 + Maths::Sin(gameTime/6.5f) * 3.5f), tipsColor);
 		}
 	}
 	
 	if (rules.get_bool("display_flak_team_max"))
-		GUI::DrawText("Flaks limit reached!", Vec2f(screenWidth/2 - 205, 40), tipsColor);
+		GUI::DrawText(Trans::FlaksLimit, Vec2f(screenWidth/2 - 205, 40), tipsColor);
 	
 	//mothership alerts
 	if (teamCore !is null)
@@ -152,7 +152,7 @@ void onRender(CSprite@ this)
 		f32 mShipDMG = rules.get_f32("msDMG" + teamNum);
 		
 		if (name == captainName && !mShipOnScreen)//is Captain and abandoned mothership?
-			GUI::DrawText("> You are your Team's Captain <\n\nDon't abandon the Mothership!", Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
+			GUI::DrawText(Trans::Abandon, Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
 		else//mothership under attack alert
 		{
 			if (mShipNear || mShipDMG < MSHIP_DAMAGE_ALERT - 1.0f)
@@ -161,12 +161,12 @@ void onRender(CSprite@ this)
 				blob.set_bool("msAlert", true);
 				
 			if (blob.get_bool("msAlert"))
-				GUI::DrawText("YOUR MOTHERSHIP IS UNDER ATTACK!!", Vec2f(screenWidth/2 - 135, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
+				GUI::DrawText(Trans::ShipAttack, Vec2f(screenWidth/2 - 135, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 		}
 		
 		//poor and no captain: sharks for income
 		if (mShipOnScreen && captainName == "" && pBooty < rules.get_u16("bootyRefillLimit") && mShipDMG == 0)
-			GUI::DrawText("[ Kill Sharks to gain some Booty ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
+			GUI::DrawText("[ "+Trans::KillSharks+" ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 	}
 	
 	//			Draw HUD Icons and Status text
@@ -176,7 +176,7 @@ void onRender(CSprite@ this)
 	DrawCoreStatus(teamCore, tl, controls);
 	DrawStationStatus(teamNum, tl, controls);
 	DrawMiniStationStatus(tl, controls);
-	DrawResources(pBooty, isCaptain, tl, controls);
+	DrawResources(pBooty, name, captainName, tl, controls);
 }
 
 void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
@@ -190,7 +190,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 		if (island.owner != "" && island.owner != "*")
 		{
 			string lastChar = island.owner.substr( island.owner.length() -1);
-			string ownership = island.owner + (lastChar == "s" ? "'" : "'s") + " ship";
+			string ownership = island.owner + (lastChar == "s" ? "'" : "'s") +" "+Trans::Ship;
 			Vec2f size;
 			GUI::GetTextDimensions(ownership, size);
 			GUI::DrawText(ownership, Vec2f(Maths::Max(4.0f, 69.0f - size.x/2.0f), 3.0f), SColor(255, 255, 255, 255));
@@ -211,7 +211,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 		
 		//Speed
 		u16 speed = island.vel.Length() * 30;
-		GUI::DrawText("Speed : " + speed + " kilorekts/h", Vec2f(24, getScreenHeight() - 24), tipsColor);
+		GUI::DrawText(Trans::Speed+" : " + speed + " kilorekts/h", Vec2f(24, getScreenHeight() - 24), tipsColor);
 	}
 	else	
 		GUI::DrawIconByName("$SEA$", tl + Vec2f(67, -12));
@@ -220,7 +220,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 	if ((controls.getMouseScreenPos() - tl - Vec2f(100, 20)).Length() < 15.0f)
 	{
 		GUI::SetFont("menu");
-		GUI::DrawText("Click to relinquish ownership of a nearby seat", tl + Vec2f(-25, -25), tipsColor);
+		GUI::DrawText(Trans::Relinquish, tl + Vec2f(-25, -25), tipsColor);
 	}
 }
 
@@ -244,7 +244,7 @@ void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 	
 	//GUI buttons text/function
 	if ((controls.getMouseScreenPos() - (tl + Vec2f(17, 20))).Length() < 15.0f)
-		GUI::DrawText("Team Core Health",  tl + Vec2f(-45, -25), tipsColor);
+		GUI::DrawText(Trans::CoreHealth,  tl + Vec2f(-45, -25), tipsColor);
 }
 
 void DrawStationStatus(int teamnum, Vec2f tl, CControls@ controls)
@@ -270,7 +270,7 @@ void DrawStationStatus(int teamnum, Vec2f tl, CControls@ controls)
 	
 	//GUI buttons text/function
 	if ((controls.getMouseScreenPos() - (tl + Vec2f(245, 20))).Length() < 35.0f)
-		GUI::DrawText("Captured Bases",  tl + Vec2f(200, -25), tipsColor);
+		GUI::DrawText(Trans::Bases,  tl + Vec2f(200, -25), tipsColor);
 }
 
 void DrawMiniStationStatus(Vec2f tl, CControls@ controls)
@@ -293,7 +293,7 @@ void DrawMiniStationStatus(Vec2f tl, CControls@ controls)
 	GUI::DrawText(teamMiniStationCount + "/" + totalMiniStationCount + " (+"+teamMiniStationCount+")", tl + Vec2f(246, 18), tipsColor);
 }
 
-void DrawResources(u16 pBooty, bool isCaptain, Vec2f tl, CControls@ controls)
+void DrawResources(u16 pBooty, string name, string captainName, Vec2f tl, CControls@ controls)
 {
 	GUI::DrawIconByName("$BOOTY$", tl + Vec2f(111, -12));
 
@@ -318,15 +318,15 @@ void DrawResources(u16 pBooty, bool isCaptain, Vec2f tl, CControls@ controls)
 			if (pBooty >= BOOTY_TRANSFER + fee)
 			{
 				string feeString = fee > 0 ? (" for " + (BOOTY_TRANSFER + fee) + " Booty") : "";
-				if (!isCaptain)
-					GUI::DrawText("Click to transfer " + BOOTY_TRANSFER + " Booty to your Captain" + feeString, tl + Vec2f(35, -25), tipsColor);
+				if (name != captainName)
+					GUI::DrawText(Trans::Transfer.replace("{booty}", BOOTY_TRANSFER+"")+" "+Trans::Captain+" "+captainName+ feeString, tl + Vec2f(35, -25), tipsColor);
 				else
-					GUI::DrawText("Click to transfer " + BOOTY_TRANSFER + " Booty among your Mothership Crew" + feeString, tl + Vec2f(35, -25), tipsColor);
+					GUI::DrawText(Trans::Transfer.replace("{booty}", BOOTY_TRANSFER+"")+" "+Trans::ShipCrew+ feeString, tl + Vec2f(35, -25), tipsColor);
 			}
 			else
-				GUI::DrawText("Click to transfer Booty (" + (BOOTY_TRANSFER + fee) + " Booty minimum)", tl + Vec2f(35, -25), tipsColor);
+				GUI::DrawText(Trans::BootyTransM.replace("{booty}", BOOTY_TRANSFER+""), tl + Vec2f(35, -25), tipsColor);
 		}
 		else
-			GUI::DrawText("Click to transfer Booty (enabled after warm-up)", tl + Vec2f(35, -25), tipsColor);
+			GUI::DrawText(Trans::BootyTransW, tl + Vec2f(35, -25), tipsColor);
 	}
 }

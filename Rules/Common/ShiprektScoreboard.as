@@ -5,6 +5,7 @@
 #include "ScoreboardCommon.as";
 #include "ColoredNameToggleCommon.as";
 #include "IslandsCommon.as";
+#include "ShiprektTranslation.as";
 
 CPlayer@ hoveredPlayer;
 
@@ -17,8 +18,9 @@ float screenMidX = getScreenWidth()/2;
 bool mouseWasPressed2 = false;
 
 //returns the bottom
-float drawScoreboard(CPlayer@[] players, Vec2f topleft, CTeam@ team)
+float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 {
+	CTeam@ team = getRules().getTeam(teamNum);
 	if (players.size() <= 0 || team is null)
 		return topleft.y;
 
@@ -39,7 +41,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, CTeam@ team)
 	GUI::SetFont("menu");
 
 	//draw team info
-	GUI::DrawText(getTranslatedString(team.getName()), Vec2f(topleft.x, topleft.y), SColor(0xffffffff));
+	GUI::DrawText(teamColors[teamNum]+" "+Trans::Team, Vec2f(topleft.x, topleft.y), SColor(0xffffffff));
 	GUI::DrawText(getTranslatedString("Players: {PLAYERCOUNT}").replace("{PLAYERCOUNT}", "" + players.length), Vec2f(bottomright.x - 470, topleft.y), SColor(0xffffffff));
 
 	topleft.y += stepheight * 2;
@@ -47,12 +49,12 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, CTeam@ team)
 	//draw player table header
 	
 	GUI::DrawText(getTranslatedString("Player"), Vec2f(topleft.x, topleft.y), SColor(0xffffffff));
-	GUI::DrawText(getTranslatedString("Username"), Vec2f(bottomright.x - 540, topleft.y), SColor(0xffffffff));
+	GUI::DrawText(getTranslatedString("Username"), Vec2f(bottomright.x - 570, topleft.y), SColor(0xffffffff));
 	GUI::DrawText(getTranslatedString("Ping"), Vec2f(bottomright.x - 400, topleft.y), SColor(0xffffffff));
 	GUI::DrawText(getTranslatedString("Kills"), Vec2f(bottomright.x - 330, topleft.y), SColor(0xffffffff));
 	GUI::DrawText(getTranslatedString("Deaths"), Vec2f(bottomright.x - 260, topleft.y), SColor(0xffffffff));
-	GUI::DrawText(getTranslatedString("Booty"), Vec2f(bottomright.x - 170, topleft.y), SColor(0xffffffff));
-	GUI::DrawText("Core "+getTranslatedString("Kills"), Vec2f(bottomright.x - 90, topleft.y), SColor(0xffffffff));
+	GUI::DrawText(Trans::Booty, Vec2f(bottomright.x - 170, topleft.y), SColor(0xffffffff));
+	GUI::DrawText(Trans::Core+" "+getTranslatedString("Kills"), Vec2f(bottomright.x - 90, topleft.y), SColor(0xffffffff));
 
 	topleft.y += stepheight * 0.5f;
 
@@ -157,7 +159,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, CTeam@ team)
 		int coreKills = p.getAssists();
 		SColor coreKillsCol = SColor(255, 255, 255- Maths::Min(255, coreKills * 30), 255- Maths::Min(255, coreKills * 80));
 
-		GUI::DrawText("" + username, Vec2f(bottomright.x - 540, topleft.y), namecolour);
+		GUI::DrawText("" + username, Vec2f(bottomright.x - 570, topleft.y), namecolour);
 		GUI::DrawText("" + ping_in_ms, Vec2f(bottomright.x - 400, topleft.y), SColor(0xffffffff));
 		GUI::DrawText("" + p.getKills(), Vec2f(bottomright.x - 330, topleft.y), SColor(0xffffffff));
 		GUI::DrawText("" + p.getDeaths(), Vec2f(bottomright.x - 260, topleft.y), SColor(0xffffffff));
@@ -215,7 +217,7 @@ void onRenderScoreboard(CRules@ this)
 	{
 		if (teamsPlayers[i].length > 0)
 		{
-			topleft.y = drawScoreboard(teamsPlayers[i], topleft, this.getTeam(i));
+			topleft.y = drawScoreboard(teamsPlayers[i], topleft, i);
 			topleft.y += 45;
 		}
 	}

@@ -1,6 +1,7 @@
 //implements shiprekt vote types and menus for them
 
 #include "VoteCommon.as";
+#include "ShiprektTranslation.as";
 
 bool g_haveStartedVote = false;
 s32 g_lastVoteCounter = 0;
@@ -220,15 +221,15 @@ class VoteNextmapFunctor : VoteFunctor
 			
 		if (outcome)
 		{
-			client_AddToChat("\n*** Sudden Death Started! Focus on destroying your enemies' engines so they can't escape the Whirlpool!"
-							+ "\nPlayers get a huge Booty reward bonus from direct attacks."
-							+ "\nNote: removing heavy blocks from your ship doesn't help! Heavier ships are pulled less by the Whirlpool ***\n", vote_message_colour());
+			client_AddToChat("\n*** "+Trans::DeathStarted
+							+ "\n"+Trans::AttackReward
+							+ "\n"+Trans::WeightNote+" ***\n", vote_message_colour());
 			CRules@ rules = getRules();
 			rules.set_bool("sudden death", true);
 		}
 		else
 		{
-			client_AddToChat( "*** Sudden Death Failed! ***", vote_message_colour() );
+			client_AddToChat("*** "+Trans::SuddenDeath+" "+Trans::Failed+"! ***", vote_message_colour());
 		}
 		
 		if (isServer())
@@ -280,7 +281,7 @@ VoteObject@ Create_VoteNextmap(CPlayer@ byplayer, string reason)
 	@vote.onvotepassed = VoteNextmapFunctor(byplayer);
 	@vote.canvote = VoteNextmapCheckFunctor();
 
-	vote.title = "Start Sudden Death?              ";
+	vote.title = Trans::Enable+" "+Trans::SuddenDeath+"?              ";
 	vote.reason = reason;
 	vote.byuser = byplayer.getUsername();
 	vote.forcePassFeature = "nextmap";
@@ -324,13 +325,13 @@ class VoteFreebuildFunctor : VoteFunctor
 		{
 			rules.set_bool("freebuild", newFreeState);
 			if (newFreeState)
-				client_AddToChat( "\n*** Free building mode enabled. Blocks are free! Start a new free building mode vote to return to the normal game mode ***\n", vote_message_colour() );
+				client_AddToChat("\n*** "+Trans::BuildEnabled+" ***\n", vote_message_colour());
 			else
-			client_AddToChat( "\n*** Free building mode disabled. Start a new free building mode vote to return to the free building game mode ***\n", vote_message_colour() );
+			client_AddToChat("\n*** "+Trans::BuildDisabled+" ***\n", vote_message_colour());
 		}
 		else
 		{
-			client_AddToChat( "*** Free building mode vote Failed! ***", vote_message_colour() );
+			client_AddToChat("*** "+Trans::FreebuildMode+" "+Trans::Vote+" "+Trans::Failed+"! ***", vote_message_colour());
 		}
 	}
 };
@@ -354,7 +355,7 @@ VoteObject@ Create_VoteFreebuild(CPlayer@ byplayer)
 	@vote.onvotepassed = VoteFreebuildFunctor(byplayer);
 	@vote.canvote = VoteFreebuildCheckFunctor(byplayer.getTeamNum());
 
-	vote.title = (getRules().get_bool("freebuild") ? "Disable" : "Enable") +" Free-build mode?                  ";
+	vote.title = (getRules().get_bool("freebuild") ? Trans::Disable : Trans::Enable) +" "+Trans::FreebuildMode+"?                  ";
 	vote.reason = "";
 	vote.byuser = byplayer.getUsername();
 	vote.forcePassFeature = "Freebuild";
@@ -391,8 +392,8 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	//vote options menu
 
 	CContextMenu@ kickmenu = Menu::addContextMenu(votemenu, getTranslatedString("Kick"));
-	CContextMenu@ mapmenu = Menu::addContextMenu(votemenu, getTranslatedString("Sudden Death"));
-	CContextMenu@ Freebuildmenu = Menu::addContextMenu(votemenu, getTranslatedString("Freebuild"));
+	CContextMenu@ mapmenu = Menu::addContextMenu(votemenu, Trans::SuddenDeath);
+	CContextMenu@ Freebuildmenu = Menu::addContextMenu(votemenu, Trans::Freebuild);
 	Menu::addSeparator(votemenu); //before the back button
 
 	bool can_skip_wait = getSecurity().checkAccess_Feature(me, "skip_votewait");
@@ -532,13 +533,13 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 		u32 timeToEnable = minTime + coolDown;
 		bool whirlpool = this.get_bool("whirlpool");
 		
-		string desc = "Match taking too long? Vote for Sudden Death!\n";
+		string desc = Trans::TooLong+" "+Trans::Vote+" "+Trans::SuddenDeath+"!\n";
 		if (whirlpool)
-			desc = "Sudden Death is already active!";
+			desc = Trans::ActiveDeath;
 		else if (timeToEnable > 0)
-			desc += timeToEnable > 30*60 ? ("Time left to enable: " + ( 1 + timeToEnable/30/60 ) + " minute(s).") : ("Time left to enable: " + timeToEnable/30 + " second(s).");
+			desc += timeToEnable > 30*60 ? (Trans::SwitchTime+" " + (1 + timeToEnable/30/60) + " "+Trans::Minutes+".") : (Trans::SwitchTime+" "+ timeToEnable/30 + getTranslatedString(" seconds")+".");
 			
-		Menu::addInfoBox(mapmenu, "Vote Sudden Death", desc);
+		Menu::addInfoBox(mapmenu, Trans::Vote+" "+Trans::SuddenDeath, desc);
 
 		if (timeToEnable == 0 && !whirlpool)
 		{
@@ -546,7 +547,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 			//reason
 			CBitStream params;
 			params.write_u8(1);
-			Menu::addContextItemWithParams(mapmenu, "Speed things up!", "ShiprektVotes.as", "Callback_NextMap", params);
+			Menu::addContextItemWithParams(mapmenu, Trans::SpeedThings, "ShiprektVotes.as", "Callback_NextMap", params);
 			
 			Menu::addSeparator(mapmenu);
 		}
@@ -570,13 +571,13 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	
 	bool freebuildstate = this.get_bool("freebuild");
 	
-	string nameFb = "Enable Free building mode\n";
-	if (freebuildstate) nameFb = "Disable Free building mode\n";
+	string nameFb = Trans::Enable+" "+Trans::FreebuildMode+"\n";
+	if (freebuildstate) nameFb = Trans::Disable+" "+Trans::FreebuildMode+"\n";
 	
-	string descFb = "Vote to switch the free building mode.";
+	string descFb = Trans::Vote+" "+Trans::Enable+"/"+Trans::Disable+" "+Trans::FreebuildMode+".";
 	if (coolDownFb > 0) 
 	{
-		descFb = coolDownFb > 30*60 ? ("Time left to switch again: " + (1 + coolDownFb/30/60 ) +  " minute(s).") : ("Time left to switch again: " + coolDownFb/30 + " second(s).");
+		descFb = coolDownFb > 30*60 ? (Trans::SwitchTime+" "+ (1 + coolDownFb/30/60) +" "+Trans::Minutes+".") : (Trans::SwitchTime+" "+ coolDownFb/30 + getTranslatedString(" seconds")+".");
 	}
 	
 	Menu::addInfoBox(Freebuildmenu, nameFb, descFb);
@@ -587,7 +588,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 		//reason
 		CBitStream params;
 		params.write_u8(1);
-		Menu::addContextItemWithParams(Freebuildmenu, "Yes", "ShiprektVotes.as", "Callback_Freebuild", params);
+		Menu::addContextItemWithParams(Freebuildmenu, getTranslatedString("Yes"), "ShiprektVotes.as", "Callback_Freebuild", params);
 		
 		Menu::addSeparator(Freebuildmenu);
 	}
@@ -653,7 +654,7 @@ void Callback_NextMap(CBitStream@ params)
 	u8 id;
 	if (!params.saferead_u8(id)) return;
 
-	string reason = "Speed things up!";
+	string reason = Trans::SpeedThings;
 
 	CBitStream params2;
 

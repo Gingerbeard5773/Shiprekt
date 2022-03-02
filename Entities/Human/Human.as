@@ -9,6 +9,7 @@
 #include "ParticleSparks.as";
 #include "ParticleHeal.as";
 #include "BlockCosts.as";
+#include "ShiprektTranslation.as";
 
 const int CONSTRUCT_VALUE = 5;
 const int CONSTRUCT_RANGE = 48;
@@ -365,7 +366,7 @@ void PlayerControls(CBlob@ this)
 						this.set_bool("justMenuClicked", true);
 
 						Sound::Play("buttonclick.ogg");
-						BuildShopMenu(this, core, "Components", Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
+						BuildShopMenu(this, core, Trans::Components, Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
 					}
 				} 
 				else if (hud.hasMenus())
@@ -423,7 +424,7 @@ void PlayerControls(CBlob@ this)
 			buildMenuOpen = false;
 			
 			Sound::Play("buttonclick.ogg");
-			BuildToolsMenu(this, "Tools Menu", Vec2f(0,0));
+			BuildToolsMenu(this, Trans::ToolsMenu, Vec2f(0,0));
 			
 		} 
 		else if (hud.hasMenus())
@@ -448,100 +449,100 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 		
 		string description;
 		{ //Seat
-			description = "Use it to control your ship. It can also release and produce Couplings.\nBreaks on impact.";
-			AddBlock(this, menu, "seat", "$SEAT$", "Seat", description, core, 0.5f);
+			description = Trans::SeatDesc;
+			AddBlock(this, menu, "seat", "$SEAT$", Trans::Seat, description, core, 0.5f);
 		}
 		{ //Propeller
-			description = "A ship motor with some armor plating for protection.";
-			AddBlock(this, menu, "propeller", "$PROPELLER$", "Standard Engine", description, core, 1.0f);
+			description = Trans::EngineDesc;
+			AddBlock(this, menu, "propeller", "$PROPELLER$", Trans::Engine, description, core, 1.0f);
 		}
 		{ //Ram Engine
-			description = "An engine that trades protection for extra power.";
-			AddBlock(this, menu, "ramengine", "$RAMENGINE$", "Ram Engine", description, core, 1.25f);
+			description = Trans::RamEngineDesc;
+			AddBlock(this, menu, "ramengine", "$RAMENGINE$", Trans::RamEngine, description, core, 1.25f);
 		}
 		{ //Coupling
-			description = "A versatile block used to hold and release other blocks.";
-			AddBlock(this, menu, "coupling", "$COUPLING$", "Coupling", description, core, 0.1f);
+			description = Trans::CouplingDesc;
+			AddBlock(this, menu, "coupling", "$COUPLING$", Trans::Coupling, description, core, 0.1f);
 		}
 
 		if (!isMiniStation)
 		{
 			{ //Wooden Hull
-				description = "A very tough block for protecting delicate components.";
-				AddBlock(this, menu, "solid", "$SOLID$", "Wooden Hull", description, core, 0.75f);
+				description = Trans::WoodHullDesc;
+				AddBlock(this, menu, "solid", "$SOLID$", Trans::Hull, description, core, 0.75f);
 			}
 			{ //Wooden Platform
-				description = "A good quality wooden floor panel. Get that deck shining.";
-				AddBlock(this, menu, "platform", "$WOOD$", "Wooden Platform", description, core, 0.2f);
+				description = Trans::PlatformDesc;
+				AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, description, core, 0.2f);
 			}
 			{ //Wooden Door
-				description = "A wooden door. Useful for ship security.";
-				AddBlock(this, menu, "door", "$DOOR$", "Wooden Door", description, core, 1.0f);
+				description = Trans::DoorDesc;
+				AddBlock(this, menu, "door", "$DOOR$", Trans::Door, description, core, 1.0f);
 			}
 			{ //Piston
-				description = "A piston. Can be used to push and pull segments of a ship.";
-				AddBlock(this, menu, "piston", "$PISTON$", "Wooden Piston", description, core, 0.85f);
+				description = Trans::PistonDesc;
+				AddBlock(this, menu, "piston", "$PISTON$", Trans::Piston, description, core, 0.85f);
 			}
 			{ //Harpoon
-				description = "A manual-fire harpoon launcher. Can be used for grabbing, towing, or water skiing!";
-				AddBlock(this, menu, "harpoon", "$HARPOON$", "Harpoon", description, core, 2.0f);
+				description = Trans::HarpoonDesc;
+				AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, description, core, 2.0f);
 			}
 			{ //Harvester
-				description = "An industrial-sized deconstructor that allows you to quickly mine resources from ship debris.\nAmmoCap: infinite";
-				AddBlock(this, menu, "harvester", "$HARVESTER$", "Harvester", description, core, 2.0f);
+				description = Trans::HarvesterDesc;
+				AddBlock(this, menu, "harvester", "$HARVESTER$", Trans::Harvester, description, core, 2.0f);
 			}
 			{ //Patcher
-				description = "Emits a regenerative beam that can repair multiple components at once.\nAmmoCap: infinite";
-				AddBlock(this, menu, "patcher", "$PATCHER$", "Patcher", description, core, 3.0f);
+				description = Trans::PatcherDesc;
+				AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, description, core, 3.0f);
 			}
 			{ //Anti Ram Hull
-				description = "Can absorb and negate multiple ram components, however weak against projectiles.";
-				AddBlock(this, menu, "antiram", "$ANTIRAM$", "Anti-Ram Hull", description, core, 0.75f);
+				description = Trans::AntiRamDesc;
+				AddBlock(this, menu, "antiram", "$ANTIRAM$", Trans::AntiRam, description, core, 0.75f);
 			}
 			{ //Repulsor
-				description = "Explodes pushing blocks away. Can be triggered remotely or by impact. Activates in a chain.";
-				AddBlock(this, menu, "repulsor", "$REPULSOR$", "Repulsor", description, core, 0.25f);
+				description = Trans::RepulsorDesc;
+				AddBlock(this, menu, "repulsor", "$REPULSOR$", Trans::Repulsor, description, core, 0.25f);
 			}
 			{ //Ram Hull
-				description = "A rigid block that fractures on contact with other blocks. Will destroy itself as well as the block it hits.";
-				AddBlock(this, menu, "ram", "$RAM$", "Ram Hull", description, core, 2.0f, gameTime < WARMUP_TIME);
+				description = Trans::RamDesc;
+				AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, description, core, 2.0f, gameTime < WARMUP_TIME);
 			}
 			if (!isStation)
 			{ //Auxilliary Core
-				description = "Similar to the Mothership core. Very powerful - gives greater independence to support ships.";
-				AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", "Auxilliary Core", description, core, 12.0f, gameTime < WARMUP_TIME);
+				description = Trans::AuxillDesc;
+				AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, description, core, 12.0f, gameTime < WARMUP_TIME);
 			}
 			{ //Bomb
-				description = "Explodes on contact. Very useful against Solid blocks.";
-				AddBlock(this, menu, "bomb", "$BOMB$", "Bomb", description, core, 2.0f, gameTime < WARMUP_TIME);
+				description = Trans::BombDesc;
+				AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, description, core, 2.0f, gameTime < WARMUP_TIME);
 			}
 		}
 		{ //Point Defense
-			description = "A short-ranged automated defensive turret. Neutralizes airborne projectiles such as flak.\nAmmoCap: medium";
-			AddBlock(this, menu, "pointdefense", "$POINTDEFENSE$", "Point Defense", description, core, 3.5f, gameTime < WARMUP_TIME);
+			description = Trans::PointDefDesc+"\n"+Trans::AmmoCap+": 30";
+			AddBlock(this, menu, "pointdefense", "$POINTDEFENSE$", Trans::PointDefense, description, core, 3.5f, gameTime < WARMUP_TIME);
 		}
 		{ //Flak
-			description = "A long-ranged automated defensive turret that fires explosive shells with a proximity fuse.\nAmmoCap: medium";
-			AddBlock(this, menu, "flak", "$FLAK$", "Flak Cannon", description, core, 2.5f, gameTime < WARMUP_TIME);
+			description = Trans::FlakDesc+"\n"+Trans::AmmoCap+": 30";
+			AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, gameTime < WARMUP_TIME);
 		}
 
 		if (!isMiniStation)
 		{
 			{ //Machinegun
-				description = "A fixed rapid-fire, lightweight, machinegun that fires high-velocity projectiles.\nEffective against engines.\nAmmoCap: high";
-				AddBlock(this, menu, "machinegun", "$MACHINEGUN$", "Machinegun", description, core, 2.0f, gameTime < WARMUP_TIME);
+				description = Trans::MGDesc+"\n"+Trans::AmmoCap+": 250";
+				AddBlock(this, menu, "machinegun", "$MACHINEGUN$", Trans::Machinegun, description, core, 2.0f, gameTime < WARMUP_TIME);
 			}
 			{ //AP Cannon
-				description = "A fixed cannon that fires momentum-bearing armor-piercing shells.\nAmmoCap: medium";
-				AddBlock(this, menu, "cannon", "$CANNON$", "AP Cannon", description, core, 3.25f, gameTime < WARMUP_TIME);
+				description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 12";
+				AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, gameTime < WARMUP_TIME);
 			}
 			{ //Missile Launcher
-				description = "A fixed tube that fires a slow missile with short-ranged guidance.\nVery effective against armored ships.\nAmmoCap: low";
-				AddBlock(this, menu, "launcher", "$LAUNCHER$", "Missile Launcher", description, core, 4.5f, gameTime < WARMUP_TIME);
+				description = Trans::LauncherDesc+"\n"+Trans::AmmoCap+": 8";
+				AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, gameTime < WARMUP_TIME);
 			}
 			{ //Decoy Core
-				description = "A fake core to fool enemies. Replaces the Mothership on the compass.";
-				CGridButton@ button = AddBlock(this, menu, "decoycore", "$DECOYCORE$", "Decoy Core", description, core, 6.0f);
+				description = Trans::DecoyCoreDesc;
+				CGridButton@ button = AddBlock(this, menu, "decoycore", "$DECOYCORE$", Trans::DecoyCore, description, core, 6.0f);
 			}
 		}
 	}
@@ -562,8 +563,8 @@ CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, string block, string icon, s
 	const bool selected = this.get_string("last buy") == block;
 	if (selected) button.SetSelected(2);
 			
-	button.SetHoverText(isWeapon ? "Weapons are enabled after the warm-up time ends.\n" :
-						desc + "\nWeight: " + weight * 100 + "rkt\n" + (selected ? "\nPress the inventory key to buy again.\n" : ""));
+	button.SetHoverText(isWeapon ? Trans::WarmupWarning+".\n" :
+						desc + "\n"+ Trans::Weight+": " + weight * 100 + "rkt\n" + (selected ? "\n"+Trans::BuyAgain+"\n" : ""));
 	button.SetEnabled(!isWeapon);
 	return button;
 }
@@ -577,16 +578,16 @@ void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
 
 		string description;
 		{ //Pistol
-			description = "A basic, ranged, personal defence weapon.";
-			AddTool(this, menu, "$PISTOL$", "Pistol", description, "pistol");
+			description = Trans::PistolDesc;
+			AddTool(this, menu, "$PISTOL$", Trans::Pistol, description, "pistol");
 		}
 		{ //Deconstructor
-			description = "A tool that can reclaim ship parts for booty.";
-			AddTool(this, menu, "$DECONSTRUCTOR$", "Deconstructor", description, "deconstructor");
+			description = Trans::DeconstDesc;
+			AddTool(this, menu, "$DECONSTRUCTOR$", Trans::Deconstructor, description, "deconstructor");
 		}
 		{ //Reconstructor
-			description = "A tool that can repair ship parts at the cost of booty. Can repair cores at a rate of 10 booty per 1% health.";
-			AddTool(this, menu, "$RECONSTRUCTOR$", "Reconstructor", description, "reconstructor");
+			description = Trans::ReconstDesc;
+			AddTool(this, menu, "$RECONSTRUCTOR$", Trans::Reconstructor, description, "reconstructor");
 		}
 	}
 }

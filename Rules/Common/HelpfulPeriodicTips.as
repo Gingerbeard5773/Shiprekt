@@ -1,29 +1,69 @@
 #define CLIENT_ONLY
+#include "ShiprektTranslation.as";
 
-string[] tips;
 u32 SHOW_FREQUENCY = 3 * 60 * 30;
 
-void onRestart( CRules@ this )
-{
-	LoadTips();
+//global ok since myplayer
+bool showTip;
+int tipIndex = 0;
+
+void onTick(CRules@ this)
+{	
+	if (getLocalPlayer() is null) return;
+
+	if (showTip)
+	{
+		s32 time_left = (this.get_u32("respawn time") + 30 - getGameTime())/getTicksASecond();
+		if (time_left == 0) showTip = false;
+		
+		CControls@ controls = getControls();
+		if (controls.isKeyJustPressed(KEY_RBUTTON))
+		{
+			tipIndex = XORRandom(shiprektTips.length);
+			Sound::Play("LoadingTick2.ogg");
+		}
+	}
+	
+	//if (getGameTime() % SHOW_FREQUENCY == 0 && shiprektTips.length > 0)
+		//client_AddToChat(">TIP: " + shiprektTips[XORRandom(shiprektTips.length)]);
 }
 
-void onInit( CRules@ this )
+void onRender(CRules@ this)
 {
-	onRestart( this );
+	if (g_videorecording || !showTip || this.isGameOver()) return;
+	
+	s32 scrw = getScreenWidth();
+	s32 scrh = getScreenHeight();
+	
+	string tip = getTranslatedString("Tip: {TIP}").replace("{TIP}", shiprektTips[tipIndex]);
+	
+	s32 w = Maths::Min(800, scrw - 40);
+	s32 h = (tip.length > 200 ? 50 : 40);
+
+	s32 offset = 160;
+
+	Vec2f tl(scrw / 2 - w / 2, scrh - h - offset);
+	Vec2f br(scrw / 2 + w / 2, scrh - offset);
+
+	GUI::DrawButton(tl, br);
+	GUI::DrawText(tip, tl + Vec2f(10, 10), br - Vec2f(10, 10), color_white, true, true, false);
+	
+	Vec2f shuffleTipPos(scrw / 2, br.y + 30);
+	GUI::DrawButton(shuffleTipPos + Vec2f(-150, -15), shuffleTipPos - Vec2f(-150, -15));
+	GUI::DrawTextCentered(Trans::FindNewTip, shuffleTipPos, color_white);
 }
 
-void onTick( CRules@ this )
+void onPlayerDie(CRules@ this, CPlayer@ victim, CPlayer@ attacker, u8 customData)
 {
-	if ( getGameTime() % SHOW_FREQUENCY == 0 && tips.length > 0 )
-		client_AddToChat( ">TIP: " + tips[XORRandom(tips.length)] );
+	if (victim.isMyPlayer())
+	{
+		tipIndex = XORRandom(shiprektTips.length);
+		showTip = true;
+	}
 }
 
-void LoadTips()
+void onPlayerChangedTeam(CRules@ this, CPlayer@ player, u8 oldteam, u8 newteam)
 {
-	tips.clear();
-
-	ConfigFile cfg;
-	if(cfg.loadFile("HelpfulDeathTips.cfg"))
-		cfg.readIntoArray_string( tips, "tips" );
+	if (player.isMyPlayer() && newteam == this.getSpectatorTeamNum())
+		showTip = false;
 }
