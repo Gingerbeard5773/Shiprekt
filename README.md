@@ -20,4 +20,5 @@ https://discord.gg/V29BBeba3C
   <li><b>Zable</b> - Current Hoster</li>
   <li><b>Daskew</b> - Mapper</li>
   <li><b>Moz</b> - Translator</li>
+  <li><b>Space Luke</b> - Translator</li>
 </ul>
