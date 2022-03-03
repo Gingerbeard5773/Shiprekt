@@ -8,6 +8,7 @@
 #include "AccurateSoundPlay.as";
 #include "Hitters.as";
 #include "BlockCosts.as";
+#include "ShiprektTranslation.as";
 
 const u16 BASE_KILL_REWARD = 275;
 const f32 HEAL_AMMOUNT = 0.1f;
@@ -234,14 +235,16 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			{
 				owner.setAssists(owner.getAssists() + 1);
 				if (owner.isMyPlayer())
-					client_AddToChat("Congratulations! A Core Kill was added to your Scoreboard.", SColor(0xfffa5a00));
+					client_AddToChat(Trans::CoreKill, SColor(0xfffa5a00));
 			}
 			
 			f32 ratio = Maths::Max(0.25f, Maths::Min(1.75f,
 							float(rules.get_u16("bootyTeam_total" + thisTeamNum))/float(rules.get_u32("bootyTeam_median") + 1.0f ))); //I added 1.0f as a safety measure against dividing by 0
 			
 			u16 totalReward = (thisPlayers + 1) * BASE_KILL_REWARD * ratio;
-			client_AddToChat("*** " + rules.getTeam(hitterTeamNum).getName() + " gets " + (totalReward + BASE_KILL_REWARD) + " Booty for destroying " + rules.getTeam(thisTeamNum).getName() + "! ***");
+			string bountyreward = Trans::TeamBounty.replace("{winnerteam}", teamColors[hitterTeamNum]+" "+
+								  Trans::Team).replace("{reward}", (totalReward + BASE_KILL_REWARD)+"").replace("{killedteam}", teamColors[thisTeamNum]+" "+Trans::Team);
+			client_AddToChat("*** "+ bountyreward +"! ***");
 			
 			//give rewards
 			if (isServer())

@@ -1,5 +1,6 @@
 #define CLIENT_ONLY
-#include "ActorHUDStartPos.as"
+#include "ActorHUDStartPos.as";
+#include "ShiprektTranslation.as";
 
 bool showHelp = true;
 bool justJoined = true;
@@ -30,6 +31,10 @@ void onInit(CRules@ this)
 	if (!GUI::isFontLoaded("thick font"))
 	{
         GUI::LoadFont("thick font", "GUI/Fonts/AveriaSerif-Bold.ttf", 30, true);
+    }
+	if (g_locale == "ru" && !GUI::isFontLoaded("russian thick"))
+	{
+        GUI::LoadFont("russian thick", "GUI/Fonts/Arial.ttf", 30, true);
     }
 }
 
@@ -62,29 +67,28 @@ void onRender(CRules@ this)
 		Vec2f imageSize;
 		GUI::GetIconDimensions("$HELP$", imageSize);
 
-		string infoTitle = "How to Play";
-		string textInfo = "- Motherships:\n" +
-		" * Gather Xs for Booty. Xs have more Booty the closer they spawn to the map center.\n"+
-		" * Engines are very weak! Use Solid blocks as armor or Miniships will eat through them!\n\n"+
-		"- Miniships:\n"+
-		" * Xs yield little Booty, but weapons reward a lot per hit to enemy ships!\n"+
-		" * Couplings stick to your Mothership on collision. Use them to dock with it.\n\n"+
-		"- Other Tips:\n"+
-		" * The higher a team is on the leaderboard, the more Booty you get for attacking them.\n"+  
-		" * Each block has a different weight. The heavier, the more they slow your ship down.\n"+
-		" * Get a refund on Blocks you bought by bringing up the buy window again.";
+		string infoTitle = Trans::HowToPlay;
+		string textInfo = "- "+ Trans::Mothership+":\n" +
+		" * "+ Trans::GatherX    +"\n"+
+		" * "+ Trans::EngineWeak +"\n\n"+
+		"- " + Trans::Miniship   +":\n" +
+		" * "+ Trans::YieldX     +"\n"+
+		" * "+ Trans::Docking    +"\n\n"+
+		"- " + Trans::OtherTips  +":\n"+
+		" * "+ Trans::Leaderboard+"\n"+
+		" * "+ Trans::BlockWeight;
 		
 		//Controls
-		string controlsTitle = "Controls";
-		string controlsInfo = " [ " + inv_key + " ] get Blocks while aboard your Mothership. Produces couplings while in a seat.\n"+
-		" [ " + action3_key + " ]  rotate blocks while building or release couplings when sitting.\n"+
-		" [ " + action1_key + " ] punch when standing or fire Machineguns when sitting.\n"+
-		" [ " + action2_key + " ]  <hold> fire handgun.\n"+
-		" [ MOUSE MIDDLE ]  <hold> show point emote.\n"+
-		" [ " + zoomIn_key + " ], [ " + zoomOut_key + " ]  zoom in/out.\n"+
-		" [ " + party_key + " ]  access the tools menu.\n"+
-		" [ " + map_key + " ]  scale the Compass 2x. Tap to toggle. Hold for a quick view.\n"+
-		" [ " + pick_key + " ] OR [ " + taunts_key + " ]  <hold> toggle engines strafe mode.";
+		string controlsTitle = Trans::Controls;
+		string controlsInfo = " [ " + inv_key + " ] "+ Trans::GetBlocks+"\n"+
+		" [ " + action3_key + " ] "+ Trans::RotateBlocks+"\n"+
+		" [ " + action1_key + " ] "+ Trans::Punch+"\n"+
+		" [ " + action2_key + " ] "+Trans::Hold+" "+ Trans::FireGun+"\n"+
+		" [ MOUSE MIDDLE ]  "+ Trans::Hold+" "+Trans::PointEmote+"\n"+
+		" [ " + zoomIn_key + " ], [ " + zoomOut_key + " ] "+ Trans::Zoom+"\n"+
+		" [ " + party_key + " ] "+ Trans::AccessTools+"\n"+
+		" [ " + map_key + " ] "+ Trans::ScaleCompass+"\n"+
+		" [ " + pick_key + " ] / [ " + taunts_key + " ] "+ Trans::Hold+" "+Trans::Strafe+".";
 		
 		GUI::SetFont("menu");
 		
@@ -102,34 +106,34 @@ void onRender(CRules@ this)
 		//welcome
 		if (justJoined)
 		{
-			string intro =  "Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\n Last changes and fixes by Gingerbeard.";
+			string intro = Trans::Welcome+" Gingerbeard.";
 			
 			Vec2f introSize;
 			GUI::GetTextDimensions(intro, introSize);
 			GUI::SetFont("normal");
-			GUI::DrawText(intro, Vec2f(Maths::Max(tlBox.x, sWidth/2 - tlBox.x/2), tlBox.y + 20), tipsColor);
+			GUI::DrawText(intro, Vec2f(Maths::Max(tlBox.x, sWidth/2 - tlBox.x/2), tlBox.y + 10), tipsColor);
 		} 
 		
 		//helptoggle, image && textInfo
 		if (!justJoined || gameTime % 90 > 30)
 		{
-			string helpToggle = ">> Press Left Click to change page | F1 to toggle this Help Box (or type !help) <<";
+			string helpToggle = ">> "+Trans::ChangePage+" <<";
 			
 			Vec2f toggleSize;
 			GUI::GetTextDimensions(helpToggle, toggleSize);
 			
 			GUI::SetFont("normal");
-			GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 40), tipsColor);
+			GUI::DrawTextCentered(helpToggle, Vec2f(sWidth/2, tlBox.y + 40), tipsColor);
 			if (page1)
-				GUI::DrawText(helpToggle, Vec2f(Maths::Max(tlBox.x, sWidth/2 - toggleSize.x/2), tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
+				GUI::DrawTextCentered(helpToggle, Vec2f(sWidth/2, tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
 		}
 		
 		if (page1)
 		{
 			//PAGE 1
-			string shiprektVersion = "Shiprekt++ Version 1.47\n";
-			string lastChangesInfo = "Last changes :\n"
-			+ "- 2-21-2022 - v1.47 By Gingerbeard\n"
+			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.48\n";
+			string lastChangesInfo = Trans::LastChanges+":\n"
+			+ "- 2-21-2022 - v1.48 By Gingerbeard\n"
 			+ "  * Drastically improved block placing.\n"
 			+ "  * Block costs are reduced during warm-up.\n"
 			+ "  * Smaller torpedoes can bounce off the walls and change direction.\n"
@@ -144,17 +148,31 @@ void onRender(CRules@ this)
 			Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
 			Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
 			
-			GUI::SetFont("thick font");
+			if (g_locale == "ru") GUI::SetFont("russian thick");
+			else GUI::SetFont("thick font");
 			GUI::DrawText(shiprektVersion, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
 			
 			GUI::SetFont("menu");
 			GUI::DrawText(lastChangesInfo, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
 			GUI::DrawIconByName("$HELP$", Vec2f(sWidth/2 - imageSize.x, tlBox.y + boxMargin + 10));
+			
+			//captions
+			if (g_locale != "en")
+			{
+				GUI::SetFont("normal");
+				Vec2f ImagePos(sWidth/2 - imageSize.x, tlBox.y + boxMargin + 10);
+				GUI::DrawTextCentered(Trans::Caption1, ImagePos + Vec2f(150,230), tipsColor);
+				GUI::DrawTextCentered(Trans::Caption2, ImagePos + Vec2f(150,400), tipsColor);
+				GUI::DrawTextCentered(Trans::Caption3, ImagePos + Vec2f(550,190), tipsColor);
+				GUI::DrawTextCentered(Trans::Caption4, ImagePos + Vec2f(340, 30), tipsColor);
+			}
 		}
 		else
 		{
 			//PAGE 2
-			GUI::SetFont("thick font");
+			if (g_locale == "ru") GUI::SetFont("russian thick");
+			else GUI::SetFont("thick font");
+			
 			GUI::DrawText(infoTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 20), tipsColor);
 			GUI::DrawText(controlsTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 240), tipsColor);
 			
@@ -164,8 +182,8 @@ void onRender(CRules@ this)
 			
 			if (!v_fastrender)
 			{
-				string lagTip = "<> Having lag issues? Turn on Faster Graphics in KAG video settings for possible improvement! <>";
-				GUI::DrawText(lagTip, Vec2f(sWidth/2 - tlBox.x/1.4f, tlBox.y + boxMargin *10), tipsColor);
+				string lagTip = "<> "+Trans::FastGraphics+" <>";
+				GUI::DrawTextCentered(lagTip, Vec2f(sWidth/2, tlBox.y + boxMargin *10), tipsColor);
 			}
 		}
 	
@@ -175,13 +193,14 @@ void onRender(CRules@ this)
 		if (getLocalPlayerBlob() !is null && (getControls().getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
 		{
 			SColor arrowColor = SColor(150, 255, 255, 255);
-			GUI::DrawTextCentered("[ Click these Icons for Control and Booty functions! ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), tipsColor);
+			GUI::SetFont("menu");
+			GUI::DrawTextCentered("[ "+Trans::ClickIcons+" ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), tipsColor);
 			//GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
 		}
 		
 		//Add social links
-		makeWebsiteLink(Vec2f(brBox.x, 100.0f), "Go to the Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
-		makeWebsiteLink(Vec2f(brBox.x, 150.0f), "Go to the Shiprekt Discord", "https://discord.gg/V29BBeba3C");
+		makeWebsiteLink(Vec2f(brBox.x, 100.0f), Trans::Go_to_the+" Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
+		makeWebsiteLink(Vec2f(brBox.x, 150.0f), Trans::Go_to_the+" Shiprekt Discord", "https://discord.gg/V29BBeba3C");
 	}
 }
 
