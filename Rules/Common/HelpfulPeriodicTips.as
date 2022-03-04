@@ -49,7 +49,7 @@ void onRender(CRules@ this)
 	GUI::DrawText(tip, tl + Vec2f(10, 10), br - Vec2f(10, 10), color_white, true, true, false);
 	
 	Vec2f shuffleTipPos(scrw / 2, br.y + 30);
-	GUI::DrawButton(shuffleTipPos + Vec2f(-150, -15), shuffleTipPos - Vec2f(-150, -15));
+	GUI::DrawButton(shuffleTipPos + Vec2f(-Trans::FindNewTip.length * 3.7f, -15), shuffleTipPos - Vec2f(-Trans::FindNewTip.length * 3.7f, -15));
 	GUI::DrawTextCentered(Trans::FindNewTip, shuffleTipPos, color_white);
 }
 

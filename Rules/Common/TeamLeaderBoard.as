@@ -52,7 +52,7 @@ void onRender(CRules@ this)
 	GUI::GetTextDimensions(header, size);
 	GUI::DrawText(header, panelStart + Vec2f((panelWidth - size.x)/2 - 6, 0), SColor(255, 255, 255, 255));
 	for (u8 i = 0; i < boardTeams.length; i++)
-		GUI::DrawText(teamColors[i]+" "+Trans::Team, panelStart + Vec2f(0, (i+1)*lineHeight), getTeamColor(boardTeams[i]));
+		GUI::DrawText(teamColors[boardTeams[i]]+" "+Trans::Team, panelStart + Vec2f(0, (i+1)*lineHeight), getTeamColor(boardTeams[i]));
 		
 	//booty column
 	for (u8 i = 0; i < boardBooty.length; i++)
