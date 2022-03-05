@@ -330,13 +330,9 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 	Vec2f colvec2 = point1 - other_island.pos;
 	colvec1.Normalize();
 	colvec2.Normalize();
-
-	const f32 veldamp = 1.0f;
 	
 	const f32 massratio1 = other_island.mass/(island.mass+other_island.mass);
 	const f32 massratio2 = island.mass/(island.mass+other_island.mass);
-	island.vel *= veldamp;
-	other_island.vel *= veldamp;
 	
 	if (other_island.isStation || other_island.isMiniStation)
 	{
@@ -344,14 +340,19 @@ void CollisionResponse1(Island@ island, Island@ other_island, Vec2f point1, bool
 	}
 	else
 	{
-		island.vel += colvec1 * -other_vellen * massratio1 * 2 - colvec1*0.2f;
-		other_island.vel += colvec2 * -vellen * massratio2 * 2 - colvec2*0.2f;
+		island.vel = ClampSpeed(island.vel + colvec1 * -other_vellen * massratio1 * 2 - colvec1*0.2f, 20);
+		other_island.vel = ClampSpeed(other_island.vel + colvec2 * -vellen * massratio2 * 2 - colvec2*0.2f, 20);
 	}
 	
 	//effects
 	int shake = (vellen * island.mass + other_vellen * other_island.mass)*0.5f;
 	ShakeScreen(shake, 12, point1);
 	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
+}
+
+Vec2f ClampSpeed(Vec2f vel, f32 cap)
+{
+	return Vec2f(Maths::Clamp(vel.x, -cap, cap), Maths::Clamp(vel.y, -cap, cap));
 }
 
 void onDie(CBlob@ this)

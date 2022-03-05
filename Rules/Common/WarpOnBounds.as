@@ -5,7 +5,7 @@ void onTick(CRules@ this)
 	if (getGameTime() % 200 > 0)
 		return;
 	
-	Vec2f dim = getMap().getMapDimensions();
+	/*Vec2f dim = getMap().getMapDimensions();
 	
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
@@ -26,7 +26,7 @@ void onTick(CRules@ this)
 		else if (bottomBorder) island.pos.Set(island.pos.x, dim.y - 20.0f);
 		else if (rightBorder) island.pos.Set(dim.x - 20.0f, island.pos.y);
 		else if (leftBorder) island.pos.Set(20.0f, island.pos.y);
-	}
+	}*/
 	
 	//warp islands to other border
 	/*Island[]@ islands;
