@@ -5,14 +5,13 @@
 //in order- english, russian, portegeuse, polish, french
 //"Translation\\перевод\\tradução\\tłumaczenie\\Traduction"
 
-//Translators: GoldenGuy, Moz
+//Translators: GoldenGuy, Moz, Space Luke, Nova & Gizmodious
 
 //TODO: perhaps switch to a dictionary once kag updates to staging
 //Could also seperate languages by namespaces and then call from namespaces from namespaces depending on locale, this would enable the ability to seperate languages by file
 
 string Translate(string words)
 {
-	//drm idea: do split("\%") to stop mod from loading
 	string[]@ tokens = words.split("\\");
 	if (g_locale == "en")
 		return tokens[0];
@@ -55,50 +54,50 @@ namespace Trans
 	KillSharks    = Translate("Kill sharks to gain some Booty\\Убивай акул для получения Добычи\\Mate tubarões para ganhar um pouco de Saque\\Zabij rekiny, aby zdobyć trochę łupów\\Tuer des requins pour gagner du Trésor"),
 	CouplingRDY   = Translate("Couplings ready.\nPress [{key}] to take.\\Соединения готовы. \nНажми [{key}] чтобы создать.\\Acoplamentos prontos.\nPressione [{key}] para pegar.\\Złącza gotowe.\nNaciśnij [{key}], aby wziąć.\\Raccords prêts"),
 	ShipAttack    = Translate("YOUR MOTHERSHIP IS UNDER ATTACK!!\\ВАШ ГЛАВНЫЙ КОРАБЛЬ ПОД АТАКОЙ!!\\SEU NAVIO-MÃE ESTÁ SOB ATAQUE!!\\TWÓJ STATEK-MATKA JEST ATAKOWANY!!\\VOTRE NAVIRE-MÈRE EST ATTAQUÉ!!"),
-	Abandon       = Translate("> You are your Team's Captain <\n\nDon't abandon the Mothership!\\> Вы капитан комманды <\n\nНе покидайте корабль!\\> Você é o Capitão do seu Time <\n\nNão abandone o Navio-mãe!\\> Jesteś kapitanem swojego zespołu <\n\nNie porzucaj statku-matki!\\>Vous êtes le Capitaine de votre Équipe <\n\nN'abandonnez pas le Navire-mère!"),
+	Abandon       = Translate("> You are your Team's Captain <\n\nDon't abandon the Mothership!\\> Вы капитан комманды <\n\nНе покидайте корабль!\\> Você é o Capitão do seu Time <\n\nNão abandone o Navio-mãe!\\> Jesteś kapitanem swojego zespołu <\n\nNie porzucaj statku-matki!\\> Vous êtes le Capitaine de votre Équipe <\n\nN'abandonnez pas le Navire-mère!"),
 	ReducedCosts  = Translate("Costs reduced during warmup\\Цены уменьшены во время подготовки\\Custos reduzidos durante o aquecimento\\Zmniejszone koszty podczas rozgrzewki\\Coûts réduits pendant la phase de préparation"),
-	Reclaiming    = Translate("You are reclaiming someone else's property. Progress will be slower\\##\\Você está reivindicando a propriedade de outra pessoa. O progresso será mais lento\\Odzyskujesz cudzą własność. Postęp będzie wolniejszy\\Vous recyclez la propriété de quelqu'un d'autre. Le recyclage sera plus lent."),
-	WarmupPlacing = Translate("You can only place Couplings and Repulsors on the Mothership during warm-up\\#\\Você só pode colocar Acoplamntos e Repulsores no Navio-mãe durante o aquecimento\\Sprzęgła i repulsory można umieszczać na statku-matce tylko podczas rozgrzewki\\Vous ne pouvez placer des Raccords et des Répulseurs sur le Navire-mère que pendant la phase de préparation."),
-	ReleaseCoup1  = Translate("Use left click to release them individually or right click to release all the couplings you've placed\\##\\Use o botão esquerdo para soltá-los individualmente ou botão direito para soltar todos os acoplamentos que você colocou\\Użyj lewego przycisku myszy, aby zwolnić je pojedynczo lub kliknij prawym przyciskiem myszy, aby zwolnić wszystkie umieszczone złącza\\Clic gauche pour les relacher individuellement ou clic droit pour relacher tous les raccords que vous avez placé."),
-	ReleaseCoup2  = Translate("PRESS AND HOLD SPACEBAR TO RELEASE COUPLINGS\\##\\PRESSIONE E SEGURE A BARRA DE ESPAÇO PARA LIBERAR ACOPLAMENTOS\\NACIŚNIJ I PRZYTRZYMAJ SPACJĘ, ABY ZWOLNIĆ ŁĄCZNIKI\\MAINTENIR LA BARRE ESPACE POUR RELACHER LES RACCORDS"),
-	FlaksLimit    = Translate("Flaks limit reached!\\##\\Limite de antiaéreos alcançado!\\Osiągnięto limit flaków!\\Limite de Flaks atteinte!"),
-	BootyTransW   = Translate("Click to transfer Booty (enabled after warm-up)\\##\\Clique para transferir Saque (habilitado após aquecimento)\\Kliknij, aby przenieść Booty (włączone po rozgrzewce)\\Clic pour transférer du Trésor (seulement après la phase de préparation)"),
-	BootyTransM   = Translate("Click to transfer Booty ({booty} Booty minimum)\\##\\Clique para transferir Saque ({booty} Saque mínimo)\\Kliknij, aby przenieść łup (minimum {booty})\\Clic pour transférer du Trésor ({booty} Trésor minimum)"),
-	FindNewTip    = Translate("Press Right Click to find another tip\\##\\Pressione Botão Direito para achar outra dica\\Naciśnij prawym przyciskiem myszy, aby znaleźć kolejną wskazówkę\\Clic droit pour avoir un autre conseil"),
-	Respawn       = Translate("Respawning...\\##\\Renascendo...\\Odradzanie...\\Résurrection..."),
-	RespawnSoon   = Translate("Respawning soon...\\##\\Renascendo em breve...\\Odrodzenie wkrótce...\\Résurrection proche..."),
+	Reclaiming    = Translate("You are reclaiming someone else's property. Progress will be slower\\Вы отбираете чужую собственность. Прогресс будет медленнее\\Você está reivindicando a propriedade de outra pessoa. O progresso será mais lento\\Odzyskujesz cudzą własność. Postęp będzie wolniejszy\\Vous recyclez la propriété de quelqu'un d'autre. Le recyclage sera plus lent."),
+	WarmupPlacing = Translate("You can only place Couplings and Repulsors on the Mothership during warm-up\\Вы можете размещать соединения и репульсоры на материнском корабле только во время подготовки.\\Você só pode colocar Acoplamntos e Repulsores no Navio-mãe durante o aquecimento\\Sprzęgła i repulsory można umieszczać na statku-matce tylko podczas rozgrzewki\\Vous ne pouvez placer des Raccords et des Répulseurs sur le Navire-mère que pendant la phase de préparation."),
+	ReleaseCoup1  = Translate("Use left click to release them individually or right click to release all the couplings you've placed\\Используйте левый щелчок, чтобы отсоединить их по отдельности, или щелчок правой кнопкой мыши, чтобы отсоединить все соединения, которые вы установили.\\Use o botão esquerdo para soltá-los individualmente ou botão direito para soltar todos os acoplamentos que você colocou\\Użyj lewego przycisku myszy, aby zwolnić je pojedynczo lub kliknij prawym przyciskiem myszy, aby zwolnić wszystkie umieszczone złącza\\Clic gauche pour les relacher individuellement ou clic droit pour relacher tous les raccords que vous avez placé."),
+	ReleaseCoup2  = Translate("PRESS AND HOLD SPACEBAR TO RELEASE COUPLINGS\\НАЖМИТЕ И УДЕРЖИВАЙТЕ ПРОБЕЛ, ЧТОБЫ ОТСОЕДИНИТЬ СОЕДИНЕНИЯ\\PRESSIONE E SEGURE A BARRA DE ESPAÇO PARA LIBERAR ACOPLAMENTOS\\NACIŚNIJ I PRZYTRZYMAJ SPACJĘ, ABY ZWOLNIĆ ŁĄCZNIKI\\MAINTENIR LA BARRE ESPACE POUR RELACHER LES RACCORDS"),
+	FlaksLimit    = Translate("Flaks limit reached!\\Достигнут лимит зенитной артиллерии!\\Limite de antiaéreos alcançado!\\Osiągnięto limit flaków!\\Limite de Flaks atteinte!"),
+	BootyTransW   = Translate("Click to transfer Booty (enabled after warm-up)\\Нажмите, чтобы передать Добычу (включается после подготовки)\\Clique para transferir Saque (habilitado após aquecimento)\\Kliknij, aby przenieść Booty (włączone po rozgrzewce)\\Clic pour transférer du Trésor (seulement après la phase de préparation)"),
+	BootyTransM   = Translate("Click to transfer Booty ({booty} Booty minimum)\\Нажмите, чтобы передать Добычу ({booty} минимум)\\Clique para transferir Saque ({booty} Saque mínimo)\\Kliknij, aby przenieść łup (minimum {booty})\\Clic pour transférer du Trésor ({booty} Trésor minimum)"),
+	FindNewTip    = Translate("Press Right Click to find another tip\\Нажмите правую кнопку мыши, чтобы найти другой совет\\Pressione Botão Direito para achar outra dica\\Naciśnij prawym przyciskiem myszy, aby znaleźć kolejną wskazówkę\\Clic droit pour avoir un autre conseil"),
+	Respawn       = Translate("Respawning...\\Возрождение...\\Renascendo...\\Odradzanie...\\Résurrection..."),
+	RespawnSoon   = Translate("Respawning soon...\\Скоро возрождение...\\Renascendo em breve...\\Odrodzenie wkrótce...\\Résurrection proche..."),
 	
 	//Votes
 	Vote          = Translate("Vote\\Голосование\\Vote\\Głosować\\Vote"),
 	SuddenDeath   = Translate("Sudden Death\\Внезапная смерть\\Morte Súbita\\Nagła śmierć\\Mort Subite"),
 	Freebuild     = Translate("Freebuild\\Свободное строительство\\Construção Livre\\Tryb swobodnej budowy\\Construction libre"),
-	FreebuildMode = Translate("Free-build mode\\##\\Modo de Construção Livre\\Tryb swobodnej budowy\\Mode Construction-Libre"),
-	SpeedThings   = Translate("Speed things up!\\##\\Acelere as coisas!\\Przyspiesz wszystko!\\On accélère les choses!"),
-	ActiveDeath   = Translate("Sudden Death is already active!\\##\\Morte Súbita já está ativa!\\Nagła śmierć jest już aktywna!\\Mort Subite est déjà activé!"),
-	DeathStarted  = Translate("Sudden Death Started! Focus on destroying your enemies' engines so they can't escape the Whirlpool!\\##\\Morte Súbita Começou! Foque em destruir os motores de seus inimigos para que eles não consigam escapar do Redemoinho!\\Rozpoczęła się nagła śmierć! Skoncentruj się na niszczeniu silników wrogów, aby nie mogli uciec z Whirlpool!\\La mort subite a commencé! Concentrez-vous sur la destruction des moteurs de vos ennemis afin qu'ils ne puissent pas échapper le Tourbillion!"),
-	AttackReward  = Translate("Players get a huge Booty reward bonus from direct attacks.\\##\\Jogadores ganham uma enorme recompensa bonus de Saque com ataques diretos.\\Gracze otrzymują ogromną premię za łupy z bezpośrednich ataków.\\Les joueurs obtiennent un énorme gain de Trésor grâce aux attaques directes."),
-	WeightNote    = Translate("Note: removing heavy blocks from your ship doesn't help! Heavier ships are pulled less by the Whirlpool\\##\\Aviso: remover blocos pesados do seu navio não ajuda! Navios mais pesados são menos puxados pelo Redemoinho\\Uwaga: usuwanie ciężkich bloków ze statku nie pomaga! Cięższe statki są mniej ciągnięte przez Whirlpool\\Note: enlever des blocs lourds de votre Navire n'aide pas! Les Navire plus lourds sont moins tirés par le Tourbillion"),
-	BuildEnabled  = Translate("Free building mode enabled. Blocks are free! Start a new free building mode vote to return to the normal game mode\\##\\Modo de construção livre habilitado. Blocos são grátis! Inicie uma nova votação de modo de construção livre para retornar ao modo de jogo normal\\Włączony tryb swobodnego budowania. Bloki są darmowe! Rozpocznij nowy darmowy głos w trybie budowania, aby powrócić do normalnego trybu gry\\Mode Construction-Libre activé. Les blocs sont gratuits! Commencez un nouveau vote 'Mode Construction-Libre' pour revenir au mode de jeu normal"),
-	BuildDisabled = Translate("Free building mode disabled. Start a new free building mode vote to return to the free building game mode\\##\\Modo de construção livre desabilitado. Inicie uma nova votação de modo de construção livre para retornar ao modo de jogo de construção\\ryb swobodnego budowania wyłączony. Rozpocznij nowy darmowy głos w trybie budowania, aby powrócić do darmowego trybu budowania\\Mode Construction-Libre désactivé. Commencez un nouveau vote 'Mode Construction-Libre' pour revenir au mode de jeu de construction-libre"),
-	SwitchTime    = Translate("Time left to switch again:\\##\\Tempo restante para mudar novamente:\\Pozostały czas na ponowne przełączenie:\\Temps restant pour rechanger:"),
-	Minutes       = Translate("minutes\\##\\minutos\\minuty\\minutes"),
-	TooLong       = Translate("Match taking too long?\\##\\Partida demorando demais?\\Mecz trwa zbyt długo?\\Match trop long?"),
-	Enable        = Translate("Enable\\##\\Habilitar\\Włączać\\Activer"),
-	Disable       = Translate("Disable\\##\\Desabilitar\\Wyłączyć\\Désactiver"),
-	Failed        = Translate("Failed\\##\\Falhou\\Przegrany\\Échoué"),
+	FreebuildMode = Translate("Free-build mode\\Режим свободнго строительства\\Modo de Construção Livre\\Tryb swobodnej budowy\\Mode Construction-Libre"),
+	SpeedThings   = Translate("Speed things up!\\Ускорьте дело!\\Acelere as coisas!\\Przyspiesz wszystko!\\On accélère les choses!"),
+	ActiveDeath   = Translate("Sudden Death is already active!\\Внезапная смерть уже активирована!\\Morte Súbita já está ativa!\\Nagła śmierć jest już aktywna!\\Mort Subite est déjà activé!"),
+	DeathStarted  = Translate("Sudden Death Started! Focus on destroying your enemies' engines so they can't escape the Whirlpool!\\Началась внезапная смерть! Сосредоточьтесь на уничтожении двигателей ваших врагов, чтобы они не смогли выбраться из Водоворота!\\Morte Súbita Começou! Foque em destruir os motores de seus inimigos para que eles não consigam escapar do Redemoinho!\\Rozpoczęła się nagła śmierć! Skoncentruj się na niszczeniu silników wrogów, aby nie mogli uciec z Whirlpool!\\La mort subite a commencé! Concentrez-vous sur la destruction des moteurs de vos ennemis afin qu'ils ne puissent pas échapper le Tourbillion!"),
+	AttackReward  = Translate("Players get a huge Booty reward bonus from direct attacks.\\Игроки получают огромный бонус Добычи за прямые атаки.\\Jogadores ganham uma enorme recompensa bonus de Saque com ataques diretos.\\Gracze otrzymują ogromną premię za łupy z bezpośrednich ataków.\\Les joueurs obtiennent un énorme gain de Trésor grâce aux attaques directes."),
+	WeightNote    = Translate("Note: removing heavy blocks from your ship doesn't help! Heavier ships are pulled less by the Whirlpool\\Примечание: удаление тяжелых блоков с вашего корабля не помогает! Водоворот меньше тянет более тяжелые корабли\\Aviso: remover blocos pesados do seu navio não ajuda! Navios mais pesados são menos puxados pelo Redemoinho\\Uwaga: usuwanie ciężkich bloków ze statku nie pomaga! Cięższe statki są mniej ciągnięte przez Whirlpool\\Note: enlever des blocs lourds de votre Navire n'aide pas! Les Navire plus lourds sont moins tirés par le Tourbillion"),
+	BuildEnabled  = Translate("Free building mode enabled. Blocks are free! Start a new free building mode vote to return to the normal game mode\\Включен режим свободного строительства. Блоки бесплатно! Начните новое голосование за свободное строительство, чтобы вернуться к обычному игровому режиму.\\Modo de construção livre habilitado. Blocos são grátis! Inicie uma nova votação de modo de construção livre para retornar ao modo de jogo normal\\Włączony tryb swobodnego budowania. Bloki są darmowe! Rozpocznij nowy darmowy głos w trybie budowania, aby powrócić do normalnego trybu gry\\Mode Construction-Libre activé. Les blocs sont gratuits! Commencez un nouveau vote 'Mode Construction-Libre' pour revenir au mode de jeu normal"),
+	BuildDisabled = Translate("Free building mode disabled. Start a new free building mode vote to return to the free building game mode\\Режим свободного строительства отключен. Начните новое голосование за свободное строительство, чтобы вернуться в режим бесплатной игры.\\Modo de construção livre desabilitado. Inicie uma nova votação de modo de construção livre para retornar ao modo de jogo de construção\\ryb swobodnego budowania wyłączony. Rozpocznij nowy darmowy głos w trybie budowania, aby powrócić do darmowego trybu budowania\\Mode Construction-Libre désactivé. Commencez un nouveau vote 'Mode Construction-Libre' pour revenir au mode de jeu de construction-libre"),
+	SwitchTime    = Translate("Time left to switch again:\\Осталось времени, чтобы снова переключиться:\\Tempo restante para mudar novamente:\\Pozostały czas na ponowne przełączenie:\\Temps restant pour rechanger:"),
+	Minutes       = Translate("minutes\\минут\\minutos\\minuty\\minutes"),
+	TooLong       = Translate("Match taking too long?\\Матч длится слишком долго?\\Partida demorando demais?\\Mecz trwa zbyt długo?\\Match trop long?"),
+	Enable        = Translate("Enable\\Включить\\Habilitar\\Włączać\\Activer"),
+	Disable       = Translate("Disable\\Выключить\\Desabilitar\\Wyłączyć\\Désactiver"),
+	Failed        = Translate("Failed\\Неудача\\Falhou\\Przegrany\\Échoué"),
 	
 	//Help menu
-	Welcome       = Translate("Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\nLast changes and fixes by\\##\\Bem-vindo ao Shiprekt! Feito por Strathos, Chrispin e diversos membros da comunidade.\nÚltimas mudanças e correções por\\Witamy w Shiprekt! Wykonane przez Strathosa, Chrispina i różnych innych członków społeczności.\nOstatnie zmiany i poprawki autorstwa\\Bienvenue dans Shiprekt! Créé pas Strathos, Chrispin et divers autres membres de la communauté.\nDernièrs changements et corrections par"),
+	Welcome       = Translate("Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\nLast changes and fixes by\\Добро пожаловать в Shiprekt! Мод создан Strathos, Chrispin и другими членами сообщества.{\n} Последние изменения и исправления:\\Bem-vindo ao Shiprekt! Feito por Strathos, Chrispin e diversos membros da comunidade.\nÚltimas mudanças e correções por\\Witamy w Shiprekt! Wykonane przez Strathosa, Chrispina i różnych innych członków społeczności.\nOstatnie zmiany i poprawki autorstwa\\Bienvenue dans Shiprekt! Créé pas Strathos, Chrispin et divers autres membres de la communauté.\nDernièrs changements et corrections par"),
 	Version       = Translate("Version\\Версия\\Versão\\Wersja\\Version"),
-	LastChanges   = Translate("Last Changes\\##\\Últimas mudanças\\Ostatnie zmiany\\Derniers changements"),
+	LastChanges   = Translate("Last Changes\\Последние изменения\\Últimas mudanças\\Ostatnie zmiany\\Derniers changements"),
 	Go_to_the     = Translate("Go to the\\Перейти\\Vá para o\\Przejdź do\\Allez à l"),
 	ChangePage    = Translate("Press Left Click to change page | F1 to toggle this help Box (or type !help)\\Нажмите ЛКМ чтобы сменить страницу | F1 чтобы открыть это окно (или введите !help в чате)\\Pressione o Botão Esquerdo para mudar de página | F1 para habilitar essa Caixa de ajuda (ou digite !help)\\Naciśnij przycisk left click, aby zmienić | strony F1, aby przełączyć tę pomoc Box (lub wpisz !help)\\Clic gauche pour changer de page | F1 pour afficher cette fenêtre d'aide (ou taper !help)"),
 	ClickIcons    = Translate("Click these Icons for Control and Booty functions!\\Нажмите эти иконки для управления и функций Добычи\\Clique nesses Ícones para funções de Controle e Saque!\\Kliknij te ikony, aby uzyskać funkcje sterowania i łupów!\\Clic ces Icônes pour les Contrôles et les fonctions du Trésor"),
 	FastGraphics  = Translate("Having lag issues? Turn on Faster Graphics in KAG video settings for possible improvement!\\Проблемы с лагами? Включите Faster Graphics в настройках видео для возможного улучшения!\\Vivenciando problemas de rede? Habilite os Gráficos Rápidos nas configurações de vídeo do KAG para uma possível melhora!\\Masz problemy z opóźnieniami? Włącz Szybszą grafikę w ustawieniach wideo KAG, aby uzyskać możliwą poprawę!\\Problèmes de lag? Activé l'option 'Faster Graphics' dans les paramètres vidéo de KAG pour une possible amélioration!"),
-	Caption1      = Translate("Use Propellers and Couplings to build Torpedoes\\##\\Use Hélices e Acoplamentos para construir Torpedos\\Użyj śmigieł i sprzęgieł do budowy torped\\Utilisez des Hélices et des Raccords pour construire des Torpilles"),
-	Caption2      = Translate("Couplings let you dock with your Mothership\\##\\Acoplamentos lhe permitem atracar com seu Navio-mãe\\Złącza umożliwiają dokowanie do statku-matki\\Les Raccords vous permettent de vous accrochez à votre Navire-mère"),
-	Caption3      = Translate("Use Couplings to build new ships\\##\\Use Acoplamentos para construir novos navios\\Użyj sprzęgieł do budowy nowych statków\\Utilisez des Raccords pour construire de nouveaux bateaux"),
-	Caption4      = Translate("Navigate to Xs to gather Booty\\##\\Navegue até Xs para coletar Saque\\Przejdź do Xs, aby zebrać Łup\\Naviguez jusqu'aux X pour rassembler des trésors"),
+	Caption1      = Translate("Use Propellers and Couplings to build Torpedoes\\Используйте пропеллеры и Соединения для постройки торпед\\Use Hélices e Acoplamentos para construir Torpedos\\Użyj śmigieł i sprzęgieł do budowy torped\\Utilisez des Hélices et des Raccords pour construire des Torpilles"),
+	Caption2      = Translate("Couplings let you dock with your Mothership\\Соединения позволяют вам стыковаться с вашим Главным кораблём\\Acoplamentos lhe permitem atracar com seu Navio-mãe\\Złącza umożliwiają dokowanie do statku-matki\\Les Raccords vous permettent de vous accrochez à votre Navire-mère"),
+	Caption3      = Translate("Use Couplings to build new ships\\Используйте Соединения для постройки новых кораблей\\Use Acoplamentos para construir novos navios\\Użyj sprzęgieł do budowy nowych statków\\Utilisez des Raccords pour construire de nouveaux bateaux"),
+	Caption4      = Translate("Navigate to Xs to gather Booty\\Перейдите к Xs, чтобы собрать добычу\\Navegue até Xs para coletar Saque\\Przejdź do Xs, aby zebrać Łup\\Naviguez jusqu'aux X pour rassembler des trésors"),
 	
 	//How to play
 	HowToPlay     = Translate("How to Play\\Как играть\\Como Jogar\\Jak grać\\Comment jouer"),
@@ -121,13 +120,13 @@ namespace Trans
 	Zoom          = Translate("zoom in/out.\\приблизить/отдалить\\dar zoom para dentro/fora.\\powiększanie/pomniejszanie.\\zoom avant/arrière."),
 	AccessTools   = Translate("access the tools menu.\\открыть меню инструментов.\\acessar o menu de ferramentas.\\przejdź do menu narzędzi.\\accéder au menu des outils."),
 	ScaleCompass  = Translate("scale the Compass 2x. Tap to toggle. Hold for a quick view.\\увеличит компас в 2 раза. Нажми для удержания или зажми для временного просмотра.\\escalar a Bússola 2x. Clique para habilitar. Sgure para uma olhada breve.\\skaluj Kompas 2x. Dotknij, aby przełączyć. Przytrzymaj, aby wyświetlić szybki widok.\\aggrandit la Boussole 2x. Appuyer pour basculer. Maintenez pour une vue rapide."),
-	Strafe        = Translate("toggle engines strafe mode\\##\\habilitar o modo strafe dos motores\\włącz tryb strafe silników\\basculer en mode mitraillage des moteurs"),
+	Strafe        = Translate("toggle engines strafe mode\\переключить режим стрейфа двигателей\\habilitar o modo strafe dos motores\\włącz tryb strafe silników\\basculer en mode mitraillage des moteurs"),
 	
 	//Build menu
 	Components    = Translate("Components\\Компоненты\\Componentes\\Składniki\\Composants"),
 	AmmoCap       = Translate("AmmoCap\\Боеприпасы\\Munição\\Amunicja\\MunitionsCap"),
-	WarmupWarning = Translate("Weapons are enabled after the warm-up time ends\\##\\Armas são habilitadas depois que o tempo do aquecimendo acabar\\Bronie są włączone po zakończeniu czasu rozgrzewania\\Les armes sont activées après la fin de la préparation"),
-	BuyAgain      = Translate("Press the inventory key to buy again.\\##\\Pressione a tecla de inventário para comprar novamente.\\Naciśnij klawisz ekwipunku, aby kupić ponownie.\\Appuyez sur la touche de l'inventaire pour acheter à nouveau."),
+	WarmupWarning = Translate("Weapons are enabled after the warm-up time ends\\Оружие включается после окончания подготовки\\Armas são habilitadas depois que o tempo do aquecimendo acabar\\Bronie są włączone po zakończeniu czasu rozgrzewania\\Les armes sont activées après la fin de la préparation"),
+	BuyAgain      = Translate("Press the inventory key to buy again.\\Нажмите клавишу инвентаря, чтобы купить снова.\\Pressione a tecla de inventário para comprar novamente.\\Naciśnij klawisz ekwipunku, aby kupić ponownie.\\Appuyez sur la touche de l'inventaire pour acheter à nouveau."),
 	Seat          = Translate("Seat\\Кресло\\Assento\\Siedzenie\\Siège"),
 	Engine        = Translate("Standard Engine\\Стандартный Двигатель\\Motor Padrão\\Standardowy silnik\\Moteur Standard"),
 	RamEngine     = Translate("Ram Engine\\Быстрый Двигатель\\Motor de Aríete\\Silnik Baran\\Moteur Fragile"),
@@ -143,7 +142,7 @@ namespace Trans
 	Repulsor      = Translate("Repulsor\\Репульсор\\Repulsor\\Repulsor\\Répulseur"),
 	Ram           = Translate("Ram Hull\\Таран\\Aríete\\Baran\\Frappe"),
 	Auxilliary    = Translate("Auxilliary Core\\Вспомогательное Сердце\\Núcleo Auxiliar\\Rdzeń pomocniczy\\Noyau auxiliaire"),
-	Bomb          = Translate("Bomb\\##\\Bomba\\Bomba\\Bombe"),
+	Bomb          = Translate("Bomb\\Бомба\\Bomba\\Bomba\\Bombe"),
 	PointDefense  = Translate("Point Defense\\Защитная турель\\Defesa de Ponto\\Obrona punktowa\\Anti-Projectiles"),
 	FlakCannon    = Translate("Flak Cannon\\Зенитная Пушка\\Canhão Antiaéreo\\Działo\\Canon antiaérien"),
 	Machinegun    = Translate("Machinegun\\Пулемёт\\Metralhadora\\Karabin maszynowy\\Mitrailleuse"),
@@ -175,7 +174,7 @@ namespace Trans
 	DecoyCoreDesc = Translate("A fake core to fool enemies. Replaces the Mothership on the compass.\\Фальшивое сердце, чтобы одурачить врагов. Заменяет главное сердце на компасе.\\Um núcleo falso para enganar inimigos. Substitui o Navio-mãe na bússola.\\Fałszywy rdzeń do oszukiwania wrogów. Zastępuje statek macierzysty na kompasie.\\Un faux noyau pour tromper les ennemis. Remplace le Navire-mère sur la boussole."),
 	
 	//Tools
-	ToolsMenu     = Translate("Tools Menu\\##\\Menu de Ferramentas\\Menu narzędzi\\Menu des Outils"),
+	ToolsMenu     = Translate("Tools Menu\\Меню инструментов\\Menu de Ferramentas\\Menu narzędzi\\Menu des Outils"),
 	Pistol        = Translate("Pistol\\Пистолет\\Pistola\\Pistolet\\Pistolet"),
 	PistolDesc    = Translate("A basic, ranged, personal defense weapon.\\Обычное средство персональной защиты дальнего действия.\\Uma arma básica de defesa pessoal à distância.\\Podstawowa, dystansowa, osobista broń obronna.\\Une arme de défense personnelle basique à distance."),
 	Deconstructor = Translate("Deconstructor\\Деконструктор\\Desconstrutor\\Dekonstruktor\\Déconstructeur"),
@@ -184,9 +183,9 @@ namespace Trans
 	ReconstDesc   = Translate("A tool that can repair ship parts at the cost of booty.\\Инструмент для починки частей корабля за Добычу.\\Uma ferramenta que consegue reparar partes do navio ao custo de saque.\\Narzędzie, które może naprawiać części do statków kosztem łupów.\\Un outil qui peut réparer les pièces d'un navire au prix de Trésor."),
 	
 	//Events
-	SettingFree   = Translate("{playercount} player(s) in map. Setting freebuild mode until more players join.\\##\\##\\{playercount} graczy na mapie. Ustawiam tryb swobodnej budowy, dopóki nie dołączy więcej graczy.\\{playercount} joueurs sur la carte. Mode de Construction-Libre jusqu'à ce que plus de joueurs rejoignent."),
-	CoreKill      = Translate("Congratulations! A Core Kill was added to your Scoreboard.\\##\\##\\Gratulacje! Do tablicy wyników dodano główne zabójstwo.\\Bien joué! Un point de Kill de Noyau a été ajouté a votre Score!"),
-	TeamBounty    = Translate("{winnerteam} gets {reward} Booty for destroying {killedteam}\\##\\##\\{winnerteam} dostaje {reward} łup za zniszczenie {killedteam}\\{winnerteam} obtient {reward} de Trésor pour le meurtre sanglant de {killedteam}");
+	SettingFree   = Translate("{playercount} player(s) in map. Setting freebuild mode until more players join.\\игроков на карте. Включён режим свободного строительства, пока не присоединятся другие игроки.\\{playercount} jogadores no mapa. Configurando o modo freebuild até que mais jogadores se juntem.\\{playercount} graczy na mapie. Ustawiam tryb swobodnej budowy, dopóki nie dołączy więcej graczy.\\{playercount} joueurs sur la carte. Mode de Construction-Libre jusqu'à ce que plus de joueurs rejoignent."),
+	CoreKill      = Translate("Congratulations! A Core Kill was added to your Scoreboard.\\Поздравляем! Убийство Сердца было добавлено в вашу таблицу результатов.\\Parabéns! Um Núcleo Kill foi adicionado ao seu placar.\\Gratulacje! Do tablicy wyników dodano główne zabójstwo.\\Bien joué! Un point de Kill de Noyau a été ajouté a votre Score!"),
+	TeamBounty    = Translate("{winnerteam} gets {reward} Booty for destroying {killedteam}\\{winnerteam} получает {reward} Добычи за уничтожение {killedteam}\\{winnerteam} recebe {reward} saques por destruir {killedteam}\\{winnerteam} dostaje {reward} łup za zniszczenie {killedteam}\\{winnerteam} obtient {reward} de Trésor pour le meurtre sanglant de {killedteam}");
 }
 
 //arrays for indexing purposes
@@ -202,7 +201,10 @@ const string[] teamColors =
 	Translate("Navy Blue\\Тёмно-синие\\Azul-marinho\\Granatowy\\Bleu Marine"),
 	Translate("Beige\\Бежевые\\Bege\\Beż\\Beige")
 };
-	
+
+//TODO tip translations:
+// A direct bomb hit to a Core can deal significant damage!
+//
 const string[] shiprektTips =
 {
 	Translate("Pistols deal fair damage to Mothership Cores, but Machineguns are not effective at all!\\пистолеты наносят приличный урон Сердцу главного корабля, а Пулеметы совсем не эффективны!\\pistolas causam dano decente aos Núcleos de Navios-mãe, porém Metralhadoras não são nem um pouco eficazes!\\pistolety zadają uczciwe obrażenia rdzeniom statku-matki, ale karabiny maszynowe nie są w ogóle skuteczne!\\les pistolets font des dégats raisonnable au Noyaux de Navire-mère, mais les Mitrailleuses ne sont pas efficace du tout!"),
