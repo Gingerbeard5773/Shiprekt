@@ -17,7 +17,7 @@ void onTick(CBlob@ this)
 		return;
 		
 	Island@ island = getIsland(this);
-	if (island !is null && island.centerBlock !is null)
+	if (island !is null && island.centerBlock !is null && !this.isAttached())
 	{
 		//find best refBlock
 		CBlob@ refBlob = getIslandBlob(this);
@@ -36,9 +36,7 @@ void onTick(CBlob@ this)
 			angle = nearest_angle;
 		}
 	}
-	
-	//seat facing direction
-	if (this.isAttached())
+	else if (this.isAttached()) //seat facing direction
 	{
 		CBlob@ seat = this.getAttachmentPoint(0).getOccupied();
 		

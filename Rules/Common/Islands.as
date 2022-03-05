@@ -118,7 +118,6 @@ bool AddToIsland(CBlob@ this) //reference from nearby block and copy onto island
 	if (blockHooks !is null)
 		blockHooks.update("onColored", @this);
 
-	
 	return true;
 }
 
@@ -326,7 +325,7 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 		
 		if (!isle.initialized || isle.centerBlock is null)
 		{
-			//if ( !isServer() ) print ("client: initializing island: " + isle.blocks.length);
+			//if (!isServer()) print ("client: initializing island: " + isle.blocks.length);
 			InitIsland(isle);
 			isle.initialized = true;
 		}
@@ -489,7 +488,7 @@ void UpdateIslands(CRules@ this, const bool integrate = true, const bool forceOw
 			
 			isle.owner = oldestSeatOwner;
 		}
-		//if( isle.owner != "") 	print( "updated isle " + isle.id + "; owner: " + isle.owner + "; mass: " + isle.mass );
+		//if (isle.owner != "") 	print("updated isle " + isle.id + "; owner: " + isle.owner + "; mass: " + isle.mass);
 	}
 	
 	//calculate carryMass weight
@@ -671,7 +670,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 				for (uint q = 0; q < isle.blocks.length; ++q)
 				{
 					IslandBlock@ isle_block = isle.blocks[q];
-					CBlob@ b = getBlobByNetworkID( isle_block.blobID);
+					CBlob@ b = getBlobByNetworkID(isle_block.blobID);
 					if (b !is null)
 					{
 						stream.write_netid(b.getNetworkID());	
@@ -826,7 +825,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 						sprite.asLayer().setRenderStyle(RenderStyle::normal);
 					}
 					else
-						warn(" Blob not found when creating island, id = " + netid);
+						warn("Blob not found when creating island, id = " + netid);
 				}
 				islands.push_back(isle);
 			}

@@ -10,7 +10,6 @@ void onInit(CBlob@ this)
 	this.set_f32("force", 1.0f);
 	this.set_f32("force angle", 90.0f);
 	this.getShape().SetStatic(true);
-
 	
 	getRules().set_bool("whirlpool", true);
 
@@ -20,7 +19,7 @@ void onInit(CBlob@ this)
 	sprite.SetEmitSoundVolume(3.0f);
 	sprite.SetZ(-20.0f);
 		
-	if( !CustomEmitEffectExists("whirlpoolEmit"))
+	if (!CustomEmitEffectExists("whirlpoolEmit"))
 		SetupCustomEmitEffect("whirlpoolEmit", "Whirlpool.as", "updateWhirlpoolParticle", 10, 0, 120);
 }
 
@@ -48,7 +47,7 @@ void onTick(CBlob@ this)
 		Vec2f perpDir = attractDir * 2.5f;
 		perpDir.RotateBy(90.0f);
 		
-		h.setVelocity(-(attractDir + perpDir) * Maths::Min( 5.0f, force ) / 2.0f);
+		h.setVelocity(-(attractDir + perpDir) * Maths::Min(5.0f, force) / 2.0f);
 	}
 		
 	//suck in islands
@@ -73,7 +72,7 @@ void onTick(CBlob@ this)
 			perpDir.RotateBy(forceAngle);
 			
 			attractDir *= force * distanceFactor;
-			perpDir *= force / Maths::Pow( distanceFactor, 2 );
+			perpDir *= force / Maths::Pow(distanceFactor, 2);
 			
 			f32 massFactor = isle.isMothership ? (Maths::Sqrt(isle.mass) * 65.0f) : Maths::Max(200.0f, (isle.mass * 35.0f));
 			
@@ -86,7 +85,7 @@ void onTick(CBlob@ this)
 		force += FORCE_INCREASE;
 		this.set_f32("force", force);
 		
-		if (forceAngle > 0.0f )
+		if (forceAngle > 0.0f)
 		{
 			forceAngle -= ANGLE_DECREASE;
 			this.set_f32("force angle", forceAngle);
@@ -114,7 +113,7 @@ void updateWhirlpoolParticle(CParticle@ p)
 	p.velocity = -(attractDir * 275.0f/(distance + 20.0f) + perpDir * distance / 30.0f) * 1.0f;
 
 	//kill near center particles
-	if ((pos - p.position ).Length() < 30.0f)
+	if ((pos - p.position).Length() < 30.0f)
 		p.frame = 10;
 		
 	//add actual particles emit
@@ -169,16 +168,16 @@ void damageBlobs(CBlob@ this)
 	CBlob@[] nearby;
 	if (getMap().getBlobsInRadius(this.getPosition(), 50.0f, @nearby))
 	{
-		int blobsNum = nearby.length();
-		for (int i = 0; i < blobsNum; i++)
+		for (int i = 0; i < nearby.length(); i++)
 		{
-			if ((nearby[i].hasTag("block") && XORRandom(2) == 0) || (nearby[i].getName() == "human" && !nearby[i].isOnGround()))
+			CBlob@ blob = nearby[i];
+			if ((blob.hasTag("block") && XORRandom(2) == 0) || (blob.getName() == "human" && !blob.isOnGround()))
 				this.server_Hit(nearby[i], Vec2f_zero, Vec2f_zero, this.getInitialHealth()/4.0f, Hitters::drown, true);
 			
-			if (nearby[i] !is this && this.getDistanceTo(nearby[i]) < 15.0f)
+			if (blob !is this && this.getDistanceTo(blob) < 15.0f)
 			{
-				this.server_Hit(nearby[i], Vec2f_zero, Vec2f_zero, 999.0f, Hitters::drown, true);
-				nearby[i].server_Die();
+				this.server_Hit(blob, Vec2f_zero, Vec2f_zero, 999.0f, Hitters::drown, true);
+				blob.server_Die();
 			}
 		}
 	}
@@ -186,7 +185,7 @@ void damageBlobs(CBlob@ this)
 
 void onInit(CSprite@ this)
 {
-	this.ScaleBy(Vec2f( 2.0f, 2.0f));
+	this.ScaleBy(Vec2f(2.0f, 2.0f));
 }
 
 void onTick(CSprite@ this)

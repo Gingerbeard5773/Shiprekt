@@ -1,8 +1,5 @@
 //#define CLIENT_ONLY
 #include "IslandsCommon.as";
-#include "TileCommon.as";
-
-//saving local values because the ones provied by sv aren't correct after a desync
 
 void onInit(CBlob@ this)
 {
@@ -17,8 +14,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	if (!this.isOnGround())
-		return;
+	if (!this.isOnGround()) return;
 	
 	if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
 	{
@@ -44,7 +40,7 @@ void onTick(CBlob@ this)
 			this.set_f32("isleOldAngle", islandAngle);
 
 			CBlob@ islandBlock = getMap().getBlobAtPosition(islandPos + islandToBlob);
-			if (isTouchingLand(this.getPosition()) ? islandBlock !is null : true) //Only move player if there is a block to move onto
+			if (islandBlock !is null) //Only move player if there is a block to move onto
 				this.setPosition(islandPos + islandToBlob);
 		}
 	}

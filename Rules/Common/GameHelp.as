@@ -134,13 +134,17 @@ void onRender(CRules@ this)
 			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.48\n";
 			string lastChangesInfo = Trans::LastChanges+":\n"
 			+ "- 2-21-2022 - v1.48 By Gingerbeard\n"
-			+ "  * Drastically improved block placing.\n"
-			+ "  * Block costs are reduced during warm-up.\n"
-			+ "  * Smaller torpedoes can bounce off the walls and change direction.\n"
-			+ "  * Exploding ships don't lose speed.\n"
-			+ "  * Added additional support for Fast Graphics from KAG settings.\n"
-			+ "  * Couplings will dock on auxillary core ships.\n"
-			+ "  * Removed the ability to become a shark.\n";
+			+ "  * Added language support for Russian, Portugeuse, French and Polish.\n"
+			+ "  * New custom scoreboard and changed how core-kill scoring is done.\n"
+			+ "  * Killing players rewards booty, 3x more when you are on the enemy's mothership.\n"
+			+ "  * Game Tips don't show up in chat, but instead you can flip through them all while dead.\n"
+			+ "  * Fixed problems with ships going super-sonic velocities.\n"
+			+ "  * Fixed problems with Harpoons bugging out.\n"
+			+ "  * Fixed problems with block placing & reduced the time it takes to place.\n"
+			+ "  * Removed the cap on decoy cores.\n"
+			+ "  * Cannonballs and rockets will hit bombs.\n"
+			+ "  * Captains can push players out of seats on their ship.\n"
+			+ "  * Moving ships can only run over players in its direct moving path (no more stange deaths).\n";
 			
 			Vec2f lastChangesSize;
 			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
