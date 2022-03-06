@@ -12,11 +12,15 @@ namespace CMap
 	const SColor color_grass(255, 100, 155, 13);
 	const SColor color_rock(255, 161, 161, 161);
 	const SColor color_shoal(255, 100, 170, 180);
+	
 	// objects
-	const SColor color_main_spawn(255, 0, 255, 255);
-	const SColor color_station(255, 255, 0, 0);
-	const SColor color_ministation(255, 255, 140, 0);
-	const SColor color_palmtree(255, 0, 150, 0);
+	enum color
+	{
+		color_main_spawn = 0xff00ffff,
+		color_station = 0xffff0000,
+		color_ministation = 0xffff8C00,
+		color_palmtree = 0xff009600
+	};
 	
 	//
 	void SetupMap(CMap@ map, int width, int height)
@@ -38,6 +42,56 @@ namespace CMap
 	//
 	void handlePixel(CMap@ map, CFileImage@ image, SColor pixel, int offset, Vec2f pixelPos)
 	{	
+		if (pixel == color_water)
+		{
+			//map.AddTileFlag(offset, Tile::BACKGROUND);
+			//map.AddTileFlag(offset, Tile::LIGHT_PASSES);
+			return;
+		}
+		
+		// ** NON-TILES **
+		
+		switch (pixel.color)
+		{
+			case color_main_spawn:
+			{
+				AddMarker(map, offset, "spawn");
+				return;
+			}
+			case color_station:
+			{
+				CBlob@ stationBlob = spawnBlob(map, "station", offset, 255, false);	
+				stationBlob.getSprite().SetFrame(0);
+				
+				map.SetTile(offset, CMap::sand_inland);	
+				map.AddTileFlag(offset, Tile::BACKGROUND);
+				map.AddTileFlag(offset, Tile::LIGHT_PASSES);
+				return;
+			}
+			case color_ministation:
+			{
+				CBlob@ ministationBlob = spawnBlob(map, "ministation", offset, 255, false);	
+				ministationBlob.getSprite().SetFrame(1);
+				
+				map.SetTile(offset, CMap::sand_inland);	
+				map.AddTileFlag(offset, Tile::BACKGROUND);
+				map.AddTileFlag(offset, Tile::LIGHT_PASSES);
+				return;
+			}
+			case color_palmtree:
+			{
+				CBlob@ palmtreeBlob = spawnBlob(map, "palmtree", offset, 255, false);	
+			
+				map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5));
+				map.AddTileFlag(offset, Tile::BACKGROUND);
+				map.AddTileFlag(offset, Tile::LIGHT_PASSES);
+				return;
+			}
+		}
+		
+		// ** TILES **
+		
+		//declare nearby pixels
 		if (image !is null && image.isLoaded())
 		{
 			image.setPixelPosition(pixelPos + Vec2f(1, 0));
@@ -77,49 +131,12 @@ namespace CMap
 				
 			image.setPixelOffset(offset);
 		}
-	
-		if (pixel == color_water) 
-		{				
-			map.AddTileFlag(offset, Tile::BACKGROUND);
-			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
-		}		
-		else if (pixel == color_main_spawn) 
-		{
-			AddMarker(map, offset, "spawn");
-			PlaceMostLikelyTile(map, offset);
-		}
-		else if (pixel == color_station) 
-		{
-			CBlob@ stationBlob = spawnBlob(map, "station", offset, 255, false);	
-			stationBlob.getSprite().SetFrame(0);
-			
-			map.SetTile(offset, CMap::sand_inland);	
-			map.AddTileFlag(offset, Tile::BACKGROUND);
-			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
-		}
-		else if (pixel == color_ministation) 
-		{
-			CBlob@ ministationBlob = spawnBlob(map, "ministation", offset, 255, false);	
-			ministationBlob.getSprite().SetFrame(1);
-			
-			map.SetTile(offset, CMap::sand_inland);	
-			map.AddTileFlag(offset, Tile::BACKGROUND);
-			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
-			
-		}
-		else if (pixel == color_palmtree) 
-		{
-			CBlob@ palmtreeBlob = spawnBlob(map, "palmtree", offset, 255, false);	
-			
-			map.SetTile(offset, CMap::grass_inland + map_random.NextRanged(5));
-			map.AddTileFlag(offset, Tile::BACKGROUND);
-			map.AddTileFlag(offset, Tile::LIGHT_PASSES);
-		}	
-		else if (pixel == color_sand) 
+		
+		if (pixel == color_sand) 
 		{
 			//SAND AND SHOAL BORDERS
 			//completely surrrounded ship
-			if ( pixel_R == color_shoal && pixel_U == color_shoal && pixel_L == color_shoal && pixel_D == color_shoal)
+			if (pixel_R == color_shoal && pixel_U == color_shoal && pixel_L == color_shoal && pixel_D == color_shoal)
 				map.SetTile(offset, CMap::sand_shoal_border_ship1);
 				
 			//four way crossing
@@ -147,7 +164,7 @@ namespace CMap
 			else if (pixel_RU == color_shoal && pixel_L == color_shoal && pixel_RD == color_shoal
 						&& pixel_R != color_shoal && pixel_U != color_shoal && pixel_D != color_shoal)
 				map.SetTile(offset, CMap::sand_shoal_border_T_L1);
-			else if ( pixel_RU == color_shoal && pixel_LU == color_shoal && pixel_D == color_shoal
+			else if (pixel_RU == color_shoal && pixel_LU == color_shoal && pixel_D == color_shoal
 						&& pixel_R != color_shoal && pixel_U != color_shoal && pixel_L != color_shoal)
 				map.SetTile(offset, CMap::sand_shoal_border_T_D1);
 				
@@ -443,16 +460,16 @@ namespace CMap
 			//three way T crossings
 			else if (pixel_R == color_sand && pixel_LU == color_sand && pixel_LD == color_sand
 						&& pixel_U != color_sand && pixel_L != color_sand && pixel_D != color_sand)
-				map.SetTile(offset, CMap::grass_sand_border_T_R1 );
+				map.SetTile(offset, CMap::grass_sand_border_T_R1);
 			else if (pixel_U == color_sand && pixel_RD == color_sand && pixel_LD == color_sand
 						&& pixel_R != color_sand && pixel_L != color_sand && pixel_D != color_sand)
-				map.SetTile(offset, CMap::grass_sand_border_T_U1 );
+				map.SetTile(offset, CMap::grass_sand_border_T_U1);
 			else if (pixel_RU == color_sand && pixel_L == color_sand && pixel_RD == color_sand
 						&& pixel_R != color_sand && pixel_U != color_sand && pixel_D != color_sand)
-				map.SetTile(offset, CMap::grass_sand_border_T_L1 );
+				map.SetTile(offset, CMap::grass_sand_border_T_L1);
 			else if (pixel_RU == color_sand && pixel_LU == color_sand && pixel_D == color_sand
 						&& pixel_R != color_sand && pixel_U != color_sand && pixel_L != color_sand)
-				map.SetTile(offset, CMap::grass_sand_border_T_D1 );
+				map.SetTile(offset, CMap::grass_sand_border_T_D1);
 				
 			//left handed panhandle
 			else if (pixel_R == color_sand && pixel_LU == color_sand
@@ -957,7 +974,7 @@ namespace CMap
 				map.SetTile(offset, CMap::rock_shore_choke_U1);
 			else if (pixel_LU == color_water && pixel_LD == color_water 
 						&& pixel_R != color_water && pixel_RU != color_water && pixel_U != color_water && pixel_L != color_water && pixel_D != color_water && pixel_RD != color_water)
-				map.SetTile(offset, CMap::rock_shore_choke_L1 );
+				map.SetTile(offset, CMap::rock_shore_choke_L1);
 			else if (pixel_LD == color_water && pixel_RD == color_water 
 						&& pixel_R != color_water && pixel_RU != color_water && pixel_U != color_water && pixel_LU != color_water && pixel_L != color_water && pixel_D != color_water)
 				map.SetTile(offset, CMap::rock_shore_choke_D1);
@@ -995,7 +1012,7 @@ namespace CMap
 				map.SetTile(offset, CMap::rock_shore_straight_U1);	
 			else if (pixel_L == color_water
 						&& pixel_R != color_water && pixel_RU != color_water && pixel_U != color_water && pixel_D != color_water && pixel_RD != color_water)
-				map.SetTile(offset, CMap::rock_shore_straight_L1 );	
+				map.SetTile(offset, CMap::rock_shore_straight_L1);	
 			else if (pixel_D == color_water
 						&& pixel_R != color_water && pixel_RU != color_water && pixel_U != color_water && pixel_LU != color_water && pixel_L != color_water)
 				map.SetTile(offset, CMap::rock_shore_straight_D1);	
@@ -1008,7 +1025,7 @@ namespace CMap
 			else if (pixel_L == color_water && pixel_D == color_water)
 				map.SetTile(offset, CMap::rock_shore_convex_LD1);
 			else if (pixel_R == color_water && pixel_D == color_water)
-				map.SetTile(offset, CMap::rock_shore_convex_RD1 );
+				map.SetTile(offset, CMap::rock_shore_convex_RD1);
 				
 			//concave shorelines		
 			else if (pixel_RU == color_water)
@@ -1074,29 +1091,29 @@ namespace CMap
 				map.SetTile(offset, CMap::shoal_shore_panhandleL_D1);
 				
 			//right handed panhandle
-			else if ( pixel_R == color_water && pixel_LD == color_water 
+			else if (pixel_R == color_water && pixel_LD == color_water 
 						&& pixel_U != color_water && pixel_LU != color_water && pixel_L != color_water && pixel_D != color_water)
-				map.SetTile(offset, CMap::shoal_shore_panhandleR_R1 );
-			else if ( pixel_U == color_water && pixel_RD == color_water
+				map.SetTile(offset, CMap::shoal_shore_panhandleR_R1);
+			else if (pixel_U == color_water && pixel_RD == color_water
 						&& pixel_R != color_water && pixel_L != color_water && pixel_LD != color_water && pixel_D != color_water)
-				map.SetTile(offset, CMap::shoal_shore_panhandleR_U1 );
-			else if ( pixel_RU == color_water && pixel_L == color_water
+				map.SetTile(offset, CMap::shoal_shore_panhandleR_U1);
+			else if (pixel_RU == color_water && pixel_L == color_water
 						&& pixel_R != color_water && pixel_U != color_water && pixel_D != color_water && pixel_RD != color_water)
-				map.SetTile(offset, CMap::shoal_shore_panhandleR_L1 );
-			else if ( pixel_LU == color_water && pixel_D == color_water 
+				map.SetTile(offset, CMap::shoal_shore_panhandleR_L1);
+			else if (pixel_LU == color_water && pixel_D == color_water 
 						&& pixel_R != color_water && pixel_RU != color_water && pixel_U != color_water && pixel_L != color_water)
-				map.SetTile(offset, CMap::shoal_shore_panhandleR_D1 );
+				map.SetTile(offset, CMap::shoal_shore_panhandleR_D1);
 				
 			//splitting strips
 			else if (pixel_RU == color_water && pixel_LU == color_water && pixel_RD == color_water
 						&& pixel_R != color_water && pixel_U != color_water && pixel_L != color_water && pixel_LD != color_water && pixel_D != color_water)
-				map.SetTile(offset, CMap::shoal_shore_split_RU1 );
+				map.SetTile(offset, CMap::shoal_shore_split_RU1);
 			else if (pixel_RU == color_water && pixel_LU == color_water && pixel_LD == color_water 
 						&& pixel_R != color_water && pixel_U != color_water && pixel_L != color_water && pixel_D != color_water && pixel_RD != color_water)
-				map.SetTile(offset, CMap::shoal_shore_split_LU1 );
+				map.SetTile(offset, CMap::shoal_shore_split_LU1);
 			else if (pixel_LU == color_water && pixel_LD == color_water && pixel_RD == color_water 
 						&& pixel_R != color_water && pixel_RU != color_water && pixel_U != color_water && pixel_L != color_water && pixel_D != color_water)
-				map.SetTile(offset, CMap::shoal_shore_split_LD1 );
+				map.SetTile(offset, CMap::shoal_shore_split_LD1);
 			else if (pixel_RU == color_water && pixel_LD == color_water && pixel_RD == color_water 
 						&& pixel_R != color_water && pixel_U != color_water && pixel_LU != color_water && pixel_L != color_water && pixel_D != color_water)
 				map.SetTile(offset, CMap::shoal_shore_split_RD1);
@@ -1117,12 +1134,12 @@ namespace CMap
 				
 			//strip shorelines
 			else if (pixel_U == color_water && pixel_D == color_water)
-				map.SetTile(offset, CMap::shoal_shore_strip_H1 );
+				map.SetTile(offset, CMap::shoal_shore_strip_H1);
 			else if (pixel_R == color_water && pixel_L == color_water)
 				map.SetTile(offset, CMap::shoal_shore_strip_V1);	
 
 			//bend shorelines
-			else if ( pixel_R == color_water && pixel_RU == color_water && pixel_U == color_water && pixel_LD == color_water)
+			else if (pixel_R == color_water && pixel_RU == color_water && pixel_U == color_water && pixel_LD == color_water)
 				map.SetTile(offset, CMap::shoal_shore_bend_RU1);
 			else if (pixel_L == color_water && pixel_LU == color_water && pixel_U == color_water && pixel_RD == color_water)
 				map.SetTile(offset, CMap::shoal_shore_bend_LU1);
@@ -1134,7 +1151,7 @@ namespace CMap
 			//diagonal choke points
 			else if (pixel_RU == color_water && pixel_LD == color_water
 						&& pixel_R != color_water && pixel_U != color_water && pixel_LU != color_water && pixel_L != color_water && pixel_D != color_water && pixel_RD != color_water)
-				map.SetTile(offset, CMap::shoal_shore_diagonal_R1 );	
+				map.SetTile(offset, CMap::shoal_shore_diagonal_R1);	
 			else if (pixel_LU == color_water && pixel_RD == color_water
 						&& pixel_R != color_water && pixel_RU != color_water && pixel_U != color_water && pixel_L != color_water && pixel_LD != color_water && pixel_D != color_water)
 				map.SetTile(offset, CMap::shoal_shore_diagonal_L1);				
