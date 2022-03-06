@@ -1,6 +1,6 @@
 #include "Hitters.as";
 #include "ExplosionEffects.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "AccurateSoundPlay.as"
 
 const f32 PUSH_RADIUS = 18.0f;
@@ -50,9 +50,9 @@ void Repulse(CBlob@ this)
 		if (b is this || !b.hasTag("block") || color <= 0)
 			continue;
 		
-		//push island
-		Island@ isle = getIsland(color);
-		if (isle !is null && isle.mass > 0.0f)
+		//push ship
+		Ship@ ship = getShip(color);
+		if (ship !is null && ship.mass > 0.0f)
 		{
 			f32 pushMultiplier = 1.0f;
 			if (b.hasTag("engine"))
@@ -60,13 +60,13 @@ void Repulse(CBlob@ this)
 			
 			f32 pushDistance = (b.getPosition() - pos).getLength();
 			
-			Vec2f pushVel = (b.getPosition() - pos) * (1 - (pushDistance/(PUSH_RADIUS*1.5f))) * PUSH_FACTOR*pushMultiplier/isle.mass; //use island.centerBlock.getPosition() instead of  b.getPosition()?
-			isle.vel += pushVel;
-			//if ( isle.blocks.length == 1 )	b.setAngularVelocity( 300.0f );
+			Vec2f pushVel = (b.getPosition() - pos) * (1 - (pushDistance/(PUSH_RADIUS*1.5f))) * PUSH_FACTOR*pushMultiplier/ship.mass; //use ship.centerBlock.getPosition() instead of  b.getPosition()?
+			ship.vel += pushVel;
+			//if (ship.blocks.length == 1)	b.setAngularVelocity(300.0f);
 		}
 		
 		//turn on props
-		if (isServer() && b.hasTag("engine") && isle.owner == "")
+		if (isServer() && b.hasTag("engine") && ship.owner == "")
 		{
 			b.set_u32("onTime", getGameTime());
 			b.set_f32("power", -1.0f);
@@ -95,7 +95,7 @@ void onTick(CBlob@ this)
 		if (isServer() && gameTime == this.get_u32("detonationTime") - 1)
 		{
 			this.getShape().getVars().customData = -1;
-			getRules().set_bool("dirty islands", true);
+			getRules().set_bool("dirty ships", true);
 		}
 		else if (gameTime == this.get_u32("detonationTime"))
 			Repulse(this);

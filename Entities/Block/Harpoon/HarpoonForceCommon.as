@@ -1,6 +1,6 @@
 //Common file for getting forces from a propeller
 
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 const f32 HARPOON_SPEED = 0.5f;
 
@@ -11,7 +11,7 @@ void HarpoonForces(CBlob@ this,
 					 Vec2f &out moveNorm,
 					 float &out angleVel)
 {
-	Island@ movingIsland = getIsland(hitBlob.getShape().getVars().customData);
+	Ship@ movingShip = getShip(hitBlob.getShape().getVars().customData);
 
 	Vec2f pos = this.getPosition();
 
@@ -22,7 +22,7 @@ void HarpoonForces(CBlob@ this,
 
 	// calculate "proper" force
 
-	Vec2f fromCenter = pos - movingIsland.pos;
+	Vec2f fromCenter = pos - movingShip.pos;
 	f32 fromCenterLen = fromCenter.Normalize();			
 	f32 directionMag = Maths::Abs( fromCenter * moveNorm );
 	f32 dist = 35.0f;

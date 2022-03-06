@@ -1,4 +1,4 @@
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "BlockHooks.as";
 #include "BlockCosts.as";
@@ -17,19 +17,19 @@ void onInit(CBlob@ this)
     this.addCommandID("place");
 }
 
-CBlob@ getReferenceBlock(CBlob@ this, Island@ island) //find specific origin blocks connected to an island
+CBlob@ getReferenceBlock(CBlob@ this, Ship@ ship) //find specific origin blocks connected to an ship
 {
-	if (island !is null)
+	if (ship !is null)
 	{
 		CBlob@[] references;
 
-		if (island.isMothership)
+		if (ship.isMothership)
 			return getMothership(this.getTeamNum());
-		else if (island.isSecondaryCore)
+		else if (ship.isSecondaryCore)
 			getBlobsByTag("secondaryCore", @references);
-		else if (island.isStation)
+		else if (ship.isStation)
 			getBlobsByTag("station", @references);
-		else if (island.isMiniStation)
+		else if (ship.isMiniStation)
 			getBlobsByTag("ministation", @references);
 		else getBlobsByTag("seat", @references);
 		
@@ -37,12 +37,12 @@ CBlob@ getReferenceBlock(CBlob@ this, Island@ island) //find specific origin blo
 		{
 			CBlob@ ref = references[i];
 			if (ref.getTeamNum() == this.getTeamNum() && 
-				ref.getShape().getVars().customData == getIslandBlob(this).getShape().getVars().customData)
+				ref.getShape().getVars().customData == getShipBlob(this).getShape().getVars().customData)
 				return ref;
 		}
 
-		if (island.centerBlock !is null) 
-			return island.centerBlock;
+		if (ship.centerBlock !is null) 
+			return ship.centerBlock;
 	}
 	return null;
 }
@@ -54,16 +54,16 @@ void onTick(CBlob@ this)
     {
 		Vec2f pos = this.getPosition();
 	
-        Island@ island = getIsland(this);
-		if (island !is null && island.centerBlock !is null)
+        Ship@ ship = getShip(this);
+		if (ship !is null && ship.centerBlock !is null)
         {
-			CBlob@ centerBlock = getReferenceBlock(this, island);
-			Vec2f islandPos = centerBlock.getPosition();
+			CBlob@ centerBlock = getReferenceBlock(this, ship);
+			Vec2f shipPos = centerBlock.getPosition();
 			f32 blocks_angle = this.get_f32("blocks_angle");//next step angle
 			f32 target_angle = this.get_f32("target_angle");//final angle (after manual rotation)
 			Vec2f aimPos = this.getAimPos();
 			
-			CBlob@ refBlob = getIslandBlob(this);
+			CBlob@ refBlob = getShipBlob(this);
             if (refBlob is null)
 			{
 				warn("PlaceBlocks: refBlob not found");
@@ -79,10 +79,10 @@ void onTick(CBlob@ this)
 				//checks for canPlace
 				u32 gameTime = getGameTime();
 				CRules@ rules = getRules();
-				bool skipCoreCheck = gameTime > getRules().get_u16("warmup_time") || (island.isMothership && (island.owner == "" || island.owner == "*" || island.owner == player.getUsername()));
+				bool skipCoreCheck = gameTime > getRules().get_u16("warmup_time") || (ship.isMothership && (ship.owner == "" || ship.owner == "*" || ship.owner == player.getUsername()));
 				bool cLinked = false;
 				bool onRock = false;
-                const bool overlappingIsland = blocksOverlappingIsland(@blocks);
+                const bool overlappingShip = blocksOverlappingShip(@blocks);
 				for (uint i = 0; i < blocks.length; ++i)
 				{
 					CBlob@ block = blocks[i];
@@ -91,7 +91,7 @@ void onTick(CBlob@ this)
 					if (map.isTileSolid(bTile))
 						onRock = true;
 					
-					if (overlappingIsland || onRock)
+					if (overlappingShip || onRock)
 					{
 						SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
 						continue;
@@ -112,7 +112,7 @@ void onTick(CBlob@ this)
 				}
 				
 				//can't Place heltips
-				bool crewCantPlace = !overlappingIsland && cLinked;
+				bool crewCantPlace = !overlappingShip && cLinked;
 				if (crewCantPlace)
 					crewCantPlaceCounter++;
 				else
@@ -125,13 +125,13 @@ void onTick(CBlob@ this)
                 {
 					if (gameTime - this.get_u32("placedTime") > 22)
 					{
-						if (target_angle == blocks_angle && !overlappingIsland && !cLinked && !onRock)
+						if (target_angle == blocks_angle && !overlappingShip && !cLinked && !onRock)
 						{
 							CBitStream params;
 							params.write_netid(centerBlock.getNetworkID());
 							params.write_netid(refBlob.getNetworkID());
-							params.write_Vec2f(pos - islandPos);
-							params.write_Vec2f(aimPos - islandPos);
+							params.write_Vec2f(pos - shipPos);
+							params.write_Vec2f(aimPos - shipPos);
 							params.write_f32(target_angle);
 							params.write_f32(centerBlock.getAngleDegrees());
 							this.SendCommand(this.getCommandID("place"), params);
@@ -184,15 +184,15 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
         return;
     }
 	
-	Vec2f island_pos = centerBlock.getPosition();
+	Vec2f ship_pos = centerBlock.getPosition();
     f32 angle = centerBlock.getAngleDegrees();
 	f32 refBAngle = refBlock.getAngleDegrees();//reference block angle
-	//current island angle as point of reference
+	//current ship angle as point of reference
 	while (refBAngle > angle + 45) refBAngle -= 90.0f;
 	while (refBAngle < angle - 45) refBAngle += 90.0f;
 	
 	//get offset (based on the centerblock) of block we're standing on
-	Vec2f refBOffset = refBlock.getPosition() - island_pos;
+	Vec2f refBOffset = refBlock.getPosition() - ship_pos;
 	refBOffset.RotateBy(-refBAngle);
 	refBOffset.x = refBOffset.x % 8.0f;
 	refBOffset.y = refBOffset.y % 8.0f;
@@ -201,13 +201,13 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	if (refBOffset.y > 4.0f) refBOffset.y -= 8.0f; else if (refBOffset.y < -4.0f) refBOffset.y += 8.0f;
 	refBOffset.RotateBy(refBAngle);
 	
-	island_pos += refBOffset;
+	ship_pos += refBOffset;
 	Vec2f mouseAim = aimPos - pos;
 	f32 mouseDist = Maths::Min(mouseAim.Normalize(), max_build_distance);
 	aimPos = pos + mouseAim * mouseDist;//position of the 'buildblock' pointer
-	Vec2f islandAim = aimPos - island_pos;//island to 'buildblock' pointer
-	islandAim.RotateBy(-refBAngle);	islandAim = SnapToGrid(islandAim); islandAim.RotateBy(refBAngle);
-	Vec2f cursor_pos = island_pos + islandAim;//position of snapped buildblock
+	Vec2f shipAim = aimPos - ship_pos;//ship to 'buildblock' pointer
+	shipAim.RotateBy(-refBAngle);	shipAim = SnapToGrid(shipAim); shipAim.RotateBy(refBAngle);
+	Vec2f cursor_pos = ship_pos + shipAim;//position of snapped buildblock
 	
 	//rotate and position blocks
 	for (uint i = 0; i < blocks.length; ++i)
@@ -217,7 +217,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 		offset.RotateBy(blocks_angle);
 		offset.RotateBy(refBAngle);
   
-		block.setPosition(cursor_pos + offset);//align to island grid
+		block.setPosition(cursor_pos + offset);//align to ship grid
 		block.setAngleDegrees((refBAngle + blocks_angle + (block.hasTag("engine") ? 90.0f : 0.0f)) % 360.0f);//set angle: reference angle + rotation angle
 
 		SetDisplay(block, color_white, RenderStyle::additive, 560.0f);
@@ -239,31 +239,31 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         Vec2f pos_offset = params.read_Vec2f();
         Vec2f aimPos_offset = params.read_Vec2f();
         const f32 target_angle = params.read_f32();
-        const f32 island_angle = params.read_f32();
+        const f32 ship_angle = params.read_f32();
 
-        Island@ island = getIsland(centerBlock.getShape().getVars().customData);
-        if (island is null)
+        Ship@ ship = getShip(centerBlock.getShape().getVars().customData);
+        if (ship is null)
         {
-            warn("place cmd: island not found");
+            warn("place cmd: ship not found");
             return;
         }
 		
-		if (island.centerBlock is null)
+		if (ship.centerBlock is null)
 		{
-			warn("place cmd: island centerBlock not found");
+			warn("place cmd: ship centerBlock not found");
 			return;
 		}
 		
-		Vec2f islandPos = centerBlock.getPosition();
-		f32 islandAngle = island.centerBlock.getAngleDegrees();
-		f32 angleDelta = centerBlock.getAngleDegrees() - island_angle;//to account for island angle lag
+		Vec2f shipPos = centerBlock.getPosition();
+		f32 shipAngle = ship.centerBlock.getAngleDegrees();
+		f32 angleDelta = centerBlock.getAngleDegrees() - ship_angle;//to account for ship angle lag
 		
-		bool overlappingIsland = false;
+		bool overlappingShip = false;
         CBlob@[]@ blocks;
         if (this.get("blocks", @blocks) && blocks.size() > 0)                 
         {	
 			if (isServer())
-				PositionBlocks(@blocks, islandPos + pos_offset.RotateBy(angleDelta), islandPos + aimPos_offset.RotateBy(angleDelta), target_angle, centerBlock, refBlock);
+				PositionBlocks(@blocks, shipPos + pos_offset.RotateBy(angleDelta), shipPos + aimPos_offset.RotateBy(angleDelta), target_angle, centerBlock, refBlock);
 
 			int iColor = centerBlock.getShape().getVars().customData;
 			for (uint i = 0; i < blocks.length; ++i)
@@ -278,16 +278,16 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					SetDisplay(b, color_white, RenderStyle::normal, z);
 					if (!isServer())//add it locally till a sync
 					{
-						IslandBlock isle_block;
-						isle_block.blobID = b.getNetworkID();
-						isle_block.offset = b.getPosition() - island.centerBlock.getPosition();
-						isle_block.offset.RotateBy(-islandAngle);
-						isle_block.angle_offset = b.getAngleDegrees() - islandAngle;
+						ShipBlock ship_block;
+						ship_block.blobID = b.getNetworkID();
+						ship_block.offset = b.getPosition() - ship.centerBlock.getPosition();
+						ship_block.offset.RotateBy(-shipAngle);
+						ship_block.angle_offset = b.getAngleDegrees() - shipAngle;
 						b.getShape().getVars().customData = iColor;
-						island.blocks.push_back(isle_block);	
+						ship.blocks.push_back(ship_block);	
 					}
 					else
-						b.getShape().getVars().customData = 0; // push on island
+						b.getShape().getVars().customData = 0; // push on ship
 
 					BlockHooks@ blockHooks;
 					b.get("BlockHooks", @blockHooks);
@@ -319,10 +319,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			CBlob@ core = getMothership(this.getTeamNum());
 			if (core !is null && !core.hasTag("critical"))
 			{
-				Island@ pIsle = getIsland(this);
-				bool canShop = pIsle !is null && pIsle.centerBlock !is null 
-								&& ((pIsle.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
-								|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
+				Ship@ pShip = getShip(this);
+				bool canShop = pShip !is null && pShip.centerBlock !is null 
+								&& ((pShip.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
+								|| ((pShip.isStation || pShip.isMiniStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum()));
 				if (canShop)
 				{
 					this.set_bool("getting block", true);

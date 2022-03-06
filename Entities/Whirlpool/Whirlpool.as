@@ -1,4 +1,4 @@
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "WaterEffects.as";
 #include "Hitters.as";
 
@@ -50,13 +50,13 @@ void onTick(CBlob@ this)
 		h.setVelocity(-(attractDir + perpDir) * Maths::Min(5.0f, force) / 2.0f);
 	}
 		
-	//suck in islands
-	Island[]@ islands;
-	if (rules.get("islands", @islands))
-		for (uint i = 0; i < islands.length; ++i)
+	//suck in ships
+	Ship[]@ ships;
+	if (rules.get("ships", @ships))
+		for (uint i = 0; i < ships.length; ++i)
 		{
-			Island @isle = islands[i];	
-			Vec2f attractDir = isle.pos - pos;
+			Ship@ ship = ships[i];	
+			Vec2f attractDir = ship.pos - pos;
 			f32 distance = attractDir.Length();
 			f32 distanceFactor;
 			
@@ -74,9 +74,9 @@ void onTick(CBlob@ this)
 			attractDir *= force * distanceFactor;
 			perpDir *= force / Maths::Pow(distanceFactor, 2);
 			
-			f32 massFactor = isle.isMothership ? (Maths::Sqrt(isle.mass) * 65.0f) : Maths::Max(200.0f, (isle.mass * 35.0f));
+			f32 massFactor = ship.isMothership ? (Maths::Sqrt(ship.mass) * 65.0f) : Maths::Max(200.0f, (ship.mass * 35.0f));
 			
-			isle.vel -= (attractDir + perpDir)/massFactor;
+			ship.vel -= (attractDir + perpDir)/massFactor;
 		}
 	
 	//increase factor, damage blobs

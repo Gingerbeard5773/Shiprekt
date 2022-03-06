@@ -1,4 +1,4 @@
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "ExplosionEffects.as";
 #include "WaterEffects.as";
 #include "Booty.as";
@@ -290,7 +290,7 @@ void onTick(CBlob@ this)
 	f32 hp = this.getHealth();
 	Vec2f pos = this.getPosition();
 	int color1 = this.getShape().getVars().customData;
-	Island@ isle = getIsland(color1);
+	Ship@ ship = getShip(color1);
 	CRules@ rules = getRules();
 	
 	//repel
@@ -303,15 +303,15 @@ void onTick(CBlob@ this)
 		int color2 = cores[i].getShape().getVars().customData;
 		if (cores[i] !is this && color1 != color2 && distance < 125.0f)
 		{
-			//sparks in the direction of the island
-			if (isle !is null)
+			//sparks in the direction of the ship
+			if (ship !is null)
 			{
 				Vec2f dir = pos - cores[i].getPosition();
 				dir.Normalize();
 				
 				f32 whirlpoolFactor = !getRules().get_bool("whirlpool") ? 2.0f : 1.25f;
 				f32 healthFactor = Maths::Max( 0.25f, hp/this.getInitialHealth());
-				isle.vel += dir * healthFactor*whirlpoolFactor/distance;
+				ship.vel += dir * healthFactor*whirlpoolFactor/distance;
 				
 				dir.RotateBy(-45.0f);
 				dir *= -6.0f * healthFactor;
@@ -343,8 +343,8 @@ void onTick(CBlob@ this)
 			{
 				if (humans[i].getTeamNum() == coreTeam && humans[i].getHealth() < humans[i].getInitialHealth())
 				{
-					Island@ hIsle = getIsland(humans[i]);
-					if (hIsle !is null && hIsle.centerBlock !is null && color1 == hIsle.centerBlock.getShape().getVars().customData)
+					Ship@ hShip = getShip(humans[i]);
+					if (hShip !is null && hShip.centerBlock !is null && color1 == hShip.centerBlock.getShape().getVars().customData)
 						humans[i].server_Heal(HEAL_AMMOUNT);
 				}
 			}
@@ -359,7 +359,7 @@ void onTick(CBlob@ this)
 	//critical Slowdown, selfDestruct and effects
 	if (this.hasTag("critical"))
 	{
-		//isle.vel *= 0.8f;
+		//ship.vel *= 0.8f;
 
 		if (isServer() && getGameTime() > this.get_u32("dieTime"))
 			this.server_Die();
@@ -390,7 +390,7 @@ void onTick(CBlob@ this)
 	}
 }
 
-//make islandblocks start exploding
+//make shipblocks start exploding
 void initiateSelfDestruct(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
@@ -406,15 +406,15 @@ void initiateSelfDestruct(CBlob@ this)
 	const int color = this.getShape().getVars().customData;
     if (color == 0) return;
 
-	Island@ isle = getIsland(color);
-	if (isle is null || isle.blocks.length < 10) return;
+	Ship@ ship = getShip(color);
+	if (ship is null || ship.blocks.length < 10) return;
 		
 	this.AddScript("Block_Explode.as");
 	u8 teamNum = this.getTeamNum();
-	for (uint i = 0; i < isle.blocks.length; ++i)
+	for (uint i = 0; i < ship.blocks.length; ++i)
 	{
-		IslandBlock@ isle_block = isle.blocks[i];
-		CBlob@ b = getBlobByNetworkID( isle_block.blobID);
+		ShipBlock@ ship_block = ship.blocks[i];
+		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
 		if (b !is null && teamNum == b.getTeamNum())
 		{
 			if (i % 4 == 0 && !b.hasTag("mothership") && !b.hasTag("coupling"))
@@ -423,7 +423,7 @@ void initiateSelfDestruct(CBlob@ this)
 	}
 }
 
-//kill players, turrets and island
+//kill players, turrets and ship
 void selfDestruct(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
@@ -464,17 +464,17 @@ void selfDestruct(CBlob@ this)
 			this.server_Hit(blastBlobs[i], pos, Vec2f_zero, damage, Hitters::bomb, true);
 		}
 
-	//kill island
+	//kill ship
 	const int color = this.getShape().getVars().customData;
     if (color == 0)		return;
 
-	Island@ isle = getIsland(color);
-	if (isle is null || isle.blocks.length < 10) return;
+	Ship@ ship = getShip(color);
+	if (ship is null || ship.blocks.length < 10) return;
 
-	for (uint i = 0; i < isle.blocks.length; ++i)
+	for (uint i = 0; i < ship.blocks.length; ++i)
 	{
-		IslandBlock@ isle_block = isle.blocks[i];
-		CBlob@ b = getBlobByNetworkID(isle_block.blobID);
+		ShipBlock@ ship_block = ship.blocks[i];
+		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
 		if (b !is null && b !is this && teamNum == b.getTeamNum())
 			b.server_Die();
 	}

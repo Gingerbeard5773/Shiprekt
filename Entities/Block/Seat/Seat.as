@@ -1,4 +1,4 @@
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "HumanCommon.as";
 #include "BlockProduction.as";
 #include "PropellerForceCommon.as";
@@ -86,8 +86,8 @@ void onTick(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 	sprite.SetAnimation(seatOwner != "" ? "default": "fold");//update sprite
 
-	Island@ island = getIsland(this.getShape().getVars().customData);
-	if (island is null)	return;
+	Ship@ ship = getShip(this.getShape().getVars().customData);
+	if (ship is null)	return;
 	
 	AttachmentPoint@ seat = this.getAttachmentPoint(0);
 	CBlob@ occupier = seat.getOccupied();
@@ -104,8 +104,8 @@ void onTick(CBlob@ this)
 		CHUD@ HUD = getHUD();
 		string occupierName = player.getUsername();
 		u8 occupierTeam = occupier.getTeamNum();
-		const bool isCaptain = island.owner == occupierName || island.owner == "*" || island.owner == "";
-		const bool canHijack = seatOwner == island.owner && occupierTeam != teamNum;
+		const bool isCaptain = ship.owner == occupierName || ship.owner == "*" || ship.owner == "";
+		const bool canHijack = seatOwner == ship.owner && occupierTeam != teamNum;
 			
 		const bool up = occupier.isKeyPressed(key_up);
 		const bool left = occupier.isKeyPressed(key_left);
@@ -121,19 +121,19 @@ void onTick(CBlob@ this)
 		if (player.isMyPlayer())
 		{
 			//show help tip
-			occupier.set_bool("drawSeatHelp", island.owner != "" && occupierTeam == teamNum && !isCaptain && occupierName == seatOwner);
+			occupier.set_bool("drawSeatHelp", ship.owner != "" && occupierTeam == teamNum && !isCaptain && occupierName == seatOwner);
 			
 			//couplings help tip
 			occupier.set_bool("drawCouplingsHelp", this.get_bool("canProduceCoupling"));
 
 			//gather couplings and flak
 			CBlob@[] couplings, flak;
-			for (uint i = 0; i < island.blocks.length; ++i)
+			for (uint i = 0; i < ship.blocks.length; ++i)
 			{
-				IslandBlock@ isle_block = island.blocks[i];
-				if (isle_block is null) continue;
+				ShipBlock@ ship_block = ship.blocks[i];
+				if (ship_block is null) continue;
 
-				CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+				CBlob@ block = getBlobByNetworkID(ship_block.blobID);
 				if (block is null) continue;
 				
 				//gather couplings
@@ -297,9 +297,9 @@ void onTick(CBlob@ this)
 			ProduceBlock(rules, occupier, "coupling", 2);
 		}
 		
-		//update if islands changed
+		//update if ships changed
 		if (this.get_bool("updateArrays") && (gameTime + this.getNetworkID()) % 10 == 0)
-			updateArrays(this, island);
+			updateArrays(this, ship);
 		
 		if (space && left_click)//so when a player undocks the ship stops
 		{
@@ -307,7 +307,7 @@ void onTick(CBlob@ this)
 			this.set_bool("kLR", true);
 		}
 		
-		//island controlling: only ship 'captain' OR enemy can steer /direct fire
+		//ship controlling: only ship 'captain' OR enemy can steer /direct fire
 		if (isCaptain || canHijack)
 		{
 			// gather propellers, couplings, machineguns and cannons
@@ -322,7 +322,7 @@ void onTick(CBlob@ this)
 			this.get("cannons", cannons);
 
 			//propellers
-			bool teamInsensitive = !island.isMothership || island.owner != "*";//it's a mini or mship isn't merged with another mship (every side controlls their props)
+			bool teamInsensitive = !ship.isMothership || ship.owner != "*";//it's a mini or mship isn't merged with another mship (every side controlls their props)
 			
 			//reset			
 			if (this.get_bool("kUD") && !up && !down)
@@ -364,7 +364,7 @@ void onTick(CBlob@ this)
 			
 			//power to use
 			f32 power, reverse_power;
-			if (island.isMothership)
+			if (ship.isMothership)
 			{
 				power = -1.05f;
 				reverse_power = 0.15f;
@@ -427,7 +427,7 @@ void onTick(CBlob@ this)
 				}
 				else
 				{
-					u8 maxStrafers = Maths::Round( Maths::FastSqrt(island.mass)/3.0f);
+					u8 maxStrafers = Maths::Round( Maths::FastSqrt(ship.mass)/3.0f);
 					for (uint i = 0; i < strafe_left_propellers.length; ++i)
 					{
 						CBlob@ prop = getBlobByNetworkID( strafe_left_propellers[i]);
@@ -503,9 +503,9 @@ void onTick(CBlob@ this)
 			}
 		}
 	}
-	else if (isServer() && island.owner == seatOwner)//captain seats release rates
+	else if (isServer() && ship.owner == seatOwner)//captain seats release rates
 	{
-		if (island.pos != island.old_pos)//keep extra seats alive while the mothership moves
+		if (ship.pos != ship.old_pos)//keep extra seats alive while the mothership moves
 			this.set_u32("lastActive", gameTime);
 		else//release seat faster for when captain abandons the ship
 			this.set_u32("lastActive", Maths::Max(0, this.get_u32("lastActive") - 2));
@@ -532,17 +532,17 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 	}
 }
 
-void updateArrays(CBlob@ this, Island@ island)
+void updateArrays(CBlob@ this, Ship@ ship)
 {
 	this.set_bool("updateArrays", false);
 
 	u16[] left_propellers, strafe_left_propellers, strafe_right_propellers, right_propellers, up_propellers, down_propellers, machineguns, cannons;					
-	for (uint i = 0; i < island.blocks.length; ++i)
+	for (uint i = 0; i < ship.blocks.length; ++i)
 	{
-		IslandBlock@ isle_block = island.blocks[i];
-		if (isle_block is null) continue;
+		ShipBlock@ ship_block = ship.blocks[i];
+		if (ship_block is null) continue;
 
-		CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+		CBlob@ block = getBlobByNetworkID(ship_block.blobID);
 		if (block is null) continue;
 					
 		//machineguns
@@ -557,7 +557,7 @@ void updateArrays(CBlob@ this, Island@ island)
 		{
 			Vec2f _veltemp, velNorm;
 			float angleVel;
-			PropellerForces(block, island, 1.0f, _veltemp, velNorm, angleVel);
+			PropellerForces(block, ship, 1.0f, _veltemp, velNorm, angleVel);
 
 			velNorm.RotateBy(-this.getAngleDegrees());
 			

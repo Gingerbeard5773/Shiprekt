@@ -1,5 +1,5 @@
 #define SERVER_ONLY
-#include "IslandsCommon.as"
+#include "ShipsCommon.as"
 
 const string PLAYER_BLOB = "human";
 const string SPAWN_TAG = "mothership";
@@ -199,11 +199,11 @@ void onTick(CRules@ this)
 					CBlob@ mShip = getMothership(teamWithPlayers);
 					if (mShip !is null)
 					{
-						Island@ isle = getIsland(mShip.getShape().getVars().customData);
-						if (isle !is null && isle.owner != "" && isle.owner != "*")
+						Ship@ ship = getShip(mShip.getShape().getVars().customData);
+						if (ship !is null && ship.owner != "" && ship.owner != "*")
 						{
-							string lastChar = isle.owner.substr(isle.owner.length() -1);
-							captain = isle.owner + (lastChar == "s" ? "' " : "'s ");
+							string lastChar = ship.owner.substr(ship.owner.length() -1);
+							captain = ship.owner + (lastChar == "s" ? "' " : "'s ");
 						}
 						this.SetGlobalMessage(captain + this.getTeam(mShip.getTeamNum()).getName() + " Wins!");
 					}

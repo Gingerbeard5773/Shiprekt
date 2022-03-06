@@ -131,9 +131,9 @@ void Manual(CBlob@ this, CBlob@ controller)
 	// fire
 	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && isClearShot(this, aimVec))
 	{
-		Island@ isle = getIsland(this.getShape().getVars().customData);
+		Ship@ ship = getShip(this.getShape().getVars().customData);
 		u16 netID = 0;
-		if (isle !is null && player !is null && (!isle.isMothership || isle.owner != player.getUsername()))
+		if (ship !is null && player !is null && (!ship.isMothership || ship.owner != player.getUsername()))
 			netID = controller.getNetworkID();
 		Fire(this, aimVec, netID);
 	}
@@ -166,12 +166,12 @@ void Auto(CBlob@ this)
 			{
 				Vec2f bPos = b.getPosition();
 
-				Island@ targetIsland;
+				Ship@ targetShip;
 				if (b.hasTag("block"))
-					@targetIsland = getIsland(b.getShape().getVars().customData);
+					@targetShip = getShip(b.getShape().getVars().customData);
 				else
 				{
-					@targetIsland = getIsland(b);
+					@targetShip = getShip(b);
 					if (b.isAttached())
 					{
 						AttachmentPoint@ humanAttach = b.getAttachmentPoint(0);
@@ -185,13 +185,13 @@ void Auto(CBlob@ this)
 				f32 distance = aimVec.Length();
 
 				int bColor = 0;
-				if (targetIsland !is null)
+				if (targetShip !is null)
 				{
 					bColor = b.getShape().getVars().customData;
 
 					//prediction compensation
-					//aimVec += targetIsland.vel * distance /PROJECTILE_SPEED * 0.9f;//poor man's kinematics
-					aimVec += targetIsland.vel * Maths::FastSqrt(distance) * 13.0f/PROJECTILE_SPEED;
+					//aimVec += targetShip.vel * distance /PROJECTILE_SPEED * 0.9f;//poor man's kinematics
+					aimVec += targetShip.vel * Maths::FastSqrt(distance) * 13.0f/PROJECTILE_SPEED;
 					distance = aimVec.Length();//account for compensation
 				}
 				else if (b.hasTag("rocket"))
@@ -220,13 +220,13 @@ void Auto(CBlob@ this)
 		if (isServer() && canShootAuto(this))
 		{
 			u16 netID = 0;
-			Island@ island = getIsland(this.getShape().getVars().customData);
-			if (island !is null)
+			Ship@ ship = getShip(this.getShape().getVars().customData);
+			if (ship !is null)
 			{
-				CPlayer@ islandOwner = getPlayerByUsername(island.owner);
-				if (islandOwner !is null)
+				CPlayer@ shipOwner = getPlayerByUsername(ship.owner);
+				if (shipOwner !is null)
 				{
-					CBlob@ pBlob = islandOwner.getBlob();
+					CBlob@ pBlob = shipOwner.getBlob();
 					if (pBlob !is null)
 						netID = pBlob.getNetworkID();
 				}
@@ -248,9 +248,9 @@ void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
 		Rotate(this, aimVec);
 		if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
 		{
-			Island@ isle = getIsland(this.getShape().getVars().customData);
+			Ship@ ship = getShip(this.getShape().getVars().customData);
 			u16 netID = 0;
-			if (isle !is null && player !is null && (!isle.isMothership || isle.owner != player.getUsername()))
+			if (ship !is null && player !is null && (!ship.isMothership || ship.owner != player.getUsername()))
 				netID = controller.getNetworkID();
 			Fire(this, aimVec, netID);
 		}
@@ -315,13 +315,13 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 
 			int thisColor = this.getShape().getVars().customData;
 			int bColor = b.getShape().getVars().customData;
-			bool sameIsland = bColor != 0 && thisColor == bColor;
+			bool sameShip = bColor != 0 && thisColor == bColor;
 
 			bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
 
-			//if (sameIsland || targetMerged) print ("" + (sameIsland ? "sameisland; " : "") + (targetMerged ? "targetMerged; " : ""));
+			//if (sameShip || targetMerged) print ("" + (sameShip ? "sameship; " : "") + (targetMerged ? "targetMerged; " : ""));
 
-			if (b.hasTag("block") && b.getShape().getVars().customData > 0 && (b.hasTag("solid") || b.hasTag("weapon")) && sameIsland && !canShootSelf)
+			if (b.hasTag("block") && b.getShape().getVars().customData > 0 && (b.hasTag("solid") || b.hasTag("weapon")) && sameShip && !canShootSelf)
 			{
 				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;

@@ -1,5 +1,5 @@
 #define CLIENT_ONLY
-#include "IslandsCommon.as"
+#include "ShipsCommon.as"
 
 int angle = 0;
 f32 zoom = 1.0f;
@@ -16,11 +16,11 @@ void onTick(CBlob@ this)
 	if (camera is null)
 		return;
 		
-	Island@ island = getIsland(this);
-	if (island !is null && island.centerBlock !is null && !this.isAttached())
+	Ship@ ship = getShip(this);
+	if (ship !is null && ship.centerBlock !is null && !this.isAttached())
 	{
 		//find best refBlock
-		CBlob@ refBlob = getIslandBlob(this);
+		CBlob@ refBlob = getShipBlob(this);
 		if (refBlob !is null)
 		{
 			//find rotation

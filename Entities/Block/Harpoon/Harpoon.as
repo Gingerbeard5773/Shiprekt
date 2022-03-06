@@ -1,4 +1,4 @@
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "HarpoonForceCommon.as";
 #include "ParticleSparks.as";
 #include "AccurateSoundPlay.as";
@@ -260,32 +260,32 @@ void onTick(CBlob@ this)
 				{
 					harpoon.grapple_pos = b.getPosition();
 					
-					// Pull the islands together
-					Island@ thisIsland = getIsland(this.getShape().getVars().customData);
-					Island@ hitIsland = getIsland(b.getShape().getVars().customData);
-					if (hitIsland !is null && thisIsland !is null)
+					// Pull the ships together
+					Ship@ thisShip = getShip(this.getShape().getVars().customData);
+					Ship@ hitShip = getShip(b.getShape().getVars().customData);
+					if (hitShip !is null && thisShip !is null)
 					{
-						bool isMyIsland = hitIsland.id == thisIsland.id;
-						if (!isMyIsland && ropeTooLong)
+						bool isMyShip = hitShip.id == thisShip.id;
+						if (!isMyShip && ropeTooLong)
 						{
 							//TODO: fix angular velocity support & find a better solution for super-sonic speeds
 							Vec2f moveVel;
 							Vec2f moveNorm;
 							float angleVel;	
 						
-							const f32 hitMass = hitIsland.mass;
+							const f32 hitMass = hitShip.mass;
 							HarpoonForces(this, b, -1.0f, moveVel, moveNorm, angleVel);
 							moveVel /= hitMass;
 							angleVel /= hitMass;
-							hitIsland.vel = ClampSpeed(hitIsland.vel + moveVel, 15);
-							//hitIsland.angle_vel += angleVel*2.0f;
+							hitShip.vel = ClampSpeed(hitShip.vel + moveVel, 15);
+							//hitShip.angle_vel += angleVel*2.0f;
 							
-							const f32 thisMass = thisIsland.mass;
+							const f32 thisMass = thisShip.mass;
 							HarpoonForces(b, this, -1.0f, moveVel, moveNorm, angleVel);
 							moveVel /= thisMass;
 							angleVel /= thisMass;
-							thisIsland.vel = ClampSpeed(thisIsland.vel + moveVel, 15);
-							//thisIsland.angle_vel += angleVel*2.0f;
+							thisShip.vel = ClampSpeed(thisShip.vel + moveVel, 15);
+							//thisShip.angle_vel += angleVel*2.0f;
 						}
 					}
 				}				
@@ -389,12 +389,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (!this.get("harpoonInfo", @harpoon)) return;
 		
 		Vec2f direction = params.read_Vec2f();
-		Island@ isle = getIsland(this.getShape().getVars().customData);
-		Vec2f isleVel = isle !is null ? isle.vel : Vec2f();
+		Ship@ ship = getShip(this.getShape().getVars().customData);
+		Vec2f shipVel = ship !is null ? ship.vel : Vec2f();
 		
 		harpoon.grappling = true;
 		harpoon.grapple_id = 0xffff;
-		harpoon.grapple_pos = this.getPosition() + direction + (isleVel*2);
+		harpoon.grapple_pos = this.getPosition() + direction + (shipVel*2);
 		harpoon.grapple_ratio = 1.0f; //allow fully extended
 		harpoon.grapple_vel = direction * harpoon_grapple_throw_speed;
 	}

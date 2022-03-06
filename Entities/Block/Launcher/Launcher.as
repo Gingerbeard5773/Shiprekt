@@ -78,7 +78,7 @@ bool isClear(CBlob@ this)
 			CBlob@ b =  hitInfos[i].blob;
 			if (b is null || b is this) continue;
 
-			if (this.getShape().getVars().customData == b.getShape().getVars().customData && (b.hasTag("weapon") || b.hasTag("solid"))) //same island
+			if (this.getShape().getVars().customData == b.getShape().getVars().customData && (b.hasTag("weapon") || b.hasTag("solid"))) //same ship
 			{
 				return false;
 			}
@@ -103,8 +103,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (shooter is null)
 			return;
 
-		Island@ island = getIsland(this.getShape().getVars().customData);
-		if (island is null)
+		Ship@ ship = getShip(this.getShape().getVars().customData);
+		if (ship is null)
 			return;
 			
 		Vec2f pos = this.getPosition();
@@ -140,7 +140,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{
                 	bullet.SetDamageOwnerPlayer(shooter.getPlayer());
                 }
-                bullet.setVelocity(velocity + ((getIsland(this) !is null) ? getIsland(this).vel : Vec2f(0, 0)));
+                bullet.setVelocity(velocity + ((getShip(this) !is null) ? getShip(this).vel : Vec2f(0, 0)));
 				bullet.setAngleDegrees(-aimvector.Angle() + 90.0f);
                 bullet.server_SetTimeToDie(25);
             }

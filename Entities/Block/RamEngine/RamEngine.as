@@ -1,4 +1,4 @@
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "WaterEffects.as";
 #include "PropellerForceCommon.as";
 #include "AccurateSoundPlay.as";
@@ -102,22 +102,22 @@ void onTick(CBlob@ this)
 			return;
 		}
 			
-		Island@ island = getIsland(this.getShape().getVars().customData);
-		if (island !is null)
+		Ship@ ship = getShip(this.getShape().getVars().customData);
+		if (ship !is null)
 		{
 			// move
 			Vec2f moveVel;
 			Vec2f moveNorm;
 			float angleVel;
 			
-			PropellerForces(this, island, power, moveVel, moveNorm, angleVel);
+			PropellerForces(this, ship, power, moveVel, moveNorm, angleVel);
 			
-			const f32 mass = island.mass + island.carryMass;
+			const f32 mass = ship.mass + ship.carryMass;
 			moveVel /= mass;
 			angleVel /= mass;
 			
-			island.vel += moveVel;
-			island.angle_vel += angleVel;
+			ship.vel += moveVel;
+			ship.angle_vel += angleVel;
 		
 			// eat stuff
 			if (isServer() && (gameTime + this.getNetworkID()) % 15 == 0)
@@ -160,13 +160,13 @@ void onTick(CBlob@ this)
 				}
 				
 				// limit sounds		
-				if (island.soundsPlayed == 0 && sprite.getEmitSoundPaused())
+				if (ship.soundsPlayed == 0 && sprite.getEmitSoundPaused())
 				{
 					sprite.SetEmitSoundPaused(false);								
 				}
 
-				island.soundsPlayed++;
-				const f32 vol = Maths::Min(0.5f + float(island.soundsPlayed)/2.0f, 3.0f);
+				ship.soundsPlayed++;
+				const f32 vol = Maths::Min(0.5f + float(ship.soundsPlayed)/2.0f, 3.0f);
 				sprite.SetEmitSoundVolume(vol);
 			}
 		}

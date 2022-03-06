@@ -1,5 +1,5 @@
 #include "AccurateSoundPlay.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 void onInit(CBlob@ this)
 {

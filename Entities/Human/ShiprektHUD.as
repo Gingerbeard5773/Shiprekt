@@ -1,6 +1,6 @@
 //shiprekt HUD
 #include "ActorHUDStartPos.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "ShiprektTranslation.as";
 
 const int slotsSize = 8;
@@ -181,27 +181,27 @@ void onRender(CSprite@ this)
 
 void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 {
-	Island@ island = getIsland(this);	
-	if (island !is null)
+	Ship@ ship = getShip(this);	
+	if (ship !is null)
 	{
-		CPlayer@ islandOwner = getPlayerByUsername(island.owner);
+		CPlayer@ shipOwner = getPlayerByUsername(ship.owner);
 		
 		//Owner name text (top left)
-		if (island.owner != "" && island.owner != "*")
+		if (ship.owner != "" && ship.owner != "*")
 		{
-			string lastChar = island.owner.substr( island.owner.length() -1);
-			string ownership = island.owner + (lastChar == "s" ? "'" : "'s") +" "+Trans::Ship;
+			string lastChar = ship.owner.substr( ship.owner.length() -1);
+			string ownership = ship.owner + (lastChar == "s" ? "'" : "'s") +" "+Trans::Ship;
 			Vec2f size;
 			GUI::GetTextDimensions(ownership, size);
 			GUI::DrawText(ownership, Vec2f(Maths::Max(4.0f, 69.0f - size.x/2.0f), 3.0f), SColor(255, 255, 255, 255));
 		}
 		
 		//icon
-		if (islandOwner is null || (islandOwner !is null && islandOwner.getTeamNum() == this.getTeamNum()))
+		if (shipOwner is null || (shipOwner !is null && shipOwner.getTeamNum() == this.getTeamNum()))
 		{
-			if (name == island.owner || island.owner == "*")
+			if (name == ship.owner || ship.owner == "*")
 				GUI::DrawIconByName("$CAPTAIN$", tl + Vec2f(67, -12));
-			else if (island.owner != "")
+			else if (ship.owner != "")
 				GUI::DrawIconByName("$CREW$", tl + Vec2f(67, -11));
 			else
 				GUI::DrawIconByName("$FREEMAN$", tl + Vec2f(67, -12));
@@ -210,7 +210,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 			GUI::DrawIconByName("$ASSAIL$", tl + Vec2f(67, -11));		
 		
 		//Speed
-		u16 speed = island.vel.Length() * 30;
+		u16 speed = ship.vel.Length() * 30;
 		GUI::DrawText(Trans::Speed+" : " + speed + " kilorekts/h", Vec2f(24, getScreenHeight() - 24), tipsColor);
 	}
 	else	

@@ -128,15 +128,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (shooter is null)
 			return;
 
-		Island@ island = getIsland(this.getShape().getVars().customData);
-		if (island is null)
+		Ship@ ship = getShip(this.getShape().getVars().customData);
+		if (ship is null)
 			return;
 
 		if (canIncreaseFirePause(this))
 		{
 			f32 currentFirePause = this.get_f32("fire pause");
 			if (currentFirePause < MAX_FIRE_PAUSE)
-				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * ( island.isMothership ? 1.0 : 1.0f) * FIRE_PAUSE_RATE));
+				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * ( ship.isMothership ? 1.0 : 1.0f) * FIRE_PAUSE_RATE));
 		}
 
 		Vec2f pos = this.getPosition();
@@ -206,7 +206,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 				const int thisColor = this.getShape().getVars().customData;
 				int bColor = b.getShape().getVars().customData;
-				bool sameIsland = bColor != 0 && thisColor == bColor;
+				bool sameShip = bColor != 0 && thisColor == bColor;
 				const bool isBlock = b.hasTag("block");
 
 				if (!b.hasTag("booty") && (bColor > 0 || !isBlock))
@@ -216,7 +216,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						if (b.hasTag("solid") || (b.getTeamNum() != teamNum && 
 						   (b.hasTag("door") || b.hasTag("core") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb"))))//hit these and die
 							killed = true;
-						else if (sameIsland && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
+						else if (sameShip && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
 						{
 							killed = true;
 							blocked = true;

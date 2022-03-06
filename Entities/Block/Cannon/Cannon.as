@@ -139,10 +139,10 @@ void Fire(CBlob@ this, CBlob@ shooter)
 		{
 			Vec2f vel = aimVector * PROJECTILE_SPEED;
 
-			Island@ isle = getIsland(this.getShape().getVars().customData);
-			if (isle !is null)
+			Ship@ ship = getShip(this.getShape().getVars().customData);
+			if (ship !is null)
 			{
-				vel += isle.vel;
+				vel += ship.vel;
 
 				if (shooter !is null)
 				{
@@ -176,7 +176,7 @@ bool isClear(CBlob@ this)
 			CBlob@ b =  hitInfos[i].blob;
 			if (b is null || b is this) continue;
 
-			if (this.getShape().getVars().customData == b.getShape().getVars().customData && (b.hasTag("weapon") || b.hasTag("solid"))) //same island
+			if (this.getShape().getVars().customData == b.getShape().getVars().customData && (b.hasTag("weapon") || b.hasTag("solid"))) //same ship
 			{
 				return false;
 			}

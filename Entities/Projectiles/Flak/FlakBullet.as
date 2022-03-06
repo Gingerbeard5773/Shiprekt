@@ -1,6 +1,6 @@
 #include "ExplosionEffects.as";;
 #include "WaterEffects.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";

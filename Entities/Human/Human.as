@@ -1,7 +1,7 @@
 #include "HumanCommon.as";
 #include "MakeBlock.as";
 #include "WaterEffects.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
@@ -124,8 +124,8 @@ void Move(CBlob@ this)
 		const bool right = this.isKeyPressed(key_right);	
 		const bool punch = this.isKeyPressed(key_action1);
 		const bool shoot = this.isKeyPressed(key_action2);
-		Island@ isle = getIsland(this);
-		shape.getVars().onground = isle !is null || isTouchingLand(pos);
+		Ship@ ship = getShip(this);
+		shape.getVars().onground = ship !is null || isTouchingLand(pos);
 
 		// move
 		Vec2f moveVel;
@@ -180,10 +180,10 @@ void Move(CBlob@ this)
 			}
 			
 			//speedup on own mothership
-			if (isle !is null && isle.isMothership && isle.centerBlock !is null)
+			if (ship !is null && ship.isMothership && ship.centerBlock !is null)
 			{
 				CBlob@ thisCore = getMothership(this.getTeamNum());
-				if (thisCore !is null && thisCore.getShape().getVars().customData == isle.centerBlock.getShape().getVars().customData)
+				if (thisCore !is null && thisCore.getShape().getVars().customData == ship.centerBlock.getShape().getVars().customData)
 					moveVel *= 1.35f;
 			}
 		}
@@ -243,10 +243,10 @@ void Move(CBlob@ this)
 		// artificial stay on ship
 		if (myPlayer)
 		{
-			CBlob@ islandBlob = getIslandBlob(this);
-			if (islandBlob !is null)
+			CBlob@ shipBlob = getShipBlob(this);
+			if (shipBlob !is null)
 			{
-				this.set_u16("shipID", islandBlob.getNetworkID());	
+				this.set_u16("shipID", shipBlob.getNetworkID());	
 				this.set_s8("stay count", 3);
 			}
 			else
@@ -262,8 +262,8 @@ void Move(CBlob@ this)
 					}
 					else if (!shipBlob.hasTag("solid") && !up && !left && !right && !down)
 					{
-						Island@ island = getIsland(shipBlob.getShape().getVars().customData);
-						if (island !is null && island.vel.Length() > 1.0f)
+						Ship@ blobship = getShip(shipBlob.getShape().getVars().customData);
+						if (blobship !is null && blobship.vel.Length() > 1.0f)
 							this.setPosition(shipBlob.getPosition());
 					}
 					this.set_s8("stay count", count);		
@@ -351,10 +351,10 @@ void PlayerControls(CBlob@ this)
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null && !core.hasTag("critical"))
 		{
-			Island@ pIsle = getIsland(this);
-			bool canShop = pIsle !is null && pIsle.centerBlock !is null 
-							&& ((pIsle.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
-							|| ((pIsle.isStation || pIsle.isMiniStation || pIsle.isSecondaryCore) && pIsle.centerBlock.getTeamNum() == this.getTeamNum()));
+			Ship@ pShip = getShip(this);
+			bool canShop = pShip !is null && pShip.centerBlock !is null 
+							&& ((pShip.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
+							|| ((pShip.isStation || pShip.isMiniStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum()));
 
 			if (!Human::isHoldingBlocks(this) && !this.isAttached())
 			{
@@ -366,7 +366,7 @@ void PlayerControls(CBlob@ this)
 						this.set_bool("justMenuClicked", true);
 
 						Sound::Play("buttonclick.ogg");
-						BuildShopMenu(this, core, Trans::Components, Vec2f(0,0), (pIsle.isStation || pIsle.isSecondaryCore) && !pIsle.isMothership, pIsle.isMiniStation);
+						BuildShopMenu(this, core, Trans::Components, Vec2f(0,0), (pShip.isStation || pShip.isSecondaryCore) && !pShip.isMothership, pShip.isMiniStation);
 					}
 				} 
 				else if (hud.hasMenus())
@@ -663,14 +663,14 @@ void ShootPistol(CBlob@ this)
 	params.write_Vec2f(vel);
 	params.write_f32(lifetime);
 
-	Island@ island = getIsland(this);
-	if (island !is null && island.centerBlock !is null)//relative positioning
+	Ship@ ship = getShip(this);
+	if (ship !is null && ship.centerBlock !is null)//relative positioning
 	{
 		params.write_bool(true);
-		Vec2f rPos = (pos + aimVector*3) - island.centerBlock.getPosition();
+		Vec2f rPos = (pos + aimVector*3) - ship.centerBlock.getPosition();
 		params.write_Vec2f(rPos);
-		u32 islandColor = island.centerBlock.getShape().getVars().customData;
-		params.write_u32(islandColor);
+		u32 shipColor = ship.centerBlock.getShape().getVars().customData;
+		params.write_u32(shipColor);
 	}
 	else//absolute positioning
 	{
@@ -772,16 +772,16 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (params.read_bool())//relative positioning
 		{
 			Vec2f rPos = params.read_Vec2f();
-			int islandColor = params.read_u32();
-			Island@ island = getIsland(islandColor);
-			if (island !is null && island.centerBlock !is null)
+			int shipColor = params.read_u32();
+			Ship@ ship = getShip(shipColor);
+			if (ship !is null && ship.centerBlock !is null)
 			{
-				pos = rPos + island.centerBlock.getPosition();
-				velocity += island.vel;
+				pos = rPos + ship.centerBlock.getPosition();
+				velocity += ship.vel;
 			}
 			else
 			{
-				warn("BulletSpawn: island or centerBlock is null");
+				warn("BulletSpawn: ship or centerBlock is null");
 				Vec2f pos = this.getPosition();//failsafe (bullet will spawn lagging behind player)
 			}
 		}
@@ -820,7 +820,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		if (mBlob !is null)
 		{
-			Island@ island = getIsland(mBlob.getShape().getVars().customData);
+			Ship@ ship = getShip(mBlob.getShape().getVars().customData);
 				
 			const f32 mBlobCost = !mBlob.hasTag("coupling") ? getCost(mBlob.getName(), true) : 1;
 			f32 mBlobHealth = mBlob.getHealth();
@@ -836,17 +836,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			else
 				fullConstructAmount = 0.0f;
 							
-			if (island !is null)
+			if (ship !is null)
 			{
-				string isleOwner = island.owner;
+				string shipOwner = ship.owner;
 				CBlob@ mBlobOwnerBlob = getBlobByNetworkID(mBlob.get_u16("ownerID"));
 				
 				if (currentTool == "deconstructor" && !mBlob.hasTag("mothership") && mBlobCost > 0)
 				{
 					f32 deconstructAmount = 0;
-					if ((isleOwner == "" && !island.isMothership) //no owner and is not a mothership
+					if ((shipOwner == "" && !ship.isMothership) //no owner and is not a mothership
 						|| mBlob.get_string("playerOwner") == ""  //no one owns the block
-						|| isleOwner == thisPlayer.getUsername()  //we own the island
+						|| shipOwner == thisPlayer.getUsername()  //we own the ship
 						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername() //we own the block
 						|| mBlob.hasTag("station") || mBlob.hasTag("ministation")) //its a station
 					{
@@ -860,7 +860,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					}
 					
 					if (!mBlob.hasTag("station") && !mBlob.hasTag("ministation") && 
-					   (island.isStation || island.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
+					   (ship.isStation || ship.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
 					{
 						deconstructAmount = (1.0f/mBlobCost)*initialReclaim; 
 						this.set_bool("reclaimPropertyWarn", true);					
@@ -1049,8 +1049,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{
 					if (humans[i].getTeamNum() == teamNum && humans[i] !is this)
 					{
-						CBlob@ islandBlob = getIslandBlob(humans[i]);
-						if (islandBlob !is null && islandBlob.getShape().getVars().customData == coreColor)
+						CBlob@ shipBlob = getShipBlob(humans[i]);
+						if (shipBlob !is null && shipBlob.getShape().getVars().customData == coreColor)
 							crew.push_back(humans[i]);
 					}
 				}
@@ -1174,9 +1174,9 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			
 			if (hitterPlayer.getBlob() !is null)
 			{
-				Island@ pIsle = getIsland(hitterPlayer.getBlob());
-				if (pIsle !is null && pIsle.isMothership && //this is on a mothership
-					pIsle.centerBlock !is null && pIsle.centerBlock.getTeamNum() == teamNum) //hitter is on this mothership
+				Ship@ pShip = getShip(hitterPlayer.getBlob());
+				if (pShip !is null && pShip.isMothership && //this is on a mothership
+					pShip.centerBlock !is null && pShip.centerBlock.getTeamNum() == teamNum) //hitter is on this mothership
 				{
 					if (hitterPlayer.isMyPlayer() && isClient())
 						Sound::Play("snes_coin.ogg");

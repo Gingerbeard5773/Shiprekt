@@ -1,5 +1,5 @@
 // Station
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 void onInit(CBlob@ this)
 {
@@ -30,15 +30,15 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 
 void Capture(CBlob@ this, const int attackerTeam)
 {
-	Island@ isle = getIsland(this.getShape().getVars().customData);
-	if (isle is null) return;
+	Ship@ ship = getShip(this.getShape().getVars().customData);
+	if (ship is null) return;
 	
-	if (!isle.isMothership)
+	if (!ship.isMothership)
 	{
-		//print ("setting team for " + isle.owner + "'s " + isle.id + " to " + attackerTeam);
-		for (uint i = 0; i < isle.blocks.length; ++i)
+		//print ("setting team for " + ship.owner + "'s " + ship.id + " to " + attackerTeam);
+		for (uint i = 0; i < ship.blocks.length; ++i)
 		{
-			CBlob@ b = getBlobByNetworkID(isle.blocks[i].blobID);
+			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 			if (b !is null)
 			{
 				b.server_setTeamNum(attackerTeam);

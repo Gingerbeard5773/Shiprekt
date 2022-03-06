@@ -122,7 +122,7 @@ void server_addPlayerBooty(string name, u16 booty) //give or take booty
 	server_setPlayerBooty(name, server_getPlayerBooty(name) + booty);
 }
 
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 //rewards for damaging enemy ships
 void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rewardBlocks = false, u16 reward = 4, string sound = "Pinball_0", bool randomSound = false)
@@ -130,10 +130,10 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 	if (victim.hasTag("block"))
 	{
 		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
+		Ship@ victimShip = getShip(victim.getShape().getVars().customData);
 
-		if (victimIsle !is null && victimIsle.blocks.length > 3 //minimum size requirement
-			&& (victimIsle.owner != "" || victimIsle.isMothership) //verified ship
+		if (victimShip !is null && victimShip.blocks.length > 3 //minimum size requirement
+			&& (victimShip.owner != "" || victimShip.isMothership) //verified ship
 			&& victim.getTeamNum() != attacker.getTeamNum() //not teammates
 			&& (victim.hasTag("weapon") || victim.hasTag("bomb") || victim.hasTag("seat") || victim.hasTag("mothership") || //for sure reward
 				rewardBlocks) //individual blocks for each

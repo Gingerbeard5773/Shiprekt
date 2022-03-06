@@ -1,6 +1,6 @@
 #include "Hitters.as";
 #include "ExplosionEffects.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "BlockHooks.as";
@@ -77,7 +77,7 @@ void onColored(CBlob@ this) //activate when the block changes color
 	if (owner !is null)
 		this.SetDamageOwnerPlayer(owner);
 	
-	//go neutral if bomb is placed on an enemy owned island
+	//go neutral if bomb is placed on an enemy owned ship
 	if (isServer())
 	{
 		CBlob@[] overlapping;
@@ -122,13 +122,13 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 				if (hit_blob.getShape().getVars().customData <= 0)
 					continue;
 
-				// move the island
+				// move the ship
 
-				Island@ isle = getIsland(hit_blob.getShape().getVars().customData);
-				if (isle !is null && isle.mass > 0.0f)
+				Ship@ ship = getShip(hit_blob.getShape().getVars().customData);
+				if (ship !is null && ship.mass > 0.0f)
 				{
-					Vec2f impact = (hit_blob_pos - pos) * 0.15f / isle.mass;
-					isle.vel += impact;
+					Vec2f impact = (hit_blob_pos - pos) * 0.15f / ship.mass;
+					ship.vel += impact;
 				}
 
 				// detonate bomb
@@ -203,10 +203,10 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 		u8 teamNum = attacker.getTeamNum();
 		u8 victimTeamNum = victim.getTeamNum();
 		string attackerName = attacker.getUsername();
-		Island@ victimIsle = getIsland(victim.getShape().getVars().customData);
+		Ship@ victimShip = getShip(victim.getShape().getVars().customData);
 
-		if (victimIsle !is null && victimIsle.blocks.length > 3
-			&& (victimIsle.owner != "" || victimIsle.isMothership) //only inhabited ships
+		if (victimShip !is null && victimShip.blocks.length > 3
+			&& (victimShip.owner != "" || victimShip.isMothership) //only inhabited ships
 			&& victimTeamNum != teamNum //cant be own ships
 			&& (!victim.hasTag("platform") && !victim.hasTag("coupling")))
 		{

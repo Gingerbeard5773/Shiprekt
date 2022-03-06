@@ -10,7 +10,7 @@ void onInit(CBlob@ this)
 
 void onColored(CBlob@ this) //activate when the block is placed
 {
-	if (this.get_u32("placedTime") > getGameTime() + 2) return; //bootleg onBlockPlaced due to inaccuracies in island.as
+	if (this.get_u32("placedTime") > getGameTime() + 2) return; //bootleg onBlockPlaced due to inaccuracies in ship.as
 	
 	//find nearby platforms and see if they can change their frame
 	CMap@ map = getMap();

@@ -1,5 +1,5 @@
 #define CLIENT_ONLY
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 f32 zoomTarget = 1.0f;
 float timeToScroll = 0.0f;
@@ -134,12 +134,12 @@ void Spectator(CRules@ this)
 				//print("set player to track: " + (blob.getPlayer() is null ? "null" : blob.getPlayer().getUsername()));
 				if (blob.hasTag("block"))
 				{
-					//set an island as the target
-					Island@ island = getIsland(blob.getShape().getVars().customData);
-					if (island is null || island.centerBlock is null) return;
+					//set an ship as the target
+					Ship@ ship = getShip(blob.getShape().getVars().customData);
+					if (ship is null || ship.centerBlock is null) return;
 					
-					camera.setTarget(island.centerBlock);
-					camera.setPosition(island.centerBlock.getInterpolatedPosition());
+					camera.setTarget(ship.centerBlock);
+					camera.setPosition(ship.centerBlock.getInterpolatedPosition());
 					return;
 				}
 				

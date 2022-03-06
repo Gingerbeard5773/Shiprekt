@@ -105,12 +105,12 @@ void Auto(CBlob@ this)
 			{
 				bPos = b.getPosition();
 
-				Island@ targetIsland;
+				Ship@ targetShip;
 				if (b.hasTag("block"))
-					@targetIsland = getIsland(b.getShape().getVars().customData);
+					@targetShip = getShip(b.getShape().getVars().customData);
 				else
 				{
-					@targetIsland = getIsland(b);
+					@targetShip = getShip(b);
 					if (b.isAttached())
 					{
 						AttachmentPoint@ humanAttach = b.getAttachmentPoint(0);
@@ -179,14 +179,14 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 
 			int thisColor = this.getShape().getVars().customData;
 			int bColor = b.getShape().getVars().customData;
-			bool sameIsland = bColor != 0 && thisColor == bColor;
+			bool sameShip = bColor != 0 && thisColor == bColor;
 
 			bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
 
-			//if (sameIsland || targetMerged) print ("" + (sameIsland ? "sameisland; " : "") + (targetMerged ? "targetMerged; " : ""));
+			//if (sameShip || targetMerged) print ("" + (sameShip ? "sameship; " : "") + (targetMerged ? "targetMerged; " : ""));
 
 			if (b.hasTag("weapon") || b.hasTag("solid")
-					|| (b.hasTag("block") && b.getShape().getVars().customData > 0 && (b.hasTag("solid")) && sameIsland && !canShootSelf))
+					|| (b.hasTag("block") && b.getShape().getVars().customData > 0 && (b.hasTag("solid")) && sameShip && !canShootSelf))
 			{
 				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;

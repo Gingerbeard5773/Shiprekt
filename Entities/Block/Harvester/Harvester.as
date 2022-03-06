@@ -1,5 +1,5 @@
 #include "WaterEffects.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
@@ -71,8 +71,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null) return;
 		
-		Island@ island = getIsland(this.getShape().getVars().customData);
-		if (island is null) return;
+		Ship@ ship = getShip(this.getShape().getVars().customData);
+		if (ship is null) return;
 
 		this.set_u32("fire time", getGameTime());
 			
@@ -115,18 +115,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					const f32 initialReclaim = b.get_f32("initial reclaim");
 					f32 currentReclaim = b.get_f32("current reclaim");
 
-					Island@ island = getIsland(b.getShape().getVars().customData);
-					if (island !is null && bCost > 0)
+					Ship@ ship = getShip(b.getShape().getVars().customData);
+					if (ship !is null && bCost > 0)
 					{
 						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim; //fastest reclaim possible
-						string islandOwnerName = island.owner;
+						string shipOwnerName = ship.owner;
 						
 						if (!b.hasTag("mothership"))
 						{
 							f32 deconstructAmount = 0;
-							if ((islandOwnerName == "" && !island.isMothership) //true if no owner for island and island is not a mothership
-								|| (b.get_string("playerOwner") == "" && !island.isMothership) //true if no owner for the block and is not on a mothership
-								|| (islandOwnerName == thisPlayer.getUsername()) //true if we own the island
+							if ((shipOwnerName == "" && !ship.isMothership) //true if no owner for ship and ship is not a mothership
+								|| (b.get_string("playerOwner") == "" && !ship.isMothership) //true if no owner for the block and is not on a mothership
+								|| (shipOwnerName == thisPlayer.getUsername()) //true if we own the ship
 								|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
 							{
 								deconstructAmount = fullConstructAmount; 

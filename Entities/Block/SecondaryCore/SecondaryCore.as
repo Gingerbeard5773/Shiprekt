@@ -43,10 +43,10 @@ void onTick(CBlob@ this)
 				if (human.getTeamNum() != team || human.getHealth() >= human.getInitialHealth())
 					continue;
 
-				Island@ isle = getIsland(this.getShape().getVars().customData);
-				if (isle is null) continue;
+				Ship@ ship = getShip(this.getShape().getVars().customData);
+				if (ship is null) continue;
 
-				if (isle.isMothership) continue;
+				if (ship.isMothership) continue;
 
 				if (!this.isOverlapping(human)) continue;
 
@@ -57,8 +57,8 @@ void onTick(CBlob@ this)
 
 	if (this.hasTag('critical'))
 	{
-		//Island@ isle = getIsland(this.getShape().getVars().customData);
-		//isle.vel *= 0.8f;
+		//Ship@ ship = getShip(this.getShape().getVars().customData);
+		//ship.vel *= 0.8f;
 
 		if (!v_fastrender)
 		{
@@ -95,12 +95,12 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 		const int color = this.getShape().getVars().customData;
 		if (color == 0) return 0.0f;
 
-		Island@ isle = getIsland(color);
-		if (isle is null || isle.blocks.length < 10 || isle.isMothership) return 0.0f;
+		Ship@ ship = getShip(color);
+		if (ship is null || ship.blocks.length < 10 || ship.isMothership) return 0.0f;
 
-		for (uint i = 0; i < isle.blocks.length; ++ i)
+		for (uint i = 0; i < ship.blocks.length; ++ i)
 		{
-			IslandBlock@ block = isle.blocks[i];
+			ShipBlock@ block = ship.blocks[i];
 
 			CBlob@ blob = getBlobByNetworkID(block.blobID);
 

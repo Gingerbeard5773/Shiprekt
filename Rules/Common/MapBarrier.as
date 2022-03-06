@@ -1,12 +1,12 @@
 // force barrier around edge of map
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 CBlob@[] hitBlobs;
-uint[] islandTimes;
+uint[] shipTimes;
 
 void onInit(CRules@ this)
 {
-	this.addCommandID("island bounce");
+	this.addCommandID("ship bounce");
 }
 
 void onTick(CRules@ this)
@@ -29,77 +29,77 @@ void onTick(CRules@ this)
 		for (uint i = 0; i < blobsAtBorder.length; i++)
 		{
 			CBlob @b = blobsAtBorder[i];
-			Island@ island = getIsland(b.getShape().getVars().customData);
-			if (island !is null && island.vel.LengthSquared() > 0)
+			Ship@ ship = getShip(b.getShape().getVars().customData);
+			if (ship !is null && ship.vel.LengthSquared() > 0)
 			{
 				Vec2f pos = b.getPosition();
 
 				//determine bounce direction
-				f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : island.vel.x;
-				f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : island.vel.y;
+				f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : ship.vel.x;
+				f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : ship.vel.y;
 				
-				if (island.blocks.length < 3)
+				if (ship.blocks.length < 3)
 				{
 					//pinball machine!!!
 					bool bounce = true;
 					for (uint i = 0; i < hitBlobs.length; i++)
 					{
-						//make sure islands don't bounce again too soon after first bounce
+						//make sure ships don't bounce again too soon after first bounce
 						if (hitBlobs[i] !is null && hitBlobs[i] is b)
 							bounce = false;
 					}
 					
-					if (bounce && island.centerBlock !is null)
+					if (bounce && ship.centerBlock !is null)
 					{
-						for (uint i = 0; i < island.blocks.length; ++i)
+						for (uint i = 0; i < ship.blocks.length; ++i)
 						{
-							CBlob@ b = getBlobByNetworkID(island.blocks[i].blobID);
+							CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 							if (b !is null)
 							{
 								hitBlobs.push_back(b);
-								islandTimes.push_back(getGameTime());
+								shipTimes.push_back(getGameTime());
 							}
 						}
 						f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
 						CBitStream bs;
-						bs.write_netid(island.centerBlock.getNetworkID());
-						bs.write_f32(Vec2f(-island.vel.y * bounceFactor, island.vel.x * bounceFactor).Angle()); //calculate perpendicular angle
-						this.SendCommand(this.getCommandID("island bounce"), bs); //synchronize
+						bs.write_netid(ship.centerBlock.getNetworkID());
+						bs.write_f32(Vec2f(-ship.vel.y * bounceFactor, ship.vel.x * bounceFactor).Angle()); //calculate perpendicular angle
+						this.SendCommand(this.getCommandID("ship bounce"), bs); //synchronize
 					}
-					island.vel = Vec2f(bounceX / 1.5f, bounceY / 1.5f);
+					ship.vel = Vec2f(bounceX / 1.5f, bounceY / 1.5f);
 				}
 				else
 				{
-					island.vel = Vec2f(bounceX, bounceY);
-					server_turnOffPropellers(island);
+					ship.vel = Vec2f(bounceX, bounceY);
+					server_turnOffPropellers(ship);
 				}
 			}
 		}
 	}
 	
-	for (uint i = 0; i < islandTimes.length; i++)
+	for (uint i = 0; i < shipTimes.length; i++)
 	{
-		if (getGameTime() > islandTimes[i]+4) //timer to let islands bounce again
+		if (getGameTime() > shipTimes[i]+4) //timer to let ships bounce again
 		{
 			hitBlobs.erase(i);
-			islandTimes.erase(i);
+			shipTimes.erase(i);
 		}
 	}
 }
 
-void server_turnOffPropellers(Island@ island)
+void server_turnOffPropellers(Ship@ ship)
 {
 	if (!isServer()) return;
 	
-	for (uint i = 0; i < island.blocks.length; ++i)
+	for (uint i = 0; i < ship.blocks.length; ++i)
 	{
-		IslandBlock@ isle_block = island.blocks[i];
-		if (isle_block is null) continue;
+		ShipBlock@ ship_block = ship.blocks[i];
+		if (ship_block is null) continue;
 
-		CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+		CBlob@ block = getBlobByNetworkID(ship_block.blobID);
 		if (block is null) continue;
 		
-		//set all propellers off on the island
+		//set all propellers off on the ship
 		if (block.hasTag("engine"))
 		{
 			block.set_f32("power", 0);
@@ -109,14 +109,14 @@ void server_turnOffPropellers(Island@ island)
 
 void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 {
-	if (cmd == this.getCommandID("island bounce"))
+	if (cmd == this.getCommandID("ship bounce"))
 	{
 		CBlob@ centerblock = getBlobByNetworkID(params.read_netid());
 		if (centerblock is null) return;
 		
-		Island@ island = getIsland(centerblock.getShape().getVars().customData);
-		if (island is null) return;
+		Ship@ ship = getShip(centerblock.getShape().getVars().customData);
+		if (ship is null) return;
 		
-		island.angle = params.read_f32();
+		ship.angle = params.read_f32();
 	}
 }

@@ -1,11 +1,11 @@
 //Common file for getting forces from a propeller
 
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 const f32 PROPELLER_SPEED = 0.9f;//0.9f
 
 void PropellerForces(CBlob@ this,
-					 Island@ island,
+					 Ship@ ship,
 					 float power,
 					 Vec2f &out moveVel,
 					 Vec2f &out moveNorm,
@@ -21,24 +21,24 @@ void PropellerForces(CBlob@ this,
 
 	// calculate "proper" force
 
-	Vec2f fromCenter = pos - island.pos;
+	Vec2f fromCenter = pos - ship.pos;
 	f32 fromCenterLen = fromCenter.Normalize();
-	f32 directionMag = island.blocks.length > 2 ? Maths::Abs( fromCenter * moveNorm ) : 1.0f;//how "aligned" it is from center
+	f32 directionMag = ship.blocks.length > 2 ? Maths::Abs( fromCenter * moveNorm ) : 1.0f;//how "aligned" it is from center
 	f32 dist = 35.0f;
 	f32 centerMag = (dist - Maths::Min( dist, fromCenterLen ))/dist;
 	f32 velCoef = (directionMag + centerMag)*0.5f;
 
 	moveVel *= velCoef;
 
-	f32 dragFactor = Maths::Max( 0.2f, 1.1f - 0.005f * island.blocks.length );//Maths::Max( 0.2f, 1.1f - 0.000055f * Maths::Pow( island.blocks.length, 2 ) )
+	f32 dragFactor = Maths::Max( 0.2f, 1.1f - 0.005f * ship.blocks.length );//Maths::Max( 0.2f, 1.1f - 0.000055f * Maths::Pow( ship.blocks.length, 2 ) )
 	f32 turnDirection = Vec2f(dragFactor * moveNorm.y, dragFactor * -moveNorm.x) * fromCenter;//how "disaligned" it is from center
 	f32 angleCoef = (1.0f - velCoef) * (1.0f - directionMag) * turnDirection;
 	angleVel = angleCoef * moveSpeed;
 }
 
 //overload with fewer params
-void PropellerForces(CBlob@ this, Island@ island, float power, Vec2f &out moveVel, float &out angleVel)
+void PropellerForces(CBlob@ this, Ship@ ship, float power, Vec2f &out moveVel, float &out angleVel)
 {
 	Vec2f _a;
-	PropellerForces(this, island, power, moveVel, _a, angleVel);
+	PropellerForces(this, ship, power, moveVel, _a, angleVel);
 }

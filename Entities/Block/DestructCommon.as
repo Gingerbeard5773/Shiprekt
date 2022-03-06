@@ -1,6 +1,6 @@
 // fzzle @ 25/03/17
 
-#include 'IslandsCommon.as';
+#include 'ShipsCommon.as';
 #include 'AccurateSoundPlay.as';
 #include 'ExplosionEffects.as';
 #include 'WaterEffects.as';
@@ -8,7 +8,7 @@
 
 namespace Destruct
 {
-	// Client- & server-side: Blow up an isle
+	// Client- & server-side: Blow up a ship
 	void self(CBlob@ this, float radius)
 	{
 		Vec2f position = this.getPosition();
@@ -39,18 +39,18 @@ namespace Destruct
 			this.server_Hit(blob, position, Vec2f_zero, damage, Hitters::bomb, true);
 		}
 
-		// Kill island
+		// Kill ship
 		int color = this.getShape().getVars().customData;
 		if (color == 0) return;
 
-		Island@ isle = getIsland(color);
-		if (isle is null || isle.blocks.length < 10) return;
+		Ship@ ship = getShip(color);
+		if (ship is null || ship.blocks.length < 10) return;
 		
-		if (this.hasTag("secondaryCore") && isle.isMothership) return; //dont kill mothership if this is a secondaryCore
+		if (this.hasTag("secondaryCore") && ship.isMothership) return; //dont kill mothership if this is a secondaryCore
 
-		for (uint i = 0; i < isle.blocks.length; ++ i)
+		for (uint i = 0; i < ship.blocks.length; ++ i)
 		{
-			IslandBlock@ block = isle.blocks[i];
+			ShipBlock@ block = ship.blocks[i];
 			CBlob@ blob = getBlobByNetworkID(block.blobID);
 
 			if (blob is null || blob is this) continue;

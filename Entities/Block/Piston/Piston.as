@@ -1,7 +1,7 @@
 //Gingerbeard @ 1/11/2022
 
 #include "AccurateSoundPlay.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 void onInit(CBlob@ this)
 {
@@ -77,17 +77,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{
 					CBlob@ blob = pushBlocks[i];
 					
-					Island@ island = getIsland(blob.getShape().getVars().customData);
-					if (island !is null)
+					Ship@ ship = getShip(blob.getShape().getVars().customData);
+					if (ship !is null)
 					{
-						for (uint i = 0; i < island.blocks.length; ++i)
+						for (uint i = 0; i < ship.blocks.length; ++i)
 						{
-							IslandBlock@ isle_block = island.blocks[i];
-							CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+							ShipBlock@ ship_block = ship.blocks[i];
+							CBlob@ block = getBlobByNetworkID(ship_block.blobID);
 							if (block is null || block !is blob) continue;
 							
-							Vec2f movePos = Vec2f(0, -8 * (this.get_bool("toggled") ? -1 : 1)).RotateBy(this.getAngleDegrees() - island.angle);
-							isle_block.offset += movePos;
+							Vec2f movePos = Vec2f(0, -8 * (this.get_bool("toggled") ? -1 : 1)).RotateBy(this.getAngleDegrees() - ship.angle);
+							ship_block.offset += movePos;
 						}
 					}
 				}
@@ -140,8 +140,8 @@ void AddLinked(CBlob@ this, CBlob@ piston, u16 checkToken)
 	map.getBlobsAtPosition(this.getPosition() + Vec2f(-5, 0).RotateBy(-aimVector.Angle()), @blobs); //right
 	map.getBlobsAtPosition(this.getPosition() + Vec2f(0, -5).RotateBy(-aimVector.Angle()), @blobs); //back
 	
-	Island@ island = getIsland(this.getShape().getVars().customData);
-	if (island !is null && island.centerBlock !is null)
+	Ship@ ship = getShip(this.getShape().getVars().customData);
+	if (ship !is null && ship.centerBlock !is null)
 	{
 		this.set_u16("pistonToken", checkToken);
 		for (int i = 0; i < blobs.length; i++)
@@ -151,7 +151,7 @@ void AddLinked(CBlob@ this, CBlob@ piston, u16 checkToken)
 			if (blob.getShape().getVars().customData != piston.getShape().getVars().customData) //don't pass
 				continue;
 				
-			if (blob is getIslandCenter(island))
+			if (blob is getShipCenter(ship))
 			{
 				//don't move any blocks (piston is locked)
 				piston.clear("pushBlocks");
@@ -171,11 +171,11 @@ void AddLinked(CBlob@ this, CBlob@ piston, u16 checkToken)
 	}
 }
 
-CBlob@ getIslandCenter(Island@ island)
+CBlob@ getShipCenter(Ship@ ship)
 {
 	//use mothership core if present, otherwise use the centerblock
-	if (island.isMothership)
-		return getMothership(island.centerBlock.getTeamNum());
+	if (ship.isMothership)
+		return getMothership(ship.centerBlock.getTeamNum());
 		
-	return island.centerBlock;
+	return ship.centerBlock;
 }

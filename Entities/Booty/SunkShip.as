@@ -1,5 +1,5 @@
 #include "Booty.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "AccurateSoundPlay.as"
 #include "TileCommon.as"
 
@@ -69,11 +69,11 @@ void onTick(CBlob@ this)
 	for ( u8 i = 0; i < cores.length; i++)
 	{
 		int coreColor = cores[i].getShape().getVars().customData;
-		Island@ isle = getIsland(coreColor);
-		if (isle is null || isle.owner == "" || isle.owner  == "*")
+		Ship@ ship = getShip(coreColor);
+		if (ship is null || ship.owner == "" || ship.owner  == "*")
 			continue;
 			
-		served.push_back(isle.owner);//captains only gather through the core
+		served.push_back(ship.owner);//captains only gather through the core
 		string[] crew;
 		if (this.getDistanceTo(cores[i]) <= FISH_RADIUS)
 		{
@@ -84,12 +84,12 @@ void onTick(CBlob@ this)
 				if (player is null)
 					continue;
 					
-				CBlob@ islandBlob = getIslandBlob(humans[i]);
-				if (islandBlob is null || islandBlob.getShape().getVars().customData != coreColor)
+				CBlob@ shipBlob = getShipBlob(humans[i]);
+				if (shipBlob is null || shipBlob.getShape().getVars().customData != coreColor)
 					continue;
 					
 				string pName = player.getUsername();
-				if (pName == isle.owner)
+				if (pName == ship.owner)
 					captainOnShip = true;
 				else	if (server_getPlayerBooty(pName) < minBooty * 4 )
 					crew.push_back(pName);
@@ -108,7 +108,7 @@ void onTick(CBlob@ this)
 			u16 captainReward = mothership_maxReward - mothership_crewTotalReward;
 			if (ammount - captainReward <= AMMOUNT_INSTANT_PICKUP)
 				captainReward = AMMOUNT_INSTANT_PICKUP;
-			server_giveBooty(isle.owner, captainReward);
+			server_giveBooty(ship.owner, captainReward);
 			server_updateX(this, captainReward, true);
 			gaveBooty = true;
 

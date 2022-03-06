@@ -1,4 +1,4 @@
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 void onTick(CRules@ this)
 {
@@ -13,8 +13,8 @@ void onTick(CRules@ this)
 	{
 		//keep motherships within bounds
 		CBlob@ core = cores[i];
-		Island@ island = getIsland(core.getShape().getVars().customData);
-		if (island is null) continue;
+		Ship@ ship = getShip(core.getShape().getVars().customData);
+		if (ship is null) continue;
 		
 		Vec2f pos = core.getPosition();
 		const bool rightBorder = dim.x <= pos.x;
@@ -22,46 +22,46 @@ void onTick(CRules@ this)
 		const bool bottomBorder = dim.y <= pos.y;
 		const bool topBorder = pos.y <= 0.0f;
 		
-		if (topBorder) island.pos.Set(island.pos.x, 20.0f);
-		else if (bottomBorder) island.pos.Set(island.pos.x, dim.y - 20.0f);
-		else if (rightBorder) island.pos.Set(dim.x - 20.0f, island.pos.y);
-		else if (leftBorder) island.pos.Set(20.0f, island.pos.y);
+		if (topBorder) ship.pos.Set(ship.pos.x, 20.0f);
+		else if (bottomBorder) ship.pos.Set(ship.pos.x, dim.y - 20.0f);
+		else if (rightBorder) ship.pos.Set(dim.x - 20.0f, ship.pos.y);
+		else if (leftBorder) ship.pos.Set(20.0f, ship.pos.y);
 	}*/
 	
-	//warp islands to other border
-	/*Island[]@ islands;
-	if (!this.get("islands", @islands))
+	//warp ships to other border
+	/*Ship[]@ ships;
+	if (!this.get("ships", @ships))
 		return;
 		
 	CMap@ map = getMap();
 	const f32 mapwidth = map.tilesize*map.tilemapwidth;
 	const f32 mapheight = map.tilesize*map.tilemapheight;	
-	for (uint i = 0; i < islands.length; ++i)
+	for (uint i = 0; i < ships.length; ++i)
 	{
-		Island @isle = islands[i];
-		if (isle.vel.x > 0.0f && isle.pos.x > mapwidth)
+		Ship @ship = ships[i];
+		if (ship.vel.x > 0.0f && ship.pos.x > mapwidth)
 		{
-			isle.old_pos.x = isle.pos.x;
-			isle.old_pos.x -= isle.vel.x;
-			isle.pos.x -= mapwidth;			
+			ship.old_pos.x = ship.pos.x;
+			ship.old_pos.x -= ship.vel.x;
+			ship.pos.x -= mapwidth;			
 		}
-		if (isle.vel.y > 0.0f && isle.pos.y > mapheight)
+		if (ship.vel.y > 0.0f && ship.pos.y > mapheight)
 		{
-			isle.old_pos.y = isle.pos.y;
-			isle.old_pos.y -= isle.vel.y;
-			isle.pos.y -= mapheight;
+			ship.old_pos.y = ship.pos.y;
+			ship.old_pos.y -= ship.vel.y;
+			ship.pos.y -= mapheight;
 		}
-		if (isle.vel.x < 0.0f && isle.pos.x < 0)
+		if (ship.vel.x < 0.0f && ship.pos.x < 0)
 		{
-			isle.old_pos.x = isle.pos.x;
-			isle.old_pos.x -= isle.vel.x;
-			isle.pos.x += mapwidth;			
+			ship.old_pos.x = ship.pos.x;
+			ship.old_pos.x -= ship.vel.x;
+			ship.pos.x += mapwidth;			
 		}
-		if (isle.vel.y < 0.0f && isle.pos.y < 0)
+		if (ship.vel.y < 0.0f && ship.pos.y < 0)
 		{
-			isle.old_pos.y = isle.pos.y;
-			isle.old_pos.y -= isle.vel.y;
-			isle.pos.y += mapheight;		
+			ship.old_pos.y = ship.pos.y;
+			ship.old_pos.y -= ship.vel.y;
+			ship.pos.y += mapheight;		
 		}
 	}*/
 }

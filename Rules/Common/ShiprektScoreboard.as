@@ -4,7 +4,7 @@
 
 #include "ScoreboardCommon.as";
 #include "ColoredNameToggleCommon.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "ShiprektTranslation.as";
 
 CPlayer@ hoveredPlayer;
@@ -301,9 +301,9 @@ void onTick(CRules@ this)
 		getBlobsByTag("mothership", @cores);
 		for (u8 i = 0; i < cores.length; i++)
 		{
-			Island@ isle = getIsland(cores[i].getShape().getVars().customData);
-			if (isle !is null && isle.owner != "")
-				captains.push_back(isle.owner);
+			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
+			if (ship !is null && ship.owner != "")
+				captains.push_back(ship.owner);
 		}
 		
 		//set vars

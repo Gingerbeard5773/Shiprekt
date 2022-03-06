@@ -1,6 +1,6 @@
 #define SERVER_ONLY
 #include "Booty.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "MakeBlock.as";
 
 const u16 STATION_BOOTY = 4;
@@ -24,21 +24,21 @@ void onTick(CRules@ this)
 		getBlobsByTag("mothership", @cores);
 		for (u8 i = 0; i < cores.length; i++)
 		{
-			Island@ isle = getIsland(cores[i].getShape().getVars().customData);
-			if (isle !is null && isle.owner != "" && isle.owner  != "*")
+			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
+			if (ship !is null && ship.owner != "" && ship.owner  != "*")
 			{
-				u16 captainBooty = server_getPlayerBooty(isle.owner);
+				u16 captainBooty = server_getPlayerBooty(ship.owner);
 				if (captainBooty < minBooty)
 				{
-					CPlayer@ player = getPlayerByUsername(isle.owner);
+					CPlayer@ player = getPlayerByUsername(ship.owner);
 					if (player is null) continue;
 					
 					//consider blocks to propellers ratio
 					int propellers = 1;
 					int couplings = 0;
-					for (uint b_iter = 0; b_iter < isle.blocks.length; ++b_iter )
+					for (uint b_iter = 0; b_iter < ship.blocks.length; ++b_iter )
 					{
-						CBlob@ b = getBlobByNetworkID(isle.blocks[b_iter].blobID);
+						CBlob@ b = getBlobByNetworkID(ship.blocks[b_iter].blobID);
 						if (b !is null)
 							if (b.hasTag("engine"))
 								propellers++;
@@ -46,12 +46,12 @@ void onTick(CRules@ this)
 								couplings++;
 					}
 
-					if (((isle.blocks.length - propellers - couplings)/propellers > 3) || gameTime < this.get_u16("warmup_time"))
+					if (((ship.blocks.length - propellers - couplings)/propellers > 3) || gameTime < this.get_u16("warmup_time"))
 					{
 						CBlob@ pBlob = player.getBlob();
 						CBlob@[]@ blocks;
 						if (pBlob !is null && pBlob.get("blocks", @blocks) && blocks.size() == 0)
-							server_addPlayerBooty(isle.owner, Maths::Min(15, minBooty - captainBooty));
+							server_addPlayerBooty(ship.owner, Maths::Min(15, minBooty - captainBooty));
 					}
 				}				
 			}
@@ -326,15 +326,15 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						return false;
 					
 					Vec2f playerPos = pBlob.getPosition();
-					Island@ isle = getIsland(player.getBlob());
-					int numBlocks = isle.blocks.length;
+					Ship@ ship = getShip(player.getBlob());
+					int numBlocks = ship.blocks.length;
 					cfg.add_u16("total blocks", numBlocks);
 					for (uint i = 0; i < numBlocks; ++i)
 					{
-						IslandBlock@ isle_block = isle.blocks[i];
-						if (isle_block is null) continue;
+						ShipBlock@ ship_block = ship.blocks[i];
+						if (ship_block is null) continue;
 
-						CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+						CBlob@ block = getBlobByNetworkID(ship_block.blobID);
 						if (block is null) continue;
 						
 						cfg.add_string("block" + i + "type", block.getName());
@@ -378,18 +378,18 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						return false;
 					
 					Vec2f playerPos = pBlob.getPosition();
-					Island@ isle = getIsland(player.getBlob());
-					if (isle !is null)
+					Ship@ ship = getShip(player.getBlob());
+					if (ship !is null)
 					{
-						int numBlocks = isle.blocks.length;
+						int numBlocks = ship.blocks.length;
 						if (isServer()) 
 						{
 							for (uint i = 0; i < numBlocks; ++i)
 							{
-								IslandBlock@ isle_block = isle.blocks[i];
-								if (isle_block is null) continue;
+								ShipBlock@ ship_block = ship.blocks[i];
+								if (ship_block is null) continue;
 
-								CBlob@ block = getBlobByNetworkID(isle_block.blobID);
+								CBlob@ block = getBlobByNetworkID(ship_block.blobID);
 								if (block is null) continue;
 								
 								if (!block.hasTag("mothership") || numBlocks == 1)
@@ -443,34 +443,34 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					if (player.getBlob() is null) return true;
 					
-					Island@ isle = getIsland(player.getBlob());
-					if (isle is null || isle.centerBlock is null)
+					Ship@ ship = getShip(player.getBlob());
+					if (ship is null || ship.centerBlock is null)
 					{
-						warn("!debugship:: no island found");
+						warn("!debugship:: no ship found");
 						return false;
 					}
 					
-					string isleType;
-					if (isle.isMothership) isleType += "Mothership";
-					if (isle.isSecondaryCore) isleType += (isleType.length > 0 ? ", " : "")+"Secondary Core";
-					if (isle.isStation) isleType += (isleType.length > 0 ? ", " : "")+"Station";
-					if (isle.isMiniStation) isleType += (isleType.length > 0 ? ", " : "")+"Ministation";
+					string shipType;
+					if (ship.isMothership) shipType += "Mothership";
+					if (ship.isSecondaryCore) shipType += (shipType.length > 0 ? ", " : "")+"Secondary Core";
+					if (ship.isStation) shipType += (shipType.length > 0 ? ", " : "")+"Station";
+					if (ship.isMiniStation) shipType += (shipType.length > 0 ? ", " : "")+"Ministation";
 					
 					//RGB cause cool
-					print("---- ISLAND "+isle.centerBlock.getShape().getVars().customData+" ----", color_white);
-					print("ID: "+isle.id, SColor(255, 235, 30, 30));
-					print("Type: "+isleType, SColor(255, 255, 165, 0));
-					print("Owner: "+isle.owner, SColor(255, 235, 235, 0));
-					print("Speed: "+isle.vel.LengthSquared(), SColor(255, 30, 220, 30));
-					print("Angle: "+isle.angle, SColor(255, 173, 216, 200));
-					print("Mass: "+isle.mass, SColor(255, 77, 100, 195));
-					print("Blocks: "+isle.blocks.length, SColor(255, 168, 50, 168));
+					print("---- ISLAND "+ship.centerBlock.getShape().getVars().customData+" ----", color_white);
+					print("ID: "+ship.id, SColor(255, 235, 30, 30));
+					print("Type: "+shipType, SColor(255, 255, 165, 0));
+					print("Owner: "+ship.owner, SColor(255, 235, 235, 0));
+					print("Speed: "+ship.vel.LengthSquared(), SColor(255, 30, 220, 30));
+					print("Angle: "+ship.angle, SColor(255, 173, 216, 200));
+					print("Mass: "+ship.mass, SColor(255, 77, 100, 195));
+					print("Blocks: "+ship.blocks.length, SColor(255, 168, 50, 168));
 					
 					return false;
 				}
-				else if (tokens[0] == "!dirty") //activate dirty islands 
+				else if (tokens[0] == "!dirty") //activate dirty ships 
 				{
-					this.set_bool("dirty islands", true);
+					this.set_bool("dirty ships", true);
 					return false;
 				}
 				else if (tokens[0] == "!sv_test")
@@ -498,15 +498,15 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!pinball") //pinball machine
 				{
-					Island[]@ islands;
-					if (!this.get("islands", @islands)) return false;
+					Ship[]@ ships;
+					if (!this.get("ships", @ships)) return false;
 					
-					for (uint i = 0; i < islands.length; ++i)
+					for (uint i = 0; i < ships.length; ++i)
 					{
 						//commence pain
-						Island@ isle = islands[i];
-						isle.angle_vel += (180 + XORRandom(180)) * (XORRandom(2) == 0 ? 1 : -1);
-						isle.vel += Vec2f(XORRandom(50) * (XORRandom(2) == 0 ? 1 : -1), XORRandom(50)* (XORRandom(2) == 0 ? 1 : -1));
+						Ship@ ship = ships[i];
+						ship.angle_vel += (180 + XORRandom(180)) * (XORRandom(2) == 0 ? 1 : -1);
+						ship.vel += Vec2f(XORRandom(50) * (XORRandom(2) == 0 ? 1 : -1), XORRandom(50)* (XORRandom(2) == 0 ? 1 : -1));
 					}
 				}
 			}

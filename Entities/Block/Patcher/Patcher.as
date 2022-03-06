@@ -1,5 +1,5 @@
 #include "WaterEffects.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
@@ -73,8 +73,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (shooter is null)
 			return;
 		
-		Island@ island = getIsland(this.getShape().getVars().customData);
-		if (island is null)
+		Ship@ ship = getShip(this.getShape().getVars().customData);
+		if (ship is null)
 			return;
 
 		this.set_u32("fire time", getGameTime());
@@ -113,8 +113,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if (thisPlayer is null) 
 						return;		
 					
-					Island@ otherIsland = getIsland(color);
-					bool isMyShip = otherIsland !is null && otherIsland is island;
+					Ship@ otherShip = getShip(color);
+					bool isMyShip = otherShip !is null && otherShip is ship;
  
 					f32 reconstructAmount = 0;
 					u16 reconstructCost = 0;

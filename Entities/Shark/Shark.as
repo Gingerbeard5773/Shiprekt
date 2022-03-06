@@ -1,7 +1,7 @@
 #include "WaterEffects.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 #include "TileCommon.as";
 
 const f32 SHARK_SPEED = 0.75f;

@@ -118,9 +118,9 @@ namespace CMap
 		else if (pixel == color_sand) 
 		{
 			//SAND AND SHOAL BORDERS
-			//completely surrrounded island
+			//completely surrrounded ship
 			if ( pixel_R == color_shoal && pixel_U == color_shoal && pixel_L == color_shoal && pixel_D == color_shoal)
-				map.SetTile(offset, CMap::sand_shoal_border_island1);
+				map.SetTile(offset, CMap::sand_shoal_border_ship1);
 				
 			//four way crossing
 			else if (pixel_RU == color_shoal && pixel_LU == color_shoal && pixel_LD == color_shoal && pixel_RD == color_shoal
@@ -266,9 +266,9 @@ namespace CMap
 				map.SetTile(offset, CMap::sand_shoal_border_concave_RD1);
 		
 			//SAND SHORES
-			//completely surrrounded island
+			//completely surrrounded ship
 			else if (pixel_R == color_water && pixel_U == color_water && pixel_L == color_water && pixel_D == color_water)
-				map.SetTile(offset, CMap::sand_shore_island1);
+				map.SetTile(offset, CMap::sand_shore_ship1);
 				
 			//four way crossing
 			else if (pixel_RU == color_water && pixel_LU == color_water && pixel_LD == color_water && pixel_RD == color_water
@@ -421,9 +421,9 @@ namespace CMap
 		else if (pixel == color_grass) 
 		{
 			//grass SURROUNDED BY SAND
-			//completely surrrounded island
+			//completely surrrounded ship
 			if (pixel_R == color_sand && pixel_U == color_sand && pixel_L == color_sand && pixel_D == color_sand)
-				map.SetTile(offset, CMap::grass_sand_border_island1);
+				map.SetTile(offset, CMap::grass_sand_border_ship1);
 				
 			//four way crossing
 			else if (pixel_RU == color_sand && pixel_LU == color_sand && pixel_LD == color_sand && pixel_RD == color_sand
@@ -577,9 +577,9 @@ namespace CMap
 		else if (pixel == color_rock) 
 		{
 			//ROCK SURROUNDED BY SAND
-			//completely surrrounded island
+			//completely surrrounded ship
 			if (pixel_R == color_sand && pixel_U == color_sand && pixel_L == color_sand && pixel_D == color_sand)
-				map.SetTile(offset, CMap::rock_sand_border_island1);
+				map.SetTile(offset, CMap::rock_sand_border_ship1);
 				
 			//four way crossing
 			else if (pixel_RU == color_sand && pixel_LU == color_sand && pixel_LD == color_sand && pixel_RD == color_sand
@@ -725,9 +725,9 @@ namespace CMap
 				map.SetTile(offset, CMap::rock_sand_border_concave_RD1);		
 				
 			//ROCK SURROUNDED BY SHOAL
-			//completely surrrounded island
+			//completely surrrounded ship
 			else if (pixel_R == color_shoal && pixel_U == color_shoal && pixel_L == color_shoal && pixel_D == color_shoal)
-				map.SetTile(offset, CMap::rock_shoal_border_island1);
+				map.SetTile(offset, CMap::rock_shoal_border_ship1);
 				
 			//four way crossing
 			else if (pixel_RU == color_shoal && pixel_LU == color_shoal && pixel_LD == color_shoal && pixel_RD == color_shoal
@@ -873,9 +873,9 @@ namespace CMap
 				map.SetTile(offset, CMap::rock_shoal_border_concave_RD1);
 		
 			//ROCK SURROUNDED BY WATER
-			//completely surrrounded island
+			//completely surrrounded ship
 			else if (pixel_R == color_water && pixel_U == color_water && pixel_L == color_water && pixel_D == color_water)
-				map.SetTile(offset, CMap::rock_shore_island1);
+				map.SetTile(offset, CMap::rock_shore_ship1);
 				
 			//four way crossing
 			else if (pixel_RU == color_water && pixel_LU == color_water && pixel_LD == color_water && pixel_RD == color_water
@@ -1026,9 +1026,9 @@ namespace CMap
 		}
 		else if (pixel == color_shoal) 
 		{
-			//completely surrrounded island
+			//completely surrrounded ship
 			if (pixel_R == color_water && pixel_U == color_water && pixel_L == color_water && pixel_D == color_water)
-				map.SetTile(offset, CMap::shoal_shore_island1);
+				map.SetTile(offset, CMap::shoal_shore_ship1);
 				
 			//four way crossing
 			else if (pixel_RU == color_water && pixel_LU == color_water && pixel_LD == color_water && pixel_RD == color_water

@@ -1,6 +1,6 @@
 #define CLIENT_ONLY
 
-#include "IslandsCommon.as";
+#include "ShipsCommon.as";
 
 bool mKeyTap = false;
 bool mKeyWasPressed = false;
@@ -34,8 +34,8 @@ class CompassVars
 	f32 booty_angle;
 	f32 booty_distance;
 	
-	//f32 isle_angle;
-	//f32 isle_distance;
+	//f32 ship_angle;
+	//f32 ship_distance;
 
     CompassVars()
 	{
@@ -63,8 +63,8 @@ class CompassVars
         human_distances.clear();
 		booty_angle = 0.0f;
 		booty_distance = -1.0f;
-		//isle_angle = 0.0f;
-		//isle_distance = -1.0f;
+		//ship_angle = 0.0f;
+		//ship_distance = -1.0f;
     }
 };
 
@@ -201,36 +201,36 @@ void onTick(CRules@ this)
 		_vars.booty_distance = bootyOffset.Length();
 	}
 	
-	//islands
-	/*Island[]@ islands;
-	f32 closestIsleDist = 999999.9f;
-	s16 closestIsleIndex = -1;
-	if (getRules().get("islands", @islands)) //count islands as booty too
+	//ships
+	/*Ship[]@ ships;
+	f32 closestShipDist = 999999.9f;
+	s16 closestShipIndex = -1;
+	if (getRules().get("ships", @ships)) //count ships as booty too
 	{
-		for (uint i = 0; i < islands.length; ++i)
+		for (uint i = 0; i < ships.length; ++i)
 		{								
-			Island @isle = islands[i];	
-			Vec2f islePos = isle.pos;
-			f32 distToPlayer = (islePos - pos).getLength();
+			Ship @ship = ships[i];	
+			Vec2f shipPos = ship.pos;
+			f32 distToPlayer = (shipPos - pos).getLength();
 			f32 dist = distToPlayer;	
-			if ( dist < closestIsleDist && isle.owner == "")
+			if (dist < closestShipDist && ship.owner == "")
 			{
-				closestIsleDist = dist;
-				closestIsleIndex = i;
+				closestShipDist = dist;
+				closestShipIndex = i;
 			}
-			if (closestIsleIndex >= 999) 
+			if (closestShipIndex >= 999) 
 			{
 				break;
 			}
 		}
 	}
 	
-	if (closestIsleIndex > -1 )
+	if (closestShipIndex > -1 )
 	{
-		Vec2f isleOffset = (islands[closestIsleIndex].pos - pos);
+		Vec2f shipOffset = (ships[closestShipIndex].pos - pos);
 
-		_vars.isle_angle = isleOffset.Angle() * -1.0f; 
-		_vars.isle_distance = isleOffset.Length();
+		_vars.ship_angle = shipOffset.Angle() * -1.0f; 
+		_vars.ship_distance = shipOffset.Length();
 	}*/
 }
 
@@ -299,7 +299,7 @@ void onRender(CRules@ this)
     }
 	
 	//closest booty
-	if (_vars.booty_distance > 0.0f) // && _vars.booty_distance < _vars.isle_distance)
+	if (_vars.booty_distance > 0.0f) // && _vars.booty_distance < _vars.ship_distance)
 	{
         Vec2f pos(Maths::Min(18.0f, _vars.booty_distance / 48.0f), 0.0f);
 
@@ -310,14 +310,14 @@ void onRender(CRules@ this)
         GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
     }
 	
-	//closest island
-	/*if (_vars.isle_distance > 0.0f && _vars.isle_distance < _vars.booty_distance)
+	//closest ship
+	/*if (_vars.ship_distance > 0.0f && _vars.ship_distance < _vars.booty_distance)
 	{
-        Vec2f pos(Maths::Min(18.0f, _vars.isle_distance / 48.0f), 0.0f);
+        Vec2f pos(Maths::Min(18.0f, _vars.ship_distance / 48.0f), 0.0f);
 
         Vec2f thisframesize = Vec2f(16,16);
 
-        pos.RotateBy(_vars.isle_angle - camangle);
+        pos.RotateBy(_vars.ship_angle - camangle);
 
         GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
     }*/
