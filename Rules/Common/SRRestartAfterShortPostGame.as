@@ -2,43 +2,21 @@
 
 #define SERVER_ONLY
 
-const int countdown = 10 * getTicksASecond();
-
-void onInit(CRules@ this)
-{
-	this.set_s32("gameover_count", getGameTime() + 1); //for quick game setup
-}
-
-void onStateChange(CRules@ this, const u8 oldState)
-{
-	if (this.isGameOver()) //start countdown when game ends
-    {
-		this.set_s32("gameover_count", getGameTime() + countdown);
-	}
-}
-
 void onTick(CRules@ this)
 {
-    if (this.get_s32("gameover_count") == 0) //do nothing if the match is not over
+    if (this.get_u8("endCount") != 1) //do nothing if the match is not over
         return;
-
-    s32 timeToEnd = this.get_s32("gameover_count") - getGameTime();
-
-    if (timeToEnd <= 0)
-    {
-		this.set_s32("gameover_count", 0);
 		
-		//remove these comments to activate playercount dependent map loading
-		/*string nextMap = getRandomMap(this);
-		if (nextMap != "")
-		{
-			LoadMap(nextMap);
-		}
-		else*/
-		{
-			LoadNextMap();//fallback to mapcycle file
-		}
-    }
+	//remove these comments to activate playercount dependent map loading
+	/*string nextMap = getRandomMap(this);
+	if (nextMap != "")
+	{
+		LoadMap(nextMap);
+	}
+	else*/
+	{
+		LoadNextMap();//fallback to mapcycle file
+	}
 }
 
 string getRandomMap(CRules@ this)

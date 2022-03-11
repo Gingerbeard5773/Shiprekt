@@ -5,9 +5,7 @@ const string PLAYER_BLOB = "human";
 const string SPAWN_TAG = "mothership";
 
 const u32 standartRespawnTime = 7.5f*getTicksASecond();
-const u32 specToTeamRespawnTime = 10.0f*getTicksASecond(); // one minute
-
-bool oneTeamLeft = false;
+const u32 specToTeamRespawnTime = 10.0f*getTicksASecond();
 
 shared class Respawn
 {
@@ -25,14 +23,12 @@ void onInit(CRules@ this)
 {
 	Respawn[] respawns;
 	this.set("respawns", respawns);
-	this.set_u8("endCount", 0);
     onRestart(this);
 }
 
 void onReload(CRules@ this)
 {
     this.clear("respawns"); 
-	this.set_u8("endCount", 0);	
     for (int i = 0; i < getPlayerCount(); i++)
     {
         CPlayer@ player = getPlayer(i);
@@ -50,7 +46,6 @@ void onReload(CRules@ this)
 void onRestart(CRules@ this)
 {
 	this.clear("respawns");
-	this.set_u8("endCount", 0);
 	
 	CPlayer@[] players;
 	for (int i = 0; i < getPlayerCount(); i++)
@@ -64,10 +59,7 @@ void onRestart(CRules@ this)
 		this.push("respawns", r);
 		syncRespawnTime(this, player, getGameTime());
 	}
-	assignTeams(this, players); 
-
-    this.SetCurrentState(GAME);
-    //this.SetGlobalMessage("");
+	assignTeams(this, players);
 }
 
 void assignTeams(CRules@ this, CPlayer@[] players)
@@ -142,7 +134,7 @@ void onPlayerRequestSpawn(CRules@ this, CPlayer@ player)
 void onTick(CRules@ this)
 {
 	const u32 gametime = getGameTime();
-	if (this.isMatchRunning() && gametime % 30 == 0)
+	if (!this.isGameOver() && gametime % 30 == 0)
 	{
 		Respawn[]@ respawns;
 		if (this.get("respawns", @respawns))
@@ -158,64 +150,6 @@ void onTick(CRules@ this)
 				}
 			}
 		}
-
-        CBlob@[] cores;
-        getBlobsByTag(SPAWN_TAG, cores);
-		
-        oneTeamLeft = (cores.length <= 1);
-		u8 endCount = this.get_u8("endCount");
-		
-		if (oneTeamLeft && endCount == 0)//start endmatch countdown
-			this.set_u8("endCount", 5);
-		
-		if (endCount != 0)
-		{
-			this.set_u8("endCount", endCount - 1);
-			if (endCount == 1)
-			{
-				u8 teamWithPlayers = 0;
-				if (!this.isGameOver())
-				{
-					for (uint coreIt = 0; coreIt < cores.length; coreIt++)
-					{
-						for (int i = 0; i < getPlayerCount(); i++)
-						{
-							CPlayer@ player = getPlayer(i);
-							if (player.getBlob() !is null)
-								teamWithPlayers = player.getTeamNum();
-						}
-					}
-				}
-				u8 coresAlive = 0;
-				for (int i = 0; i < cores.length; i++)
-				{
-					if (!cores[i].hasTag("critical"))
-					coresAlive++;
-				}
-
-				if (coresAlive > 0)
-				{
-					string captain = "";
-					CBlob@ mShip = getMothership(teamWithPlayers);
-					if (mShip !is null)
-					{
-						Ship@ ship = getShip(mShip.getShape().getVars().customData);
-						if (ship !is null && ship.owner != "" && ship.owner != "*")
-						{
-							string lastChar = ship.owner.substr(ship.owner.length() -1);
-							captain = ship.owner + (lastChar == "s" ? "' " : "'s ");
-						}
-						this.SetGlobalMessage(captain + this.getTeam(mShip.getTeamNum()).getName() + " Wins!");
-					}
-				}
-				else
-					this.SetGlobalMessage("Game Over! It's a tie!");
-				
-				this.SetCurrentState(GAME_OVER);
-			}
-        }
-        else
-            this.SetGlobalMessage("");
 	}
 }
 
@@ -246,7 +180,15 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 			
 		// spawn as shark if cant find a ship
 		if (newship is null)
-			return SpawnAsShark(this, player);
+		{
+			CBlob@ shark = server_CreateBlob("shark", this.getSpectatorTeamNum(), getSpawnPosition(player.getTeamNum()));
+			if (shark !is null)
+			{
+				shark.server_SetPlayer(player);
+				//player.server_setTeamNum(this.getSpectatorTeamNum());
+			}
+			return shark;
+		}
 
 		CBlob@ newBlob = server_CreateBlobNoInit(PLAYER_BLOB);
 		if (newBlob !is null)
@@ -290,17 +232,6 @@ Vec2f getSpawnPosition(const uint team)
     return Vec2f(map.tilesize*map.tilemapwidth/2, map.tilesize*map.tilemapheight/2);
 }
 
-CBlob@ SpawnAsShark(CRules@ this, CPlayer@ player)
-{
-    CBlob @shark = server_CreateBlob("shark", this.getSpectatorTeamNum(), getSpawnPosition(player.getTeamNum()));
-    if (shark !is null)
-	{
-        shark.server_SetPlayer(player);
-		//player.server_setTeamNum(this.getSpectatorTeamNum());
-    }
-    return shark;
-}
-
 void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 {
     CBlob@ blob = player.getBlob();
@@ -324,24 +255,6 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 		}
 		onPlayerRequestSpawn(this, player);
 	}
-}
-
-bool allPlayersInOneTeam(CRules@ this)
-{
-    if (getPlayerCount() <= 1)
-        return false;
-    int team = -1;
-	u16 specTeam = this.getSpectatorTeamNum();
-    for (int i = 0; i < getPlayerCount(); i++)
-    {
-        CPlayer@ player = getPlayer(i);
-        if (i == 0)
-            team = player.getTeamNum();
-        else if (team != player.getTeamNum() && player.getTeamNum() != specTeam)
-            return false;
-    }
-
-    return true;
 }
 
 void syncRespawnTime(CRules@ this, CPlayer@ player, u32 time)

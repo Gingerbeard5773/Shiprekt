@@ -78,8 +78,7 @@ void onTick(CBlob@ this)
             {
 				//checks for canPlace
 				u32 gameTime = getGameTime();
-				CRules@ rules = getRules();
-				bool skipCoreCheck = gameTime > getRules().get_u16("warmup_time") || (ship.isMothership && (ship.owner == "" || ship.owner == "*" || ship.owner == player.getUsername()));
+				bool skipCoreCheck = !getRules().isWarmup() || (ship.isMothership && (ship.owner == "" || ship.owner == "*" || ship.owner == player.getUsername()));
 				bool cLinked = false;
 				bool onRock = false;
                 const bool overlappingShip = blocksOverlappingShip(@blocks);

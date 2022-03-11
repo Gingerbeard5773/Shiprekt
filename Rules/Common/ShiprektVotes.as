@@ -71,7 +71,7 @@ void initializeBools(CRules@ this)
 {
 	this.set_s32("lastSDVote", -suddenDeathVoteCooldown);
 	this.set_s32("lastFBVote", -freeBuildCooldown);
-	this.set_bool("freebuild", false);
+	this.set_bool("freebuild", getPlayerCount() <= 1);
 	this.set_bool("sudden death", false);
 }
 
@@ -321,7 +321,7 @@ class VoteFreebuildFunctor : VoteFunctor
 	{
 		CRules@ rules = getRules();
 		bool newFreeState = !rules.get_bool("freebuild");
-		if(outcome)
+		if (outcome)
 		{
 			rules.set_bool("freebuild", newFreeState);
 			if (newFreeState)
@@ -456,7 +456,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 					if (player.getUsername() != player.getCharacterName())
 						descriptor += " (" + player.getUsername() + ")";
 
-					if(g_lastUsernameVoted == player.getUsername())
+					if (g_lastUsernameVoted == player.getUsername())
 					{
 						string title = getTranslatedString(
 							"Cannot kick {USER}"
@@ -475,7 +475,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 					{
 						string kick = getTranslatedString("Kick {USER}").replace("{USER}", descriptor);
 						string kicking = getTranslatedString("Kicking {USER}").replace("{USER}", descriptor);
-						string info = getTranslatedString( "Make sure you're voting to kick\nthe person you meant.\n" );
+						string info = getTranslatedString("Make sure you're voting to kick\nthe person you meant.\n");
 
 						CContextMenu@ usermenu = Menu::addContextMenu(kickmenu, kick);
 						Menu::addInfoBox(usermenu, kicking, info);

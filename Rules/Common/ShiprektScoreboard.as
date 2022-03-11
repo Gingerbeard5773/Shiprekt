@@ -274,7 +274,7 @@ void onRenderScoreboard(CRules@ this)
 		{
 			scrollOffset += scrollSpeed;
 		}
-		else if(scrollOffset > 0.0f && mousePos.y < screenHeight*0.16f)
+		else if (scrollOffset > 0.0f && mousePos.y < screenHeight*0.16f)
 		{
 			scrollOffset -= scrollSpeed;
 		}
@@ -287,10 +287,9 @@ void onRenderScoreboard(CRules@ this)
 
 void onTick(CRules@ this)
 {
-	if (isServer() && this.getCurrentState() == GAME)
+	if (!this.isGameOver())
 	{
-		this.add_u32("match_time", 1);
-		this.Sync("match_time", true);
+		this.set_u32("match_time", getGameTime());
 	}
 	
 	if (getGameTime() % 30 == 0) //check once a second
@@ -325,17 +324,17 @@ void onInit(CRules@ this)
 
 void onRestart(CRules@ this)
 {
+	this.set_u32("match_time", 0);
+	
 	if (isServer())
 	{
-		this.set_u32("match_time", 0);
-		this.Sync("match_time", true);
 		getMapName(this);
 	}
 }
 
 void onBlobDie(CRules@ this, CBlob@ blob)
 {
-	if (!this.isGameOver() && !this.isWarmup())	//Only count kills, deaths when the game is on
+	if (!this.isGameOver())	//Only count kills, deaths when the game is on
 	{
 		if (blob !is null)
 		{

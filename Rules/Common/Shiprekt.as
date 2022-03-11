@@ -8,14 +8,34 @@ const u16 MINI_STATION_BOOTY = 1;
 
 void onInit(CRules@ this)
 {
+	this.set_u8("endCount", 1);
+	Reset(this);
+}
+
+void onRestart(CRules@ this)
+{
+	this.set_u8("endCount", 0);
+	Reset(this);
+}
+
+void Reset(CRules@ this)
+{
 	this.set_bool("whirlpool", false);
 	setStartingBooty(this);
-	server_resetTotalBooty(this); 
+	server_resetTotalBooty(this);
+	
+	CCamera@ camera = getCamera();
+    if (camera !is null)
+    	camera.setRotation(0.0f);
+	
+	this.SetGlobalMessage("");
+	this.SetCurrentState(WARMUP);
 }
 
 void onTick(CRules@ this)
 {
 	u32 gameTime = getGameTime();
+	
 	//check for minimum resources on captains
 	if (gameTime % 150 == 0 && !this.get_bool("whirlpool"))
 	{
@@ -36,9 +56,9 @@ void onTick(CRules@ this)
 					//consider blocks to propellers ratio
 					int propellers = 1;
 					int couplings = 0;
-					for (uint b_iter = 0; b_iter < ship.blocks.length; ++b_iter )
+					for (uint q = 0; q < ship.blocks.length; ++q)
 					{
-						CBlob@ b = getBlobByNetworkID(ship.blocks[b_iter].blobID);
+						CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
 						if (b !is null)
 							if (b.hasTag("engine"))
 								propellers++;
@@ -46,7 +66,7 @@ void onTick(CRules@ this)
 								couplings++;
 					}
 
-					if (((ship.blocks.length - propellers - couplings)/propellers > 3) || gameTime < this.get_u16("warmup_time"))
+					if (((ship.blocks.length - propellers - couplings)/propellers > 3) || this.isWarmup())
 					{
 						CBlob@ pBlob = player.getBlob();
 						CBlob@[]@ blocks;
@@ -86,7 +106,7 @@ void onTick(CRules@ this)
 				if (ministation is null)
 					continue;
 			
-				if (ministations[u].getTeamNum() == pteam )
+				if (ministations[u].getTeamNum() == pteam)
 					pMiniStationCount++;
 			}
 			
@@ -137,12 +157,73 @@ void onTick(CRules@ this)
 			}
 		}
 	}
-}
+	
+	//check game states
+	if (gameTime % 30 == 0)
+	{
+		//end warmup time
+		if (this.isWarmup() && (gameTime > this.get_u16("warmup_time") || this.get_bool("freebuild")))
+		{
+			this.SetCurrentState(GAME);
+		}
+		
+		//check if the game has ended
+		CBlob@[] cores;
+        getBlobsByTag("mothership", cores);
+		
+        bool oneTeamLeft = cores.length <= 1;
+		u8 endCount = this.get_u8("endCount");
+		
+		if (oneTeamLeft && endCount == 0)//start endmatch countdown
+			this.set_u8("endCount", 15);
+		
+		if (endCount != 0)
+		{
+			this.set_u8("endCount", Maths::Max(endCount - 1, 1));
+			if (endCount == 11)
+			{
+				u8 teamWithPlayers = 0;
+				if (!this.isGameOver())
+				{
+					for (uint coreIt = 0; coreIt < cores.length; coreIt++)
+					{
+						for (int i = 0; i < getPlayerCount(); i++)
+						{
+							CPlayer@ player = getPlayer(i);
+							if (player.getBlob() !is null)
+								teamWithPlayers = player.getTeamNum();
+						}
+					}
+				}
+				u8 coresAlive = 0;
+				for (int i = 0; i < cores.length; i++)
+				{
+					if (!cores[i].hasTag("critical"))
+					coresAlive++;
+				}
 
-void onRestart(CRules@ this)
-{
-	setStartingBooty(this);
-	server_resetTotalBooty(this);
+				if (coresAlive > 0)
+				{
+					string captain = "";
+					CBlob@ mShip = getMothership(teamWithPlayers);
+					if (mShip !is null)
+					{
+						Ship@ ship = getShip(mShip.getShape().getVars().customData);
+						if (ship !is null && ship.owner != "" && ship.owner != "*")
+						{
+							string lastChar = ship.owner.substr(ship.owner.length() -1);
+							captain = ship.owner + (lastChar == "s" ? "' " : "'s ");
+						}
+						this.SetGlobalMessage(captain + this.getTeam(mShip.getTeamNum()).getName() + " Wins!");
+					}
+				}
+				else
+					this.SetGlobalMessage("Game Over! It's a tie!");
+				
+				this.SetCurrentState(GAME_OVER);
+			}
+        }
+	}
 }
 
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
@@ -159,14 +240,25 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 		this.Sync("booty" + pName, true);
 	}
 	else
-		server_setPlayerBooty(pName, getGameTime() > this.get_u16("warmup_time") ? minBooty : this.get_u16("starting_booty"));
+		server_setPlayerBooty(pName, !this.isWarmup() ? minBooty : this.get_u16("starting_booty"));
 		
 	print("New player joined. New count : " + getPlayersCount());
 	if (getPlayersCount() <= 1)
 	{
 		//print("*** Restarting the map to be fair to the new player ***");
-		getNet().server_SendMsg( "*** " + getPlayerCount() + " player(s) in map. Setting freebuild mode until more players join. ***");
+		getNet().server_SendMsg("*** " + getPlayerCount() + " player(s) in map. Setting freebuild mode until more players join. ***");
 		this.set_bool("freebuild", true);
+		this.Sync("freebuild", true);
+	}
+}
+
+void onPlayerLeave(CRules@ this, CPlayer@ player)
+{
+	if (getPlayersCount() <= 1)
+	{
+		getNet().server_SendMsg("*** " + getPlayerCount() + " player(s) in map. Setting freebuild mode until more players join. ***");
+		this.set_bool("freebuild", true);
+		this.Sync("freebuild", true);
 	}
 }
 
@@ -198,7 +290,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	//for testing
 	if (sv_test || player.isMod() || isDev(player))
 	{
-		if (text_in.substr(0,1) == "!" )
+		if (text_in.substr(0,1) == "!")
 		{
 			string[]@ tokens = text_in.split(" ");
 
@@ -207,7 +299,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				CBlob@ pBlob = player.getBlob();
 				if (pBlob is null) return false;
 				
-				if (tokens[0] =="!addbot") //add a bot to the server. Supports names & teams
+				if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
 				{
 					if (tokens.length > 2)
 						AddBot(tokens[1], parseInt(tokens[2]), 0);
@@ -239,8 +331,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!hash") //gives encoded hash for the word you input
 				{
-					string word = tokens[1];
-					if (tokens.length > 2) word = tokens[1]+" "+tokens[2]; //only supports up to two words
+					string word = text_in.replace("!hash ", "");
 					print(word.getHash() + " : "+ word);
 					
 					return false;
@@ -483,6 +574,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					client_AddToChat("Toggled freebuild "+ (this.get_bool("freebuild") ? "off" : "on"),  SColor(255, 255, 255, 0));
 					this.set_bool("freebuild", !this.get_bool("freebuild"));
+					this.Sync("freebuild", true);
 				}
 				else if (tokens[0] == "!booty")
 				{

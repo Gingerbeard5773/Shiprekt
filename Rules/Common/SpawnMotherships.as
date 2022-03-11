@@ -33,11 +33,6 @@ void onRestart(CRules@ this)
 			}
     	}
     }
-	//should find a better place for these
-	this.set_bool("whirlpool", false);
-    CCamera@ camera = getCamera();
-    if (camera !is null)
-    	camera.setRotation(0.0f);
 }
 
 void SpawnMothership(Vec2f pos, const int team)

@@ -96,7 +96,7 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 
 	if (teamFlaks < MAX_TEAM_FLAKS)
 	{
-		if (getPlayersCount() == 1 || rules.get_bool("freebuild"))
+		if (rules.get_bool("freebuild"))
 			ProduceBlock(getRules(), caller, bType, amount);
 		else if (pBooty >= cost)
 		{
@@ -134,7 +134,7 @@ void ReturnBlocks(CBlob@ this)
 						returnBooty += getCost(block.getName());
 				}
 				
-				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
+				if (returnBooty > 0 && !rules.get_bool("freebuild"))
 					server_addPlayerBooty(pName, returnBooty);
 			}
 		}

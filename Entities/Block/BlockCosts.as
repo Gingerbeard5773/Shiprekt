@@ -12,7 +12,7 @@ u16 getCost(string blockName, bool normalCost = false)
 	u16 cost = cfg.read_u16(blockName);
 	u16 warmup_cost = cfg.read_u16("warmup_"+blockName, cost);
 
-	if (getGameTime() < getRules().get_u16("warmup_time") && !normalCost)
+	if (getRules().isWarmup() && !normalCost)
 		return warmup_cost;
 	
 	return cost;

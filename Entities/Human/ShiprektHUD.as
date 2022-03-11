@@ -63,7 +63,7 @@ void onTick(CSprite@ this)
 		u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
 		f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
 		u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
-		if (getGameTime() > rules.get_u16("warmup_time"))
+		if (!rules.isWarmup())
 		{
 			if (pBooty >= BOOTY_TRANSFER + fee)
 			{
@@ -128,7 +128,7 @@ void onRender(CSprite@ this)
 		GUI::DrawText(Trans::FreeMode, Vec2f(screenWidth/2 - 125, 15), tipsColor);
 	else if (rules.get_bool("freebuild"))
 		GUI::DrawText(Trans::FreebuildMode, Vec2f(screenWidth/2 - 75, 15), tipsColor);
-	else
+	else if (rules.isWarmup())
 	{
 		int WARMUP_TIME = rules.get_u16("warmup_time") - gameTime;
 		if (WARMUP_TIME > 0)
@@ -313,7 +313,7 @@ void DrawResources(u16 pBooty, string name, string captainName, Vec2f tl, CContr
 		u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
 		f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
 		u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
-		if (getGameTime() > rules.get_u16("warmup_time"))
+		if (!rules.isWarmup())
 		{
 			if (pBooty >= BOOTY_TRANSFER + fee)
 			{

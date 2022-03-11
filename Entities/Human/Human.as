@@ -441,7 +441,7 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 		
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : sv_test ? BUILD_MENU_TEST : BUILD_MENU_SIZE, desc);
 	u32 gameTime = getGameTime();
-	u16 WARMUP_TIME = getPlayersCount() > 1 && !rules.get_bool("freebuild") ? rules.get_u16("warmup_time") : 0;
+	const bool warmup = rules.isWarmup();
 	
 	if (menu !is null) 
 	{
@@ -505,40 +505,40 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			}
 			{ //Ram Hull
 				description = Trans::RamDesc;
-				AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, description, core, 2.0f, gameTime < WARMUP_TIME);
+				AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, description, core, 2.0f, warmup);
 			}
 			if (!isStation)
 			{ //Auxilliary Core
 				description = Trans::AuxillDesc;
-				AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, description, core, 12.0f, gameTime < WARMUP_TIME);
+				AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, description, core, 12.0f, warmup);
 			}
 			{ //Bomb
 				description = Trans::BombDesc;
-				AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, description, core, 2.0f, gameTime < WARMUP_TIME);
+				AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, description, core, 2.0f, warmup);
 			}
 		}
 		{ //Point Defense
 			description = Trans::PointDefDesc+"\n"+Trans::AmmoCap+": 30";
-			AddBlock(this, menu, "pointdefense", "$POINTDEFENSE$", Trans::PointDefense, description, core, 3.5f, gameTime < WARMUP_TIME);
+			AddBlock(this, menu, "pointdefense", "$POINTDEFENSE$", Trans::PointDefense, description, core, 3.5f, warmup);
 		}
 		{ //Flak
 			description = Trans::FlakDesc+"\n"+Trans::AmmoCap+": 30";
-			AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, gameTime < WARMUP_TIME);
+			AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, warmup);
 		}
 
 		if (!isMiniStation)
 		{
 			{ //Machinegun
 				description = Trans::MGDesc+"\n"+Trans::AmmoCap+": 250";
-				AddBlock(this, menu, "machinegun", "$MACHINEGUN$", Trans::Machinegun, description, core, 2.0f, gameTime < WARMUP_TIME);
+				AddBlock(this, menu, "machinegun", "$MACHINEGUN$", Trans::Machinegun, description, core, 2.0f, warmup);
 			}
 			{ //AP Cannon
 				description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 12";
-				AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, gameTime < WARMUP_TIME);
+				AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, warmup);
 			}
 			{ //Missile Launcher
 				description = Trans::LauncherDesc+"\n"+Trans::AmmoCap+": 8";
-				AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, gameTime < WARMUP_TIME);
+				AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, warmup);
 			}
 			{ //Decoy Core
 				description = Trans::DecoyCoreDesc;
@@ -1014,7 +1014,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	else if (isServer() && this.getCommandID("giveBooty") == cmd)//transfer booty
 	{
 		CRules@ rules = getRules();
-		if (getGameTime() < rules.get_u16("warmup_time")) return;
+		if (rules.isWarmup()) return;
 			
 		u8 teamNum = this.getTeamNum();
 		CPlayer@ player = this.getPlayer();
@@ -1139,7 +1139,7 @@ void onDie(CBlob@ this)
 						returnBooty += getCost(block.getName());
 				}
 				
-				if (returnBooty > 0 && !(getPlayersCount() == 1 || rules.get_bool("freebuild")))
+				if (returnBooty > 0 && !rules.get_bool("freebuild"))
 					server_addPlayerBooty(pName, returnBooty);
 			}
 		}
