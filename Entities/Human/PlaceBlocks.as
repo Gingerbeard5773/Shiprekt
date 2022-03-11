@@ -206,7 +206,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	f32 mouseDist = Maths::Min(mouseAim.Normalize(), max_build_distance);
 	aimPos = pos + mouseAim * mouseDist;//position of the 'buildblock' pointer
 	Vec2f shipAim = aimPos - ship_pos;//ship to 'buildblock' pointer
-	shipAim.RotateBy(-refBAngle);	shipAim = SnapToGrid(shipAim); shipAim.RotateBy(refBAngle);
+	shipAim.RotateBy(-refBAngle); shipAim = SnapToGrid(shipAim); shipAim.RotateBy(refBAngle);
 	Vec2f cursor_pos = ship_pos + shipAim;//position of snapped buildblock
 	
 	//rotate and position blocks
@@ -222,6 +222,15 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 
 		SetDisplay(block, color_white, RenderStyle::additive, 560.0f);
 	}
+}
+
+Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
+{
+    pos.x = Maths::Round(pos.x / 8.0f);
+    pos.y = Maths::Round(pos.y / 8.0f);
+    pos.x *= 8;
+    pos.y *= 8;
+    return pos;
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
@@ -263,7 +272,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         if (this.get("blocks", @blocks) && blocks.size() > 0)                 
         {	
 			if (isServer())
+			{
+				getRules().push("dirtyBlocks", blocks);
 				PositionBlocks(@blocks, shipPos + pos_offset.RotateBy(angleDelta), shipPos + aimPos_offset.RotateBy(angleDelta), target_angle, centerBlock, refBlock);
+			}
 
 			int iColor = centerBlock.getShape().getVars().customData;
 			for (uint i = 0; i < blocks.length; ++i)
@@ -295,7 +307,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						blockHooks.update("onBlockPlaced", @b); //Activate hook onBlockPlaced for all blobs that have it
 					
 					b.set_u32("placedTime", getGameTime());
-					getRules().push("dirtyBlocks", @b);
 				}
 				else
 				{

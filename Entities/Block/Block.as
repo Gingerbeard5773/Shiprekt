@@ -346,7 +346,7 @@ void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking
 	
 	//effects
 	int shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
-	ShakeScreen(shake, 12, point1);
+	ShakeScreen(Maths::Min(shake, 100), 12, point1);
 	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 }
 
@@ -396,8 +396,12 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	if (color < 0) return 0.0f;
 	
 	int teamNum = this.getTeamNum();
+	
+	Ship@ ship = getShip(color);
+	if (ship is null)
+		return damage;
 
-	if (teamNum!= hitterBlob.getTeamNum() && isMothership(this))
+	if (teamNum != hitterBlob.getTeamNum() && ship.isMothership)
 	{
 		CRules@ rules = getRules();
 		

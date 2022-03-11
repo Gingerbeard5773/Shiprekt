@@ -13,7 +13,9 @@ void onInit(CRules@ this)
 {
 	Ship[] ships;
 	this.set("ships", ships);
-	CBlob@[] dirtyBlocks;
+	Ship[] dirtyShips;
+	this.set("dirtyShips", dirtyShips);
+	CBlob@[][] dirtyBlocks;
 	this.set("dirtyBlocks", dirtyBlocks);
 	this.addCommandID("ships sync");
 	this.addCommandID("ships update");
@@ -35,26 +37,46 @@ void onTick(CRules@ this)
 		const int time = getMap().getTimeSinceStart();
 		if (time < 2) // errors are generated when done on first game tick
 			return;
+			
+		//dirtyShips & dirtyBlocks is not required! both are done for performance improvement!
+			
+		// seperate a ship into two or more ships
+		Ship[]@ dirtyShips;
+		if (this.get("dirtyShips", @dirtyShips) && dirtyShips.length > 0)
+		{
+			if (!this.get_bool("dirty ships"))
+			{
+				for (uint i = 0; i < dirtyShips.length; i++)
+				{
+					SeperateShip(this, dirtyShips[i]);
+				}
+			}
+			full_sync = true;
+			this.clear("dirtyShips");
+		}
 		
-		CBlob@[]@ dirtyBlocks;
+		// add placed blocks onto an existing ship, does dirty ships if there is no ship to copy onto
+		CBlob@[][]@ dirtyBlocks;
 		if (this.get("dirtyBlocks", @dirtyBlocks) && dirtyBlocks.length > 0)
 		{
-			for (uint i = 0; i < dirtyBlocks.length; i++)
+			if (!this.get_bool("dirty ships"))
 			{
-				// add a placed block onto an existing ship, otherwise update all ships
-				if (!AddToShip(dirtyBlocks[i]))
+				for (uint i = 0; i < dirtyBlocks.length; i++)
 				{
-					this.set_bool("dirty ships", true);
-					break;
+					if (!AddToShip(dirtyBlocks[i]))
+					{
+						this.set_bool("dirty ships", true);
+						break;
+					}
 				}
 			}
 			full_sync = true;
 			this.clear("dirtyBlocks");
 		}
 		
+		// remove existing ships and create new ones in their place, this is a full reset
 		if (this.get_bool("dirty ships"))
 		{
-			// remove existing ships and create new ones in their place
 			GenerateShips(this);
 			full_sync = true;
 			this.set_bool("dirty ships", false);
@@ -67,31 +89,41 @@ void onTick(CRules@ this)
 		UpdateShips(this);//client-side integrate
 }
 
-bool AddToShip(CBlob@ this) //reference from nearby block and copy onto ship
+void getOverlappingShips(CBlob@[] blocks, Ship@[]@ touchingShips)
+{
+	for (uint i = 0; i < blocks.length; i++)
+	{
+		CBlob@ block = blocks[i];
+		
+		CBlob@[] overlapping;
+		block.getOverlapping(@overlapping);
+		
+		for (uint i = 0; i < overlapping.length; i++)
+		{
+			CBlob@ b = overlapping[i];
+			Ship@ ship = getShip(b.getShape().getVars().customData);
+			if (ship is null || (b.getPosition() - block.getPosition()).LengthSquared() > 78) continue;
+			
+			//shitty algorithm to make sure there is no duplicates
+			bool pushShip = true;
+			for (uint i = 0; i < touchingShips.length; i++)
+			{
+				if (ship.id == touchingShips[i].id)
+				{
+					pushShip = false;
+					break;
+				}
+			}
+			if (pushShip)
+				touchingShips.push_back(ship);
+		}
+	}
+}
+
+bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
 {
 	Ship@[] touchingShips;
-	
-	CBlob@[] overlapping;
-	this.getOverlapping(@overlapping);
-	
-	for (uint i = 0; i < overlapping.length; i++)
-	{
-		CBlob@ b = overlapping[i];
-		Ship@ ship = getShip(b.getShape().getVars().customData);
-		if (ship is null || (b.getPosition() - this.getPosition()).LengthSquared() > 78) continue;
-		
-		bool pushShip = true;
-		for (uint i = 0; i < touchingShips.length; i++)
-		{
-			if (ship is touchingShips[i])
-			{
-				pushShip = false;
-				break;
-			}
-		}
-		if (pushShip)
-			touchingShips.push_back(ship);
-	}
+	getOverlappingShips(blocks, @touchingShips);
 	
 	if (touchingShips.length != 1)
 		return false;
@@ -99,24 +131,31 @@ bool AddToShip(CBlob@ this) //reference from nearby block and copy onto ship
 	Ship@ ship = touchingShips[0];
 	if (ship.centerBlock is null)
 		return false;
+		
+	int shipColor = ship.centerBlock.getShape().getVars().customData;
 	
 	//set block information
-	ShipBlock ship_block;
-	ship_block.blobID = this.getNetworkID();
-	ship.blocks.push_back(ship_block);
+	for (uint i = 0; i < blocks.length; i++)
+	{
+		CBlob@ block = blocks[i];
+		
+		ShipBlock ship_block;
+		ship_block.blobID = block.getNetworkID();
+		ship.blocks.push_back(ship_block);
 	
-	int shipColor = ship.centerBlock.getShape().getVars().customData;
-	this.getShape().getVars().customData = shipColor;	
-	this.set_u16("last color", shipColor);
-	setUpdateSeatArrays(shipColor);
+		block.getShape().getVars().customData = shipColor;	
+		block.set_u16("last color", shipColor);
+	
+		//Activate hook onColored for all blobs that have it (server)
+		BlockHooks@ blockHooks;
+		block.get("BlockHooks", @blockHooks);
+		if (blockHooks !is null)
+			blockHooks.update("onColored", @block);
+	}
+	
+	SetUpdateSeatArrays(shipColor);
 	@ship.centerBlock = null; //reset ship so positions update
 	StoreVelocities(ship);
-	
-	//Activate hook onColored for all blobs that have it (server)
-	BlockHooks@ blockHooks;
-	this.get("BlockHooks", @blockHooks);
-	if (blockHooks !is null)
-		blockHooks.update("onColored", @this);
 
 	return true;
 }
@@ -154,8 +193,8 @@ void GenerateShips(CRules@ this)
 				Ship@ p_ship;
 				this.getLast("ships", @p_ship);
 				
-				ColorBlocks(b, p_ship);
-				setUpdateSeatArrays(color);
+				ColorBlocks(b, p_ship, color);
+				SetUpdateSeatArrays(color);
 			}
 		}	
 		for (uint i = 0; i < blocks.length; ++i)
@@ -168,9 +207,66 @@ void GenerateShips(CRules@ this)
 	//print("Generated " + color + " ships");
 }
 
-void ColorBlocks(CBlob@ this, Ship@ ship)
+void SeperateShip(CRules@ this, Ship@ ship)
 {
-	this.getShape().getVars().customData = color;
+	StoreVelocities(ship);
+	
+	CBlob@[] blocks;
+	for (uint i = 0; i < ship.blocks.length; ++i)
+	{
+		CBlob@ block = getBlobByNetworkID(ship.blocks[i].blobID);
+		if (block !is null)
+			blocks.push_back(block);
+	}
+	
+	if (blocks.length <= 0) return;
+	
+	CBlob@ refBlock = blocks[0];
+	int referenceCol = refBlock.getShape().getVars().customData;
+	
+	for (uint i = 0; i < blocks.length; ++i)
+	{
+		if (blocks[i].getShape().getVars().customData > 0)
+			blocks[i].getShape().getVars().customData = 0;			
+	}
+
+	for (uint i = 0; i < blocks.length; ++i)
+	{
+		CBlob@ b = blocks[i];
+		if (b.getShape().getVars().customData == 0)
+		{
+			Ship newShip;
+			SetNextId(this, @newShip);
+			Ship@ p_ship;
+			uint newCol;
+			if (b is refBlock)
+			{
+				newCol = referenceCol;
+				this.setAt("ships", referenceCol - 1, newShip);
+				this.getAt("ships", referenceCol - 1, @p_ship);
+			}
+			else
+			{
+				color++;
+				newCol = color;
+				this.push("ships", newShip);
+				this.getLast("ships", @p_ship);
+			}
+			
+			ColorBlocks(b, p_ship, newCol);
+			SetUpdateSeatArrays(newCol);
+		}
+	}	
+	for (uint i = 0; i < blocks.length; ++i)
+	{
+		CBlob@ b = blocks[i];
+		b.set_u16("last color", b.getShape().getVars().customData);				
+	}
+}
+
+void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
+{
+	this.getShape().getVars().customData = newcolor;
 	ShipBlock ship_block;
 	ship_block.blobID = this.getNetworkID();
 	ship.blocks.push_back(ship_block);
@@ -203,7 +299,7 @@ void ColorBlocks(CBlob@ this, Ship@ ship)
 			|| ((getGameTime() - b.get_u32("placedTime")) < 10) || ((getGameTime() - this.get_u32("placedTime")) < 10) 
 			|| (getMap().getTimeSinceStart() < 100)))
 		{
-			ColorBlocks(b, ship); 
+			ColorBlocks(b, ship, newcolor); 
 		}
 	}
 }
@@ -294,7 +390,7 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 	}
 
 	center = ship.centerBlock.getPosition();
-	//print( ship.id + " mass: " + totalMass + "; effective: " + ship.mass );
+	//print(ship.id + " mass: " + totalMass + "; effective: " + ship.mass);
 	
 	//update block positions/angle array
 	for (uint i = 0; i < ship.blocks.length; ++i)
@@ -318,7 +414,9 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 	this.get("ships", @ships);	
 	for (uint i = 0; i < ships.length; ++i)
 	{
-		Ship @ship = ships[i];
+		Ship@ ship = ships[i];
+		if (ship.blocks.length == 0)
+			continue;
 
 		ship.soundsPlayed = 0;
 		ship.carryMass = 0;
@@ -352,9 +450,8 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 				{
 					Vec2f bPos = b.getPosition();	
 					Tile bTile = map.getTile(bPos);
-					bool onRock = map.isTileSolid(bTile);
 					
-					if (onRock)
+					if (map.isTileSolid(bTile)) //are we on rock
 					{
 						TileCollision(ship, bPos);
 						if (!b.hasTag("mothership") || this.get_bool("sudden death"))
@@ -483,12 +580,12 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			{
 				CPlayer@ iOwner = getPlayerByUsername(oldestSeatOwner);
 				if (iOwner !is null)
-					setShipTeam(ship, iOwner.getTeamNum());
+					SetShipTeam(ship, iOwner.getTeamNum());
 			}
 			
 			ship.owner = oldestSeatOwner;
 		}
-		//if (ship.owner != "") 	print("updated ship " + ship.id + "; owner: " + ship.owner + "; mass: " + ship.mass);
+		//if (ship.owner != "") print("updated ship " + ship.id + "; owner: " + ship.owner + "; mass: " + ship.mass);
 	}
 	
 	//calculate carryMass weight
@@ -514,9 +611,9 @@ void UpdateShipBlob(CBlob@ blob, Ship @ship, ShipBlock@ ship_block)
 {
 	Vec2f offset = ship_block.offset;
 	offset.RotateBy(ship.angle);
- 	
- 	blob.setPosition(ship.pos + offset);
- 	blob.setAngleDegrees(ship.angle + ship_block.angle_offset);
+		
+	blob.setPosition(ship.pos + offset);
+	blob.setAngleDegrees(ship.angle + ship_block.angle_offset);
 
 	//don't collide with borders
 	blob.setVelocity(Vec2f_zero);
@@ -540,12 +637,18 @@ void TileCollision(Ship@ ship, Vec2f tilePos)
 	ship.vel = -colvec1*1.0f;
 	
 	//effects
-	int shake = (vellen * ship.mass + vellen * ship.mass)*0.5f;
-	ShakeScreen(shake, 12, tilePos);
+	int shake = vellen * ship.mass;
+	ShakeScreen(Maths::Min(shake, 120), 12, tilePos);
 	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", tilePos);
 }
 
-void setShipTeam(Ship@ ship, u8 teamNum = 255)
+void SetNextId(CRules@ this, Ship@ ship)
+{
+	this.add_s32("ships id", 1);
+	ship.id = this.get_s32("ships id");
+}
+
+void SetShipTeam(Ship@ ship, u8 teamNum = 255)
 {
 	//print ("setting team for " + ship.owner + "'s " + ship.id + " to " + teamNum);
 	for (uint i = 0; i < ship.blocks.length; ++i)
@@ -574,7 +677,7 @@ void StoreVelocities(Ship@ ship)
 	}
 }
 
-void setUpdateSeatArrays(int shipColor)
+void SetUpdateSeatArrays(int shipColor)
 {
 	CBlob@[] seats;
 	if (getBlobsByTag("seat", @seats))
@@ -596,10 +699,11 @@ void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix
 void onBlobDie(CRules@ this, CBlob@ blob)
 {
 	// this will leave holes until next full sync
-	if (blob.getShape().getVars().customData > 0)
+	int blobColor = blob.getShape().getVars().customData;
+	if (blobColor > 0)
 	{
 		const u16 id = blob.getNetworkID();
-		Ship@ ship = getShip(blob.getShape().getVars().customData);
+		Ship@ ship = getShip(blobColor);
 		if (ship !is null)
 		{
 			for (uint i = 0; i < ship.blocks.length; ++i)
@@ -615,8 +719,26 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 					i = 0;
 				}
 			}
-			if (ship.blocks.length != 1)
-				this.set_bool("dirty ships", true);
+			
+			if (isServer())
+			{
+				bool pushShip = true;
+				
+				//dont push duplicates
+				Ship[]@ dirtyShips;
+				this.get("dirtyShips", @dirtyShips);
+				for (uint i = 0; i < dirtyShips.length; i++)
+				{
+					if (ship.id == dirtyShips[i].id)
+					{
+						pushShip = false;
+						break;
+					}
+				}
+				
+				if (ship.blocks.length > 1 && pushShip)
+					this.push("dirtyShips", ship); //seperate an island
+			}
 		}
 	}
 }
@@ -706,7 +828,6 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 					}
 					else stream.write_bool(false);
 
-					
 					if ((ship.net_vel - ship.vel).LengthSquared() > thresh)
 					{
 						stream.write_bool(true);

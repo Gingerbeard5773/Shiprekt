@@ -1,7 +1,7 @@
 shared class Ship
 {
 	u32 id;                   //ship's specific identification 
-	ShipBlock[] blocks;     //all blocks on the same ship
+	ShipBlock[] blocks;       //all blocks on a ship
 	Vec2f pos, vel;           //position, velocity
 	f32 angle, angle_vel;     //angle of ship, angular velocity
 	Vec2f old_pos, old_vel;   //comparing new to old position, velocity
@@ -10,10 +10,10 @@ shared class Ship
 	CBlob@ centerBlock;       //the block in the center of the entire ship
 	bool initialized;	      //onInit for ships
 	uint soundsPlayed;        //used in limiting sounds in propellers
-	string owner;             //username of the player who has 'claimed' the ship
+	string owner;             //username of the player who owns the ship
 	bool isMothership;        //is the ship connected to a core?
 	bool isStation;           //is the ship connected to a station?
-	bool isMiniStation;       //is the ship connected to a mini station?
+	bool isMiniStation;       //is the ship connected to a ministation?
 	bool isSecondaryCore;     //is the ship connected to an auxillary core?
 	
 	Vec2f net_pos, net_vel;        //network
@@ -53,7 +53,7 @@ Ship@ getShip(const int colorIndex)
 	return null;
 }
 
-Ship@ getShip(CBlob@ this) //reference an ship from a non-block (e.g human)
+Ship@ getShip(CBlob@ this) //reference a ship from a non-block (e.g human)
 {
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius)) 
@@ -76,7 +76,7 @@ CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positio
 	CBlob@ b = null;
 	f32 mDist = 9999;
 	CBlob@[] blobsInRadius;	   
-	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius))//custom getShipBlob();
+	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius))
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
@@ -95,21 +95,6 @@ CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positio
 	return b;
 }
 
-Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
-{
-    pos.x = Maths::Round(pos.x / 8.0f);
-    pos.y = Maths::Round(pos.y / 8.0f);
-    pos.x *= 8;
-    pos.y *= 8;
-    return pos;
-}
-
-void SetNextId(CRules@ this, Ship@ ship)
-{
-	this.add_s32("ships id", 1);
-	ship.id = this.get_s32("ships id");
-}
-
 CBlob@ getMothership(const u8 team) //Gets the mothership core block on determined team 
 {
     CBlob@[] ships;
@@ -123,27 +108,12 @@ CBlob@ getMothership(const u8 team) //Gets the mothership core block on determin
     return null;
 }
 
-bool isMothership(CBlob@ this) //Determine if an ship has a mothership core attached to it
-{
-	const int color = this.getShape().getVars().customData;
-	if (color == 0) return false;
-	
-	Ship@ ship = getShip(color);
-	if (ship !is null)
-		return ship.isMothership;
-	else
-		return false;
-}
-
 string getCaptainName(u8 team) //Gets the name of the mothership's captain
 {
-	CBlob@[] cores;
-	getBlobsByTag("mothership", @cores);
-	for (u8 i = 0; i < cores.length; i++)
+	CBlob@ core = getMothership(team);
+	if (core !is null)
 	{
-		if (cores[i].getTeamNum() != team) continue;
-			
-		Ship@ ship = getShip(cores[i].getShape().getVars().customData);
+		Ship@ ship = getShip(core.getShape().getVars().customData);
 		if (ship !is null && ship.owner != "")
 			return ship.owner;
 	}
@@ -185,7 +155,7 @@ bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos)//checks if the
 	if (this.hasTag("mothership"))
 		return true;
 
-	this.set_u16( "checkToken", token );
+	this.set_u16("checkToken", token);
 	bool childsLinked = false;
 	Vec2f thisPos = this.getPosition();
 	
@@ -205,13 +175,13 @@ bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos)//checks if the
 			{
 				if (coreDist <= minDist)
 				{
-					optimal.insertAt( 0, b );
+					optimal.insertAt(0, b);
 					minDist2 = minDist;	
 					minDist = coreDist;
 				}
 				else if (coreDist <= minDist2)
 				{
-					optimal.insertAt( 0, b );
+					optimal.insertAt(0, b);
 					minDist2 = coreDist;
 				}
 				else
@@ -221,7 +191,7 @@ bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos)//checks if the
 		
 		for (int i = 0; i < optimal.length; i++)
 		{
-			//print( ( optimal[i].hasTag( "mothership" ) ? "[>] " : "[o] " ) + optimal[i].getNetworkID() );
+			//print((optimal[i].hasTag("mothership") ? "[>] " : "[o] ") + optimal[i].getNetworkID());
 			if (coreLinkedDirectional(optimal[i], token, corePos))
 			{
 				childsLinked = true;
