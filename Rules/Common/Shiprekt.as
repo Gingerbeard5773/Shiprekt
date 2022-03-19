@@ -332,7 +332,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!hash") //gives encoded hash for the word you input
 				{
 					string word = text_in.replace("!hash ", "");
-					print(word.getHash() + " : "+ word);
+					print(word.getHash() + " : "+ word, color_white);
 					
 					return false;
 				}
@@ -351,7 +351,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						return false;
 					}
 					
-					print("Teleported "+player.getUsername()+" to "+b.getName()+" "+b.getNetworkID());
+					print("Teleported "+player.getUsername()+" to "+b.getName()+" "+b.getNetworkID(), color_white);
 					pBlob.setPosition(b.getPosition()); //teleport to blob!
 					return false;
 				}
@@ -367,7 +367,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					CBlob@ b = ply.getBlob();
 					if (b is null) return false;
 					
-					print("Teleported "+ply.getUsername()+" to "+player.getUsername()+" "+ply.getNetworkID());
+					print("Teleported "+ply.getUsername()+" to "+player.getUsername()+" "+ply.getNetworkID(), color_white);
 					b.setPosition(pBlob.getPosition()); //teleport to blob!
 					return false;
 				}
@@ -378,7 +378,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					{
 						b.server_SetPlayer(player);
 						pBlob.server_Die();
-						print("Setting "+player.getUsername()+" to "+tokens[1]);
+						print("Setting "+player.getUsername()+" to "+tokens[1], color_white);
 					}
 					return false;
 				}
@@ -405,7 +405,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!g_debug")
 				{
 					g_debug = parseInt(tokens[1]);
-					print("Setting g_debug to "+tokens[1]);
+					print("Setting g_debug to "+tokens[1], color_white);
 					return false;
 				}
 				else if (tokens[0] == "!saveship") //all players can save their ship
@@ -435,6 +435,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					}
 					
 					cfg.saveFile("SHIP_" + tokens[1] + ".cfg");
+					print("Saved ship as: "+tokens[1], color_white);
 				}
 				else if (tokens[0] == "!loadship")
 				{
@@ -509,10 +510,9 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 									block.Tag("noCollide");
 									block.server_Die();
 								}
-								else blocks.erase(i);
 							}
 						}
-						print("Clearing "+blocks.length+" blocks");
+						print("Clearing "+blocks.length+" blocks", color_white);
 					}
 					return false;
 				}				
@@ -559,6 +559,13 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					return false;
 				}
+				else if (tokens[0] == "!bc") //print block count
+				{
+					CBlob@[] blocks;
+					getBlobsByTag("block", @blocks);
+					print("BLOCK COUNT: "+blocks.length, color_white);
+					return false;
+				}
 				else if (tokens[0] == "!dirty") //activate dirty ships 
 				{
 					this.set_bool("dirty ships", true);
@@ -567,18 +574,18 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!sv_test")
 				{
 					sv_test = !sv_test;
-					print("Setting sv_test "+ (sv_test ? "on" : "off"));
+					print("Setting sv_test "+ (sv_test ? "on" : "off"), color_white);
 					return false;
 				}
 				else if (tokens[0] == "!freebuild") //toggle freebuild mode
 				{
-					client_AddToChat("Toggled freebuild "+ (this.get_bool("freebuild") ? "off" : "on"),  SColor(255, 255, 255, 0));
+					print("Toggled freebuild "+ (this.get_bool("freebuild") ? "off" : "on"), color_white);
 					this.set_bool("freebuild", !this.get_bool("freebuild"));
 					this.Sync("freebuild", true);
 				}
 				else if (tokens[0] == "!booty")
 				{
-					print(player.getUsername()+" cheating for 800 booty, bad!");
+					error(player.getUsername()+" cheating for 800 booty, bad!");
 					server_addPlayerBooty(player.getUsername(), 800);
 					return false;
 				}
