@@ -3,6 +3,9 @@
 #include "ParticleSparks.as";
 #include "AccurateSoundPlay.as";
 
+//TODO:
+// BUG: Harpoon-states aren't synced on player-join, so to joining clients a harpoon may not be in the correct state
+
 const f32 harpoon_grapple_length = 300.0f;
 const f32 harpoon_grapple_throw_speed = 20.0f;
 const f32 harpoon_grapple_stiffness = 0.1f;
@@ -15,6 +18,7 @@ shared class HarpoonInfo
 	f32 grapple_ratio;
 	Vec2f grapple_pos;
 	Vec2f grapple_vel;
+	CBlob@ grappler;
 
 	HarpoonInfo()
 	{
@@ -95,9 +99,12 @@ void onTick(CBlob@ this)
 	CBlob@ occupier = this.getAttachmentPoint(0).getOccupied();
 	if (occupier !is null)
 	{
-		Manual(this, occupier, harpoon);	
+		Manual(this, occupier, harpoon);
 		
-		if (occupier.isKeyJustPressed(key_action1)) //left click
+		if (occupier !is harpoon.grappler)
+			@harpoon.grappler = occupier;
+		
+		if (occupier.isKeyJustPressed(key_action1) && occupier.isMyPlayer()) //left click
 		{
 			// more intuitive aiming (compensates for gravity and cursor position)
 			Vec2f direction = occupier.getAimPos() - pos;
@@ -108,22 +115,6 @@ void onTick(CBlob@ this)
 				CBitStream bt;
 				bt.write_Vec2f(direction);
 				this.SendCommand(this.getCommandID("grapple"), bt);
-				
-				if (isClient())
-				{
-					directionalSoundPlay("HookShot.ogg", pos, 1.0f, XORRandom(2) == 1 ? 1.0f : 1.5f);
-					CParticle@ p = ParticleAnimated("Entities/Effects/Sprites/WhitePuff.png",
-										pos,
-										this.getVelocity()*0.5f + (occupier.getAimPos() - pos)/(occupier.getAimPos() - pos).getLength(),
-										1.0f, 0.5f, 
-										2, 
-										0.0f, true);			
-										
-					if (p !is null)
-					{
-						p.Z = 550;
-					}
-				}
 			}
 		}
 	}
@@ -155,7 +146,7 @@ void onTick(CBlob@ this)
 			Tile bTile = map.getTile(harpoon.grapple_pos);
 			bool onRock = map.isTileSolid(bTile);
 			
-			if (((ropeTooLong || ropeOutOfBounds || onRock) && harpoon.grapple_id == 0xffff)
+			if (harpoon.grappler.isMyPlayer() && ((ropeTooLong || ropeOutOfBounds || onRock) && harpoon.grapple_id == 0xffff)
 				|| (occupier !is null ? occupier.isKeyJustPressed(key_action2) : false))
 			{
 				this.SendCommand(this.getCommandID("unhook"));
@@ -202,7 +193,8 @@ void onTick(CBlob@ this)
 				if ((harpoon.grapple_pos - pos).Length() < 5.0f)
 				{
 					delta = 0.0f;
-					this.SendCommand(this.getCommandID("resetgrapple"));
+					if (harpoon.grappler.isMyPlayer())
+						this.SendCommand(this.getCommandID("resetgrapple"));
 				}
 			}
 		}
@@ -250,7 +242,7 @@ void onTick(CBlob@ this)
 				if (harpoon.grapple_id != 0xffff)
 				{
 					@b = getBlobByNetworkID(harpoon.grapple_id);
-					if (b is null)
+					if (b is null && harpoon.grappler.isMyPlayer())
 					{
 						this.SendCommand(this.getCommandID("unhook"));
 					}
@@ -388,15 +380,32 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		HarpoonInfo@ harpoon;
 		if (!this.get("harpoonInfo", @harpoon)) return;
 		
+		Vec2f pos = this.getPosition();
 		Vec2f direction = params.read_Vec2f();
 		Ship@ ship = getShip(this.getShape().getVars().customData);
 		Vec2f shipVel = ship !is null ? ship.vel : Vec2f();
 		
 		harpoon.grappling = true;
 		harpoon.grapple_id = 0xffff;
-		harpoon.grapple_pos = this.getPosition() + direction + (shipVel*2);
+		harpoon.grapple_pos = pos + direction + (shipVel*2);
 		harpoon.grapple_ratio = 1.0f; //allow fully extended
 		harpoon.grapple_vel = direction * harpoon_grapple_throw_speed;
+		
+		if (isClient())
+		{
+			directionalSoundPlay("HookShot.ogg", pos, 1.0f, XORRandom(2) == 1 ? 1.0f : 1.5f);
+			CParticle@ p = ParticleAnimated("Entities/Effects/Sprites/WhitePuff.png",
+								pos,
+								this.getVelocity()*0.5f + direction/(direction).getLength(),
+								1.0f, 0.5f, 
+								2, 
+								0.0f, true);			
+								
+			if (p !is null)
+			{
+				p.Z = 550;
+			}
+		}
 	}
 	else if (cmd == this.getCommandID("unhook"))
     {
