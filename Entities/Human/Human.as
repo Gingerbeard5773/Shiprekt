@@ -1,5 +1,4 @@
 #include "HumanCommon.as";
-#include "MakeBlock.as";
 #include "WaterEffects.as";
 #include "ShipsCommon.as";
 #include "Booty.as";
@@ -21,11 +20,11 @@ const Vec2f BUILD_MENU_SIZE = Vec2f(6, 4);
 const Vec2f BUILD_MENU_TEST = Vec2f(6, 4); //for testing, only activates when sv_test is on
 const Vec2f MINI_BUILD_MENU_SIZE = Vec2f(3, 2);
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
-Random _shotspreadrandom(0x11598); //clientside
 
 //global is fine since only used with isMyPlayer
 int useClickTime = 0;
 bool buildMenuOpen = false;
+Random _shotspreadrandom(0x11598);
 
 void onInit(CBlob@ this)
 {
@@ -50,15 +49,10 @@ void onInit(CBlob@ this)
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
+	this.set_f32("cam rotation", 0);
 	
 	if (this.isMyPlayer())
-	{
-		if (isClient())
-		{
-			this.set_f32("cam rotation", getCamera().getRotation());
-			this.Sync("cam rotation", true);
-		}
-		
+	{	
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null) 
 		{
@@ -101,20 +95,25 @@ void onTick(CBlob@ this)
 
 void Move(CBlob@ this)
 {
+	const bool blobInitialized = this.getTickSinceCreated() > 4; //solves some strange problems
 	const bool myPlayer = this.isMyPlayer();
-	const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
-	//const f32 camRotation = myPlayer ? getCamera().getRotation() : 0.0f;
 	Vec2f pos = this.getPosition();	
 	Vec2f aimpos = this.getAimPos();
 	Vec2f forward = aimpos - pos;
 	CShape@ shape = this.getShape();
 	CSprite@ sprite = this.getSprite();
 
-	if (myPlayer && isClient())
+	if (myPlayer && blobInitialized)
 	{
-		this.set_f32("cam rotation", getCamera().getRotation());
-		this.Sync("cam rotation", true); //1732223106 !! can cause bad deltas if set as false !!
+		const f32 camRotation = getCamera().getRotation();
+		if (this.get_f32("cam rotation") != camRotation)
+		{
+			this.set_f32("cam rotation", camRotation);
+			this.Sync("cam rotation", false); //1732223106 !! has a history of causing bad deltas !!
+		}
 	}
+	
+	const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
 	
 	if (!this.isAttached())
 	{
@@ -148,7 +147,7 @@ void Move(CBlob@ this)
 			moveVel.x += Human::walkSpeed;
 		}
 
-		if (!this.isOnGround())
+		if (!this.isOnGround() && blobInitialized)
 		{
 			if (isTouchingShoal(pos))
 			{
@@ -205,11 +204,9 @@ void Move(CBlob@ this)
 		}		
 
 		//canmove check
-		if (!getRules().get_bool("whirlpool") || this.isOnGround())
+		if (this.isOnGround() || !getRules().get_bool("whirlpool"))
 		{
 			moveVel.RotateBy(camRotation);
-			Vec2f nextPos = (pos + moveVel*4.0f);
-			
 			this.setVelocity(moveVel);
 		}
 
@@ -360,7 +357,12 @@ void PlayerControls(CBlob@ this)
 			{
 				if (!hud.hasButtons())
 				{
-					if (canShop && !this.get_bool("getting block"))
+					if (this.get_bool("getting block"))
+					{
+						this.set_bool("getting block", false);
+						this.getSprite().PlaySound("join");
+					}
+					else if (canShop)
 					{
 						buildMenuOpen = true;
 						this.set_bool("justMenuClicked", true);
@@ -437,14 +439,10 @@ void PlayerControls(CBlob@ this)
 
 void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isStation = false, bool isMiniStation = false)
 {
-	CRules@ rules = getRules();
-		
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : sv_test ? BUILD_MENU_TEST : BUILD_MENU_SIZE, desc);
-	u32 gameTime = getGameTime();
-	const bool warmup = rules.isWarmup();
-	
 	if (menu !is null) 
 	{
+		const bool warmup = getRules().isWarmup();
 		menu.deleteAfterClick = true;
 		
 		string description;
@@ -596,7 +594,6 @@ CGridButton@ AddTool(CBlob@ this, CGridMenu@ menu, string icon, string toolName,
 {
 	//Add a tool to the tools menu
 	CBitStream params;
-	params.write_u16(this.getNetworkID());
 	params.write_string(currentTool);
 	
 	CGridButton@ button = menu.AddButton(icon, toolName, this.getCommandID("swap tool"), params);
@@ -803,8 +800,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
     	}
 		
 		this.set_u32("fire time", getGameTime());
-		shotParticles(pos + Vec2f(0,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle(), true, 0.02f , 0.6f);
-		directionalSoundPlay("Gunshot.ogg", pos, 0.75f);
+		if (isClient())
+		{
+			shotParticles(pos + Vec2f(0,0).RotateBy(-velocity.Angle())*6.0f, velocity.Angle(), true, 0.02f , 0.6f);
+			directionalSoundPlay("Gunshot.ogg", pos, 0.75f);
+		}
 	}
 	else if (this.getCommandID("construct") == cmd && canConstruct(this))
 	{
@@ -968,12 +968,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
 				f32 offsetAngle = aimVector.Angle() - (mBlob.getPosition() - pos).Angle(); 
 				
-				this.getSprite().RemoveSpriteLayer("laser");
+				CSprite@ sprite = this.getSprite();
+				sprite.RemoveSpriteLayer("laser");
 				
 				string beamSpriteFilename = currentTool == "deconstructor" ? "ReclaimBeam" : "RepairBeam";
 					
-				CSpriteLayer@ laser = this.getSprite().addSpriteLayer("laser", beamSpriteFilename + ".png", 32, 16);
-
+				CSpriteLayer@ laser = sprite.addSpriteLayer("laser", beamSpriteFilename + ".png", 32, 16);
 				if (laser !is null)//partial length laser
 				{
 					Animation@ reclaimingAnim = laser.addAnimation("constructing", 1, true);
@@ -1075,8 +1075,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 	else if (this.getCommandID("swap tool") == cmd)
 	{
-		u16 netID = params.read_u16();
-		string tool = params.read_string();
+		const string tool = params.read_string();
 		
 		CPlayer@ player = this.getPlayer();
 		if (player is null) return;
@@ -1135,7 +1134,7 @@ void onDie(CBlob@ this)
 				for (uint i = 0; i < blocks.length; ++i)
 				{
 					CBlob@ block = blocks[i];
-					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1 )
+					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
 						returnBooty += getCost(block.getName());
 				}
 				
@@ -1146,15 +1145,12 @@ void onDie(CBlob@ this)
 		Human::clearHeldBlocks(this);
 		this.set_bool("blockPlacementWarn", false);
 	}
-
-	SetScreenFlash(0, 0, 0, 0, 0.0f);
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
 	return (this.getTeamNum() != blob.getTeamNum() || 
-			(blob.hasTag("solid") && blob.getShape().getVars().customData > 0) || 
-			(blob.getShape().isStatic() && !blob.getShape().getConsts().platform));
+			(blob.hasTag("solid") && blob.getShape().getVars().customData > 0) || blob.getShape().isStatic());
 }
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
@@ -1200,8 +1196,11 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		}
 	}
 	
-	if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
-	ParticleBloodSplat(worldPoint, false);
+	if (isClient())
+	{
+		if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
+		ParticleBloodSplat(worldPoint, false);
+	}
 	
 	return damage;
 }
