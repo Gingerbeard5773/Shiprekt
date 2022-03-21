@@ -246,6 +246,9 @@ void onRestart(CRules@ this)
 
 void onRender(CRules@ this)
 {
+	if (g_videorecording)
+		return;
+	
     const string gui_image_fname = "GUI/compass.png";
 
     CCamera@ c = getCamera();
