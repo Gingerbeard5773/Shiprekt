@@ -187,14 +187,15 @@ void onDie(CBlob@ this)
 void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
 	if (blob is null) return;
-
-	if (blob.getName() == "human" && !blob.isOnGround() && !(this.getPlayer() !is null && this.getTeamNum() == blob.getTeamNum())) // dont kill your own people if you are a shark
+	CPlayer@ ply = this.getPlayer();
+	if (blob.getName() == "human" && !blob.get_bool("onGround") && !(ply !is null && this.getTeamNum() == blob.getTeamNum())) // dont kill your own people if you are a shark
 	{
 		MakeWaterParticle(point1, Vec2f_zero); 
 		directionalSoundPlay("ZombieBite", point1);
 		this.server_Hit(blob, point1, Vec2f_zero, 9000, 69); // 69 will be shark hitter from now on! :)
-		//blob.server_Die(); // hit instead of killing blob
-		if (this.getPlayer() is null) this.server_Die();
+		
+		if (ply is null)
+			this.server_Die();
 	}
 }
 

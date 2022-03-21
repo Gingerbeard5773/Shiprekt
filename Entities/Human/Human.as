@@ -45,6 +45,7 @@ void onInit(CBlob@ this)
 	
 	this.set_bool("justMenuClicked", false);
 	this.set_bool("getting block", false);
+	this.set_bool("onGround", true); //client to server isOnGround()
 	this.set_string("last buy", "coupling");
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
@@ -240,6 +241,12 @@ void Move(CBlob@ this)
 		// artificial stay on ship
 		if (myPlayer)
 		{
+			if (this.get_bool("onGround") != this.isOnGround() && blobInitialized)
+			{
+				this.set_bool("onGround", this.isOnGround());
+				this.Sync("onGround", false); //1954602763
+			}
+			
 			CBlob@ shipBlob = getShipBlob(this);
 			if (shipBlob !is null)
 			{
