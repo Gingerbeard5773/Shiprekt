@@ -451,7 +451,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 					Vec2f bPos = b.getPosition();	
 					Tile bTile = map.getTile(bPos);
 					
-					if (map.isTileSolid(bTile)) //are we on rock
+					if (map.isTileSolid(bTile) && bPos.Length() > 15.0f) //are we on rock
 					{
 						TileCollision(ship, bPos);
 						if (!b.hasTag("mothership") || this.get_bool("sudden death"))
@@ -972,7 +972,9 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 			}
 			if (count != ships.length)
 			{
-				warn("Update received before ship sync " + count + " != " + ships.length);
+				//onNewPlayerJoin is called with a delay after a player joins, which triggers this warning
+				if (sv_test)
+					warn("Update received before ship sync " + count + " != " + ships.length);
 				return;
 			}
 			for (uint i = 0; i < count; ++i)
