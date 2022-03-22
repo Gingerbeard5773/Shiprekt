@@ -12,6 +12,8 @@ void onInit(CBlob@ this)
 
 void onColored(CBlob@ this) //activate when the block is placed
 {
+	if (this.getShape().getVars().customData <= 0) return;
+	
 	//SCUFFED CODE BELOW!! please redo it for me if you want LOL
 	
 	//this is for changing the frame of the platform touching a core, made difficult due to shit rotation problems and different sprite frames.
