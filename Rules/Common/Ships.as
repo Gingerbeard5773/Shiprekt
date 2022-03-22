@@ -472,7 +472,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			}
 			else if (slowedBlocks > 0)
 			{
-				f32 velocity = Maths::Clamp((slowedBlocks) / (ship.mass * 2), 0.0f, 0.1f);
+				f32 velocity = Maths::Clamp(slowedBlocks / (ship.mass * 2), 0.0f, 0.08f);
 				ship.vel *= 1.0f - velocity;
 				ship.angle_vel *= 1.0f - velocity;
 			}
