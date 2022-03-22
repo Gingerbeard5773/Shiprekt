@@ -5,6 +5,7 @@
 
 //TODO:
 // BUG: Harpoon-states aren't synced on player-join, so to joining clients a harpoon may not be in the correct state
+// BUG: Visual sprite-layers 'shaking' when launching grapple at certain angles
 
 const f32 harpoon_grapple_length = 300.0f;
 const f32 harpoon_grapple_throw_speed = 20.0f;
@@ -90,9 +91,6 @@ void onTick(CBlob@ this)
 	HarpoonInfo@ harpoon;
 	if (!this.get("harpoonInfo", @harpoon)) return;
 	
-	CPlayer@ firstPlayer = getPlayer(0); //massive hack
-	if (firstPlayer is null) return;
-	
 	Vec2f pos = this.getPosition();
 	
 	CSprite@ sprite = this.getSprite();
@@ -138,14 +136,14 @@ void onTick(CBlob@ this)
 		f32 offdist = dist - harpoon_grapple_range;
 		Vec2f offset;
 		
-		if (!harpoon.reeling)
+		if (isServer() && !harpoon.reeling)
 		{
 			//when to start reeling back
 			bool ropeOutOfBounds = dim.x <= harpoon.grapple_pos.x || harpoon.grapple_pos.x <= 0.0f || dim.y <= harpoon.grapple_pos.y || harpoon.grapple_pos.y <= 0.0f;
 			Tile bTile = map.getTile(harpoon.grapple_pos);
 			bool onRock = map.isTileSolid(bTile);
 			
-			if (firstPlayer.isMyPlayer() && ((ropeTooLong || ropeOutOfBounds || onRock) && harpoon.grapple_id == 0xffff)
+			if (((ropeTooLong || ropeOutOfBounds || onRock) && harpoon.grapple_id == 0xffff)
 				|| (occupier !is null ? occupier.isKeyJustPressed(key_action2) : false))
 			{
 				this.SendCommand(this.getCommandID("unhook"));
@@ -192,7 +190,7 @@ void onTick(CBlob@ this)
 				if ((harpoon.grapple_pos - pos).Length() < 5.0f)
 				{
 					delta = 0.0f;
-					if (firstPlayer.isMyPlayer())
+					if (isServer())
 						this.SendCommand(this.getCommandID("resetgrapple"));
 				}
 			}
@@ -241,7 +239,7 @@ void onTick(CBlob@ this)
 				if (harpoon.grapple_id != 0xffff)
 				{
 					@b = getBlobByNetworkID(harpoon.grapple_id);
-					if (b is null && firstPlayer.isMyPlayer())
+					if (b is null && isServer())
 					{
 						this.SendCommand(this.getCommandID("unhook"));
 					}
