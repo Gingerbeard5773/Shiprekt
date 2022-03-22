@@ -112,7 +112,7 @@ void onTick(CBlob@ this)
 			
 			PropellerForces(this, ship, power, moveVel, moveNorm, angleVel);
 			
-			const f32 mass = ship.mass + ship.carryMass;
+			const f32 mass = ship.mass + ship.carryMass + 0.01f;
 			moveVel /= mass;
 			angleVel /= mass;
 			
@@ -137,9 +137,9 @@ void onTick(CBlob@ this)
 				Vec2f faceNorm(0,-1);
 				faceNorm.RotateBy(this.getAngleDegrees());
 				CBlob@ victim = getMap().getBlobAtPosition(pos - faceNorm * 8);
-				if (victim !is null && !victim.isAttached() 
-					 && victim.getShape().getVars().customData > 0
-					       && !victim.hasTag("player"))	
+				if (victim !is null && !victim.isAttached() && 
+					victim.getShape().getVars().customData > 0 && 
+					!victim.hasTag("player"))	
 				{
 					f32 hitPower = Maths::Max( 0.5f, Maths::Abs( this.get_f32("power")));
 					if (!victim.hasTag("mothership"))
@@ -218,6 +218,6 @@ void smoke(Vec2f pos)
 											  3+_smokerandom.NextRanged(2), //animtime
 											  0.0f, //gravity
 											  true); //selflit
-	if(p !is null)
+	if (p !is null)
 		p.Z = 110.0f;
 }
