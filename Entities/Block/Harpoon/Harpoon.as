@@ -18,7 +18,6 @@ shared class HarpoonInfo
 	f32 grapple_ratio;
 	Vec2f grapple_pos;
 	Vec2f grapple_vel;
-	CBlob@ grappler;
 
 	HarpoonInfo()
 	{
@@ -91,6 +90,9 @@ void onTick(CBlob@ this)
 	HarpoonInfo@ harpoon;
 	if (!this.get("harpoonInfo", @harpoon)) return;
 	
+	CPlayer@ firstPlayer = getPlayer(0); //massive hack
+	if (firstPlayer is null) return;
+	
 	Vec2f pos = this.getPosition();
 	
 	CSprite@ sprite = this.getSprite();
@@ -100,9 +102,6 @@ void onTick(CBlob@ this)
 	if (occupier !is null)
 	{
 		Manual(this, occupier, harpoon);
-		
-		if (occupier !is harpoon.grappler)
-			@harpoon.grappler = occupier;
 		
 		if (occupier.isKeyJustPressed(key_action1) && occupier.isMyPlayer()) //left click
 		{
@@ -146,7 +145,7 @@ void onTick(CBlob@ this)
 			Tile bTile = map.getTile(harpoon.grapple_pos);
 			bool onRock = map.isTileSolid(bTile);
 			
-			if (harpoon.grappler.isMyPlayer() && ((ropeTooLong || ropeOutOfBounds || onRock) && harpoon.grapple_id == 0xffff)
+			if (firstPlayer.isMyPlayer() && ((ropeTooLong || ropeOutOfBounds || onRock) && harpoon.grapple_id == 0xffff)
 				|| (occupier !is null ? occupier.isKeyJustPressed(key_action2) : false))
 			{
 				this.SendCommand(this.getCommandID("unhook"));
@@ -193,7 +192,7 @@ void onTick(CBlob@ this)
 				if ((harpoon.grapple_pos - pos).Length() < 5.0f)
 				{
 					delta = 0.0f;
-					if (harpoon.grappler.isMyPlayer())
+					if (firstPlayer.isMyPlayer())
 						this.SendCommand(this.getCommandID("resetgrapple"));
 				}
 			}
@@ -242,7 +241,7 @@ void onTick(CBlob@ this)
 				if (harpoon.grapple_id != 0xffff)
 				{
 					@b = getBlobByNetworkID(harpoon.grapple_id);
-					if (b is null && harpoon.grappler.isMyPlayer())
+					if (b is null && firstPlayer.isMyPlayer())
 					{
 						this.SendCommand(this.getCommandID("unhook"));
 					}
