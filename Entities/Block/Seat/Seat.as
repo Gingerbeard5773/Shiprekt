@@ -72,7 +72,7 @@ void onTick(CBlob@ this)
 		if (ownerPlayer is null || ownerPlayer.getTeamNum() != teamNum || gameTime - this.get_u32("lastActive") > UNUSED_RESET)
 		{
 			server_setOwner(this, "");
-			//print( "** Clearing ownership: " + seatOwner + ( ownerPlayer is null ? " left" : " changed team/not used" ) );
+			//print("** Clearing ownership: " + seatOwner + (ownerPlayer is null ? " left" : " changed team/not used"));
 		}
 		
 		//fail-safe. force owner update
@@ -87,7 +87,7 @@ void onTick(CBlob@ this)
 	sprite.SetAnimation(seatOwner != "" ? "default": "fold");//update sprite
 
 	Ship@ ship = getShip(this.getShape().getVars().customData);
-	if (ship is null)	return;
+	if (ship is null) return;
 	
 	AttachmentPoint@ seat = this.getAttachmentPoint(0);
 	CBlob@ occupier = seat.getOccupied();
@@ -150,6 +150,8 @@ void onTick(CBlob@ this)
 				for (uint i = 0; i < couplings.length; ++i)
 				{
 					CBlob@ c = couplings[i];
+					if (!c.isOnScreen()) continue;
+					
 					bool isOwner = c.get_string("playerOwner") == occupierName;
 
 					if (isCaptain)
@@ -224,7 +226,7 @@ void onTick(CBlob@ this)
 						CBlob@ f = flak[i];
 						if (f.hasAttached())
 						{
-							CButton@ button = occupier.CreateGenericButton(5, Vec2f_zero, f, f.getCommandID("clear attached"), "Push Crewmate Out" );
+							CButton@ button = occupier.CreateGenericButton(5, Vec2f_zero, f, f.getCommandID("clear attached"), "Push Crewmate Out");
 							if (button !is null)
 							{
 								button.enableRadius = 999.0f;
@@ -241,7 +243,7 @@ void onTick(CBlob@ this)
 				for (uint i = 0; i < couplings.length; ++i)
 				{
 					CBlob@ c = couplings[i];
-					if (c.get_string("playerOwner") != occupierName && c.getTickSinceCreated() == CREW_COUPLINGS_LEASE )
+					if (c.get_string("playerOwner") != occupierName && c.getTickSinceCreated() == CREW_COUPLINGS_LEASE)
 					{
 						occupier.ClickClosestInteractButton(c.getPosition(), 0.0f);
 						
@@ -280,7 +282,7 @@ void onTick(CBlob@ this)
 			
 		if (seatOwner == "")//Re-set empty seat's owner to occupier
 		{
-			//print( "** Re-setting seat owner: " + occupierName );
+			//print("** Re-setting seat owner: " + occupierName);
 			server_setOwner(this, occupierName);
 		}	
 		
@@ -599,7 +601,7 @@ void updateArrays(CBlob@ this, Ship@ ship)
 
 void server_setOwner(CBlob@ this, string owner)
 {
-	//print( "" + this.getNetworkID() + " seat setOwner: " + owner );
+	//print("" + this.getNetworkID() + " seat setOwner: " + owner);
 	this.set_string("playerOwner", owner);
 	this.Sync("playerOwner", true);
 	this.set_u32("lastOwnerUpdate", getGameTime());

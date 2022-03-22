@@ -14,9 +14,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
         return;
 
 	//only owners can directly destroy the coupling
-    if (this.getDistanceTo(caller) < 6
-		&& !getMap().isBlobWithTagInRadius("hasSeat", caller.getPosition(), 0.0f)
-		&& caller.getPlayer().getUsername() == this.get_string("playerOwner"))
+    if (this.getDistanceTo(caller) < 6 && caller.getPlayer().getUsername() == this.get_string("playerOwner"))
 	{
 		CButton@ button = caller.CreateGenericButton(2, Vec2f(0.0f, 0.0f), this, this.getCommandID("decouple"), "Decouple");
 		if (button !is null) button.radius = 3.3f; //engine fix

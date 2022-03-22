@@ -24,9 +24,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
         return;
 
 	//only owners can activate
-    if (this.getDistanceTo(caller) < 8
-		&& !getMap().isBlobWithTagInRadius("hasSeat", caller.getPosition(), 0.0f)
-		&& caller.getPlayer().getUsername() == this.get_string("playerOwner"))
+    if (this.getDistanceTo(caller) < 8 && caller.getPlayer().getUsername() == this.get_string("playerOwner"))
 	{
 		CButton@ button = caller.CreateGenericButton(this.get_bool("toggled") ? 1 : 8, Vec2f(), this, this.getCommandID("togglepiston"), this.get_bool("toggled") ? "Retract" : "Extend");
 		if (button !is null) button.radius = 3.3f; //engine fix
