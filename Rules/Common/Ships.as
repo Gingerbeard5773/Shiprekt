@@ -401,7 +401,7 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 		{
 			ship_block.offset = b.getPosition() - center;
 			ship_block.offset.RotateBy(-ship.angle);
-			ship_block.angle_offset = b.getAngleDegrees() - ship.angle;
+			ship_block.angle_offset = loopAngle(b.getAngleDegrees() - ship.angle);
 		}
 	}
 }
@@ -477,11 +477,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 				ship.angle_vel *= 1.0f - velocity;
 			}
 
-			while(ship.angle < 0.0f)
-				ship.angle += 360.0f;
-				
-			while(ship.angle > 360.0f)
-				ship.angle -= 360.0f;
+			ship.angle = loopAngle(ship.angle);
 		}
 		else if (ship.isStation || ship.isMiniStation)
 		{
@@ -819,7 +815,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 				{
 					stream.write_bool(true);
 					CPlayer@ owner = getPlayerByUsername(ship.owner);
-					stream.write_u16( owner !is null ? owner.getNetworkID() : 0);			
+					stream.write_u16(owner !is null ? owner.getNetworkID() : 0);			
 					if ((ship.net_pos - ship.pos).LengthSquared() > thresh)
 					{
 						stream.write_bool(true);
@@ -1002,9 +998,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 						f32 aDelta =  params.read_f32() - ship.angle;
 						if (aDelta > 180)	aDelta -= 360;
 						if (aDelta < -180)	aDelta += 360;
-						ship.angle = ship.angle + aDelta/UPDATE_DELTA_SMOOTHNESS;
-						while (ship.angle < 0.0f)	ship.angle += 360.0f;
-						while (ship.angle > 360.0f)	ship.angle -= 360.0f;
+						ship.angle = loopAngle(ship.angle + aDelta/UPDATE_DELTA_SMOOTHNESS);
 					}
 					if (params.read_bool())
 					{
@@ -1020,6 +1014,13 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 			return;
 		}
 	}
+}
+
+f32 loopAngle(f32 angle)
+{
+	while (angle < 0.0f)	angle += 360.0f;
+	while (angle > 360.0f)	angle -= 360.0f;
+	return angle;
 }
 
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)

@@ -60,11 +60,19 @@ void onTick(CRules@ this)
 								shipTimes.push_back(getGameTime());
 							}
 						}
-						f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
-						CBitStream bs;
-						bs.write_netid(ship.centerBlock.getNetworkID());
-						bs.write_f32(Vec2f(-ship.vel.y * bounceFactor, ship.vel.x * bounceFactor).Angle()); //calculate perpendicular angle
-						this.SendCommand(this.getCommandID("ship bounce"), bs); //synchronize
+						
+						if (isServer())
+						{
+							f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
+							f32 bounceAngle = Vec2f(-ship.vel.y * bounceFactor, ship.vel.x * bounceFactor).Angle();
+							while (bounceAngle < 0.0f)	 bounceAngle += 360.0f;
+							while (bounceAngle > 360.0f) bounceAngle -= 360.0f;
+							
+							CBitStream bs;
+							bs.write_netid(ship.centerBlock.getNetworkID());
+							bs.write_f32(bounceAngle); //calculate perpendicular angle
+							this.SendCommand(this.getCommandID("ship bounce"), bs); //synchronize
+						}
 					}
 					ship.vel = Vec2f(bounceX / 1.5f, bounceY / 1.5f);
 				}
