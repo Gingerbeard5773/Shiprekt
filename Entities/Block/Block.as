@@ -280,7 +280,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	else if (other_color == 0 && color > 0)
 	{
 		// solid block vs player
-		if (this.hasTag("solid") && blob.getName() == "human")
+		if ((this.hasTag("solid") || (this.hasTag("door") && this.getShape().getConsts().collidable)) && blob.getName() == "human")
 		{
 			if (isClient() && !blob.isAttached() && blob.getAirTime() > 4) //air time is time spent on water
 			{

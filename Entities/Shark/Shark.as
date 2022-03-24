@@ -156,7 +156,7 @@ Vec2f getTargetVel(CBlob@ this)
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
 			CBlob @b = blobsInRadius[i];
-			if (!b.isOnGround() && b.getName() == "human")
+			if (!b.get_bool("onGround") && b.getName() == "human")
 			{
 				humansInWater++;
 				f32 dist = (pos - b.getPosition()).getLength();

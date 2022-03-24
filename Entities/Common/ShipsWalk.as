@@ -1,46 +1,62 @@
 //#define CLIENT_ONLY
 #include "ShipsCommon.as";
 
+shared class WalkInfo
+{
+	u16 shipCenterBlockID;
+	f32 shipOldAngle;
+	Vec2f shipOldPos;
+	
+	WalkInfo()
+	{
+		shipCenterBlockID = 0;
+		shipOldAngle = 0;
+		shipOldPos = Vec2f_zero;
+	}
+};
+
 void onInit(CBlob@ this)
 {
 	//this.getCurrentScript().runFlags |= Script::tick_myplayer;
 	if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
 	{
-		this.set_u16("shipCenterBlockID", 0);
-		this.set_f32("shipOldAngle", 0);
-		this.set_Vec2f("shipOldPos", Vec2f_zero);
+		WalkInfo walk;
+		this.set("WalkInfo", @walk);
 	}
 }
 
 void onTick(CBlob@ this)
 {
-	if (!this.isOnGround()) return;
+	if (!this.get_bool("onGround")) return;
 	
 	if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
 	{
+		WalkInfo@ walk;
+		if (!this.get("WalkInfo", @walk)) return;
+		
 		Ship@ ship = getShip(this);
 		if (ship !is null && ship.centerBlock !is null)
 		{
 			u16 id = ship.centerBlock.getNetworkID();
-			if (id != this.get_u16("shipCenterBlockID") || !this.wasOnGround())//ship changed: set cached values to current
+			if (id != walk.shipCenterBlockID || !this.wasOnGround()) //ship changed: set cached values to current
 			{
-				this.set_Vec2f("shipOldPos", ship.centerBlock.getPosition());
-				this.set_f32("shipOldAngle", ship.centerBlock.getAngleDegrees());
-				this.set_u16("shipCenterBlockID", id);
+				walk.shipCenterBlockID = id;
+				walk.shipOldAngle = ship.centerBlock.getAngleDegrees();
+				walk.shipOldPos = ship.centerBlock.getPosition();
 			}
 			
 			f32 shipAngle = ship.centerBlock.getAngleDegrees();
 			Vec2f shipPos = ship.centerBlock.getPosition();
-			Vec2f shipDisplacement = shipPos - this.get_Vec2f("shipOldPos");
-			f32 shipAngleDelta = shipAngle - this.get_f32("shipOldAngle");
+			Vec2f shipDisplacement = shipPos - walk.shipOldPos;
+			f32 shipAngleDelta = shipAngle - walk.shipOldAngle;
 			Vec2f shipToBlob = this.getPosition() - shipPos + shipDisplacement;
 			shipToBlob.RotateBy(shipAngleDelta);
 			
-			this.set_Vec2f("shipOldPos", shipPos);
-			this.set_f32("shipOldAngle", shipAngle);
+			walk.shipOldPos = shipPos;
+			walk.shipOldAngle = shipAngle;
 
 			CBlob@ shipBlock = getMap().getBlobAtPosition(shipPos + shipToBlob);
-			if (shipBlock !is null) //Only move player if there is a block to move onto
+			if (shipBlock !is null && !shipBlock.hasTag("solid")) //Only move player if there is a block to move onto
 				this.setPosition(shipPos + shipToBlob);
 		}
 	}

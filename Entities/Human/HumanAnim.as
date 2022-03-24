@@ -4,13 +4,11 @@ void onTick(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
 
-	const bool solidGround = blob.isOnGround();
-
 	if (blob.isAttached())
 	{
 		this.SetAnimation("default");
 	}
-	else if (solidGround)
+	else if (blob.get_bool("onGround"))
 	{
 		if (this.isAnimationEnded() ||
 			!(this.isAnimation("punch1") || this.isAnimation("punch2") || this.isAnimation("shoot")))
@@ -59,6 +57,5 @@ void onTick(CSprite@ this)
 			}
 		}
 	}
-
 	this.SetZ(540.0f);
 }

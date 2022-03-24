@@ -126,6 +126,15 @@ void Move(CBlob@ this)
 		const bool shoot = this.isKeyPressed(key_action2);
 		Ship@ ship = getShip(this);
 		shape.getVars().onground = ship !is null || isTouchingLand(pos);
+		
+		if (myPlayer)
+		{
+			if (this.get_bool("onGround") != this.isOnGround() && blobInitialized)
+			{
+				this.set_bool("onGround", this.isOnGround());
+				this.Sync("onGround", false); //1954602763
+			}
+		}
 
 		// move
 		Vec2f moveVel;
@@ -148,7 +157,7 @@ void Move(CBlob@ this)
 			moveVel.x += Human::walkSpeed;
 		}
 
-		if (!this.isOnGround() && blobInitialized)
+		if (!this.get_bool("onGround"))
 		{
 			if (isTouchingShoal(pos))
 			{
@@ -205,7 +214,7 @@ void Move(CBlob@ this)
 		}		
 
 		//canmove check
-		if (this.isOnGround() || !getRules().get_bool("whirlpool"))
+		if (this.get_bool("onGround") || !getRules().get_bool("whirlpool"))
 		{
 			moveVel.RotateBy(camRotation);
 			this.setVelocity(moveVel);
@@ -241,12 +250,6 @@ void Move(CBlob@ this)
 		// artificial stay on ship
 		if (myPlayer)
 		{
-			if (this.get_bool("onGround") != this.isOnGround() && blobInitialized)
-			{
-				this.set_bool("onGround", this.isOnGround());
-				this.Sync("onGround", false); //1954602763
-			}
-			
 			CBlob@ shipBlob = getShipBlob(this);
 			if (shipBlob !is null)
 			{
@@ -264,7 +267,7 @@ void Move(CBlob@ this)
 					{
 						this.set_u16("shipID", 0);	
 					}
-					else if (!shipBlob.hasTag("solid") && !up && !left && !right && !down)
+					else if (!shipBlob.hasTag("solid") && ((!up && !left && !right && !down) || !blobInitialized))
 					{
 						Ship@ blobship = getShip(shipBlob.getShape().getVars().customData);
 						if (blobship !is null && blobship.vel.Length() > 1.0f)
