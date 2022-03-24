@@ -39,7 +39,6 @@ void setOpen(CBlob@ this, bool open, bool faceLeft = false)
 	if (open)
 	{
         sprite.SetAnimation("open");//update sprite
-		this.getCurrentScript().tickFrequency = 3;
 		this.getShape().getConsts().collidable = false;
 		sprite.SetFacingLeft(faceLeft);   // swing left or right
 		directionalSoundPlay("/DoorOpen.ogg", this.getPosition());
@@ -47,7 +46,6 @@ void setOpen(CBlob@ this, bool open, bool faceLeft = false)
 	else
 	{
         sprite.SetAnimation("default");//update sprite
-		this.getCurrentScript().tickFrequency = 0;
 		this.getShape().getConsts().collidable = true;
 		directionalSoundPlay("/DoorClose.ogg", this.getPosition());
 	}
