@@ -8,7 +8,7 @@ void onInit(CBlob@ this)
 {
 	this.Tag("block");
 	
-	CSprite @sprite = this.getSprite();
+	CSprite@ sprite = this.getSprite();
 	sprite.SetZ(510.0f);
 	sprite.asLayer().SetLighting(false);
 	
@@ -17,21 +17,14 @@ void onInit(CBlob@ this)
     consts.mapCollisions = false; //ships.as gives own collision
 	
 	//this.SetMapEdgeFlags(u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
+	
+	this.set_f32("current reclaim", this.getInitialHealth());
 }
 
 void onTick(CBlob@ this)
 {
 	if (this.getTickSinceCreated() < 1) //accounts for time after block production
 	{
-		if (this.get_f32("current reclaim") == 0.0f)
-		{
-			this.set_f32("initial reclaim", this.getHealth());		
-			if (!this.hasTag("station") && !this.hasTag("ministation"))
-			{
-				this.set_f32("current reclaim", this.getHealth());
-			}
-		}
-		
 		//Set Owner
 		if (isServer())
 		{
@@ -49,15 +42,13 @@ void onTick(CBlob@ this)
 	if (color > 0)
 	{
 		Ship@ ship = getShip(color);
-		if (ship !is null && !ship.isStation && !ship.isMiniStation)
+		if (ship !is null && !ship.isStation && !ship.isMiniStation && ship.mass < 3.0f)
 		{
 			Vec2f velnorm = ship.vel; 
 			const f32 vellen = velnorm.Normalize();		
 			
 			if (vellen > 8.0f) 
 			{
-				bool dontHitMore = false;
-			
 				HitInfo@[] hitInfos;
 				if (getMap().getHitInfosFromRay(this.getPosition(), -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
 				{
@@ -65,17 +56,14 @@ void onTick(CBlob@ this)
 					for (uint i = 0; i < hitInfos.length; i++)
 					{
 						CBlob@ blob =  hitInfos[i].blob;	  
-						if (blob is null || blob is this || dontHitMore) 
-							continue;
+						if (blob is null || blob is this) continue;
 						
 						const int other_color = blob.getShape().getVars().customData;
-						
 						if (color == other_color) break;
 						
 						if (other_color > 0)
 						{
 							Ship@ other_ship = getShip(other_color);
-						
 							if (other_ship !is null)
 							{
 								bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
@@ -95,7 +83,7 @@ void onTick(CBlob@ this)
 								{
 									CollisionResponse1(ship, other_ship, this.getPosition()+velnorm, docking);
 								}
-								dontHitMore = true;
+								break;
 							}
 						}
 					}

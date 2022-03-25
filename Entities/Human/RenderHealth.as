@@ -31,10 +31,10 @@ void onRender(CSprite@ this)
 				GUI::DrawRectangle(Vec2f(pos2d.x - dim.x+2, pos2d.y + y+2), Vec2f(pos2d.x - dim.x + perc*2.0f*dim.x -2, pos2d.y + y + dim.y-2), SColor(0xffac1512));
 			}
 		}
-		const f32 initialReclaim = mBlob.get_f32("initial reclaim");
-		if (initialReclaim > 0.0f)
+		
+		if (initialHealth > 0.0f)
 		{
-			const f32 perc = mBlob.get_f32("current reclaim") / initialReclaim;
+			const f32 perc = mBlob.get_f32("current reclaim") / initialHealth;
 			if (perc >= 0.0f)
 			{
 				GUI::DrawRectangle(Vec2f(pos2d.x - dim.x+2, pos2d.y + y+2), Vec2f(pos2d.x - dim.x + perc*2.0f*dim.x -2, pos2d.y + y + dim.y-2), SColor(255, 36,177,53));

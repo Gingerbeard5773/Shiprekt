@@ -3,7 +3,8 @@
 
 void onInit(CBlob@ this)
 {
-	this.Tag("ministation"); 
+	this.Tag("ministation");
+	this.set_f32("current reclaim", 0);	
 	
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ layer = sprite.addSpriteLayer("ministation", "Station.png", 16, 16);

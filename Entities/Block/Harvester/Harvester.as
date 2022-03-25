@@ -113,13 +113,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if (b.hasTag("station") || b.hasTag("ministation")) continue;
 
 					const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
-					const f32 initialReclaim = b.get_f32("initial reclaim");
+					const f32 initialHealth = b.getInitialHealth();
 					f32 currentReclaim = b.get_f32("current reclaim");
 
 					Ship@ ship = getShip(b.getShape().getVars().customData);
 					if (ship !is null && bCost > 0)
 					{
-						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialReclaim; //fastest reclaim possible
+						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
 						string shipOwnerName = ship.owner;
 						
 						if (!b.hasTag("mothership"))
@@ -134,14 +134,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							}
 							else
 							{
-								deconstructAmount = (1.0f/bCost)*initialReclaim; //slower reclaim
+								deconstructAmount = (1.0f/bCost)*initialHealth; //slower reclaim
 							}
 
 							if ((currentReclaim - deconstructAmount) <= 0)
 							{
 								string cName = thisPlayer.getUsername();
 
-								server_addPlayerBooty(cName, getCost(b.getName())*(b.getHealth()/b.getInitialHealth()));
+								server_addPlayerBooty(cName, getCost(b.getName())*(b.getHealth()/initialHealth));
 								directionalSoundPlay("/ChaChing.ogg", barrelPos);
 
 								b.Tag("disabled");

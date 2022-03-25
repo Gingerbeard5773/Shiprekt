@@ -121,16 +121,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					string cName = thisPlayer.getUsername();
 					u16 cBooty = server_getPlayerBooty(cName);
 					f32 mBlobHealth = b.getHealth();
-					f32 mMaxHealth = b.getInitialHealth();
 					const f32 mBlobCost = getCost(b.getName());
-					const f32 initialReclaim = (b.hasTag("mothership") ? b.getInitialHealth() : b.get_f32("initial reclaim"));
+					const f32 initialReclaim = b.getInitialHealth();
 					f32 currentReclaim = b.get_f32("current reclaim");
 
 					f32 fullConstructAmount;
 					if (!b.hasTag("mothership"))
 						fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
 					else
-						fullConstructAmount = (0.01f)*mMaxHealth; //mothership
+						fullConstructAmount = (0.01f)*initialReclaim; //mothership
 					
 
 					if (currentReclaim < initialReclaim || b.hasTag("mothership"))
@@ -159,7 +158,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						//calculate amount it will cost the player
 						if (b.hasTag("mothership"))
 							reconstructCost = 5;
-						else if (mBlobHealth < mMaxHealth)
+						else if (mBlobHealth < initialReclaim)
 							reconstructCost *= isMyShip ? 1.0f : 0.20f;
 							
 						if (b.hasTag("mothership"))
@@ -176,17 +175,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							//normal blocks
 							if (cBooty >= reconstructCost)
 							{
-								b.server_SetHealth(Maths::Min(mMaxHealth, mBlobHealth + reconstructAmount));
-								b.set_f32("current reclaim", Maths::Min(mMaxHealth, currentReclaim + reconstructAmount));
+								b.server_SetHealth(Maths::Min(initialReclaim, mBlobHealth + reconstructAmount));
+								b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
 								server_addPlayerBooty(cName, -reconstructCost);
 								count++;
 							}
 							else if ((currentReclaim + reconstructAmount) < mBlobHealth)
-								b.set_f32("current reclaim", Maths::Min(mMaxHealth, currentReclaim + reconstructAmount));
+								b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
 						}
 						else
 						{
-							b.set_f32("current reclaim", Maths::Min(mMaxHealth, currentReclaim + reconstructAmount));//stations
+							b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));//stations
 						}
 					}
 				}
@@ -197,7 +196,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		{
 			//effects
 			CSprite@ sprite = this.getSprite();
-			
 			if (sprite.getEmitSoundPaused())
 			{
 				sprite.SetEmitSoundPaused(false);

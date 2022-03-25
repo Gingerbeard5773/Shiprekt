@@ -857,14 +857,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			const f32 mBlobCost = !mBlob.hasTag("coupling") ? getCost(mBlob.getName(), true) : 1;
 			f32 mBlobHealth = mBlob.getHealth();
 			f32 mBlobInitHealth = mBlob.getInitialHealth();
-			const f32 initialReclaim = mBlob.get_f32("initial reclaim");
 			f32 currentReclaim = mBlob.get_f32("current reclaim");
 			
 			f32 fullConstructAmount;
 			if (mBlob.hasTag("mothership"))
 				fullConstructAmount = (0.01f)*mBlobInitHealth;
 			else if (mBlobCost > 0)
-				fullConstructAmount = (CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
+				fullConstructAmount = (CONSTRUCT_VALUE/mBlobCost)*mBlobInitHealth;
 			else
 				fullConstructAmount = 0.0f;
 							
@@ -887,14 +886,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					}
 					else
 					{
-						deconstructAmount = (1.0f/mBlobCost)*initialReclaim; 
+						deconstructAmount = (1.0f/mBlobCost)*mBlobInitHealth; 
 						this.set_bool("reclaimPropertyWarn", true);
 					}
 					
 					if (!mBlob.hasTag("station") && !mBlob.hasTag("ministation") && 
 					   (ship.isStation || ship.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
 					{
-						deconstructAmount = (1.0f/mBlobCost)*initialReclaim; 
+						deconstructAmount = (1.0f/mBlobCost)*mBlobInitHealth; 
 						this.set_bool("reclaimPropertyWarn", true);					
 					}
 					
@@ -950,14 +949,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					else if (mBlob.hasTag("station") || mBlob.hasTag("ministation"))
 					{
 						//stations
-						if ((currentReclaim + reconstructAmount) <= initialReclaim)
+						if ((currentReclaim + reconstructAmount) <= mBlobInitHealth)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ((currentReclaim + reconstructAmount) > initialReclaim)
+						else if ((currentReclaim + reconstructAmount) > mBlobInitHealth)
 						{
-							reconstructAmount = initialReclaim - currentReclaim;
+							reconstructAmount = mBlobInitHealth - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
 							
 							if (mBlob.getTeamNum() == 255) //neutral
@@ -968,23 +967,23 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						
 						mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
-					else if (currentReclaim < initialReclaim)
+					else if (currentReclaim < mBlobInitHealth)
 					{
 						//blocks
-						if ((currentReclaim + reconstructAmount) <= initialReclaim)
+						if ((currentReclaim + reconstructAmount) <= mBlobInitHealth)
 						{
 							reconstructAmount = fullConstructAmount;
 							reconstructCost = CONSTRUCT_VALUE;
 						}
-						else if ((currentReclaim + reconstructAmount) > initialReclaim)
+						else if ((currentReclaim + reconstructAmount) > mBlobInitHealth)
 						{
-							reconstructAmount = initialReclaim - currentReclaim;
+							reconstructAmount = mBlobInitHealth - currentReclaim;
 							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
 						}
 						
 						if ((currentReclaim + reconstructAmount > mBlobHealth) && cBooty >= reconstructCost)
 						{
-							mBlob.server_SetHealth(Maths::Clamp(mBlobHealth + reconstructAmount, 0.0f, mBlob.getInitialHealth()));
+							mBlob.server_SetHealth(Maths::Clamp(mBlobHealth + reconstructAmount, 0.0f, mBlobInitHealth));
 							mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 							server_addPlayerBooty(cName, -reconstructCost);
 						}
