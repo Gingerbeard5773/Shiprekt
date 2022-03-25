@@ -9,6 +9,7 @@ bool LoadMap(CMap@ map, const string& in fileName)
 
 // --------------------------------------
 
+#include "MapBanner.as";
 #include "CustomMap.as";
 #include "Booty.as"
 

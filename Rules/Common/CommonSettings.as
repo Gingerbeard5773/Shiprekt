@@ -3,10 +3,12 @@ const int BUTTON_SIZE = 4;
 
 void onInit(CRules@ this)
 {
+	if (isClient())
+		this.minimap = false;
+		
 	RegisterFileExtensionScript("WaterPNGMap.as", "png");
     particles_gravity.y = 0.0f; 
-    sv_gravity = 0;    
-    v_camera_ints = false;
+    sv_gravity = 0;
     sv_visiblity_scale = 2.0f;
 	cc_halign = 2;
 	cc_valign = 2;
@@ -19,7 +21,6 @@ void onInit(CRules@ this)
 	this.set_u16("booty_x_min", 100);
 	this.set_u16("booty_transfer", 50);//min transfer ammount
 	this.set_f32("booty_transfer_fee", 0.0f);
-	this.set_f32("build_distance", 16 * 16);//max distance from the core for purchasing blocks
 	this.set_u16("bootyRefillLimit", 50);
 
 	//
@@ -70,7 +71,7 @@ void onInit(CRules@ this)
 	if (getPlayersCount() == 0)
 		client_AddToChat( "> Free building mode set until more players join! <");
 	//warn for black water glitch
-	if ( v_postprocess )
+	if (v_postprocess)
 	{
 		client_AddToChat(">", SColor(255, 255, 75, 75));
 		client_AddToChat(">>", SColor(255, 255, 75, 75));
@@ -87,14 +88,13 @@ void ShowTeamMenu(CRules@ this)
         return;
     }
 
-    CGridMenu@ menu = CreateGridMenu(getDriver().getScreenCenterPos(), null, Vec2f( BUTTON_SIZE, BUTTON_SIZE), "Change team");
+    CGridMenu@ menu = CreateGridMenu(getDriver().getScreenCenterPos(), null, Vec2f(BUTTON_SIZE, BUTTON_SIZE), "Change team");
 
     if (menu !is null)
     {
 		CBitStream exitParams;
 		menu.AddKeyCommand(KEY_ESCAPE, this.getCommandID("pick none"), exitParams);
 		menu.SetDefaultCommand(this.getCommandID("pick none"), exitParams);
-
 
         CBitStream params;
         params.write_u16(local.getNetworkID());
