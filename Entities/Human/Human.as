@@ -98,6 +98,7 @@ void Move(CBlob@ this)
 {
 	const bool blobInitialized = this.getTickSinceCreated() > 4; //solves some strange problems
 	const bool myPlayer = this.isMyPlayer();
+	const bool isBot = isServer() && this.getPlayer() !is null && this.getPlayer().isBot();
 	Vec2f pos = this.getPosition();	
 	Vec2f aimpos = this.getAimPos();
 	Vec2f forward = aimpos - pos;
@@ -127,7 +128,7 @@ void Move(CBlob@ this)
 		Ship@ ship = getShip(this);
 		shape.getVars().onground = ship !is null || isTouchingLand(pos);
 		
-		if (myPlayer)
+		if (myPlayer || isBot)
 		{
 			if (this.get_bool("onGround") != this.isOnGround() && blobInitialized)
 			{
@@ -248,7 +249,7 @@ void Move(CBlob@ this)
 		shape.SetAngleDegrees(angle);	
 
 		// artificial stay on ship
-		if (myPlayer)
+		if (myPlayer || isBot)
 		{
 			CBlob@ shipBlob = getShipBlob(this);
 			if (shipBlob !is null)
@@ -617,11 +618,12 @@ CGridButton@ AddTool(CBlob@ this, CGridMenu@ menu, string icon, string toolName,
 
 void Punch(CBlob@ this)
 {
+	CMap@ map = getMap();
 	Vec2f pos = this.getPosition();
 	Vec2f aimVector = this.getAimPos() - pos;
 	
     HitInfo@[] hitInfos;
-	if (this.getMap().getHitInfosFromArc(pos, -aimVector.Angle(), 150.0f, 10.0f, this, @hitInfos))
+	if (map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
 	{
 		for (uint i = 0; i < hitInfos.length; i++)
 		{
@@ -635,13 +637,33 @@ void Punch(CBlob@ this)
 			}
 			if (b !is null && b.getName() == "human" && b.getTeamNum() != this.getTeamNum())
 			{
-				if (this.isMyPlayer())
+				//check to make sure we aren't hitting through blocks
+				bool hitBlock = false;
+				Vec2f dir = b.getPosition() - this.getPosition();
+				HitInfo@[] rayInfos;
+				if (map.getHitInfosFromRay(this.getPosition(), -dir.Angle(), dir.Length(), this, @rayInfos))
 				{
-					CBitStream params;
-					params.write_u16(b.getNetworkID());
-					this.SendCommand(this.getCommandID("punch"), params);
+					for (uint q = 0; q < rayInfos.length; q++)
+					{
+						CBlob@ block = rayInfos[q].blob;
+						if (block !is null && block.hasTag("solid"))
+						{
+							hitBlock = true;
+							break;
+						}
+					}
 				}
-				return;
+				
+				if (!hitBlock)
+				{
+					if (this.isMyPlayer())
+					{
+						CBitStream params;
+						params.write_u16(b.getNetworkID());
+						this.SendCommand(this.getCommandID("punch"), params);
+					}
+					return;
+				}
 			}
 		}
 	}
