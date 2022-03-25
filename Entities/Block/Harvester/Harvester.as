@@ -10,8 +10,6 @@ const f32 BULLET_RANGE = 100.0f;
 const f32 DECONSTRUCT_RATE = 10.0f; //higher values = higher recover
 const int CONSTRUCT_VALUE = 50;
 
-Random _shotspreadrandom(0x11598); //clientside
-
 void onInit(CBlob@ this)
 {
 	this.getCurrentScript().tickFrequency = 2;
@@ -19,17 +17,20 @@ void onInit(CBlob@ this)
 	this.Tag("weapon");
 	this.Tag("machinegun");
 	this.Tag("fixed_gun");
-	
+
 	this.set_f32("weight", 2.0f);
-	
+
 	this.addCommandID("fire");
-   
-	CSprite@ sprite = this.getSprite();
-	sprite.SetRelativeZ(2);
-	sprite.SetEmitSound("/ReclaimSound.ogg");
-	sprite.SetEmitSoundVolume(0.5f);
-	sprite.SetEmitSoundPaused(true);
- 
+
+	if (isClient())
+	{
+		CSprite@ sprite = this.getSprite();
+		sprite.SetRelativeZ(2);
+		sprite.SetEmitSound("/ReclaimSound.ogg");
+		sprite.SetEmitSoundVolume(0.5f);
+		sprite.SetEmitSoundPaused(true);
+	}
+
 	this.set_u32("fire time", 0);
 }
  
@@ -37,20 +38,20 @@ void onTick(CBlob@ this)
 {
 	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
-		
-	u32 gameTime = getGameTime();
 	
-	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
-	
-	//kill laser after a certain time
-	if (laser !is null && this.get_u32("fire time") + DECONSTRUCT_RATE < gameTime)
+	if (isClient())
 	{
-		if (!sprite.getEmitSoundPaused())
+		//kill laser after a certain time
+		CSprite@ sprite = this.getSprite();
+		CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
+		if (laser !is null && this.get_u32("fire time") + DECONSTRUCT_RATE < getGameTime())
 		{
-			sprite.SetEmitSoundPaused(true);
-		}	
-		sprite.RemoveSpriteLayer("laser");
+			if (!sprite.getEmitSoundPaused())
+			{
+				sprite.SetEmitSoundPaused(true);
+			}
+			sprite.RemoveSpriteLayer("laser");
+		}
 	}
 }
  
@@ -154,18 +155,21 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				}
 			}
 		}
-
-		if (!blocked)
+		
+		if (isClient())
 		{
-			if (sprite.getEmitSoundPaused())
+			if (!blocked)
 			{
-				sprite.SetEmitSoundPaused(false);
+				if (sprite.getEmitSoundPaused())
+				{
+					sprite.SetEmitSoundPaused(false);
+				}
 			}
-		}
 
-		if (!killed && isClient())//full length 'laser'
-		{
-			setLaser(sprite, aimVector * BULLET_RANGE);
+			if (!killed)//full length 'laser'
+			{
+				setLaser(sprite, aimVector * BULLET_RANGE);
+			}
 		}
     }
 }

@@ -30,10 +30,14 @@ void onInit(CBlob@ this)
     consts.mapCollisions = false; // we have our own map collision
 	consts.bullet = true;	
 
-	this.getSprite().SetZ(550.0f);	
-	this.getSprite().SetEmitSound("/RocketBooster.ogg");
-	this.getSprite().SetEmitSoundVolume(0.5f);
-	this.getSprite().SetEmitSoundPaused(true);
+	if (isClient())
+	{
+		CSprite@ sprite = this.getSprite();
+		sprite.SetZ(550.0f);	
+		sprite.SetEmitSound("/RocketBooster.ogg");
+		sprite.SetEmitSoundVolume(0.5f);
+		sprite.SetEmitSoundPaused(true);
+	}
 	
 	this.set_u32("last smoke puff", 0);
 }
@@ -52,14 +56,14 @@ void onTick(CBlob@ this)
 		//rocket code!
 		this.AddForce(aimvector*ROCKET_FORCE);
 		
-		CSprite@ sprite = this.getSprite();
-		if (sprite.getEmitSoundPaused())
-		{
-			sprite.SetEmitSoundPaused(false);
-		}
-		
 		if (isClient())
-		{			
+		{
+			CSprite@ sprite = this.getSprite();
+			if (sprite.getEmitSoundPaused())
+			{
+				sprite.SetEmitSoundPaused(false);
+			}
+			
 			f32 fireRandomOffsetX = (_effectspreadrandom.NextFloat() - 0.5) * 3.0f;
 			
 			const u32 gametime = getGameTime();
@@ -99,7 +103,7 @@ void onTick(CBlob@ this)
 			
 			if (targetDistance > GUIDANCE_RANGE) //must be done to preven desync issues
 			{	
-				aimPos = ownerPos + Vec2f(GUIDANCE_RANGE, 0).RotateBy( -(aimPos - ownerPos).getAngleDegrees());
+				aimPos = ownerPos + Vec2f(GUIDANCE_RANGE, 0).RotateBy(-(aimPos - ownerPos).getAngleDegrees());
 			}
 		
 			f32 angleOffset = 270.0f;		

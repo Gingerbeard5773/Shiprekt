@@ -11,8 +11,6 @@ const f32 CONSTRUCT_RATE = 14.0f; //higher values = higher recover
 const int CONSTRUCT_VALUE = 5;
 const int NUM_HEALS = 5;
 
-Random _shotspreadrandom(0x11598); //clientside
-
 void onInit(CBlob@ this)
 {
 	this.getCurrentScript().tickFrequency = 2;
@@ -24,32 +22,37 @@ void onInit(CBlob@ this)
 	this.set_f32("weight", 3.0f);
 	
 	this.addCommandID("fire");
-   
-	CSprite@ sprite = this.getSprite();
-    sprite.SetRelativeZ(2);
-	sprite.SetEmitSound("/ReclaimSound.ogg");
-	sprite.SetEmitSoundVolume(0.5f);
-	sprite.SetEmitSoundPaused(true);
- 
+	
+	if (isClient())
+	{
+		CSprite@ sprite = this.getSprite();
+		sprite.SetRelativeZ(2);
+		sprite.SetEmitSound("/ReclaimSound.ogg");
+		sprite.SetEmitSoundVolume(0.5f);
+		sprite.SetEmitSoundPaused(true);
+	}
+	
 	this.set_u32("fire time", 0);
 }
  
 void onTick(CBlob@ this)
 {
-	if (this.getShape().getVars().customData <= 0 )//not placed yet
+	if (this.getShape().getVars().customData <= 0)//not placed yet
 		return;
-		
-	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 	
-	//kill laser after a certain time
-	if (laser !is null && this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime())
+	if (isClient())
 	{
-		if (!sprite.getEmitSoundPaused())
+		//kill laser after a certain time
+		CSprite@ sprite = this.getSprite();
+		CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
+		if (laser !is null && this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime())
 		{
-			sprite.SetEmitSoundPaused(true);
-		}	
-		sprite.RemoveSpriteLayer("laser");
+			if (!sprite.getEmitSoundPaused())
+			{
+				sprite.SetEmitSoundPaused(true);
+			}	
+			sprite.RemoveSpriteLayer("laser");
+		}
 	}
 }
  
@@ -78,9 +81,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			return;
 
 		this.set_u32("fire time", getGameTime());
-			
-		//effects
-		CSprite@ sprite = this.getSprite();
 	   
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 		   		
@@ -193,13 +193,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			}
 		}
 		
-		if (sprite.getEmitSoundPaused())
+		if (isClient())
 		{
-			sprite.SetEmitSoundPaused(false);
-		}
-
-		if (isClient())//full length 'laser'
-		{
+			//effects
+			CSprite@ sprite = this.getSprite();
+			
+			if (sprite.getEmitSoundPaused())
+			{
+				sprite.SetEmitSoundPaused(false);
+			}
+			
+			//full length 'laser'
 			setLaser(sprite, aimVector * (BULLET_RANGE));
 		}
     }
@@ -218,7 +222,7 @@ void setLaser(CSprite@ this, Vec2f lengthPos)
 		f32 laserLength = Maths::Max(0.1f, (lengthPos).getLength() / 16.0f);						
 		laser.ResetTransform();						
 		laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-		laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f));								
+		laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));								
 		laser.RotateBy(0.0f, Vec2f());
 		laser.setRenderStyle(RenderStyle::light);
 		laser.SetRelativeZ(1);
