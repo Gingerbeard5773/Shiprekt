@@ -215,10 +215,13 @@ void onSetPlayer(CBlob@ this, CPlayer@ player)
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
-	ParticleBloodSplat(worldPoint, true);
-	directionalSoundPlay("BodyGibFall", worldPoint);
+	if (isClient())
+	{
+		ParticleBloodSplat(worldPoint, true);
+		directionalSoundPlay("BodyGibFall", worldPoint);
+	}
 
-	if (this.getHealth() - damage <= 0 && hitterBlob.getName() == "bullet")
+	if (this.getHealth() - damage <= 0)
 	{
 		CPlayer@ owner = hitterBlob.getDamageOwnerPlayer();
 		if (owner !is null)
