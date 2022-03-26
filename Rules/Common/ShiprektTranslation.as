@@ -7,8 +7,23 @@
 
 //Translators: GoldenGuy, Moz, Space Luke, Nova & Gizmodious
 
-//TODO: perhaps switch to a dictionary once kag updates to staging
-//Could also seperate languages by namespaces and then call from namespaces from namespaces depending on locale, this would enable the ability to seperate languages by file
+//TODO:
+// Perhaps switch to a dictionary once kag updates to staging
+// Could also seperate languages by namespaces and then call from namespaces from namespaces depending on locale, this would enable the ability to seperate languages by file
+
+//TODO TRANSLATIONS:
+// Wins!   #used in context of a winning team
+// A direct bomb hit to a Core can deal significant damage!   #game tip
+// Wheel Joint   #name for wheel joint block
+// A wheel joint, it can rotate connected parts of a ship to face different directions   #wheel desc
+//
+// #self destruct vote
+// Your mothership is blowing up!
+// Mothership self-destruction vote failed!
+// Enable self-destruction
+// Self-Destruct Mothership
+// Vote to blow up your mothership
+// Blow up!
 
 string Translate(string words)
 {
@@ -202,9 +217,6 @@ const string[] teamColors =
 	Translate("Beige\\Бежевые\\Bege\\Beż\\Beige")
 };
 
-//TODO tip translations:
-// A direct bomb hit to a Core can deal significant damage!
-//
 const string[] shiprektTips =
 {
 	Translate("Pistols deal fair damage to Mothership Cores, but Machineguns are not effective at all!\\пистолеты наносят приличный урон Сердцу главного корабля, а Пулеметы совсем не эффективны!\\pistolas causam dano decente aos Núcleos de Navios-mãe, porém Metralhadoras não são nem um pouco eficazes!\\pistolety zadają uczciwe obrażenia rdzeniom statku-matki, ale karabiny maszynowe nie są w ogóle skuteczne!\\les pistolets font des dégats raisonnable au Noyaux de Navire-mère, mais les Mitrailleuses ne sont pas efficace du tout!"),

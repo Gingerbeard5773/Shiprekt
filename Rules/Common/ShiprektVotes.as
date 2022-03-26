@@ -5,6 +5,9 @@
 
 bool g_haveStartedVote = false;
 s32 g_lastVoteCounter = 0;
+s32 lastFBVote = 0;
+s32 lastSDVote = 0;
+s32 lastSRVote = 0;
 string g_lastUsernameVoted = "";
 const float required_minutes = 10; //time you have to wait after joining w/o skip_votewait.
 
@@ -13,6 +16,7 @@ const float required_minutes_nextmap = 10; //global nextmap vote cooldown
 const u32 BaseEnableTimeSuddenDeath = 10*30*60;//minimum base time. decreases on smaller maps and increases with cores count
 const u32 suddenDeathVoteCooldown = 3*30*60;
 const u32 freeBuildCooldown = 3*30*60;
+const u32 surrenderCooldown = 3*30*60;
 
 const s32 VoteKickTime = 30; //minutes (30min default)
 
@@ -44,7 +48,7 @@ enum nextmap_reason
 const string votekick_id = "vote: kick";
 const string votenextmap_id = "vote: nextmap";
 const string votefreebuild_id = "vote: freebuild";
-const string votescramble_id = "vote: scramble";
+const string votesurrender_id = "vote: surrender";
 
 //set up the ids
 void onInit(CRules@ this)
@@ -52,7 +56,7 @@ void onInit(CRules@ this)
 	this.addCommandID(votekick_id);
 	this.addCommandID(votenextmap_id);
 	this.addCommandID(votefreebuild_id);
-	this.addCommandID(votescramble_id);
+	this.addCommandID(votesurrender_id);
 	
 	initializeBools(this);
 }
@@ -69,10 +73,10 @@ void onRestart(CRules@ this)
 
 void initializeBools(CRules@ this)
 {
-	this.set_s32("lastSDVote", -suddenDeathVoteCooldown);
-	this.set_s32("lastFBVote", -freeBuildCooldown);
+	lastSDVote = -suddenDeathVoteCooldown;
+	lastFBVote = -freeBuildCooldown;
+	lastSRVote = 0;
 	this.set_bool("freebuild", getPlayerCount() <= 1);
-	this.set_bool("sudden death", false);
 }
 
 //VOTE KICK --------------------------------------------------------------------
@@ -186,7 +190,7 @@ VoteObject@ Create_Votekick(CPlayer@ player, CPlayer@ byplayer, string reason)
 	return vote;
 }
 
-//VOTE NEXT MAP ----------------------------------------------------------------
+//VOTE SUDDEN DEATH ----------------------------------------------------------------
 //nextmap functors
 
 class VoteNextmapFunctor : VoteFunctor
@@ -225,7 +229,6 @@ class VoteNextmapFunctor : VoteFunctor
 							+ "\n"+Trans::AttackReward
 							+ "\n"+Trans::WeightNote+" ***\n", vote_message_colour());
 			CRules@ rules = getRules();
-			rules.set_bool("sudden death", true);
 		}
 		else
 		{
@@ -366,6 +369,90 @@ VoteObject@ Create_VoteFreebuild(CPlayer@ byplayer)
 	return vote;
 }
 
+//VOTE SURRENDER ----------------------------------------------------------------
+//surrender functors
+
+class VoteSurrenderFunctor : VoteFunctor
+{
+	VoteSurrenderFunctor() {} //dont use this
+	VoteSurrenderFunctor(CPlayer@ player)
+	{
+		team = player.getTeamNum();
+	}
+
+	s32 team;
+	void Pass(bool outcome)
+	{
+		bool isMyTeam = getLocalPlayer() !is null && getLocalPlayer().getTeamNum() == team;
+		if (outcome)
+		{
+			if (isServer())
+			{
+				CBlob@ teamCore;
+				CBlob@[] cores;
+				getBlobsByTag("mothership", @cores);
+				for (uint i = 0; i < cores.length; i++)
+				{
+					CBlob@ core = cores[i];  
+					if (core.getTeamNum() == team)
+					{
+						@teamCore = core;
+						break;
+					}
+				}
+				
+				if (teamCore !is null)
+				{
+					teamCore.server_Hit(teamCore, teamCore.getPosition(), Vec2f_zero, 8.0f, 0);
+				}
+			}
+			if (isMyTeam)
+				client_AddToChat("*** Your mothership is blowing up! ***", vote_message_colour());
+		}
+		else if (isMyTeam)
+		{
+			client_AddToChat("*** Mothership self-destruction vote failed! ***", vote_message_colour());
+		}
+	}
+};
+
+class VoteSurrenderCheckFunctor : VoteCheckFunctor
+{
+	VoteSurrenderCheckFunctor() {}//dont use this
+	VoteSurrenderCheckFunctor(s32 _team)
+	{
+		team = _team;
+	}
+
+	s32 team;
+
+	bool PlayerCanVote(CPlayer@ player)
+	{
+		//todo: seclevs? how would they look?
+
+		return player.getTeamNum() == team;
+	}
+};
+
+//setting up a vote surrender object
+VoteObject@ Create_VoteSurrender(CPlayer@ byplayer)
+{
+	VoteObject vote;
+
+	@vote.onvotepassed = VoteSurrenderFunctor(byplayer);
+	@vote.canvote = VoteSurrenderCheckFunctor(byplayer.getTeamNum());
+
+	vote.title = "Enable self-destruction?               ";
+	vote.reason = "";
+	vote.byuser = byplayer.getUsername();
+	vote.forcePassFeature = "surrender";
+	vote.cancel_on_restart = true;
+
+	CalculateVoteThresholds(vote);
+
+	return vote;
+}
+
 //create menus for kick and nextmap
 
 void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
@@ -375,14 +462,12 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	if (me is null) return;
 
 	CRules@ rules = getRules();
-
 	if (Rules_AlreadyHasVote(rules))
 	{
 		Menu::addContextItem(menu, getTranslatedString("(Vote already in progress)"), "DefaultVotes.as", "void CloseMenu()");
 		Menu::addSeparator(menu);
 
 		return;
-
 	}
 
 	//and advance context menu when clicked
@@ -394,6 +479,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	CContextMenu@ kickmenu = Menu::addContextMenu(votemenu, getTranslatedString("Kick"));
 	CContextMenu@ mapmenu = Menu::addContextMenu(votemenu, Trans::SuddenDeath);
 	CContextMenu@ Freebuildmenu = Menu::addContextMenu(votemenu, Trans::Freebuild);
+	CContextMenu@ surrendermenu = Menu::addContextMenu(votemenu, "Self-Destruct Mothership");
 	Menu::addSeparator(votemenu); //before the back button
 
 	bool can_skip_wait = getSecurity().checkAccess_Feature(me, "skip_votewait");
@@ -518,17 +604,16 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	}
 	Menu::addSeparator(kickmenu);
 
-	//nextmap menu
+	//Sudden Death menu
 	if (getSecurity().checkAccess_Feature(me, "map_vote"))
 	{
-		//nextmap menu
 		CMap@ map = getMap();
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
 		f32 coresTime = 2.5f * (cores.length - 2) * 30 * 60;
 		f32 mapFactor = Maths::Min(1.0f, Maths::Sqrt(map.tilemapwidth * map.tilemapheight) / 300.0f);
 		u32 minTime = Maths::Max(0, Maths::Round(BaseEnableTimeSuddenDeath * mapFactor + coresTime) - getGameTime());
-		u32 coolDown = Maths::Max(0, suddenDeathVoteCooldown - (getGameTime() - this.get_s32("lastSDVote")));
+		u32 coolDown = Maths::Max(0, suddenDeathVoteCooldown - (getGameTime() - lastSDVote));
 		
 		u32 timeToEnable = minTime + coolDown;
 		bool whirlpool = this.get_bool("whirlpool");
@@ -567,31 +652,50 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 
 	//Freebuild menu
 	//vote free building mode
-	u32 coolDownFb = Maths::Max(0, freeBuildCooldown - (getGameTime() - this.get_s32("lastFBVote")));
-	
-	bool freebuildstate = this.get_bool("freebuild");
-	
-	string nameFb = Trans::Enable+" "+Trans::FreebuildMode+"\n";
-	if (freebuildstate) nameFb = Trans::Disable+" "+Trans::FreebuildMode+"\n";
-	
-	string descFb = Trans::Vote+" "+Trans::Enable+"/"+Trans::Disable+" "+Trans::FreebuildMode+".";
-	if (coolDownFb > 0) 
 	{
-		descFb = coolDownFb > 30*60 ? (Trans::SwitchTime+" "+ (1 + coolDownFb/30/60) +" "+Trans::Minutes+".") : (Trans::SwitchTime+" "+ coolDownFb/30 + getTranslatedString(" seconds")+".");
-	}
-	
-	Menu::addInfoBox(Freebuildmenu, nameFb, descFb);
-
-	if (coolDownFb == 0)
-	{
-		Menu::addSeparator(Freebuildmenu);
-		//reason
-		CBitStream params;
-		params.write_u8(1);
-		Menu::addContextItemWithParams(Freebuildmenu, getTranslatedString("Yes"), "ShiprektVotes.as", "Callback_Freebuild", params);
+		u32 coolDownFb = Maths::Max(0, freeBuildCooldown - (getGameTime() - lastFBVote));
 		
-		Menu::addSeparator(Freebuildmenu);
+		string nameFb = Trans::Enable+" "+Trans::FreebuildMode+"\n";
+		if (this.get_bool("freebuild")) nameFb = Trans::Disable+" "+Trans::FreebuildMode+"\n";
+		
+		string descFb = Trans::Vote+" "+Trans::Enable+"/"+Trans::Disable+" "+Trans::FreebuildMode+".";
+		if (coolDownFb > 0) 
+			descFb = coolDownFb > 30*60 ? (Trans::SwitchTime+" "+ (1 + coolDownFb/30/60) +" "+Trans::Minutes+".") : (Trans::SwitchTime+" "+ coolDownFb/30 + getTranslatedString(" seconds")+".");
+		
+		Menu::addInfoBox(Freebuildmenu, nameFb, descFb);
+
+		if (coolDownFb == 0)
+		{
+			Menu::addSeparator(Freebuildmenu);
+			//reason
+			CBitStream params;
+			params.write_u8(1);
+			Menu::addContextItemWithParams(Freebuildmenu, getTranslatedString("Yes"), "ShiprektVotes.as", "Callback_Freebuild", params);
+		}
 	}
+	Menu::addSeparator(Freebuildmenu);
+	
+	//Self-Destruction menu
+	//vote to blow up your mothership
+	{
+		u32 coolDownSR = Maths::Max(0, surrenderCooldown - (getGameTime() - lastSRVote));
+		
+		string nameSurrender = "Self-Destruct Mothership\n";
+		string descSurrender = "Vote to blow up your mothership.";
+		if (coolDownSR > 0)
+			descSurrender = getTranslatedString("Can't Start Vote")+" : "+ (coolDownSR/30) + getTranslatedString(" seconds")+".";
+		
+		Menu::addInfoBox(surrendermenu, nameSurrender, descSurrender);
+
+		if (coolDownSR == 0)
+		{
+			Menu::addSeparator(surrendermenu);
+			CBitStream params;
+			params.write_u8(1);
+			Menu::addContextItemWithParams(surrendermenu, "Blow up!", "ShiprektVotes.as", "Callback_Surrender", params);
+		}
+	}
+	Menu::addSeparator(surrendermenu);
 }
 
 void CloseMenu()
@@ -657,7 +761,6 @@ void Callback_NextMap(CBitStream@ params)
 	string reason = Trans::SpeedThings;
 
 	CBitStream params2;
-
 	params2.write_u16(me.getNetworkID());
 	params2.write_string(reason);
 
@@ -673,10 +776,23 @@ void Callback_Freebuild(CBitStream@ params)
 	if (me is null) return;
 
 	CBitStream params2;
-
 	params2.write_u16(me.getNetworkID());
 
 	getRules().SendCommand(getRules().getCommandID(votefreebuild_id), params2);
+	onPlayerStartedVote();
+}
+
+void Callback_Surrender(CBitStream@ params)
+{
+	CloseMenu(); //definitely close the menu
+
+	CPlayer@ me = getLocalPlayer();
+	if (me is null) return;
+
+	CBitStream params2;
+	params2.write_u16(me.getNetworkID());
+
+	getRules().SendCommand(getRules().getCommandID(votesurrender_id), params2);
 	onPlayerStartedVote();
 }
 
@@ -697,7 +813,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 
 		CPlayer@ player = getPlayerByNetworkId(playerid);
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
-
 		if (player !is null && byplayer !is null)
 			Rules_SetVote(this, Create_Votekick(player, byplayer, reason));
 	}
@@ -709,10 +824,9 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 		if (!params.saferead_u16(byplayerid)) return;
 		if (!params.saferead_string(reason)) return;
 		
-		this.set_s32("lastSDVote", getGameTime());
+		lastSDVote = getGameTime();
 
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
-
 		if (byplayer !is null)
 			Rules_SetVote(this, Create_VoteNextmap(byplayer, reason));
 	}
@@ -722,11 +836,22 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 
 		if (!params.saferead_u16(byplayerid)) return;
 		
-		this.set_s32("lastFBVote", getGameTime());
+		lastFBVote = getGameTime();
 
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
-
 		if (byplayer !is null)
 			Rules_SetVote(this, Create_VoteFreebuild(byplayer));
+	}
+	else if (cmd == this.getCommandID(votesurrender_id))
+	{
+		u16 byplayerid;
+
+		if (!params.saferead_u16(byplayerid)) return;
+		
+		lastSRVote = getGameTime();
+
+		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
+		if (byplayer !is null)
+			Rules_SetVote(this, Create_VoteSurrender(byplayer));
 	}
 }

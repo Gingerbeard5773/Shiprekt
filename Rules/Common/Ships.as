@@ -454,7 +454,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 					if (map.isTileSolid(bTile) && bPos.Length() > 15.0f) //are we on rock
 					{
 						TileCollision(ship, bPos);
-						if (!b.hasTag("mothership") || this.get_bool("sudden death"))
+						if (!b.hasTag("mothership") || this.get_bool("whirlpool"))
 							b.server_Hit(b, bPos, Vec2f_zero, 1.0f, 0, true);
 					}
 					else if (isTouchingLand(bPos))
