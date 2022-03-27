@@ -866,7 +866,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{
 					f32 deconstructAmount = 0;
 					if ((shipOwner == "" && !ship.isMothership) //no owner and is not a mothership
-						|| (mBlob.get_string("playerOwner") == "" && !ship.isMothership)  //no one owns the block and is not a mothership
+						|| (mBlob.get_string("playerOwner") == "" && (!ship.isMothership || mBlob.getTeamNum() == this.getTeamNum()))  //no one owns the block and is not a mothership
 						|| shipOwner == thisPlayer.getUsername()  //we own the ship
 						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername()) //we own the block
 					{
