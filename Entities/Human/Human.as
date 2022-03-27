@@ -15,7 +15,6 @@ const int CONSTRUCT_RANGE = 48;
 const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
-const u8 BUILD_MENU_COOLDOWN = 30;
 const Vec2f BUILD_MENU_SIZE = Vec2f(6, 4);
 const Vec2f BUILD_MENU_TEST = Vec2f(6, 4); //for testing, only activates when sv_test is on
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
@@ -867,7 +866,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				{
 					f32 deconstructAmount = 0;
 					if ((shipOwner == "" && !ship.isMothership) //no owner and is not a mothership
-						|| mBlob.get_string("playerOwner") == ""  //no one owns the block
+						|| (mBlob.get_string("playerOwner") == "" && !ship.isMothership)  //no one owns the block and is not a mothership
 						|| shipOwner == thisPlayer.getUsername()  //we own the ship
 						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername()) //we own the block
 					{
