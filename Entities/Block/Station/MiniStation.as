@@ -18,13 +18,17 @@ void onInit(CBlob@ this)
 
 void onChangeTeam(CBlob@ this, const int oldTeam)
 {
-	if (this.getTeamNum() >= 0 && this.getTeamNum() <= 8)
+	CPlayer@ ourply = getLocalPlayer();
+	if (ourply !is null)
 	{
-		Sound::Play("Captured.ogg");
-	}
-	else
-	{
-		Sound::Play("Captured2.ogg");
+		if (this.getTeamNum() == ourply.getTeamNum())
+		{
+			Sound::Play("Captured.ogg");
+		}
+		else
+		{
+			Sound::Play("Captured2.ogg");
+		}
 	}
 	
 	Capture(this, this.getTeamNum());
