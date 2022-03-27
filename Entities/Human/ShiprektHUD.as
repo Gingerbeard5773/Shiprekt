@@ -175,7 +175,6 @@ void onRender(CSprite@ this)
 	GUI::SetFont("menu");
 	DrawCoreStatus(teamCore, tl, controls);
 	DrawStationStatus(teamNum, tl, controls);
-	DrawMiniStationStatus(tl, controls);
 	DrawResources(pBooty, name, captainName, tl, controls);
 }
 
@@ -259,38 +258,17 @@ void DrawStationStatus(int teamnum, Vec2f tl, CControls@ controls)
 	for (u8 u = 0; u < stations.length; u++)
 	{
 		CBlob@ station = stations[u];
-		if (station is null )
+		if (station is null)
 			continue;
-	
 		if (stations[u].getTeamNum() == getLocalPlayer().getTeamNum())
 			teamStationCount++;
 	}
 
-	GUI::DrawText(teamStationCount + "/" + totalStationCount + " (+"+teamStationCount*4+")", tl + Vec2f(246, 6), tipsColor);
+	GUI::DrawText(teamStationCount + "/" + totalStationCount + " (+"+teamStationCount*4+")", tl + Vec2f(246, 11), tipsColor);
 	
 	//GUI buttons text/function
 	if ((controls.getMouseScreenPos() - (tl + Vec2f(245, 20))).Length() < 35.0f)
 		GUI::DrawText(Trans::Bases,  tl + Vec2f(200, -25), tipsColor);
-}
-
-void DrawMiniStationStatus(Vec2f tl, CControls@ controls)
-{
-	CBlob@[] ministations;
-	getBlobsByTag("ministation", @ministations);
-	
-	u16 totalMiniStationCount = ministations.length;
-	u16 teamMiniStationCount = 0;
-	for (u8 u = 0; u < ministations.length; u++)
-	{
-		CBlob@ ministation = ministations[u];
-		if (ministation is null)
-			continue;
-	
-		if (ministations[u].getTeamNum() == getLocalPlayer().getTeamNum())
-			teamMiniStationCount++;
-	}
-
-	GUI::DrawText(teamMiniStationCount + "/" + totalMiniStationCount + " (+"+teamMiniStationCount+")", tl + Vec2f(246, 18), tipsColor);
 }
 
 void DrawResources(u16 pBooty, string name, string captainName, Vec2f tl, CControls@ controls)

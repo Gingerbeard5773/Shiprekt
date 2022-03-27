@@ -244,22 +244,13 @@ class VoteNextmapFunctor : VoteFunctor
 				server_CreateBlob("whirlpool", 0, mapCenter);
 				
 				CBlob@[] stations;
-				CBlob@[] ministations;
 				getBlobsByTag("station", @stations);
-				getBlobsByTag("ministation", @ministations);
 				for (uint i = 0; i < stations.length; i++)
 				{
 					CBlob@ station = stations[i];
 					
 					if (station !is null)
 						station.server_Die();
-				}
-				for (uint i = 0; i < ministations.length; i++)
-				{
-					CBlob@ ministation = ministations[i];
-					
-					if (ministation !is null)
-						ministation.server_Die();
 				}
 			}
 		}

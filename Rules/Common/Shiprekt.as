@@ -4,7 +4,6 @@
 #include "MakeBlock.as";
 
 const u16 STATION_BOOTY = 4;
-const u16 MINI_STATION_BOOTY = 1;
 
 void onInit(CRules@ this)
 {
@@ -85,11 +84,8 @@ void onTick(CRules@ this)
 				continue;
 			
 			u16 pStationCount = 0;
-			u16 pMiniStationCount = 0;
 			CBlob@[] stations;
-			CBlob@[] ministations;
 			getBlobsByTag("station", @stations);
-			getBlobsByTag("ministation", @ministations);
 			for (u8 u = 0; u < stations.length; u++)
 			{
 				CBlob@ station = stations[u];
@@ -100,21 +96,11 @@ void onTick(CRules@ this)
 					pStationCount++;
 			}
 			
-			for (u8 u = 0; u < ministations.length; u++)
-			{
-				CBlob@ ministation = ministations[u];
-				if (ministation is null)
-					continue;
-			
-				if (ministations[u].getTeamNum() == pteam)
-					pMiniStationCount++;
-			}
-			
 			CBlob@ pBlob = player.getBlob();
 			if (pBlob !is null)
 			{
-				server_addPlayerBooty(player.getUsername(), (STATION_BOOTY * pStationCount) + (MINI_STATION_BOOTY * pMiniStationCount));
-				server_updateTotalBooty(pteam, (STATION_BOOTY * pStationCount) + (MINI_STATION_BOOTY * pMiniStationCount));
+				server_addPlayerBooty(player.getUsername(), (STATION_BOOTY * pStationCount));
+				server_updateTotalBooty(pteam, (STATION_BOOTY * pStationCount));
 			}
 		}
 	}
@@ -545,7 +531,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					if (ship.isMothership) shipType += "Mothership";
 					if (ship.isSecondaryCore) shipType += (shipType.length > 0 ? ", " : "")+"Secondary Core";
 					if (ship.isStation) shipType += (shipType.length > 0 ? ", " : "")+"Station";
-					if (ship.isMiniStation) shipType += (shipType.length > 0 ? ", " : "")+"Ministation";
 					
 					//RGB cause cool
 					print("---- ISLAND "+ship.centerBlock.getShape().getVars().customData+" ----", color_white);

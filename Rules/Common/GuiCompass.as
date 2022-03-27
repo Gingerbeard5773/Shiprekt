@@ -19,10 +19,6 @@ class CompassVars
     s32[] station_teams;
     f32[] station_angles;
     f32[] station_distances;
-	
-	//s32[] ministation_teams;
-    //f32[] ministation_angles;
-    //f32[] ministation_distances;
 
     s32[] human_teams;
     f32[] human_angles;
@@ -55,9 +51,6 @@ class CompassVars
         station_angles.clear();
         station_teams.clear();
         station_distances.clear();
-		//ministation_angles.clear();
-        //ministation_teams.clear();
-        //ministation_distances.clear();
         human_angles.clear();
         human_teams.clear();
         human_distances.clear();
@@ -124,7 +117,6 @@ void onTick(CRules@ this)
 	//stations
     CBlob@[] stations;
     getBlobsByTag("station", @stations);
-	getBlobsByTag("ministation", @stations);
     for (uint i = 0; i < stations.length; i++)
     {
         CBlob@ station = stations[i];
@@ -136,21 +128,6 @@ void onTick(CRules@ this)
         _vars.station_angles.push_back(offset.Angle() * -1.0f); 
         _vars.station_distances.push_back(offset.Length());
     }
-	
-	//ministations
-    /*CBlob@[] ministations;
-    getBlobsByTag( "ministation", @ministations );
-    for (uint i = 0; i < ministations.length; i++)
-    {
-        CBlob@ ministation = ministations[i];
-			
-        _vars.ministation_teams.push_back(ministation.getTeamNum());
-
-        Vec2f offset = (ministation.getPosition() - pos);
-
-        _vars.ministation_angles.push_back(offset.Angle() * -1.0f); 
-        _vars.ministation_distances.push_back(offset.Length());
-    }*/
 	
 	//humans
     CBlob@[] humans;
@@ -337,18 +314,6 @@ void onRender(CRules@ this)
         GUI::DrawIcon(gui_image_fname, 25, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, _vars.station_teams[i]);
     }
 	
-	//ministation icons
-    /*for (uint i = 0; i < _vars.ministation_teams.length; i++)
-    {
-        Vec2f pos(Maths::Min(18.0f, _vars.ministation_distances[i] / 48.0f), 0.0f);
-
-        Vec2f thisframesize = Vec2f(8,8);
-
-        pos.RotateBy(_vars.ministation_angles[i] - camangle);
-
-        GUI::DrawIcon(gui_image_fname, 25, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, _vars.ministation_teams[i]);
-    }*/
-	
 	//human icons
     for (uint i = 0; i < _vars.human_teams.length; i++)
     {
@@ -360,9 +325,8 @@ void onRender(CRules@ this)
         
 		pos.RotateBy(_vars.human_angles[i] - camangle);
         
-		GUI::DrawIcon(gui_image_fname, 23, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale * ( borderZoom ? 1.25f : 1.0f ), _vars.human_teams[i]);
+		GUI::DrawIcon(gui_image_fname, 23, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale * (borderZoom ? 1.25f : 1.0f), _vars.human_teams[i]);
     }
-	
 	
 	//core icons
     for (uint i = 0; i < _vars.core_teams.length; i++)
@@ -390,14 +354,14 @@ void onRender(CRules@ this)
 
 	        pos.RotateBy(_vars.decoycore_angles[decoycore_index] - camangle);
 
-	        GUI::DrawIcon(gui_image_fname, 24, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, _vars.decoycore_teams[decoycore_index]);
+	        GUI::DrawIcon(gui_image_fname, 24, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, _vars.decoycore_teams[decoycore_index]);
 
 	        // draw main core as miniship
 	        Vec2f pos2(Maths::Min(18.0f, _vars.core_distances[i] / 48.0f), 0.0f);
 
 	        pos2.RotateBy(_vars.core_angles[i] - camangle);
 
-	        GUI::DrawIcon(gui_image_fname, 23, thisframesize, ( topLeft + (center + pos2)*2.0f - thisframesize ) * scale, scale, _vars.core_teams[i]);
+	        GUI::DrawIcon(gui_image_fname, 23, thisframesize, (topLeft + (center + pos2)*2.0f - thisframesize) * scale, scale, _vars.core_teams[i]);
     	}
     	else
     	{
@@ -407,7 +371,7 @@ void onRender(CRules@ this)
 
 	        pos.RotateBy(_vars.core_angles[i] - camangle);
 
-	        GUI::DrawIcon(gui_image_fname, 24, thisframesize, ( topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, _vars.core_teams[i]);
+	        GUI::DrawIcon(gui_image_fname, 24, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, _vars.core_teams[i]);
 	    }
     }
 }

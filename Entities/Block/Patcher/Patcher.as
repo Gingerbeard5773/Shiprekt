@@ -107,7 +107,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					sparks(hi.hitpos, v_fastrender ? 1 : 4);
 				}
 				
-				if (b.hasTag("station") || b.hasTag("ministation")) continue;
+				if (b.hasTag("station")) continue;
 
 				if (count >= NUM_HEALS) continue;
 							

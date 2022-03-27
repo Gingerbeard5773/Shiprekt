@@ -363,9 +363,6 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 					
 				if (b.hasTag("station"))
 					ship.isStation = true;
-					
-				if (b.hasTag("ministation"))
-					ship.isMiniStation = true;
 
 				if (b.hasTag("secondaryCore"))
 					ship.isSecondaryCore = true;
@@ -428,7 +425,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			ship.initialized = true;
 		}
 
-		if (integrate && !ship.isStation && !ship.isMiniStation)
+		if (integrate && !ship.isStation)
 		{
 			ship.old_pos = ship.pos;
 			ship.old_angle = ship.angle;
@@ -479,7 +476,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 
 			ship.angle = loopAngle(ship.angle);
 		}
-		else if (ship.isStation || ship.isMiniStation)
+		else if (ship.isStation)
 		{
 			ship.vel = Vec2f(0, 0);
 			ship.angle_vel = 0.0f;			
@@ -572,7 +569,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			}
 			
 			//change ship color (only non-motherships that have activated seats)
-			if (!ship.isMothership && !ship.isStation && !ship.isMiniStation && !multiTeams && oldestSeatOwner != "" && ship.owner != oldestSeatOwner)
+			if (!ship.isMothership && !ship.isStation && !multiTeams && oldestSeatOwner != "" && ship.owner != oldestSeatOwner)
 			{
 				CPlayer@ iOwner = getPlayerByUsername(oldestSeatOwner);
 				if (iOwner !is null)
@@ -659,7 +656,7 @@ void SetShipTeam(Ship@ ship, u8 teamNum = 255)
 
 void StoreVelocities(Ship@ ship)
 {	
-	if (!ship.isStation && !ship.isMiniStation)
+	if (!ship.isStation)
 	{
 		for (uint i = 0; i < ship.blocks.length; ++i)
 		{
@@ -782,7 +779,6 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 				stream.write_f32(ship.mass);
 				stream.write_bool(ship.isMothership);
 				stream.write_bool(ship.isStation);
-				stream.write_bool(ship.isMiniStation);
 				stream.write_bool(ship.isSecondaryCore);
 				stream.write_u16(ship.blocks.length);
 				for (uint q = 0; q < ship.blocks.length; ++q)
@@ -891,7 +887,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 				ship.mass = params.read_f32();
 				ship.isMothership = params.read_bool();
 				ship.isStation = params.read_bool();
-				ship.isMiniStation = params.read_bool();
 				ship.isSecondaryCore = params.read_bool();
 				if (ship.centerBlock !is null)
 				{

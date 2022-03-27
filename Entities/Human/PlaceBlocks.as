@@ -5,6 +5,7 @@
 
 const f32 rotate_speed = 30.0f;
 const f32 max_build_distance = 32.0f;
+const u32 placement_time = 22;
 u16 crewCantPlaceCounter = 0;
 
 void onInit(CBlob@ this)
@@ -29,11 +30,9 @@ CBlob@ getReferenceBlock(CBlob@ this, Ship@ ship) //find specific origin blocks 
 			getBlobsByTag("secondaryCore", @references);
 		else if (ship.isStation)
 			getBlobsByTag("station", @references);
-		else if (ship.isMiniStation)
-			getBlobsByTag("ministation", @references);
 		else getBlobsByTag("seat", @references);
 		
-		for (uint i=0; i < references.length; i++)
+		for (uint i = 0; i < references.length; i++)
 		{
 			CBlob@ ref = references[i];
 			if (ref.getTeamNum() == this.getTeamNum() && 
@@ -122,7 +121,7 @@ void onTick(CBlob@ this)
                 // place
                 if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
                 {
-					if (gameTime - this.get_u32("placedTime") > 22)
+					if (gameTime - this.get_u32("placedTime") > placement_time)
 					{
 						if (target_angle == blocks_angle && !overlappingShip && !cLinked && !onRock)
 						{
@@ -332,7 +331,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				Ship@ pShip = getShip(this);
 				bool canShop = pShip !is null && pShip.centerBlock !is null 
 								&& ((pShip.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
-								|| ((pShip.isStation || pShip.isMiniStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum()));
+								|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum()));
 				if (canShop)
 				{
 					this.set_bool("getting block", true);

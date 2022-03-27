@@ -13,7 +13,6 @@ shared class Ship
 	string owner;             //username of the player who owns the ship
 	bool isMothership;        //is the ship connected to a core?
 	bool isStation;           //is the ship connected to a station?
-	bool isMiniStation;       //is the ship connected to a ministation?
 	bool isSecondaryCore;     //is the ship connected to an auxillary core?
 	
 	Vec2f net_pos, net_vel;        //network
@@ -25,7 +24,6 @@ shared class Ship
 		initialized = false;
 		isMothership = false;
 		isStation = false;
-		isMiniStation = false;
 		isSecondaryCore = false;
 		@centerBlock = null;
 		soundsPlayed = 0;

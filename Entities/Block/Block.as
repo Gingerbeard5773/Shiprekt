@@ -42,7 +42,7 @@ void onTick(CBlob@ this)
 	if (color > 0)
 	{
 		Ship@ ship = getShip(color);
-		if (ship !is null && !ship.isStation && !ship.isMiniStation && ship.mass < 3.0f)
+		if (ship !is null && !ship.isStation && ship.mass < 3.0f)
 		{
 			Vec2f velnorm = ship.vel; 
 			const f32 vellen = velnorm.Normalize();		
@@ -67,7 +67,7 @@ void onTick(CBlob@ this)
 							if (other_ship !is null)
 							{
 								bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
-													&& ((ship.isMothership || other_ship.isMothership) || (ship.isStation || other_ship.isStation) || (ship.isMiniStation || other_ship.isMiniStation))
+													&& ((ship.isMothership || other_ship.isMothership) || (ship.isStation || other_ship.isStation))
 													&& this.getTeamNum() == blob.getTeamNum()
 													&& ((!ship.isMothership && ship.owner != "") || (!other_ship.isMothership && other_ship.owner != ""));
 													
@@ -139,7 +139,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 				
 			docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
 					&& ((ship.isMothership || other_ship.isMothership) || (ship.isSecondaryCore || other_ship.isSecondaryCore)
-					|| (ship.isStation || other_ship.isStation) || (ship.isMiniStation || other_ship.isMiniStation))
+					|| (ship.isStation || other_ship.isStation))
 					&& this.getTeamNum() == blob.getTeamNum()
 					&& ((!ship.isMothership && ship.owner != "") || (!other_ship.isMothership && other_ship.owner != ""));
 								
@@ -174,8 +174,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			}
 		}		
 		
-		if (!(this.hasTag("station") || blob.hasTag("station")) && 
-			!(this.hasTag("ministation") || blob.hasTag("ministation"))) // how to clean this up
+		if (!(this.hasTag("station") || blob.hasTag("station"))) // how to clean this up
 		{
 			if (docking)//force ship merge
 			{	
@@ -322,7 +321,7 @@ void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking
 	const f32 massratio1 = other_ship.mass/(ship.mass+other_ship.mass);
 	const f32 massratio2 = ship.mass/(ship.mass+other_ship.mass);
 	
-	if (other_ship.isStation || other_ship.isMiniStation)
+	if (other_ship.isStation)
 	{
 		ship.vel += colvec1 * -vellen - colvec1*0.7f;
 	}

@@ -18,7 +18,6 @@ const f32 BULLET_RANGE = 350.0f;
 const u8 BUILD_MENU_COOLDOWN = 30;
 const Vec2f BUILD_MENU_SIZE = Vec2f(6, 4);
 const Vec2f BUILD_MENU_TEST = Vec2f(6, 4); //for testing, only activates when sv_test is on
-const Vec2f MINI_BUILD_MENU_SIZE = Vec2f(3, 2);
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 
 //global is fine since only used with isMyPlayer
@@ -362,7 +361,7 @@ void PlayerControls(CBlob@ this)
 			Ship@ pShip = getShip(this);
 			bool canShop = pShip !is null && pShip.centerBlock !is null 
 							&& ((pShip.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
-							|| ((pShip.isStation || pShip.isMiniStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum()));
+							|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum()));
 
 			if (!Human::isHoldingBlocks(this) && !this.isAttached())
 			{
@@ -379,7 +378,7 @@ void PlayerControls(CBlob@ this)
 						this.set_bool("justMenuClicked", true);
 
 						Sound::Play("buttonclick.ogg");
-						BuildShopMenu(this, core, Trans::Components, Vec2f(0,0), (pShip.isStation || pShip.isSecondaryCore) && !pShip.isMothership, pShip.isMiniStation);
+						BuildShopMenu(this, core, Trans::Components, Vec2f(0,0), (pShip.isStation || pShip.isSecondaryCore) && !pShip.isMothership);
 					}
 				} 
 				else if (hud.hasMenus())
@@ -448,9 +447,9 @@ void PlayerControls(CBlob@ this)
 	}
 }
 
-void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isStation = false, bool isMiniStation = false)
+void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isStation = false)
 {
-	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, isMiniStation ? MINI_BUILD_MENU_SIZE : sv_test ? BUILD_MENU_TEST : BUILD_MENU_SIZE, desc);
+	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, sv_test ? BUILD_MENU_TEST : BUILD_MENU_SIZE, desc);
 	if (menu !is null) 
 	{
 		const bool warmup = getRules().isWarmup();
@@ -473,58 +472,58 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			description = Trans::CouplingDesc;
 			AddBlock(this, menu, "coupling", "$COUPLING$", Trans::Coupling, description, core, 0.1f);
 		}
-
-		if (!isMiniStation)
-		{
-			{ //Wooden Hull
-				description = Trans::WoodHullDesc;
-				AddBlock(this, menu, "solid", "$SOLID$", Trans::Hull, description, core, 0.75f);
-			}
-			{ //Wooden Platform
-				description = Trans::PlatformDesc;
-				AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, description, core, 0.2f);
-			}
-			{ //Wooden Door
-				description = Trans::DoorDesc;
-				AddBlock(this, menu, "door", "$DOOR$", Trans::Door, description, core, 1.0f);
-			}
-			{ //Piston
-				description = Trans::PistonDesc;
-				AddBlock(this, menu, "piston", "$PISTON$", Trans::Piston, description, core, 0.85f);
-			}
-			{ //Harpoon
-				description = Trans::HarpoonDesc;
-				AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, description, core, 2.0f);
-			}
-			{ //Harvester
-				description = Trans::HarvesterDesc;
-				AddBlock(this, menu, "harvester", "$HARVESTER$", Trans::Harvester, description, core, 2.0f);
-			}
-			{ //Patcher
-				description = Trans::PatcherDesc;
-				AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, description, core, 3.0f);
-			}
-			{ //Anti Ram Hull
-				description = Trans::AntiRamDesc;
-				AddBlock(this, menu, "antiram", "$ANTIRAM$", Trans::AntiRam, description, core, 0.75f);
-			}
-			{ //Repulsor
-				description = Trans::RepulsorDesc;
-				AddBlock(this, menu, "repulsor", "$REPULSOR$", Trans::Repulsor, description, core, 0.25f);
-			}
-			{ //Ram Hull
-				description = Trans::RamDesc;
-				AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, description, core, 2.0f, warmup);
-			}
-			if (!isStation)
-			{ //Auxilliary Core
-				description = Trans::AuxillDesc;
-				AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, description, core, 12.0f, warmup);
-			}
-			{ //Bomb
-				description = Trans::BombDesc;
-				AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, description, core, 2.0f, warmup);
-			}
+		{ //Wooden Hull
+			description = Trans::WoodHullDesc;
+			AddBlock(this, menu, "solid", "$SOLID$", Trans::Hull, description, core, 0.75f);
+		}
+		{ //Wooden Platform
+			description = Trans::PlatformDesc;
+			AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, description, core, 0.2f);
+		}
+		{ //Piston
+			description = Trans::PistonDesc;
+			AddBlock(this, menu, "piston", "$PISTON$", Trans::Piston, description, core, 0.85f);
+		}
+		{ //Wheel
+			description = "A wheel joint, it can rotate connected parts of a ship to face different directions";
+			AddBlock(this, menu, "wheel", "$WHEEL$", "Wheel Joint", description, core, 0.85f);
+		}
+		{ //Harpoon
+			description = Trans::HarpoonDesc;
+			AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, description, core, 2.0f);
+		}
+		{ //Harvester
+			description = Trans::HarvesterDesc;
+			AddBlock(this, menu, "harvester", "$HARVESTER$", Trans::Harvester, description, core, 2.0f);
+		}
+		{ //Patcher
+			description = Trans::PatcherDesc;
+			AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, description, core, 3.0f);
+		}
+		{ //Anti Ram Hull
+			description = Trans::AntiRamDesc;
+			AddBlock(this, menu, "antiram", "$ANTIRAM$", Trans::AntiRam, description, core, 0.75f);
+		}
+		{ //Repulsor
+			description = Trans::RepulsorDesc;
+			AddBlock(this, menu, "repulsor", "$REPULSOR$", Trans::Repulsor, description, core, 0.25f);
+		}
+		{ //Decoy Core
+			description = Trans::DecoyCoreDesc;
+			AddBlock(this, menu, "decoycore", "$DECOYCORE$", Trans::DecoyCore, description, core, 6.0f);
+		}
+		{ //Ram Hull
+			description = Trans::RamDesc;
+			AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, description, core, 2.0f, warmup);
+		}
+		{ //Auxilliary Core
+			description = Trans::AuxillDesc;
+			CGridButton@ button = AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, description, core, 12.0f);
+			button.SetEnabled(!isStation && !warmup);
+		}
+		{ //Bomb
+			description = Trans::BombDesc;
+			AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, description, core, 2.0f, warmup);
 		}
 		{ //Point Defense
 			description = Trans::PointDefDesc+"\n"+Trans::AmmoCap+": 30";
@@ -534,25 +533,17 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			description = Trans::FlakDesc+"\n"+Trans::AmmoCap+": 30";
 			AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, warmup);
 		}
-
-		if (!isMiniStation)
-		{
-			{ //Machinegun
-				description = Trans::MGDesc+"\n"+Trans::AmmoCap+": 250";
-				AddBlock(this, menu, "machinegun", "$MACHINEGUN$", Trans::Machinegun, description, core, 2.0f, warmup);
-			}
-			{ //AP Cannon
-				description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 12";
-				AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, warmup);
-			}
-			{ //Missile Launcher
-				description = Trans::LauncherDesc+"\n"+Trans::AmmoCap+": 8";
-				AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, warmup);
-			}
-			{ //Decoy Core
-				description = Trans::DecoyCoreDesc;
-				CGridButton@ button = AddBlock(this, menu, "decoycore", "$DECOYCORE$", Trans::DecoyCore, description, core, 6.0f);
-			}
+		{ //Machinegun
+			description = Trans::MGDesc+"\n"+Trans::AmmoCap+": 250";
+			AddBlock(this, menu, "machinegun", "$MACHINEGUN$", Trans::Machinegun, description, core, 2.0f, warmup);
+		}
+		{ //AP Cannon
+			description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 12";
+			AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, warmup);
+		}
+		{ //Missile Launcher
+			description = Trans::LauncherDesc+"\n"+Trans::AmmoCap+": 8";
+			AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, warmup);
 		}
 	}
 }
@@ -720,8 +711,7 @@ void Construct(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 
 	CBlob@ mBlob = getMap().getBlobAtPosition(aimPos);
-	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && aimVector.getLength() <= CONSTRUCT_RANGE
-		&& !mBlob.hasTag("station") && !mBlob.hasTag("ministation"))
+	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && aimVector.getLength() <= CONSTRUCT_RANGE && !mBlob.hasTag("station"))
 	{
 		if (this.isMyPlayer())
 		{
@@ -890,7 +880,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						this.set_bool("reclaimPropertyWarn", true);
 					}
 					
-					if ((ship.isStation || ship.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
+					if (ship.isStation && mBlob.getTeamNum() != this.getTeamNum())
 					{
 						deconstructAmount = (1.0f/mBlobCost)*mBlobInitHealth; 
 						this.set_bool("reclaimPropertyWarn", true);					

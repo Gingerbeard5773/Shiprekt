@@ -13,7 +13,7 @@ void refillAmmo(CBlob@ this, uint8 refillAmount, uint8 refillSeconds, uint8 refi
 
 			if (ammo < maxAmmo)
 			{
-				if (ship.isMothership || ship.isStation || ship.isMiniStation)
+				if (ship.isMothership || ship.isStation)
 				{
 					if (getGameTime() % (30 * refillSeconds) == 0)
 					{
