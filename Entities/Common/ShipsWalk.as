@@ -1,5 +1,6 @@
 //#define CLIENT_ONLY
 #include "ShipsCommon.as";
+#include "TileCommon.as";
 
 shared class WalkInfo
 {
@@ -56,7 +57,7 @@ void onTick(CBlob@ this)
 			walk.shipOldAngle = shipAngle;
 
 			CBlob@ shipBlock = getMap().getBlobAtPosition(shipPos + shipToBlob);
-			if (shipBlock !is null && !shipBlock.hasTag("solid")) //Only move player if there is a block to move onto
+			if (isTouchingLand(this.getPosition()) ? shipBlock !is null : true) //Only move player if there is a block to move onto
 				this.setPosition(shipPos + shipToBlob);
 		}
 	}
