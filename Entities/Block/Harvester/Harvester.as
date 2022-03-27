@@ -96,6 +96,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
+				
+				if (b.hasTag("station") || b.hasTag("ministation")) continue;
 
 				if (b.hasTag("block") && b.getShape().getVars().customData > 0)
 				{
@@ -109,8 +111,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 					CPlayer@ thisPlayer = shooter.getPlayer();						
 					if (thisPlayer is null) return; 
-					
-					if (b.hasTag("station") || b.hasTag("ministation")) continue;
 
 					const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
 					const f32 initialHealth = b.getInitialHealth();

@@ -21,6 +21,7 @@ const u8 MAX_TOTAL_FLAKS = 1000;
 void onInit(CBlob@ this)
 {
 	this.Tag("mothership");
+	this.Tag("noRenderHealth");
 	this.addCommandID("buyBlock");
 	this.addCommandID("returnBlocks");
 	

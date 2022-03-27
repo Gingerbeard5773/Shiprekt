@@ -14,7 +14,7 @@ void onRender(CSprite@ this)
 	 
 	CBlob@ mBlob = getMap().getBlobAtPosition(blob.getAimPos());
 	
-	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && !mBlob.hasTag("mothership") 
+	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && !mBlob.hasTag("noRenderHealth") 
 			&& (blob.get_string("current tool") == "deconstructor" || blob.get_string("current tool") == "reconstructor"))
 	{
 		                                  //VV right here VV

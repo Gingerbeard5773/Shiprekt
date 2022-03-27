@@ -720,7 +720,8 @@ void Construct(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 
 	CBlob@ mBlob = getMap().getBlobAtPosition(aimPos);
-	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && aimVector.getLength() <= CONSTRUCT_RANGE)
+	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && aimVector.getLength() <= CONSTRUCT_RANGE
+		&& !mBlob.hasTag("station") && !mBlob.hasTag("ministation"))
 	{
 		if (this.isMyPlayer())
 		{
@@ -878,8 +879,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					if ((shipOwner == "" && !ship.isMothership) //no owner and is not a mothership
 						|| mBlob.get_string("playerOwner") == ""  //no one owns the block
 						|| shipOwner == thisPlayer.getUsername()  //we own the ship
-						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername() //we own the block
-						|| mBlob.hasTag("station") || mBlob.hasTag("ministation")) //its a station
+						|| mBlob.get_string("playerOwner") == thisPlayer.getUsername()) //we own the block
 					{
 						if (mBlob.hasTag("weapon")) fullConstructAmount *= 3;
 						deconstructAmount = fullConstructAmount; 
@@ -890,31 +890,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						this.set_bool("reclaimPropertyWarn", true);
 					}
 					
-					if (!mBlob.hasTag("station") && !mBlob.hasTag("ministation") && 
-					   (ship.isStation || ship.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
+					if ((ship.isStation || ship.isMiniStation) && mBlob.getTeamNum() != this.getTeamNum())
 					{
 						deconstructAmount = (1.0f/mBlobCost)*mBlobInitHealth; 
 						this.set_bool("reclaimPropertyWarn", true);					
 					}
 					
 					if ((currentReclaim - deconstructAmount) <=0)
-					{		
-						if (mBlob.hasTag("station") || mBlob.hasTag("ministation"))
-						{
-							if (mBlob.getTeamNum() != this.getTeamNum() && mBlob.getTeamNum() != 255)
-							{
-								mBlob.server_setTeamNum(255);
-							}
-						}
-						else
-						{
-							string cName = thisPlayer.getUsername();
-
-							server_addPlayerBooty(cName, (!mBlob.hasTag("coupling") ? getCost(mBlob.getName()) : 1) *(mBlobHealth/mBlobInitHealth));
-							directionalSoundPlay("/ChaChing.ogg", pos);
-							mBlob.Tag("disabled");
-							mBlob.server_Die();
-						}
+					{
+						server_addPlayerBooty(thisPlayer.getUsername(), (!mBlob.hasTag("coupling") ? getCost(mBlob.getName()) : 1) *(mBlobHealth/mBlobInitHealth));
+						directionalSoundPlay("/ChaChing.ogg", pos);
+						mBlob.Tag("disabled");
+						mBlob.server_Die();
 					}
 					else
 						mBlob.sub_f32("current reclaim", deconstructAmount);
@@ -945,27 +932,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
 							server_addPlayerBooty(cName, -reconstructCost);
 						}
-					}
-					else if (mBlob.hasTag("station") || mBlob.hasTag("ministation"))
-					{
-						//stations
-						if ((currentReclaim + reconstructAmount) <= mBlobInitHealth)
-						{
-							reconstructAmount = fullConstructAmount;
-							reconstructCost = CONSTRUCT_VALUE;
-						}
-						else if ((currentReclaim + reconstructAmount) > mBlobInitHealth)
-						{
-							reconstructAmount = mBlobInitHealth - currentReclaim;
-							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
-							
-							if (mBlob.getTeamNum() == 255) //neutral
-							{
-								mBlob.server_setTeamNum(this.getTeamNum());
-							}
-						}
-						
-						mBlob.set_f32("current reclaim", currentReclaim + reconstructAmount);
 					}
 					else if (currentReclaim < mBlobInitHealth)
 					{

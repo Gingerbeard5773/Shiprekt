@@ -4,7 +4,8 @@
 void onInit(CBlob@ this)
 {
 	this.Tag("station");
-	this.set_f32("current reclaim", 0);
+	this.Tag("noRenderHealth");
+	this.set_u8("capture time", 25);
 	
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ layer = sprite.addSpriteLayer("station", "Station.png", 16, 16);

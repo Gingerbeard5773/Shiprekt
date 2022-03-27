@@ -97,96 +97,83 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
-
+				
 				const int color = b.getShape().getVars().customData;
+				
+				if (!b.hasTag("block") || color <= 0) return;
+				
+				if (isClient())//effects
+				{
+					sparks(hi.hitpos, v_fastrender ? 1 : 4);
+				}
+				
+				if (b.hasTag("station") || b.hasTag("ministation")) continue;
 
-				if (b.hasTag("block") && color > 0)
-				{					
-					if (isClient())//effects
-					{
-						sparks(hi.hitpos, v_fastrender ? 1 : 4);
-					}			
-
-					if (count >= NUM_HEALS) continue;
-								
-					CPlayer@ thisPlayer = shooter.getPlayer();						
-					if (thisPlayer is null) 
-						return;		
-					
-					Ship@ otherShip = getShip(color);
-					bool isMyShip = otherShip !is null && otherShip is ship;
- 
-					f32 reconstructAmount = 0;
-					u16 reconstructCost = 0;
-					string cName = thisPlayer.getUsername();
-					u16 cBooty = server_getPlayerBooty(cName);
-					f32 mBlobHealth = b.getHealth();
-					const f32 mBlobCost = getCost(b.getName());
-					const f32 initialReclaim = b.getInitialHealth();
-					f32 currentReclaim = b.get_f32("current reclaim");
-
-					f32 fullConstructAmount;
-					if (!b.hasTag("mothership"))
-						fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
-					else
-						fullConstructAmount = (0.01f)*initialReclaim; //mothership
-					
-
-					if (currentReclaim < initialReclaim || b.hasTag("mothership"))
-					{
-						//healing
-						if ((currentReclaim + reconstructAmount) <= initialReclaim)
-						{
-							reconstructAmount = fullConstructAmount;
-							reconstructCost = CONSTRUCT_VALUE;
-						}
-						else if ((currentReclaim + reconstructAmount) > initialReclaim)
-						{
-							reconstructAmount = initialReclaim - currentReclaim;
-							reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
+				if (count >= NUM_HEALS) continue;
 							
-							if (!b.hasTag("station") && !b.hasTag("station"))
-							{
-								//stations
-								if (b.getTeamNum() == 255) //neutral
-								{
-									b.server_setTeamNum(this.getTeamNum());
-								}
-							}
-						}
+				CPlayer@ thisPlayer = shooter.getPlayer();						
+				if (thisPlayer is null) 
+					return;		
+				
+				Ship@ otherShip = getShip(color);
+				bool isMyShip = otherShip !is null && otherShip is ship;
+
+				f32 reconstructAmount = 0;
+				u16 reconstructCost = 0;
+				string cName = thisPlayer.getUsername();
+				u16 cBooty = server_getPlayerBooty(cName);
+				f32 mBlobHealth = b.getHealth();
+				const f32 mBlobCost = getCost(b.getName());
+				const f32 initialReclaim = b.getInitialHealth();
+				f32 currentReclaim = b.get_f32("current reclaim");
+
+				f32 fullConstructAmount;
+				if (!b.hasTag("mothership"))
+					fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
+				else
+					fullConstructAmount = (0.01f)*initialReclaim; //mothership
+				
+				if (currentReclaim < initialReclaim || b.hasTag("mothership"))
+				{
+					//healing
+					if ((currentReclaim + reconstructAmount) <= initialReclaim)
+					{
+						reconstructAmount = fullConstructAmount;
+						reconstructCost = CONSTRUCT_VALUE;
+					}
+					else if ((currentReclaim + reconstructAmount) > initialReclaim)
+					{
+						reconstructAmount = initialReclaim - currentReclaim;
+						reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
+					}
+					
+					//calculate amount it will cost the player
+					if (b.hasTag("mothership"))
+						reconstructCost = 5;
+					else if (mBlobHealth < initialReclaim)
+						reconstructCost *= isMyShip ? 1.0f : 0.20f;
 						
-						//calculate amount it will cost the player
-						if (b.hasTag("mothership"))
-							reconstructCost = 5;
-						else if (mBlobHealth < initialReclaim)
-							reconstructCost *= isMyShip ? 1.0f : 0.20f;
-							
-						if (b.hasTag("mothership"))
+					if (b.hasTag("mothership"))
+					{
+						//mothership
+						if (cBooty >= reconstructCost && mBlobHealth < initialReclaim)
 						{
-							//mothership
-							if (cBooty >= reconstructCost && mBlobHealth < initialReclaim)
-							{
-								b.server_SetHealth(mBlobHealth + reconstructAmount);
-								server_addPlayerBooty(cName, -reconstructCost);
-							}
+							b.server_SetHealth(mBlobHealth + reconstructAmount);
+							server_addPlayerBooty(cName, -reconstructCost);
 						}
-						else if (!b.hasTag("station") && !b.hasTag("ministation"))
+					}
+					else
+					{
+						//normal blocks
+						if (cBooty >= reconstructCost)
 						{
-							//normal blocks
-							if (cBooty >= reconstructCost)
-							{
-								b.server_SetHealth(Maths::Min(initialReclaim, mBlobHealth + reconstructAmount));
-								b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
-								server_addPlayerBooty(cName, -reconstructCost);
-								count++;
-							}
-							else if ((currentReclaim + reconstructAmount) < mBlobHealth)
-								b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
+							b.server_SetHealth(Maths::Min(initialReclaim, mBlobHealth + reconstructAmount));
+							b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
+							server_addPlayerBooty(cName, -reconstructCost);
+							count++;
 						}
-						else
-						{
-							b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));//stations
-						}
+						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
+							b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
 					}
 				}
 			}
