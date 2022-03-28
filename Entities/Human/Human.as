@@ -479,13 +479,13 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			description = Trans::PlatformDesc;
 			AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, description, core, 0.2f);
 		}
+		{ //Wooden Door
+			description = Trans::DoorDesc;
+			AddBlock(this, menu, "door", "$DOOR$", Trans::Door, description, core, 1.0f);
+		}
 		{ //Piston
 			description = Trans::PistonDesc;
 			AddBlock(this, menu, "piston", "$PISTON$", Trans::Piston, description, core, 0.85f);
-		}
-		{ //Wheel
-			description = "A wheel joint, it can rotate connected parts of a ship to face different directions";
-			AddBlock(this, menu, "wheel", "$WHEEL$", "Wheel Joint", description, core, 0.85f);
 		}
 		{ //Harpoon
 			description = Trans::HarpoonDesc;
