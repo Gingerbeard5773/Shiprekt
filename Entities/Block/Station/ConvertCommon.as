@@ -10,11 +10,6 @@ shared class ConvertInfo
 {
 	u8 currentTime;
 	u8 converterTeam;
-	
-	ConvertInfo()
-	{
-		currentTime = 0;
-	}
 }
 
 void onInit(CBlob@ this)
@@ -24,6 +19,7 @@ void onInit(CBlob@ this)
 	this.set_u8("convertTeam", this.getTeamNum());
 	
 	ConvertInfo capture;
+	capture.currentTime = this.get_u8("capture time");
 	capture.converterTeam = this.getTeamNum();
 	this.set("ConvertInfo", @capture);
 }
