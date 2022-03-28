@@ -1,5 +1,4 @@
 #include "WaterEffects.as";
-#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
@@ -16,7 +15,7 @@ void onInit(CBlob@ this)
 	this.Tag("projectile");
 
 	ShapeConsts@ consts = this.getShape().getConsts();
-    consts.mapCollisions = false; // we have our own map collision
+    consts.mapCollisions = true;
 	consts.bullet = true;	
 	
 	this.set_u16("pierced count", 0);
@@ -26,23 +25,18 @@ void onInit(CBlob@ this)
 	this.getSprite().SetZ(550.0f);	
 }
 
-void onTick(CBlob@ this)
-{
-	if (!isServer()) return;
-
-	Vec2f pos = this.getPosition();
-	
-	if (isTouchingRock(pos))
-	{
-		this.server_Die();
-		sparks(pos, v_fastrender ? 5 : 15, 2.5f, 20);
-		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
-	}
-}
-
 void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 {
-	if (b is null || b is this) return;
+	if (b is null) //solid tile collision
+	{
+		if (isClient())
+		{
+			sparks(point1, v_fastrender ? 5 : 15, 2.5f, 20);
+			directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), point1);
+		}
+		this.server_Die();
+		return;
+	}
 
 	if (!isServer()) return;
 	
@@ -62,7 +56,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	{
 		if (isBlock)
 		{
-			if (b.hasTag("solid") || (b.hasTag("door") && b.getShape().getConsts().collidable) || ((b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb")) && !sameTeam))
+			if ((b.hasTag("solid") && solid) || (b.hasTag("door") && b.getShape().getConsts().collidable) || ((b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb")) && !sameTeam))
 			{
 				if (piercedCount >= MAX_PIERCED)
 					killed = true;
@@ -142,13 +136,15 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 	if (hitBlob.hasTag("weapon"))
 		return 1.75f * damageFactor;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
-		return 0.75f * damageFactor;
+		return 1.0f * damageFactor;
 
 	return 0.7f *damageFactor;
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
-{	
+{
+	if (!isClient()) return;
+	
 	if (customData == 9 || damage <= 0.0f) return;
 
 	if (hitBlob.hasTag("solid") || hitBlob.hasTag("core") || hitBlob.hasTag("door") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
@@ -165,15 +161,18 @@ void onDie(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
 	
-	if (!isInWater(pos))
+	if (isClient())
 	{
-		sparks(pos + this.getVelocity(), v_fastrender ? 5 : 15, 2.5, 20);
-		directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
-	}
-	else if (this.getTouchingCount() <= 0)
-	{
-		MakeWaterParticle(pos, Vec2f_zero);
-		directionalSoundPlay("WaterSplashBall.ogg", pos);
+		if (!isInWater(pos))
+		{
+			sparks(pos + this.getVelocity(), v_fastrender ? 5 : 15, 2.5, 20);
+			directionalSoundPlay("MetalImpact" + (XORRandom(2) + 1), pos);
+		}
+		else if (this.getTouchingCount() <= 0)
+		{
+			MakeWaterParticle(pos, Vec2f_zero);
+			directionalSoundPlay("WaterSplashBall.ogg", pos);
+		}
 	}
 		
 	if (!isServer()) return;

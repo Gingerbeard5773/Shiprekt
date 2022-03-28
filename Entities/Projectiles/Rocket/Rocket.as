@@ -1,9 +1,5 @@
-#include "WaterEffects.as";
-#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
-#include "MakeDustParticle.as";
-#include "TileCommon.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
 
@@ -27,7 +23,7 @@ void onInit(CBlob@ this)
 	this.SetMapEdgeFlags(CBlob::map_collide_none);
 
 	ShapeConsts@ consts = this.getShape().getConsts();
-    consts.mapCollisions = false; // we have our own map collision
+    consts.mapCollisions = true;
 	consts.bullet = true;	
 
 	if (isClient())
@@ -44,10 +40,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {	
-	bool killed = false;
-
 	Vec2f pos = this.getPosition();
-	Vec2f vel = this.getVelocity();
 	f32 angle = this.getAngleDegrees();
 	Vec2f aimvector = Vec2f(1,0).RotateBy(angle - 90.0f);
 	
@@ -135,77 +128,78 @@ void onTick(CBlob@ this)
 		}
 	}
 	
-	if (isTouchingRock(pos) || pos.y < 0.0f)
+	if (pos.y < 0.0f)
 	{
 		this.server_Die();
-		sparks(pos, v_fastrender ? 5 : 15, 5.0f, 20);
-		smoke(pos, v_fastrender ? 1 : 3);	
-		blast(pos, v_fastrender ? 1 : 3);															
-		directionalSoundPlay("Blast2.ogg", pos);
+		if (isClient())
+		{
+			sparks(pos, v_fastrender ? 5 : 15, 5.0f, 20);
+		}
+	}
+}
+
+void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
+{
+	if (b is null) //solid tile collision
+	{
+		if (isClient())
+			sparks(point1, v_fastrender ? 5 : 15, 5.0f, 20);
+		
+		this.server_Die();
+		return;
 	}
 	
-	if (isServer() && this.getTickSinceCreated() >= 4)
-	{
-		// this gathers HitInfo objects which contain blob or tile hit information
-		HitInfo@[] hitInfos;
-		if (getMap().getHitInfosFromRay(pos, -vel.Angle(), vel.Length(), this, @hitInfos))
-		{
-			//HitInfo objects are sorted, first come closest hits
-			for (uint i = 0; i < hitInfos.length; i++)
-			{
-				HitInfo@ hi = hitInfos[i];
-				CBlob@ b = hi.blob;	  
-				if (b is null || b is this) continue;
+	if (!isServer() || this.getTickSinceCreated() <= 4) return;
 
-				const int color = b.getShape().getVars().customData;
-				const bool isBlock = b.hasTag("block");
-				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
-				
-				if ((b.hasTag("human") || b.hasTag("shark")) && !sameTeam)
-				{
+	bool killed = false;
+	
+	const int color = b.getShape().getVars().customData;
+	const bool isBlock = b.hasTag("block");
+	const bool sameTeam = b.getTeamNum() == this.getTeamNum();
+	
+	if ((b.hasTag("human") || b.hasTag("shark")) && !sameTeam)
+	{
+		killed = true;
+		b.server_Die();
+	}
+	
+	if (color > 0 || !isBlock)
+	{
+		if (isBlock || b.hasTag("rocket"))
+		{
+			if ((b.hasTag("solid") && solid) || (b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb")) && sameTeam)
+				return;
+			
+			if (b.hasTag("core") || b.hasTag("solid") || b.hasTag("door"))
+				killed = true;
+			else if (b.hasTag("seat"))
+			{
+				AttachmentPoint@ seat = b.getAttachmentPoint(0);
+				CBlob@ occupier = seat.getOccupied();
+				if (occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum())
 					killed = true;
-					b.server_Die();
-				}
-				if (color > 0 || !isBlock)
-				{
-					if (isBlock || b.hasTag("rocket"))
-					{
-						if (b.hasTag("core") || b.hasTag("solid") || 
-							b.hasTag("door") || ((b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb")) && !sameTeam))
-							killed = true;
-						else if (b.hasTag("seat"))
-						{
-							AttachmentPoint@ seat = b.getAttachmentPoint(0);
-							CBlob@ occupier = seat.getOccupied();
-							if (occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum())
-								killed = true;
-							else continue;
-						}
-						else continue;
-					}
-					else
-					{
-						if (sameTeam || (b.hasTag("player") && b.isAttached()) || b.hasTag("projectile"))//don't hit
-							continue;
-					}
-					
-					if (owner !is null)
-					{
-						CBlob@ blob = owner.getBlob();
-						if (blob !is null)
-							damageBooty(owner, blob, b, b.hasTag("solid") || b.hasTag("door"), 15);
-					}
-					
-					//f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
-					this.server_Hit(b, pos, Vec2f_zero, getDamage(b), Hitters::bomb, true);
-					
-					if (killed)
-					{
-						this.server_Die();
-						break;
-					}
-				}
 			}
+		}
+		else
+		{
+			if (sameTeam || (b.hasTag("player") && b.isAttached()) || b.hasTag("projectile")) //don't hit
+				return;
+		}
+		
+		CPlayer@ owner = this.getDamageOwnerPlayer();
+		if (owner !is null)
+		{
+			CBlob@ blob = owner.getBlob();
+			if (blob !is null)
+				damageBooty(owner, blob, b, b.hasTag("solid") || b.hasTag("door"), 15);
+		}
+		
+		//f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
+		this.server_Hit(b, point1, Vec2f_zero, getDamage(b), Hitters::bomb, true);
+		
+		if (killed)
+		{
+			this.server_Die();
 		}
 	}
 }
@@ -230,6 +224,8 @@ f32 getDamage(CBlob@ hitBlob)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
+	if (!isClient()) return;
+	
 	if (customData == 9) return;
 
 	if (hitBlob.hasTag("solid") || hitBlob.hasTag("core") || 
@@ -258,8 +254,8 @@ void onDie(CBlob@ this)
 	
 	if (isClient())
 	{
-		smoke(this.getPosition(), v_fastrender ? 1 : 3);	
-		blast(this.getPosition(), v_fastrender ? 1 : 3);															
+		smoke(pos, v_fastrender ? 1 : 3);	
+		blast(pos, v_fastrender ? 1 : 3);															
 		directionalSoundPlay("Blast2.ogg", pos);
 	}
 
