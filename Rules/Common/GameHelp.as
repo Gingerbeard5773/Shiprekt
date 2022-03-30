@@ -30,11 +30,7 @@ void onInit(CRules@ this)
 	
 	if (!GUI::isFontLoaded("thick font"))
 	{
-        GUI::LoadFont("thick font", "GUI/Fonts/AveriaSerif-Bold.ttf", 30, true);
-    }
-	if (g_locale == "ru" && !GUI::isFontLoaded("russian thick"))
-	{
-        GUI::LoadFont("russian thick", "GUI/Fonts/Arial.ttf", 30, true);
+        GUI::LoadFont("thick font", g_locale == "ru" ? "GUI/Fonts/Arial.ttf" : "GUI/Fonts/AveriaSerif-Bold.ttf", 30, true);
     }
 }
 
@@ -131,20 +127,19 @@ void onRender(CRules@ this)
 		if (page1)
 		{
 			//PAGE 1
-			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.48\n";
+			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.49\n";
 			string lastChangesInfo = Trans::LastChanges+":\n"
-			+ "- 2-21-2022 - v1.48 By Gingerbeard\n"
-			+ "  * Added language support for Russian, Portugeuse, French and Polish.\n"
-			+ "  * New custom scoreboard and changed how core-kill scoring is done.\n"
-			+ "  * Killing players rewards booty, 3x more when you are on the enemy's mothership.\n"
-			+ "  * Game Tips don't show up in chat, but instead you can flip through them all while dead.\n"
-			+ "  * Fixed problems with ships going super-sonic velocities.\n"
-			+ "  * Fixed problems with Harpoons bugging out.\n"
-			+ "  * Fixed problems with block placing & reduced the time it takes to place.\n"
-			+ "  * Removed the cap on decoy cores.\n"
-			+ "  * Cannonballs and rockets will hit bombs.\n"
-			+ "  * Captains can push players out of seats on their ship.\n"
-			+ "  * Moving ships can only run over players in its direct moving path (no more stange deaths).\n";
+			+ "- 3-27-2022 - v1.49 By Gingerbeard\n"
+			+ "  * Added the ability to self-destruct your team's mothership through a vote.\n"
+			+ "  * The method of capturing stations is changed, sit next to a station to capture it.\n"
+			+ "  * Replaced ministations with normal stations.\n"
+			+ "  * Tweaked weapon refills to be slower.\n"
+			+ "  * Tweaked flak cannons and flak shells.\n"
+			+ "  * Fixed various movement-related problems.\n"
+			+ "  * Fixed a problem with the screen shaking uncontrollably.\n"
+			+ "  * Driving on shoals will slow your ship less than before.\n"
+			+ "  * Fixed a problem where you could punch other players through blocks.\n"
+			+ "  * Killing a shark will reward booty regardless of how you killed it.\n";
 			
 			Vec2f lastChangesSize;
 			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
@@ -152,8 +147,7 @@ void onRender(CRules@ this)
 			Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
 			Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
 			
-			if (g_locale == "ru") GUI::SetFont("russian thick");
-			else GUI::SetFont("thick font");
+			GUI::SetFont("thick font");
 			GUI::DrawText(shiprektVersion, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
 			
 			GUI::SetFont("menu");
@@ -174,8 +168,8 @@ void onRender(CRules@ this)
 		else
 		{
 			//PAGE 2
-			if (g_locale == "ru") GUI::SetFont("russian thick");
-			else GUI::SetFont("thick font");
+			
+			GUI::SetFont("thick font");
 			
 			GUI::DrawText(infoTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 20), tipsColor);
 			GUI::DrawText(controlsTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 240), tipsColor);
