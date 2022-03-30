@@ -1,22 +1,19 @@
 #include "ExplosionEffects.as";;
-#include "WaterEffects.as";
-#include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
-#include "TileCommon.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
 
 const f32 EXPLODE_RADIUS = 30.0f;
 const f32 FLAK_REACH = 50.0f;
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.Tag("flak shell");
 	this.Tag("projectile");
 
 	ShapeConsts@ consts = this.getShape().getConsts();
-    consts.mapCollisions = false;	 // weh ave our own map collision
+    consts.mapCollisions = true;
 	consts.bullet = true;	
 
 	this.getSprite().SetZ(550.0f);
@@ -27,32 +24,32 @@ void onInit( CBlob@ this )
 		ShakeScreen(4, 4, this.getPosition());
 }
 
-void onTick(CBlob@ this)
+void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 {
-	if (!isServer()) return;
-	
-	bool killed = false;
-
-	Vec2f pos = this.getPosition();
-	const int thisColor = this.get_u32("color");
-	
-	if (isTouchingRock(pos))
+	if (b is null) //solid tile collision
 	{
 		this.server_Die();
+		return;
 	}
-
-	CBlob@[] blobs;
-	if (getMap().getBlobsInRadius(pos, Maths::Min(float(5 + this.getTickSinceCreated()), EXPLODE_RADIUS), @blobs))
+	
+	if (!isServer()) return;
+	
+	//blow up inside the target (big damage)
+	const bool sameTeam = this.getTeamNum() == b.getTeamNum();
+	if ((b.hasTag("solid")) || b.hasTag("door") || ((b.hasTag("core") || b.hasTag("weapon") || b.hasTag("projectile") || b.hasTag("bomb")) && !sameTeam)
+		|| (b.hasTag("player") && !b.isAttached()))
 	{
-		for (uint i = 0; i < blobs.length; i++)
+		this.server_Hit(b, point1, Vec2f_zero, getDamage(b) * 7, Hitters::bomb, true);
+		this.Tag("noFlakBoom");
+		
+		CPlayer@ owner = this.getDamageOwnerPlayer();
+		if (owner !is null)
 		{
-			CBlob@ b = blobs[i];
-			if (b is null) continue;
-
-			const int color = b.getShape().getVars().customData;
-			if (b.hasTag("block") && color > 0 && color != thisColor && b.hasTag("solid"))
-				this.server_Die();
+			CBlob@ blob = owner.getBlob();
+			if (blob !is null)
+				damageBooty(owner, blob, b);
 		}
+		this.server_Die();
 	}
 }
 
@@ -67,14 +64,13 @@ void flak(CBlob@ this)
 		return;
 		
 	f32 angle = XORRandom(360);
-	CPlayer@ owner = this.getDamageOwnerPlayer();
 
 	for (u8 s = 0; s < 12; s++)
 	{
 		HitInfo@[] hitInfos;
 		if (map.getHitInfosFromRay(pos, angle, FLAK_REACH, this, @hitInfos))
 		{
-			for (uint i = 0; i < hitInfos.length; i++ )//sharpnel trail
+			for (uint i = 0; i < hitInfos.length; i++)//sharpnel trail
 			{
 				CBlob@ b = hitInfos[i].blob;	  
 				if (b is null || b is this) continue;
@@ -84,19 +80,12 @@ void flak(CBlob@ this)
 					&& (b.hasTag("seat") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("core") || b.hasTag("door") || b.hasTag("bomb") || (b.hasTag("player") && !b.isAttached()))))
 				{
 					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage(b), Hitters::bomb, true);
-					if (owner !is null)
-					{
-						CBlob@ blob = owner.getBlob();
-						if (blob !is null)
-							damageBooty(owner, blob, b);
-					}
-					
 					break;
 				}
 			}
 		}
 		
-		angle = ( angle + 30.0f ) % 360;
+		angle = (angle + 30.0f) % 360;
 	}
 }
 
@@ -113,7 +102,7 @@ void onDie(CBlob@ this)
 		}
 	}
 
-	if (isServer()) 	
+	if (isServer() && !this.hasTag("noFlakBoom")) 	
 		flak(this);
 }
 
@@ -144,6 +133,16 @@ f32 getDamage(CBlob@ hitBlob)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
+	CPlayer@ owner = this.getDamageOwnerPlayer();
+	if (owner !is null)
+	{
+		CBlob@ blob = owner.getBlob();
+		if (blob !is null)
+			damageBooty(owner, blob, hitBlob);
+	}
+	
+	if (!isClient()) return;
+	
 	if (hitBlob.hasTag("block"))
 	{
 		Vec2f vel = worldPoint - hitBlob.getPosition();//todo: calculate real bounce angles?

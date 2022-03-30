@@ -5,24 +5,24 @@
 const f32 PROJECTILE_SPEED = 9.0f;
 const f32 PROJECTILE_SPREAD = 2.25;
 const int FIRE_RATE = 60;
-const f32 PROJECTILE_RANGE = 450.0f;
+const f32 PROJECTILE_RANGE = 460.0f;
 const f32 CLONE_RADIUS = 20.0f;
-const f32 AUTO_RADIUS = 400.0f;
+const f32 AUTO_RADIUS = 380.0f;
 
 // Max amount of ammunition
-const uint8 MAX_AMMO = 30;
+const uint8 MAX_AMMO = 15;
 
 // Amount of ammunition to refill when
 // connected to motherships and stations
-const uint8 REFILL_AMOUNT = 4;
+const uint8 REFILL_AMOUNT = 1;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 1;
+const uint8 REFILL_SECONDS = 5;
 
 // How often to refill when connected
 // to secondary cores
-const uint8 REFILL_SECONDARY_CORE_SECONDS = 4;
+const uint8 REFILL_SECONDARY_CORE_SECONDS = 8;
 
 // Amount of ammunition to refill when
 // connected to secondary cores
@@ -104,7 +104,7 @@ void onTick(CBlob@ this)
 	}
 	else if (this.get_u16("childID") != 0)//free child; parent
 	{
-		CBlob@ childFlak = getBlobByNetworkID( this.get_u16("childID"));
+		CBlob@ childFlak = getBlobByNetworkID(this.get_u16("childID"));
 		if (childFlak !is null)
 			childFlak.set_u16("parentID", 0);
 
@@ -146,6 +146,9 @@ void Manual(CBlob@ this, CBlob@ controller)
 
 void Auto(CBlob@ this)
 {
+	if (!isServer())
+		return;
+	
 	if ((getGameTime() + this.getNetworkID() * 33) % 20 != 0)
 		return;
 
@@ -156,7 +159,7 @@ void Auto(CBlob@ this)
 	bool shoot = false;
 	Vec2f shootVec = Vec2f(0, 0);
 
-	if (isServer() && this.getMap().getBlobsInRadius(this.getPosition(), AUTO_RADIUS, @blobsInRadius))
+	if (getMap().getBlobsInRadius(pos, AUTO_RADIUS, @blobsInRadius))
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
@@ -217,7 +220,7 @@ void Auto(CBlob@ this)
 
 	if (shoot)
 	{
-		if (isServer() && canShootAuto(this))
+		if (canShootAuto(this))
 		{
 			u16 netID = 0;
 			Ship@ ship = getShip(this.getShape().getVars().customData);
@@ -329,16 +332,6 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 		}
 	}
 
-	Vec2f solidPos;
-	if (map.rayCastSolid(pos, pos + aimVec, solidPos))
-	{
-		AttachmentPoint@ seat = this.getAttachmentPoint(0);
-		CBlob@ occupier = seat.getOccupied();
-
-		if (occupier is null)
-			return false;
-	}
-
 	return true;
 }
 
@@ -351,7 +344,7 @@ void Fire(CBlob@ this, Vec2f aimVector, const u16 netid)
 
 	Vec2f _vel = (aimVector * PROJECTILE_SPEED) + offset;
 
-	f32 _lifetime = Maths::Max( 0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
+	f32 _lifetime = Maths::Max(0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
 
 	CBitStream params;
 	params.write_netid(netid);
@@ -364,7 +357,7 @@ void Fire(CBlob@ this, Vec2f aimVector, const u16 netid)
 void Rotate(CBlob@ this, Vec2f aimVector)
 {
 	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-	if(layer !is null)
+	if (layer !is null)
 	{
 		layer.ResetTransform();
 		layer.RotateBy(-aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero);
@@ -404,17 +397,19 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
                 bullet.setVelocity(velocity);
                 bullet.server_SetTimeToDie(time);
-				bullet.set_u32("color", this.getShape().getVars().customData);
 				bullet.setAngleDegrees(-aimVector.Angle());
             }
     	}
 
-		Rotate(this, aimVector);
-		shotParticles(pos + aimVector*9, velocity.Angle());
-		directionalSoundPlay("FlakFire.ogg", pos, 0.50f);
+		if (isClient())
+		{
+			Rotate(this, aimVector);
+			shotParticles(pos + aimVector*9, velocity.Angle());
+			directionalSoundPlay("FlakFire.ogg", pos, 0.50f);
 
-		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-		if (layer !is null)
-			layer.animation.SetFrameIndex(0);
+			CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
+			if (layer !is null)
+				layer.animation.SetFrameIndex(0);
+		}
     }
 }
