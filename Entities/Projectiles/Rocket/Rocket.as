@@ -186,14 +186,6 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 				return;
 		}
 		
-		CPlayer@ owner = this.getDamageOwnerPlayer();
-		if (owner !is null)
-		{
-			CBlob@ blob = owner.getBlob();
-			if (blob !is null)
-				damageBooty(owner, blob, b, b.hasTag("solid") || b.hasTag("door"), 15);
-		}
-		
 		//f32 damageModifier = this.getDamageOwnerPlayer() !is null ? MANUAL_DAMAGE_MODIFIER : 1.0f;
 		this.server_Hit(b, point1, Vec2f_zero, getDamage(b), Hitters::bomb, true);
 		
@@ -224,6 +216,14 @@ f32 getDamage(CBlob@ hitBlob)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
+	CPlayer@ owner = this.getDamageOwnerPlayer();
+	if (owner !is null)
+	{
+		CBlob@ blob = owner.getBlob();
+		if (blob !is null)
+			damageBooty(owner, blob, hitBlob, hitBlob.hasTag("solid") || hitBlob.hasTag("door"), 15);
+	}
+		
 	if (!isClient()) return;
 	
 	if (customData == 9) return;

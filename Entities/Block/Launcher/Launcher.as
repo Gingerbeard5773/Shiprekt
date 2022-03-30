@@ -14,7 +14,7 @@ const uint8 REFILL_AMOUNT = 1;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 2;
+const uint8 REFILL_SECONDS = 10;
 
 // How often to refill when connected
 // to secondary cores

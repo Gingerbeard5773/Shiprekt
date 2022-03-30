@@ -18,6 +18,8 @@ void onInit(CBlob@ this)
     consts.mapCollisions = true;
 	consts.bullet = true;	
 	
+	this.SetMapEdgeFlags(CBlob::map_collide_none);
+	
 	this.set_u16("pierced count", 0);
     u32[] piercedBlobIDs;
     this.set("pierced blob IDs", piercedBlobIDs);
@@ -43,20 +45,21 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	int piercedCount = this.get_u16("pierced count");
     u32[]@ piercedBlobIDs;
     this.get("pierced blob IDs", @piercedBlobIDs);
-	bool killed = false;
 	
 	u32 bID = b.getNetworkID();
-	
 	if (piercedBlobIDs.find(bID) >= 0) return;
 
+	bool killed = false;
 	const int color = b.getShape().getVars().customData;
-	const bool isBlock = b.hasTag("block");
 	const bool sameTeam = b.getTeamNum() == this.getTeamNum();
+	const bool isBlock = b.hasTag("block");
+	
 	if (color > 0 || !isBlock)
 	{
 		if (isBlock)
 		{
-			if ((b.hasTag("solid") && solid) || (b.hasTag("door") && b.getShape().getConsts().collidable) || ((b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb")) && !sameTeam))
+			if (b.hasTag("solid") || (b.hasTag("door") && b.getShape().getConsts().collidable) || 
+				(!sameTeam && (b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb")))) //hit these and die
 			{
 				if (piercedCount >= MAX_PIERCED)
 					killed = true;
@@ -67,7 +70,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 					this.setVelocity(this.getVelocity() * 0.5f);
 				}
 			}
-			else if (b.hasTag("seat"))
+			else if (b.hasTag("hasSeat"))
 			{
 				AttachmentPoint@ seat = b.getAttachmentPoint(0);
 				CBlob@ occupier = seat.getOccupied();
@@ -93,13 +96,6 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 		}
 		
 		this.set_u16("pierced count", piercedCount);
-		
-		CPlayer@ owner = this.getDamageOwnerPlayer();
-		if (owner !is null)
-		{
-			CBlob@ blob = owner.getBlob();
-			if (blob !is null) damageBooty(owner, blob, b, b.hasTag("solid"), 4);
-		}
 		
 		this.server_Hit(b, point1, Vec2f_zero, getDamage(this, b), Hitters::ballista, true);
 		
@@ -143,6 +139,13 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
+	CPlayer@ owner = this.getDamageOwnerPlayer();
+	if (owner !is null)
+	{
+		CBlob@ blob = owner.getBlob();
+		if (blob !is null) damageBooty(owner, blob, hitBlob, hitBlob.hasTag("solid"), 4);
+	}
+	
 	if (!isClient()) return;
 	
 	if (customData == 9 || damage <= 0.0f) return;

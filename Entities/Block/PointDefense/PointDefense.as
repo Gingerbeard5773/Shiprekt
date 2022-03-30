@@ -9,15 +9,15 @@ const f32 PROJECTILE_RANGE = 100.0f;
 const f32 AUTO_RADIUS = 100.0f;
 
 // Max amount of ammunition
-const uint8 MAX_AMMO = 30;
+const uint8 MAX_AMMO = 15;
 
 // Amount of ammunition to refill when
 // connected to motherships and stations
-const uint8 REFILL_AMOUNT = 10;
+const uint8 REFILL_AMOUNT = 1;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 1;
+const uint8 REFILL_SECONDS = 5;
 
 // How often to refill when connected
 // to secondary cores

@@ -12,7 +12,9 @@ void onInit(CBlob@ this)
 
 	ShapeConsts@ consts = this.getShape().getConsts();
     consts.mapCollisions = true;
-	consts.bullet = true;	
+	consts.bullet = true;
+	
+	this.SetMapEdgeFlags(CBlob::map_collide_none);
 
 	this.getSprite().SetZ(550.0f);	
 }
@@ -55,14 +57,15 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	
 	bool killed = false;
 	const int color = b.getShape().getVars().customData;
-	const bool isBlock = b.hasTag("block");				
+	const bool sameTeam = b.getTeamNum() == this.getTeamNum();
+	const bool isBlock = b.hasTag("block");
 
 	if (color > 0 || !isBlock)
 	{
 		if (isBlock)
 		{
-			if ((b.hasTag("solid") && solid) || (b.hasTag("door") && b.getShape().getConsts().collidable) || (b.getTeamNum() != this.getTeamNum() && 
-			(b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb"))))//hit these and die
+			if ((b.hasTag("solid") && solid) || (b.hasTag("door") && b.getShape().getConsts().collidable) || 
+				(!sameTeam && (b.hasTag("core") || b.hasTag("weapon") || b.hasTag("bomb")))) //hit these and die
 			{
 				killed = true;
 			}
@@ -82,20 +85,12 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 		}
 		else
 		{
-			if (b.getTeamNum() != this.getTeamNum() && !b.isAttached())
+			if (!sameTeam && !b.isAttached())
 			{
 				if (b.getName() == "shark" || b.hasTag("player"))
 					killed = true;
 			}
 			else return;
-		}
-		
-		CPlayer@ owner = this.getDamageOwnerPlayer();
-		if (owner !is null)
-		{
-			CBlob@ blob = owner.getBlob();
-			if (blob !is null)
-				damageBooty(owner, blob, b, b.hasTag("engine"), 5);
 		}
 
 		this.server_Hit(b, point1, Vec2f_zero, getDamage(b), Hitters::bomb_arrow, true);
@@ -107,6 +102,14 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
+	CPlayer@ owner = this.getDamageOwnerPlayer();
+	if (owner !is null)
+	{
+		CBlob@ blob = owner.getBlob();
+		if (blob !is null)
+			damageBooty(owner, blob, hitBlob, hitBlob.hasTag("engine"), 5);
+	}
+	
 	if (!isClient()) return;
 	
 	if (customData == 9) return;
