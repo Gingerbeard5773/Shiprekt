@@ -593,8 +593,8 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			if (ship !is null)
 			{
 				//player-carried blocks add to the ship mass (with penalty)
-				for (u8 i = 0; i < blocks.length; i++)
-					ship.carryMass += 2.5f * blocks[i].get_f32("weight");
+				for (u8 q = 0; q < blocks.length; q++)
+					ship.carryMass += 2.5f * blocks[q].get_f32("weight");
 			}
 		}
 	}
@@ -743,12 +743,9 @@ void Synchronize(CRules@ this, bool full_sync, CPlayer@ player = null)
     CBitStream bs;
     if (Serialize(this, bs, full_sync))
     {
-        if (player == @null)
+        if (player is null)
         {
-            for (u16 i = 0; i < getPlayerCount(); i++)
-            {
-                this.SendCommand(full_sync ? this.getCommandID("ships sync") : this.getCommandID("ships update"), bs, getPlayer(i));
-            }
+            this.SendCommand(full_sync ? this.getCommandID("ships sync") : this.getCommandID("ships update"), bs);
         }
         else
         {
@@ -1020,7 +1017,7 @@ f32 loopAngle(f32 angle)
 
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
-	if (!player.isMyPlayer())
+	if (isServer())
 		Synchronize(this, true, player); // will set old values
 }
 
@@ -1092,9 +1089,9 @@ void onRender(CRules@ this)
 					//GUI::DrawText("" + ship.vel.Length(), cbPos, SColor( 255,255,255,255));
 				}
 					
-				for (uint b_iter = 0; b_iter < ship.blocks.length; ++b_iter)
+				for (uint i = 0; i < ship.blocks.length; ++i)
 				{
-					ShipBlock@ ship_block = ship.blocks[b_iter];
+					ShipBlock@ ship_block = ship.blocks[i];
 					CBlob@ b = getBlobByNetworkID(ship_block.blobID);
 					if (b !is null)
 					{

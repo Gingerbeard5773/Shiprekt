@@ -278,7 +278,21 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				CBlob@ pBlob = player.getBlob();
 				if (pBlob is null) return false;
 				
-				if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
+				if (tokens[0] == "!kick") //force kick player of choice by username or player ID
+				{
+					CPlayer@ kickedPly = getPlayerByUsername(tokens[1]);
+					if (kickedPly is null)
+						@kickedPly = getPlayerByNetworkId(parseInt(tokens[1]));
+					if (kickedPly !is null)
+					{
+						error(">> "+player.getUsername()+" kicked player "+kickedPly.getUsername()+" <<");
+						getNet().server_SendMsg(">> Kicking Player "+kickedPly.getUsername()+" <<");
+						KickPlayer(kickedPly);
+						return true;
+					}
+					warn("!kick:: Player "+tokens[1]+" does not exist!");
+				}
+				else if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
 				{
 					if (tokens.length > 2)
 						AddBot(tokens[1], parseInt(tokens[2]), 0);
