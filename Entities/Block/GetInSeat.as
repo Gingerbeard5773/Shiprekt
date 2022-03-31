@@ -22,13 +22,13 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	if (this.hasAttached() && player !is null && getCaptainName(this.getTeamNum()) == player.getUsername())
 	{
 		//push someone out of a seat if you are captain
-		CButton@ button = caller.CreateGenericButton(5, Vec2f_zero, this, this.getCommandID("clear attached"), "Push Crewmate Out" );
+		CButton@ button = caller.CreateGenericButton(5, Vec2f_zero, this, this.getCommandID("clear attached"), "Push Crewmate Out");
 		if (button !is null)
 		{
 			button.radius = 3.3f;
 		}
 	}
-	else
+	else if (!this.hasAttached())
 	{
 		CBitStream params;
 		params.write_u16(caller.getNetworkID());
@@ -57,7 +57,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	{
 		AttachmentPoint@ seat = this.getAttachmentPoint(0);
 		CBlob@ crewmate = seat.getOccupied();
-		if (crewmate !is null && crewmate.getTeamNum() == this.getTeamNum())
+		if (crewmate !is null && crewmate.isMyPlayer() && crewmate.getTeamNum() == this.getTeamNum())
 			crewmate.SendCommand(crewmate.getCommandID("get out"));
 	}
 }
