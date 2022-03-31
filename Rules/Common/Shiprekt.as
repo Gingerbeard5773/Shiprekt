@@ -229,10 +229,10 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 		server_setPlayerBooty(pName, !this.isWarmup() ? minBooty : this.get_u16("starting_booty"));
 		
 	print("New player joined. New count : " + getPlayersCount());
-	if (getPlayersCount() <= 1)
+	if (getPlayersCount() <= 1 && !this.get_bool("freebuild"))
 	{
 		//print("*** Restarting the map to be fair to the new player ***");
-		getNet().server_SendMsg("*** " + getPlayerCount() + " player(s) in map. Setting freebuild mode until more players join. ***");
+		getNet().server_SendMsg("*** 1 player on map. Setting freebuild mode until more players join. ***");
 		this.set_bool("freebuild", true);
 		this.Sync("freebuild", true);
 	}
@@ -240,17 +240,12 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 
 void onPlayerLeave(CRules@ this, CPlayer@ player)
 {
-	if (getPlayersCount() <= 1)
+	if ((getPlayersCount() - 1) <= 1 && !this.get_bool("freebuild"))
 	{
-		getNet().server_SendMsg("*** " + getPlayerCount() + " player(s) in map. Setting freebuild mode until more players join. ***");
+		getNet().server_SendMsg("*** 1 player on map. Setting freebuild mode until more players join. ***");
 		this.set_bool("freebuild", true);
 		this.Sync("freebuild", true);
 	}
-}
-
-bool isSuperAdmin(CPlayer@ player)
-{
-	return getSecurity().getPlayerSeclev(player).getName().toLower() == "super admin";
 }
 
 bool isDev(CPlayer@ player)
@@ -261,11 +256,9 @@ bool isDev(CPlayer@ player)
 		"Mr" + "Ho" + "bo"
 	};
 	
-	for (int i = 0; i < devNames.length; ++i)
-	{
-		if (player.getUsername() == devNames[i])
-			return true;
-	}
+	if (devNames.find(player.getUsername()) >= 0)
+		return true;
+	
 	return false;
 }
 
@@ -564,7 +557,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!freebuild") //toggle freebuild mode
 				{
-					print("Toggled freebuild "+ (this.get_bool("freebuild") ? "off" : "on"), color_white);
+					getNet().server_SendMsg("*** Setting freebuild mode "+ (this.get_bool("freebuild") ? "off" : "on") +" ***");
 					this.set_bool("freebuild", !this.get_bool("freebuild"));
 					this.Sync("freebuild", true);
 				}
