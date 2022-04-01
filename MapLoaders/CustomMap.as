@@ -25,7 +25,13 @@ namespace CMap
 	void SetupMap(CMap@ map, int width, int height)
 	{
 		map.CreateTileMap(width, height, 8.0f, "LandTiles.png");
-		map.CreateSky(SColor(255, 41, 100, 176)); //water color
+		#ifdef STAGING
+			map.CreateSky(color_black, Vec2f(0.0f, 0.0f), 0, "", 0);
+			map.CreateSkyGradient("WaterTile.png");
+		#endif
+		#ifndef STAGING
+			map.CreateSky(SColor(255, 41, 100, 176)); //water color
+		#endif
 		map.topBorder = map.bottomBorder = map.rightBorder = map.leftBorder = true;
 	}
 	
