@@ -35,7 +35,6 @@ class PNGLoader
 		if (image.isLoaded())
 		{
 			CMap::SetupMap(map, image.getWidth(), image.getHeight());
-			SetScreenFlash(0, 0, 0, 0, 0.0f); // has to be done on server like this when map is loading, it will be synced in engine to new joined people.
 
 			while (image.nextPixel())
 			{
