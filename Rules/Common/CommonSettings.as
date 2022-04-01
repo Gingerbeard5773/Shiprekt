@@ -10,8 +10,8 @@ void onInit(CRules@ this)
     particles_gravity.y = 0.0f; 
     sv_gravity = 0;
     sv_visiblity_scale = 2.0f;
-	cc_halign = 2;
-	cc_valign = 2;
+	//cc_halign = 2;
+	//cc_valign = 2;
 	s_effects = false;
 	
 	//gameplay settings (could be a cfg file)
