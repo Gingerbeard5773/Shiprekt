@@ -1131,9 +1131,6 @@ void onDie(CBlob@ this)
 		Human::clearHeldBlocks(this);
 		this.set_bool("blockPlacementWarn", false);
 	}
-	
-	if (this.isMyPlayer())
-		SetScreenFlash(0, 0, 0, 0, 0.0f); //fixes red-flash staying after death
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
