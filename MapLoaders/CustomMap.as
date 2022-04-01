@@ -26,10 +26,6 @@ namespace CMap
 	{
 		map.CreateTileMap(width, height, 8.0f, "LandTiles.png");
 		SetScreenFlash(255, 0, 0, 0, 0.5f); // has to be done on this when map is loading, it will be synced in engine to new joined people.
-		#ifdef STAGING
-			map.CreateSky(color_black, Vec2f(0.0f, 0.0f), 0, "", 0);
-			map.CreateSkyGradient("WaterTile.png");
-		#endif
 		#ifndef STAGING
 			map.CreateSky(SColor(255, 41, 100, 176)); //water color
 		#endif
