@@ -7,7 +7,7 @@ const u16 STATION_BOOTY = 4;
 
 void onInit(CRules@ this)
 {
-	this.set_u8("endCount", 1);
+	this.set_u8("endCount", 0);
 	Reset(this);
 }
 

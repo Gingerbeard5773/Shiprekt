@@ -1,20 +1,14 @@
 #include "CustomTiles.as";
 //Show custom image on server-browsing where the map is shown
 
-CFileImage@ map_image = CFileImage("Whirlpool.png");
-
-void onInit(CMap@ this)
-{
-    this.legacyTileMinimap = false;
-	this.MakeMiniMap();
-}
+//CFileImage@ map_image = CFileImage("Whirlpool.png");
+Noise noise(69420);
 
 void CalculateMinimapColour(CMap@ this, u32 offset, TileType type, SColor &out col)
 {
 	//Draw image
 
 	Vec2f pos = this.getTileSpacePosition(offset);
-	Noise noise(69420);
 	f32 noise_value = 0.7f+(noise.Sample(pos/10)*noise.Fractal(pos/10))*0.3f;
 	SColor interpolation_col = SColor(0xFF87623B);
 	

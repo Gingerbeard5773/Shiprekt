@@ -31,7 +31,7 @@ class PNGLoader
 		} 
 		SetupBooty(getRules());
 
-		@image = CFileImage(filename);		
+		@image = CFileImage(filename);
 		if (image.isLoaded())
 		{
 			CMap::SetupMap(map, image.getWidth(), image.getHeight());
@@ -49,4 +49,13 @@ class PNGLoader
 		}
 		return false;
 	}
+}
+
+void onInit(CMap@ this)
+{
+    this.legacyTileMinimap = false;
+	this.legacyTileVariations = false;
+	this.legacyTileEffects = false;
+	this.legacyTileDestroy = false;
+	this.MakeMiniMap();
 }

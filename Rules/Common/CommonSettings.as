@@ -5,13 +5,10 @@ void onInit(CRules@ this)
 {
 	if (isClient())
 		this.minimap = false;
-		
-	RegisterFileExtensionScript("WaterPNGMap.as", "png");
-    particles_gravity.y = 0.0f; 
-    sv_gravity = 0;
-    sv_visiblity_scale = 2.0f;
-	//cc_halign = 2;
-	//cc_valign = 2;
+	
+	particles_gravity.y = 0.0f;
+	sv_gravity = 0;
+	sv_visiblity_scale = 2.0f;
 	s_effects = false;
 	
 	//gameplay settings (could be a cfg file)
