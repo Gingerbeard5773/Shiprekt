@@ -34,6 +34,7 @@ void onInit(CBlob@ this)
 	this.addCommandID("giveBooty");
 	this.addCommandID("releaseOwnership");
 	this.addCommandID("swap tool");
+	this.addCommandID("run over");
 	
 	this.chatBubbleOffset = Vec2f(0.0f, 10.0f);
 	
@@ -1079,6 +1080,43 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		this.set_string("current tool", tool);
 	}
+	else if (this.getCommandID("run over") == cmd)
+	{
+		CBlob@ block = getBlobByNetworkID(params.read_netid());
+		if (block is null) return;
+		
+		Vec2f pos = this.getPosition();
+		
+		if (block !is this)
+		{
+			//death when run-over by a ship
+			Ship@ ship = getShip(block.getShape().getVars().customData);
+			if (ship !is null)
+			{
+				//set the damage owner so the ship's owner gets the kill
+				CPlayer@ owner = getPlayerByUsername(ship.owner);
+				if (owner !is null)
+					block.SetDamageOwnerPlayer(owner);
+			}
+			
+			if (isClient())
+			{
+				directionalSoundPlay("WoodHeavyHit2", pos, 1.2f); //oof
+				if (XORRandom(5) == 0) directionalSoundPlay("Wilhelm", pos);
+			}
+			
+			if (isServer())
+				block.server_Hit(this, pos, Vec2f_zero, 5.0f, Hitters::muscles, false);
+		}
+		else
+		{
+			//death when standing over a destroyed block
+			if (isClient())
+				directionalSoundPlay("destroy_ladder", pos);
+			if (isServer())
+				this.server_Hit(this, pos, Vec2f_zero, 5.0f, Hitters::muscles, false);
+		}
+	}
 }
 
 void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
@@ -1090,21 +1128,6 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
 
 void onDie(CBlob@ this)
 {
-	if (isClient() && !this.hasTag("no_gib"))
-	{
-		CSprite@ sprite = this.getSprite();
-		Vec2f pos = this.getPosition();
-		
-		ParticleBloodSplat(pos, true);
-		directionalSoundPlay("BodyGibFall", pos);
-		
-		if (!sprite.getVars().gibbed) 
-		{
-			directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos, 0.75f);
-			sprite.Gib();
-		}
-	}
-	
 	//return held blocks
 	CRules@ rules = getRules();
 	CBlob@[]@ blocks;
@@ -1143,6 +1166,8 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 {
 	if (this.getTickSinceCreated() < 60) //invincible for a few seconds after spawning
 		return 0.0f;
+		
+	Vec2f pos = this.getPosition();
 	
 	//when this is killed: reward hitter player, done in onHit to reward from owned blobs
 	if (hitterBlob !is null && this.getHealth() - damage <= 0)
@@ -1180,12 +1205,26 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 				server_updateTotalBooty(hitterTeam, reward);
 			}
 		}
+		
+		if (isClient())
+		{
+			ParticleBloodSplat(pos, true);
+			directionalSoundPlay("BodyGibFall", pos);
+			directionalSoundPlay("SR_ManDeath" + (XORRandom(4) + 1), pos, 0.75f);
+			
+			this.getSprite().Gib();
+		}
 	}
 	
 	if (isClient())
 	{
 		if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
 		ParticleBloodSplat(worldPoint, false);
+		
+		if (damage > 1.45f) //sound for anything 2 heart+
+			directionalSoundPlay("ArgLong", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
+		else if (damage > 0.45f)
+			directionalSoundPlay("ArgShort.ogg", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
 	}
 	
 	return damage;

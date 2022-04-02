@@ -271,7 +271,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		{
 			if (isClient() && !blob.isAttached() && blob.getAirTime() > 4) //air time is time spent on water
 			{
-				//kill by impact
+				//kill player by impact
 				Ship@ ship = getShip(color);
 				if (ship !is null && (ship.vel.LengthSquared() > 5.0f || Maths::Abs(ship.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
 				{
@@ -282,17 +282,12 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					if (!noSideHits)
 						directionalSoundPlay("Scrape1", point1);
 					
-					CPlayer@ player = blob.getPlayer();
-					if (player !is null && noSideHits && blob.getTeamNum() != this.getTeamNum())
+					if ((blob.isMyPlayer() || (blob.getPlayer() !is null && blob.getPlayer().isBot())) && 
+						noSideHits && blob.getTeamNum() != this.getTeamNum())
 					{
-						directionalSoundPlay("WoodHeavyHit2", point1, 1.2f); //oof
-						if (XORRandom(5) == 0) directionalSoundPlay("Wilhelm", blob.getPosition());
-						
-						if (blob.isMyPlayer())
-						{
-							player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
-							blob.Tag("dead");
-						}
+						CBitStream params;
+						params.write_netid(this.getNetworkID());
+						blob.SendCommand(blob.getCommandID("run over"), params);
 					}
 				}
 			}
@@ -356,12 +351,11 @@ void onDie(CBlob@ this)
 			CBlob@ localBlob = getLocalPlayerBlob();
 			if (localBlob !is null && localBlob.get_u16("shipID") == this.getNetworkID())
 			{
-				CPlayer@ player = localBlob.getPlayer();
-				if (player !is null && localBlob.getDistanceTo(this) < 6.5f)
+				if (localBlob.isMyPlayer() && localBlob.getDistanceTo(this) < 6.5f)
 				{
-					directionalSoundPlay("destroy_ladder", this.getPosition());
-					player.client_ChangeTeam(44);//this makes the sv kill the playerblob (Respawning.as)
-					localBlob.Tag("dead");
+					CBitStream params;
+					params.write_netid(localBlob.getNetworkID());
+					localBlob.SendCommand(localBlob.getCommandID("run over"), params);
 				}
 			}
 		}
