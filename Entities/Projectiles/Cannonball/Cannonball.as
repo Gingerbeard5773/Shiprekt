@@ -193,10 +193,9 @@ void onDie(CBlob@ this)
 	}
 }
 
+Random _sprk_r;
 void sparksDirectional(Vec2f pos, Vec2f blobVel, int amount)
 {
-	Random _sprk_r;
-
 	for (int i = 0; i < amount; i++)
     {
         Vec2f vel(_sprk_r.NextFloat() * 5.0f, 0);

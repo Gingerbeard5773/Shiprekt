@@ -1,9 +1,8 @@
 //Various particles 
 
+Random spark;
 void sparks(Vec2f pos, int amount, f32 spread = 1.0f, int16 pTime = 10)
 {
-	Random spark(getGameTime() + XORRandom(20));
-
 	for (int i = 0; i < amount; i++)
     {
         Vec2f vel(spark.NextFloat() * spread, 0); //spread
@@ -32,6 +31,7 @@ void ShrapnelParticle(Vec2f pos, Vec2f vel)
 	}
 }
 
+Random shotrandom(0x15125);
 void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity = 0.1f, f32 scale = 1.0f)
 {
 	//muzzle flash
@@ -55,7 +55,6 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 		Vec2f shot_vel = Vec2f(0.5f,0);
 		shot_vel.RotateBy(-angle);
 		
-		Random shotrandom(0x15125); //clientside
 		for (int i = 0; i < 5; i++)
 		{
 			//random velocity direction
