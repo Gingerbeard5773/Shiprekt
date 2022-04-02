@@ -484,10 +484,6 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			description = Trans::DoorDesc;
 			AddBlock(this, menu, "door", "$DOOR$", Trans::Door, description, core, 1.0f);
 		}
-		{ //Piston
-			description = Trans::PistonDesc;
-			AddBlock(this, menu, "piston", "$PISTON$", Trans::Piston, description, core, 0.85f);
-		}
 		{ //Harpoon
 			description = Trans::HarpoonDesc;
 			AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, description, core, 2.0f);

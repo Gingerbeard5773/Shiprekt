@@ -282,12 +282,6 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
-
-	if (this.hasTag("piston") && this.get_bool("toggled")) //account for piston 'toggled' distance
-	{
-		Vec2f aimVector = Vec2f(0, -1).RotateBy(this.getAngleDegrees());
-		getMap().getBlobsAtPosition(this.getPosition() + Vec2f(14, 0).RotateBy(-aimVector.Angle()), @overlapping);
-	}
 	
 	for (uint i = 0; i < overlapping.length; i++)
 	{

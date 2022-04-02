@@ -200,24 +200,6 @@ void onTick(CBlob@ this)
 					}
 				}
 				
-				//pistons on screen
-				CBlob@[] pistons;	
-				getBlobsByTag("piston", @pistons);
-				for (uint i = 0; i < pistons.length; ++i)
-				{
-					CBlob@ p = pistons[i];
-					int color = p.getShape().getVars().customData;
-					if (color > 0 && seatColor == color && p.isOnScreen() && (p.get_string("playerOwner") == occupierName || isCaptain))
-					{
-						CButton@ button = occupier.CreateGenericButton(p.get_bool("toggled") ? 1 : 8, Vec2f_zero, p, p.getCommandID("togglepiston"), p.get_bool("toggled") ? "Retract" : "Extend");
-						if (button !is null)
-						{
-							button.enableRadius = 999.0f;
-							button.radius = 3.0f;
-						}
-					}
-				}
-				
 				//flak on ship: detach player
 				if (isCaptain)
 				{
