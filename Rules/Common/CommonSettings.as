@@ -10,6 +10,10 @@ void onInit(CRules@ this)
 	sv_gravity = 0;
 	sv_visiblity_scale = 2.0f;
 	s_effects = false;
+
+	Driver@ driver = getDriver();
+	driver.AddShader("hq2x", 1.0f);
+	driver.SetShader("hq2x", v_postprocess);
 	
 	//gameplay settings (could be a cfg file)
 	this.set_u16("starting_booty", 325);
