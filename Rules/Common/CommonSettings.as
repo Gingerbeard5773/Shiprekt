@@ -71,13 +71,13 @@ void onInit(CRules@ this)
 	if (getPlayersCount() == 0)
 		client_AddToChat( "> Free building mode set until more players join! <");
 	//warn for black water glitch
-	if (v_postprocess)
+	/*if (v_postprocess)
 	{
 		client_AddToChat(">", SColor(255, 255, 75, 75));
 		client_AddToChat(">>", SColor(255, 255, 75, 75));
 		client_AddToChat(">>>", SColor(255, 255, 75, 75));
 		client_AddToChat("NOTICE: the \"smooth shader\" setting causes the water to turn black when zooming in.\nYou can disable the smooth shader at the Video Options tab.", SColor(255, 255, 75, 75));
-	}
+	}*/
 }
 
 void ShowTeamMenu(CRules@ this)
