@@ -331,6 +331,17 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 			}
 		}
 	}
+	
+	//check to make sure we aren't shooting through rock
+	Vec2f solidPos;
+	if (map.rayCastSolid(pos, pos + aimVec, solidPos))
+	{
+		AttachmentPoint@ seat = this.getAttachmentPoint(0);
+		CBlob@ occupier = seat.getOccupied();
+
+		if (occupier is null)
+			return false;
+	}
 
 	return true;
 }
