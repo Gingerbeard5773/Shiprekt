@@ -202,7 +202,7 @@ void onTick(CRules@ this)
 		}
 	}
 	
-	if (closestShipIndex > -1 )
+	if (closestShipIndex > -1)
 	{
 		Vec2f shipOffset = (ships[closestShipIndex].pos - pos);
 
@@ -287,7 +287,7 @@ void onRender(CRules@ this)
 
         pos.RotateBy(_vars.booty_angle - camangle);
 
-        GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize ) * scale, scale, 0);
+        GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
     }
 	
 	//closest ship

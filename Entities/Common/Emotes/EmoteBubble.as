@@ -96,7 +96,7 @@ void AddBubblesToMenu(CBlob@ this)
 
     //for (int i = Emotes::skull; i < Emotes::cog; i++) {
     //    if (i != Emotes::pickup && i != Emotes::blank && i != Emotes::dots) {
-    //        this.AddBubble( "", i );
+    //        this.AddBubble("", i);
     //    }
     //}
 

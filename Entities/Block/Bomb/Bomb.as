@@ -140,7 +140,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 				}
 			}
 		
-			//f32 distanceFactor = Maths::Min(1.0f, Maths::Max(0.0f, BOMB_RADIUS - this.getDistanceTo( hit_blob ) + 8.0f ) / BOMB_RADIUS);
+			//f32 distanceFactor = Maths::Min(1.0f, Maths::Max(0.0f, BOMB_RADIUS - this.getDistanceTo(hit_blob) + 8.0f) / BOMB_RADIUS);
 			f32 distanceFactor = 1.0f;
 			f32 damageFactor = (hit_blob.hasTag("mothership") || hit_blob.hasTag("player")) ? 0.25f : 1.0f;
 
@@ -191,8 +191,8 @@ void onDie(CBlob@ this)
     this.server_SetTimeToDie(2);
     CSprite@ sprite = this.getSprite();
     sprite.SetAnimation("exploding");
-    sprite.SetEmitSound( "/bomb_timer.ogg" );
-    sprite.SetEmitSoundPaused( false );
+    sprite.SetEmitSound("/bomb_timer.ogg");
+    sprite.SetEmitSoundPaused(false);
     sprite.RewindEmitSound();
 }*/
 
@@ -224,7 +224,7 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 					reward += 15;
 
 				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
-				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32( "bootyTeam_median") + 1000)));
+				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32("bootyTeam_median") + 1000)));
 				
 				reward = Maths::Round(reward * bFactor);
 				

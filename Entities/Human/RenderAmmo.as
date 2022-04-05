@@ -17,7 +17,7 @@ void onRender(CSprite@ this)
 		if (maxAmmo == 0) return;
 
 		Vec2f screenPos = getDriver().getScreenPosFromWorldPos(mBlob.getInterpolatedPosition());	
-		//GUI::DrawProgressBar( screenPos + Vec2f( -20, 10 ), screenPos + Vec2f( 20, 25 ), float( mBlob.get_u16( "ammo" ) )/maxAmmo );
+		//GUI::DrawProgressBar(screenPos + Vec2f(-20, 10), screenPos + Vec2f(20, 25), float(mBlob.get_u16("ammo"))/maxAmmo);
 
 		Vec2f textSize;
 		GUI::GetTextDimensions("" + mBlob.get_u16("ammo"), textSize);

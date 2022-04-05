@@ -84,7 +84,7 @@ void onTick(CBlob@ this)
 	if (currentFirePause > MIN_FIRE_PAUSE)
 		this.set_f32("fire pause", currentFirePause - FIRE_PAUSE_RATE * this.getCurrentScript().tickFrequency);
 
-	//print( "Fire pause: " + currentFirePause );
+	//print("Fire pause: " + currentFirePause);
 
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
@@ -136,7 +136,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		{
 			f32 currentFirePause = this.get_f32("fire pause");
 			if (currentFirePause < MAX_FIRE_PAUSE)
-				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * ( ship.isMothership ? 1.0 : 1.0f) * FIRE_PAUSE_RATE));
+				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * (ship.isMothership ? 1.0 : 1.0f) * FIRE_PAUSE_RATE));
 		}
 
 		Vec2f pos = this.getPosition();
@@ -257,7 +257,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							f32 laserLength = Maths::Max(0.1f, (hi.hitpos - barrelPos).getLength() / 16.0f);
 							laser.ResetTransform();
 							laser.ScaleBy(Vec2f(laserLength, 0.5f));
-							laser.TranslateBy( Vec2f(laserLength*8.0f + 8.0f, barrelOffsetRelative.y));
+							laser.TranslateBy(Vec2f(laserLength*8.0f + 8.0f, barrelOffsetRelative.y));
 							laser.RotateBy(offsetAngle, Vec2f());
 							laser.setRenderStyle(RenderStyle::light);
 							laser.SetRelativeZ(1);

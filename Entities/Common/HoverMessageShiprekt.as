@@ -13,8 +13,7 @@ shared class HoverMessageShiprekt
 
     HoverMessageShiprekt() {} // required for handles to work
 
-    HoverMessageShiprekt( string _name, int _quantity, SColor _color = color_white, uint _ttl = 75, uint _fade_ratio = 2, bool singularise = true ) 
-	{
+    HoverMessageShiprekt(string _name, int _quantity, SColor _color = color_white, uint _ttl = 75, uint _fade_ratio = 2, bool singularise = true) {
         if (_quantity >= 0 &&_quantity < 2 && singularise) 
 		{
             _name = this.singularize(_name);
@@ -53,7 +52,7 @@ shared class HoverMessageShiprekt
     // get the active color of the message. decrease proportionally by the fadeout ratio
     private SColor getColor() {
         uint alpha = Maths::Max(0, 255-(ticker*fade_ratio));
-        SColor color2 = SColor(alpha, color.getRed(),color.getGreen(),color.getBlue());
+        SColor color2 = SColor(alpha, color.getRed(), color.getGreen(), color.getBlue());
         return color2;
     }
 
@@ -65,8 +64,8 @@ shared class HoverMessageShiprekt
             int top = pos2d.y - 2.5f*blob.getHeight() - 20.0f;
             int margin = 4;
             Vec2f dim;
-            GUI::GetTextDimensions( m , dim );
-            dim.x = Maths::Min( dim.x, 200.0f );
+            GUI::GetTextDimensions(m , dim);
+            dim.x = Maths::Min(dim.x, 200.0f);
             dim.x += margin;
             dim.y += margin;
             dim.y /= 3.8f;
@@ -108,7 +107,7 @@ shared class HoverMessageShiprekt2
 
     HoverMessageShiprekt2() {} // required for handles to work
 
-    HoverMessageShiprekt2( string _name, int _quantity, SColor _color = color_white, uint _ttl = 75, uint _fade_ratio = 2, bool singularise = true, string _prefix = "") 
+    HoverMessageShiprekt2(string _name, int _quantity, SColor _color = color_white, uint _ttl = 75, uint _fade_ratio = 2, bool singularise = true, string _prefix = "") 
 	{
         if (_quantity >= 0 &&_quantity < 2 && singularise) 
 		{
@@ -137,7 +136,7 @@ shared class HoverMessageShiprekt2
     void drawDeltaBooty(CBlob@ blob) 
 	{
         string m = this.message();
-        Vec2f pos = Vec2f( 158 , 11);
+        Vec2f pos = Vec2f(158 , 11);
         SColor color = this.getColor();
         GUI::DrawText(m,pos,color);
     }
@@ -157,7 +156,7 @@ shared class HoverMessageShiprekt2
     // get the active color of the message. decrease proportionally by the fadeout ratio
     private SColor getColor() {
         uint alpha = Maths::Max(0, 255-(ticker*fade_ratio));
-        SColor color2 = SColor(alpha, color.getRed(),color.getGreen(),color.getBlue());
+        SColor color2 = SColor(alpha, color.getRed(), color.getGreen(), color.getBlue());
         return color2;
     }
 
@@ -169,8 +168,8 @@ shared class HoverMessageShiprekt2
             int top = pos2d.y - 2.5f*blob.getHeight() - 20.0f;
             int margin = 4;
             Vec2f dim;
-            GUI::GetTextDimensions( m , dim );
-            dim.x = Maths::Min( dim.x, 200.0f );
+            GUI::GetTextDimensions(m , dim);
+            dim.x = Maths::Min(dim.x, 200.0f);
             dim.x += margin;
             dim.y += margin;
             dim.y /= 3.8f;

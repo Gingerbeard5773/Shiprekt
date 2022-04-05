@@ -84,7 +84,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 	if (sv_test || player.isMod())
 	{
-		if (text_in.substr(0,1) == "!" )
+		if (text_in.substr(0,1) == "!")
 		{
 			string[]@ tokens = text_in.split(" ");
 

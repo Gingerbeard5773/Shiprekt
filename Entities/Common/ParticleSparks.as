@@ -42,7 +42,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 										1.0f, //scale
 										3, //animtime
 										0.0f, //gravity
-										true ); //selflit
+										true); //selflit
 		if (p !is null)
 		{
 			p.Z = 550.0f;
@@ -68,7 +68,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 											scale, //scale
 											3+shotrandom.NextRanged(4), //animtime
 											0.0f, //gravity
-											true ); //selflit
+											true); //selflit
 			if (p !is null)
 			{
 				p.Z = 540.0f;

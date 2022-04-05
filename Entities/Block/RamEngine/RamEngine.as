@@ -141,7 +141,7 @@ void onTick(CBlob@ this)
 					victim.getShape().getVars().customData > 0 && 
 					!victim.hasTag("player"))	
 				{
-					f32 hitPower = Maths::Max( 0.5f, Maths::Abs( this.get_f32("power")));
+					f32 hitPower = Maths::Max(0.5f, Maths::Abs(this.get_f32("power")));
 					if (!victim.hasTag("mothership"))
 						this.server_Hit(victim, pos, Vec2f_zero, hitPower, 9, true);
 					else

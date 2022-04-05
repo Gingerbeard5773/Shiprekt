@@ -3,7 +3,7 @@
 #include "AccurateSoundPlay.as"
 #include "TileCommon.as"
 
-const u8 CHECK_FREQUENCY =  30;//30 = 1 second
+const u8 CHECK_FREQUENCY = 30;//30 = 1 second
 const u32 FISH_RADIUS = 65.0f;//pickup radius
 const f32 MAX_REWARD_FACTOR = 0.13f;//% taken per check for mothership (goes fully to captain if no one else on the ship)
 const f32 CREW_REWARD_FACTOR = MAX_REWARD_FACTOR/5.0f;
@@ -66,11 +66,11 @@ void onTick(CBlob@ this)
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
 	u16 minBooty = getRules().get_u16("bootyRefillLimit");
-	for ( u8 i = 0; i < cores.length; i++)
+	for (u8 i = 0; i < cores.length; i++)
 	{
 		int coreColor = cores[i].getShape().getVars().customData;
 		Ship@ ship = getShip(coreColor);
-		if (ship is null || ship.owner == "" || ship.owner  == "*")
+		if (ship is null || ship.owner == "" || ship.owner == "*")
 			continue;
 			
 		served.push_back(ship.owner);//captains only gather through the core
@@ -91,16 +91,16 @@ void onTick(CBlob@ this)
 				string pName = player.getUsername();
 				if (pName == ship.owner)
 					captainOnShip = true;
-				else	if (server_getPlayerBooty(pName) < minBooty * 4 )
+				else if (server_getPlayerBooty(pName) < minBooty * 4)
 					crew.push_back(pName);
 				else//wealthy or slacker on the mShip
 					served.push_back(pName);
 			}
 			
-			if ( !captainOnShip )//go to next core
+			if (!captainOnShip)//go to next core
 				continue;
 				
-			u16 mothership_maxReward = Maths::Ceil( ammount * MAX_REWARD_FACTOR);
+			u16 mothership_maxReward = Maths::Ceil(ammount * MAX_REWARD_FACTOR);
 			f32 mothership_crewRewardFactor = Maths::Min(MAX_REWARD_FACTOR * 0.5f,  CREW_REWARD_FACTOR_MOTHERSHIP * crew.length);
 			u16 mothership_crewTotalReward = Maths::Round(ammount * mothership_crewRewardFactor);
 
@@ -119,7 +119,7 @@ void onTick(CBlob@ this)
 			for (u8 i = 0; i < crew.length; i++)
 			{
 				served.push_back(crew[i]);
-				f32 rewardFactor = Maths::Max( mothership_crewRewardFactor/crew.length, CREW_REWARD_FACTOR);
+				f32 rewardFactor = Maths::Max(mothership_crewRewardFactor/crew.length, CREW_REWARD_FACTOR);
 				u16 reward = Maths::Ceil(ammount * rewardFactor);
 				server_giveBooty(crew[i], reward);
 				server_updateX(this, reward, false);
@@ -137,8 +137,8 @@ void onTick(CBlob@ this)
 		string name = player.getUsername();
 		if (this.getDistanceTo(humans[i]) <= FISH_RADIUS && served.find(name) == -1)
 		{
-			u16 reward = Maths::Ceil( ammount * CREW_REWARD_FACTOR );
-			server_giveBooty( name, reward );
+			u16 reward = Maths::Ceil(ammount * CREW_REWARD_FACTOR);
+			server_giveBooty(name, reward);
 			server_updateX(this, reward, !gaveBooty);
 			gaveBooty = true;
 		}
@@ -196,6 +196,6 @@ void onTick(CSprite@ this)
 	if (change > 0)
 	{
 		f32 size = ammount/prevAmmount;
-		this.ScaleBy(Vec2f( size, size));
+		this.ScaleBy(Vec2f(size, size));
 	}
 }

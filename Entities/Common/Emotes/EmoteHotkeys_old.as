@@ -14,12 +14,12 @@ bool wasMB3Pressed = false;//CControls.isKeyJustReleased() is borked
 
 const string emote_config_file = "EmoteBindings.cfg";
 
-void onInit( CBlob@ this )
+void onInit(CBlob@ this)
 {
 	this.getCurrentScript().runFlags |= Script::tick_myplayer;
 	this.getCurrentScript().removeIfTag = "dead";
 
-	if(!init)
+	if (!init)
 	{
 		init = true; 	//only load the cfg once to avoid 
 						//too much file access!
@@ -43,39 +43,41 @@ void onTick(CBlob@ this)
 {
 	CControls@ controls = getControls();
 	
-	if (controls.isKeyJustPressed( KEY_KEY_1 )) {
-		set_emote(this,emote_1);
+	if (controls.isKeyJustPressed(KEY_KEY_1)) {
+		set_emote(this, emote_1);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_2 )) {
-		set_emote(this,emote_2);
+	else if (controls.isKeyJustPressed(KEY_KEY_2)) {
+		set_emote(this, emote_2);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_3 )) {
-		set_emote(this,emote_3);
+	else if (controls.isKeyJustPressed(KEY_KEY_3)) {
+		set_emote(this, emote_3);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_4 )) {
-		set_emote(this,emote_4);
+	else if (controls.isKeyJustPressed(KEY_KEY_4)) {
+		set_emote(this, emote_4);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_5 )) {
-		set_emote(this,emote_5);
+	else if (controls.isKeyJustPressed(KEY_KEY_5)) {
+		set_emote(this, emote_5);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_6 )) {
-		set_emote(this,emote_6);
+	else if (controls.isKeyJustPressed(KEY_KEY_6)) {
+		set_emote(this, emote_6);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_7 )) {
-		set_emote(this,emote_7);
+	else if (controls.isKeyJustPressed(KEY_KEY_7)) {
+		set_emote(this, emote_7);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_8 )) {
-		set_emote(this,emote_8);
+	else if (controls.isKeyJustPressed(KEY_KEY_8)) {
+		set_emote(this, emote_8);
 	}
-	else if (controls.isKeyJustPressed( KEY_KEY_9 )) {
-		set_emote(this,emote_9);
+	else if (controls.isKeyJustPressed(KEY_KEY_9)) {
+		set_emote(this, emote_9);
 	}
-	else if ( controls.isKeyJustPressed( KEY_MBUTTON ) || (controls.isKeyPressed( KEY_MBUTTON ) && getGameTime() % 60 == 0) ) {
+	else if (controls.isKeyJustPressed(KEY_MBUTTON) || (controls.isKeyPressed(KEY_MBUTTON) && getGameTime() % 60 == 0))
+	{
 		wasMB3Pressed = true;
-		set_emote(this,Emotes::up);
-	} else if ( wasMB3Pressed && !controls.isKeyPressed( KEY_MBUTTON ) )
+		set_emote(this, Emotes::up);
+	}
+	else if (wasMB3Pressed && !controls.isKeyPressed(KEY_MBUTTON))
 	{
 		wasMB3Pressed = false;
-		set_emote(this,Emotes::off);
+		set_emote(this, Emotes::off);
 	}
 }

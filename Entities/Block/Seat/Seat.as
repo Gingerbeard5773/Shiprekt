@@ -163,7 +163,7 @@ void onTick(CBlob@ this)
 							@button = occupier.CreateGenericButton(isOwner ? 2 : 1, Vec2f_zero, c, c.getCommandID("decouple"), isOwner ? "Decouple" : "Decouple (crew's)");
 						}
 						else
-							@button = occupier.CreateGenericButton(0, Vec2f_zero, c, 0, "Can't decouple yet (crew's)" );
+							@button = occupier.CreateGenericButton(0, Vec2f_zero, c, 0, "Can't decouple yet (crew's)");
 							
 						if (button !is null) 
 						{
@@ -334,7 +334,7 @@ void onTick(CBlob@ this)
 				for (uint i = 0; i < left_propellers.length; ++i)
 				{
 					CBlob@ prop = getBlobByNetworkID(left_propellers[i]);
-					if (prop !is null && seatColor == prop.getShape().getVars().customData && ( teamInsensitive || occupierTeam == prop.getTeamNum()))
+					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						prop.set_f32("power", 0);
 				}
 				
@@ -375,7 +375,7 @@ void onTick(CBlob@ this)
 				}
 				for (uint i = 0; i < down_propellers.length; ++i)
 				{
-					CBlob@ prop = getBlobByNetworkID( down_propellers[i] );
+					CBlob@ prop = getBlobByNetworkID(down_propellers[i]);
 					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 					{
 						prop.set_u32("onTime", gameTime);
@@ -392,7 +392,7 @@ void onTick(CBlob@ this)
 				{
 					for (uint i = 0; i < left_propellers.length; ++i)
 					{
-						CBlob@ prop = getBlobByNetworkID( left_propellers[i] );
+						CBlob@ prop = getBlobByNetworkID(left_propellers[i]);
 						if (prop !is null && seatColor == prop.getShape().getVars().customData &&  (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						{
 							prop.set_u32("onTime", gameTime);
@@ -411,10 +411,10 @@ void onTick(CBlob@ this)
 				}
 				else
 				{
-					u8 maxStrafers = Maths::Round( Maths::FastSqrt(ship.mass)/3.0f);
+					u8 maxStrafers = Maths::Round(Maths::FastSqrt(ship.mass)/3.0f);
 					for (uint i = 0; i < strafe_left_propellers.length; ++i)
 					{
-						CBlob@ prop = getBlobByNetworkID( strafe_left_propellers[i]);
+						CBlob@ prop = getBlobByNetworkID(strafe_left_propellers[i]);
 						f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
 						if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						{
@@ -424,7 +424,7 @@ void onTick(CBlob@ this)
 					}
 					for (uint i = 0; i < strafe_right_propellers.length; ++i)
 					{
-						CBlob@ prop = getBlobByNetworkID( strafe_right_propellers[i]);
+						CBlob@ prop = getBlobByNetworkID(strafe_right_propellers[i]);
 						f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
 						if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						{
@@ -469,7 +469,7 @@ void onTick(CBlob@ this)
 							continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
-						if (Maths::Abs( dirFacing.AngleWith(aim)) < 40)
+						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
 							fireCannons.push_back(weap);
 					}
 					

@@ -80,7 +80,7 @@ void Repulse(CBlob@ this)
 										  1.0f, //scale
 										  2, //animtime
 										  0.0f, //gravity
-										  true ); //selflit
+										  true); //selflit
 	if (p !is null)
 		p.Z = -100.0f;
 	
@@ -114,7 +114,7 @@ void ChainReaction(CBlob@ this, u32 time)
 {
 	CBitStream bs;
 	bs.write_u32(time);
-	this.SendCommand( this.getCommandID("activate"), bs);
+	this.SendCommand(this.getCommandID("activate"), bs);
 
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);

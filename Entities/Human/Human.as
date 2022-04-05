@@ -1043,7 +1043,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					print("$ " + pName + " transfers Booty to crew");
 					server_addPlayerBooty(pName, -transfer - fee);
 					u16 shareBooty = Maths::Floor(transfer/crew.length);
-					for (u8 i = 0; i < crew.length; i++ )
+					for (u8 i = 0; i < crew.length; i++)
 					{
 						CPlayer@ crewPlayer = crew[i].getPlayer();						
 						if (player is null) continue;

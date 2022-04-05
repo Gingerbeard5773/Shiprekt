@@ -114,7 +114,7 @@ void onRender(CSprite@ this)
 	if (blob.isAttached() && blob.get_bool("drawSeatHelp"))
 	{
 		GUI::DrawText(Trans::ReleaseCoup2, Vec2f(screenWidth/2 - 150, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
-		GUI::DrawText(Trans::ReleaseCoup1, Vec2f(screenWidth/2 - 300, screenHeight/3 + 15 + Maths::Sin(gameTime/4.5f ) * 4.5f ), tipsColor);
+		GUI::DrawText(Trans::ReleaseCoup1, Vec2f(screenWidth/2 - 300, screenHeight/3 + 15 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 	}
 
 	//Reclaiming other property is slower

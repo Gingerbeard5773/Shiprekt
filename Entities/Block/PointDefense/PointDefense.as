@@ -82,7 +82,7 @@ void onTick(CBlob@ this)
 
 void Auto(CBlob@ this)
 {
-	if ((getGameTime() + this.getNetworkID() * 33 ) % 5 != 0 )
+	if ((getGameTime() + this.getNetworkID() * 33) % 5 != 0)
 		return;
 
 	CBlob@[] blobsInRadius;
@@ -95,7 +95,7 @@ void Auto(CBlob@ this)
 	u16 hitBlobNetID = 0;
 	Vec2f bPos = Vec2f(0, 0);
 
-	if (this.getMap().getBlobsInRadius( this.getPosition(), AUTO_RADIUS, @blobsInRadius))
+	if (this.getMap().getBlobsInRadius(this.getPosition(), AUTO_RADIUS, @blobsInRadius))
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
@@ -212,7 +212,7 @@ void Rotate(CBlob@ this, Vec2f aimVector)
 	if (layer !is null)
 	{
 		layer.ResetTransform();
-		layer.RotateBy( -aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero );
+		layer.RotateBy(-aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero);
 	}
 }
 
@@ -220,7 +220,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		CBlob@ hitBlob = getBlobByNetworkID( params.read_netid());
+		CBlob@ hitBlob = getBlobByNetworkID(params.read_netid());
 		Vec2f aimVector = params.read_Vec2f();
 
 		if (hitBlob is null)
@@ -234,7 +234,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		if (ammo == 0)
 		{
-			directionalSoundPlay( "LoadingTick1", pos, 1.0f );
+			directionalSoundPlay("LoadingTick1", pos, 1.0f);
 			return;
 		}
 
@@ -261,15 +261,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam2.png", 16, 16);
 				if (laser !is null)//partial length laser
 				{
-					Animation@ anim = laser.addAnimation( "default", 1, false );
+					Animation@ anim = laser.addAnimation("default", 1, false);
 					int[] frames = { 0, 1, 2, 3, 4, 5 };
 					anim.AddFrames(frames);
 					laser.SetVisible(true);
 					f32 laserLength = Maths::Max(0.1f, (bPos - barrelPos).getLength() / 16.0f);
 					laser.ResetTransform();
-					laser.ScaleBy( Vec2f(laserLength, 0.5f) );
-					laser.TranslateBy( Vec2f(laserLength*8.0f, 0.0f) );
-					laser.RotateBy( -this.getAngleDegrees() - aimVector.Angle(), Vec2f());
+					laser.ScaleBy(Vec2f(laserLength, 0.5f));
+					laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));
+					laser.RotateBy(-this.getAngleDegrees() - aimVector.Angle(), Vec2f());
 					laser.setRenderStyle(RenderStyle::light);
 					laser.SetRelativeZ(1);
 				}
@@ -286,21 +286,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
     }
 }
 
-f32 getDamage( CBlob@ hitBlob )
+f32 getDamage(CBlob@ hitBlob)
 {
 	if (hitBlob.hasTag("rocket"))
 		return 0.5f;
-
 	if (hitBlob.hasTag("projectile"))
 		return 1.0f;
-
-	if (hitBlob.getName() == "human")
-		return 0.2f;
 
 	return 0.01f;//cores, solids
 }
 
-void hitEffects( CBlob@ hitBlob, Vec2f worldPoint )
+void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 {
 	if (hitBlob.hasTag("projectile"))
 	{

@@ -240,7 +240,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			}
 			
 			f32 ratio = Maths::Max(0.25f, Maths::Min(1.75f,
-							float(rules.get_u16("bootyTeam_total" + thisTeamNum))/float(rules.get_u32("bootyTeam_median") + 1.0f ))); //I added 1.0f as a safety measure against dividing by 0
+							float(rules.get_u16("bootyTeam_total" + thisTeamNum))/float(rules.get_u32("bootyTeam_median") + 1.0f))); //I added 1.0f as a safety measure against dividing by 0
 			
 			u16 totalReward = (thisPlayers + 1) * BASE_KILL_REWARD * ratio;
 			string bountyreward = Trans::TeamBounty.replace("{winnerteam}", teamColors[hitterTeamNum]+" "+
@@ -311,7 +311,7 @@ void onTick(CBlob@ this)
 				dir.Normalize();
 				
 				f32 whirlpoolFactor = !getRules().get_bool("whirlpool") ? 2.0f : 1.25f;
-				f32 healthFactor = Maths::Max( 0.25f, hp/this.getInitialHealth());
+				f32 healthFactor = Maths::Max(0.25f, hp/this.getInitialHealth());
 				ship.vel += dir * healthFactor*whirlpoolFactor/distance;
 				
 				dir.RotateBy(-45.0f);

@@ -7,9 +7,9 @@ void SetupBooty(CRules@ this)
 		dictionary@ current_bSet;
 		if (!this.get("BootySet", @current_bSet))
 		{
-			//print( "** Setting Booty Dictionary");
+			//print("** Setting Booty Dictionary");
 			dictionary bSet;
-			this.set( "BootySet", bSet );
+			this.set("BootySet", bSet);
 		}
 	}
 }
@@ -25,26 +25,26 @@ dictionary@ getBootySet()
 void setStartingBooty(CRules@ this)
 {
 	//reset properties
-	//print( "** SetStartingBooty routine" );
+	//print("** SetStartingBooty routine");
 	dictionary@ bootySet = getBootySet();
 	/*//causes seg faults
 	string[]@ bKeys = bootySet.getKeys();
-	for ( u8 i = 0; i < bKeys.length; i++ )
+	for (u8 i = 0; i < bKeys.length; i++)
 	{
-		print( bKeys[i] );
-		this.set_u16( bKeys[i], 0 );
+		print(bKeys[i]);
+		this.set_u16(bKeys[i], 0);
 	}*/
 	
 	//bootySet.deleteAll();//clear booty
 	dictionary bSet;
 	this.set("BootySet", bSet);
 
-	print( "** Setting Starting Player Booty ");
+	print("** Setting Starting Player Booty ");
 
 	u16 initBooty = this.get_u16("starting_booty");
 	for (u8 p = 0; p < getPlayersCount(); ++p)
 	{
-		server_setPlayerBooty( getPlayer(p).getUsername(), sv_test ? 9999 : initBooty);
+		server_setPlayerBooty(getPlayer(p).getUsername(), sv_test ? 9999 : initBooty);
 	}
 }
 
@@ -84,7 +84,7 @@ void server_resetTotalBooty(CRules@ this)
 	u8 teamsNum = this.getTeamsNum();
 	for (int teamNum = 0; teamNum < teamsNum; teamNum++)
 	{
-		this.set_u16( "bootyTeam_total" + teamNum, 0);
+		this.set_u16("bootyTeam_total" + teamNum, 0);
 		this.Sync("bootyTeam_total" + teamNum, true);
 	}
 	this.set_u32("bootyTeam_median", 1);

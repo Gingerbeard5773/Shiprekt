@@ -24,10 +24,10 @@ void HarpoonForces(CBlob@ this,
 
 	Vec2f fromCenter = pos - movingShip.pos;
 	f32 fromCenterLen = fromCenter.Normalize();			
-	f32 directionMag = Maths::Abs( fromCenter * moveNorm );
+	f32 directionMag = Maths::Abs(fromCenter * moveNorm);
 	f32 dist = 35.0f;
 	f32 harpoonLength = (hitBlob.getPosition() - this.getPosition()).getLength();
-	f32 centerMag = (dist - Maths::Min( dist, fromCenterLen ))/dist;
+	f32 centerMag = (dist - Maths::Min(dist, fromCenterLen))/dist;
 	f32 velCoef = (directionMag + centerMag)*0.5f + Maths::Pow(harpoonLength - harpoon_grapple_length, 2);
 
 	moveVel *= velCoef;

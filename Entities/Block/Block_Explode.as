@@ -13,11 +13,11 @@ void onTick(CBlob@ this)
 	if (getGameTime() > this.get_u32("nextExplosion"))
 	{
 		Explode(this);
-		this.set_u32( "nextExplosion", getGameTime() + 20 + XORRandom(45));
+		this.set_u32("nextExplosion", getGameTime() + 20 + XORRandom(45));
 	}
 	
 	//failsafe
-	if (isClient() && getGameTime() > this.get_u32("addedTime" ) + 450)
+	if (isClient() && getGameTime() > this.get_u32("addedTime") + 450)
 		this.getCurrentScript().runFlags |= Script::remove_after_this;	
 }
 
@@ -39,9 +39,9 @@ void Explode(CBlob@ this)
 
 	for (uint i = 0; i < blobs.length; i++)
 		if (blobs[i] !is this && blobs[i].hasTag("player"))
-			this.server_Hit( blobs[i], pos, Vec2f_zero, blobs[i].getInitialHealth()/4.0f, Hitters::bomb, true);
+			this.server_Hit(blobs[i], pos, Vec2f_zero, blobs[i].getInitialHealth()/4.0f, Hitters::bomb, true);
 	
 	//damage self
 	if (!this.hasTag("mothership"))
-		this.server_Hit( this, pos, Vec2f_zero, this.getInitialHealth()/4.0f, 0, true);
+		this.server_Hit(this, pos, Vec2f_zero, this.getInitialHealth()/4.0f, 0, true);
 }
