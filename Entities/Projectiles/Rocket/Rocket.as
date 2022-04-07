@@ -2,9 +2,10 @@
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
+#include "PlankCommon.as";
 
 const f32 SPLASH_RADIUS = 8.0f;
-const f32 SPLASH_DAMAGE = 0.75f;
+const f32 SPLASH_DAMAGE = 0.65f;
 //const f32 MANUAL_DAMAGE_MODIFIER = 0.75f;
 
 const f32 ROCKET_FORCE = 7.5f;
@@ -150,6 +151,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	}
 	
 	if (!isServer() || this.getTickSinceCreated() <= 4) return;
+	
+	if (b.hasTag("plank") && !CollidesWithPlank(b, this.getVelocity()))
+		return;
 
 	bool killed = false;
 	
@@ -167,7 +171,8 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	{
 		if (isBlock || b.hasTag("rocket"))
 		{
-			if ((b.hasTag("solid") && solid) || (b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb")) && sameTeam)
+			if ((b.hasTag("solid") && solid) || 
+				(b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb") || b.hasTag("seat") || b.hasTag("core")) && sameTeam)
 				return;
 			
 			if (b.hasTag("core") || b.hasTag("solid") || b.hasTag("door"))
@@ -179,6 +184,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 				if (occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum())
 					killed = true;
 			}
+			else return;
 		}
 		else
 		{
@@ -206,12 +212,10 @@ f32 getDamage(CBlob@ hitBlob)
 		return 2.0f;
 	if (hitBlob.hasTag("antiram") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 		return 2.5f;
-	if (hitBlob.hasTag("decoyCore"))
+	if (hitBlob.hasTag("decoyCore") || hitBlob.hasTag("plank"))
 		return 1.5f;
-	if (hitBlob.hasTag("rocket"))
-		return 4.0f;
 
-	return 1.5f; //solids
+	return 1.0f; //solids
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)

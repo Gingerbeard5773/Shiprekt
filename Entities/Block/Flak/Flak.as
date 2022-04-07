@@ -324,7 +324,7 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 
 			//if (sameShip || targetMerged) print ("" + (sameShip ? "sameship; " : "") + (targetMerged ? "targetMerged; " : ""));
 
-			if (b.hasTag("block") && b.getShape().getVars().customData > 0 && (b.hasTag("solid") || b.hasTag("weapon")) && sameShip && !canShootSelf)
+			if (b.hasTag("block") && b.getShape().getVars().customData > 0 && ((b.hasTag("solid") && !b.hasTag("plank")) || b.hasTag("weapon")) && sameShip && !canShootSelf)
 			{
 				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;

@@ -3,6 +3,7 @@
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
+#include "PlankCommon.as";
 
 const f32 EXPLODE_RADIUS = 30.0f;
 const f32 FLAK_REACH = 50.0f;
@@ -33,6 +34,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	}
 	
 	if (!isServer()) return;
+	
+	if (b.hasTag("plank") && !CollidesWithPlank(b, this.getVelocity()))
+		return;
 	
 	//blow up inside the target (big damage)
 	const bool sameTeam = this.getTeamNum() == b.getTeamNum();
@@ -112,23 +116,15 @@ f32 getDamage(CBlob@ hitBlob)
 		return 0.25f; 
 	if (hitBlob.hasTag("propeller"))
 		return 0.2f;
-	if (hitBlob.hasTag("antiram"))
-		return 0.05f;
 	if (hitBlob.hasTag("ramengine"))
 		return 0.4f;
 	if (hitBlob.hasTag("door"))
 		return 0.3f;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 0.3f;
-	if (hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
+	if (hitBlob.hasTag("seat") || hitBlob.hasTag("weapon") || hitBlob.hasTag("bomb") || hitBlob.hasTag("core"))
 		return 0.1f;
-	if (hitBlob.hasTag("mothership") || hitBlob.hasTag("secondaryCore"))
-		return 0.1f;
-	if (hitBlob.hasTag("bomb"))
-		return 0.1f;
-	if (hitBlob.hasTag("decoyCore"))
-		return 0.1f;
-	return 0.02f;
+	return 0.06f;
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)

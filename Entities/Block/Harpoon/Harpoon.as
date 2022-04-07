@@ -2,6 +2,7 @@
 #include "HarpoonForceCommon.as";
 #include "ParticleSparks.as";
 #include "AccurateSoundPlay.as";
+#include "PlankCommon.as";
 
 //TODO:
 // BUG: Harpoon-states aren't synced on player-join, so to joining clients a harpoon may not be in the correct state
@@ -353,8 +354,11 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 	CBlob@ b = map.getBlobAtPosition(harpoon.grapple_pos);
 	if (b !is null)
 	{
+		if (b.hasTag("plank") && !CollidesWithPlank(b, harpoon.grapple_vel))
+			return false;
+		
 		if (b.hasTag("block") && b.hasTag("solid"))
-		{	
+		{
 			harpoon.grapple_id = b.getNetworkID();
 			
 			if (isClient())

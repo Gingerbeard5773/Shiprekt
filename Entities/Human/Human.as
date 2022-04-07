@@ -484,6 +484,11 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			description = Trans::DoorDesc;
 			AddBlock(this, menu, "door", "$DOOR$", Trans::Door, description, core, 1.0f);
 		}
+		if (sv_test)
+		{ //Wooden Plank
+			description = "A wooden plank, acts as a one way exit and can be used to protect dynamic parts of the ship";
+			AddBlock(this, menu, "plank", "$PLANK$", "Wooden Plank", description, core, 1.0f);
+		}
 		{ //Harpoon
 			description = Trans::HarpoonDesc;
 			AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, description, core, 2.0f);

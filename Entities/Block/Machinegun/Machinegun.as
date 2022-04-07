@@ -4,6 +4,7 @@
 #include "AccurateSoundPlay.as";
 #include "Hitters.as";
 #include "ParticleSparks.as";
+#include "PlankCommon.as";
 
 const f32 BULLET_SPREAD = 2.5f;
 const f32 BULLET_RANGE = 240.0F;
@@ -208,6 +209,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				int bColor = b.getShape().getVars().customData;
 				bool sameShip = bColor != 0 && thisColor == bColor;
 				const bool isBlock = b.hasTag("block");
+				
+				if (b.hasTag("plank") && !CollidesWithPlank(b, aimVector))
+					continue;
 
 				if (!b.hasTag("booty") && (bColor > 0 || !isBlock))
 				{
@@ -335,7 +339,7 @@ f32 getDamage(CBlob@ hitBlob)
 		return 0.15f;
 	if (hitBlob.hasTag("antiram"))
 		return 0.09f;
-	if (hitBlob.hasTag("seat"))
+	if (hitBlob.hasTag("seat") || hitBlob.hasTag("plank"))
 		return 0.05f;
 	if (hitBlob.hasTag("decoyCore"))
 		return 0.075f;

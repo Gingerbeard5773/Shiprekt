@@ -5,6 +5,7 @@
 #include "TileCommon.as";
 #include "ParticleSparks.as";
 #include "BlockCosts.as";
+#include "PlankCommon.as";
  
 const f32 BULLET_RANGE = 100.0f;
 const f32 DECONSTRUCT_RATE = 10.0f; //higher values = higher recover
@@ -97,7 +98,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
 				
-				if (b.hasTag("station")) continue;
+				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector))) 
+					continue;
 
 				if (b.hasTag("block") && b.getShape().getVars().customData > 0)
 				{
@@ -107,7 +109,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 					{
 						setLaser(sprite, hi.hitpos - barrelPos);
 						sparks(hi.hitpos, 4);
-					}			
+					}
 
 					CPlayer@ thisPlayer = shooter.getPlayer();						
 					if (thisPlayer is null) return; 

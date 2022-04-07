@@ -33,7 +33,7 @@ f32 getDamage(CBlob@ hitBlob)
 		return 0.5f;
 	if (hitBlob.hasTag("door"))
 		return 0.7f;
-	if (hitBlob.hasTag("seat") || hitBlob.hasTag("decoyCore") || hitBlob.hasTag("pointdefense"))
+	if (hitBlob.hasTag("seat") || hitBlob.hasTag("decoyCore") || hitBlob.hasTag("plank"))
 		return 0.4f;
 		
 	return 0.25f; //cores | solids

@@ -4,6 +4,7 @@
 #include "TileCommon.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
+#include "PlankCommon.as";
 
 const f32 SPLASH_RADIUS = 8.0f;
 const f32 SPLASH_DAMAGE = 0.0f;
@@ -41,6 +42,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	}
 
 	if (!isServer()) return;
+	
+	if (b.hasTag("plank") && !CollidesWithPlank(b, this.getVelocity()))
+		return;
 	
 	int piercedCount = this.get_u16("pierced count");
     u32[]@ piercedBlobIDs;
@@ -124,9 +128,9 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 	if (hitBlob.hasTag("propeller"))
 		return 2.15f * damageFactor;
 	if (hitBlob.hasTag("door"))
-		return 5.0f * damageFactor;
-	if (hitBlob.hasTag("seat"))
-		return 1.0f * damageFactor;
+		return 2.0f * damageFactor;
+	if (hitBlob.hasTag("seat") || hitBlob.hasTag("plank"))
+		return 1.5f * damageFactor;
 	if (hitBlob.hasTag("decoyCore"))
 		return 1.75f * damageFactor;
 	if (hitBlob.hasTag("weapon"))

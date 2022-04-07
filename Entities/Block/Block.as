@@ -1,6 +1,7 @@
 #include "ShipsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleHeal.as";
+#include "PlankCommon.as";
 
 // onInit: called from engine after blob is created with server_CreateBlob()
 
@@ -128,6 +129,11 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	{
 		Ship@ ship = getShip(color);
 		Ship@ other_ship = getShip(other_color);
+		
+		if (blob.hasTag("plank") && other_ship.vel.Length() > 0.1f  ? !CollidesWithPlank(blob, ship.vel) : false)
+			return;
+		if (this.hasTag("plank") && ship.vel.Length() > 0.1f ? !CollidesWithPlank(this, other_ship.vel) : false)
+			return;
 	
 		bool docking;
 		bool ramming;

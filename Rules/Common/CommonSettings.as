@@ -58,6 +58,7 @@ void onInit(CRules@ this)
 	AddIconToken("$REPULSOR$", "Repulsor.png", Vec2f(8,8), 0);
 	AddIconToken("$SECONDARYCORE$", "SecondaryCore.png", Vec2f(8,8), 0);
 	AddIconToken("$DECOYCORE$", "Mothership.png", Vec2f(8,8), 0);
+	AddIconToken("$PLANK$", "Plank.png", Vec2f(8,8), 0);
 
 	//spectator stuff
 	this.addCommandID("pick teams");
