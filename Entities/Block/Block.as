@@ -207,14 +207,14 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 
 					if (this.hasTag("ramengine"))
 					{
-						if (blob.hasTag("antiram"))
+						if (blob.hasTag("antiram") || blob.hasTag("core"))
 							this.server_Hit(blob, point1, Vec2f_zero, 0.6f, 0, true);
 						else if (blob.hasTag("propeller"))
 							this.server_Hit(blob, point1, Vec2f_zero, 2.1f, 0, true);
 						else if (blob.hasTag("platform") || blob.hasTag("ramengine"))
 							Die(blob);
 						else
-							this.server_Hit(blob, point1, Vec2f_zero, 1.1f, 0, true);
+							this.server_Hit(blob, point1, Vec2f_zero, 1.0f, 0, true);
 							
 						Die(this);
 					}
@@ -237,6 +237,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 						}
 						else if (blob.hasTag("core"))
 						{
+							this.server_Hit(blob, point1, Vec2f_zero, 1.0f, 0, true);
 							Die(this);
 						}
 						else if (blob.hasTag("weapon"))
