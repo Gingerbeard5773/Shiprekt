@@ -74,7 +74,7 @@ int totalBooty()
 	getBlobsByName("booty", @booty);
 	u16 totalBooty = 0;
 
-	for (int b = 0; b < booty.length(); b++)
+	for (int b = 0; b < booty.length; b++)
 		totalBooty += booty[b].get_u16("ammount");
 
 	return totalBooty;

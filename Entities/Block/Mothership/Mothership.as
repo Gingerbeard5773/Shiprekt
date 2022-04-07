@@ -338,9 +338,8 @@ void onTick(CBlob@ this)
 		{
 			CBlob@[] humans;
 			getBlobsByName("human", humans);
-			int hNum = humans.length();
 
-			for (int i = 0; i < hNum; i++)
+			for (int i = 0; i < humans.length; i++)
 			{
 				if (humans[i].getTeamNum() == coreTeam && humans[i].getHealth() < humans[i].getInitialHealth())
 				{

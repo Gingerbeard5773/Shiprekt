@@ -168,7 +168,7 @@ void damageBlobs(CBlob@ this)
 	CBlob@[] nearby;
 	if (getMap().getBlobsInRadius(this.getPosition(), 50.0f, @nearby))
 	{
-		for (int i = 0; i < nearby.length(); i++)
+		for (int i = 0; i < nearby.length; i++)
 		{
 			CBlob@ blob = nearby[i];
 			if ((blob.hasTag("block") && XORRandom(2) == 0) || (blob.getName() == "human" && !blob.isOnGround()))

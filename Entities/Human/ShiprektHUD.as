@@ -37,7 +37,7 @@ void onTick(CSprite@ this)
 			u16 seatID = 0;
 			CBlob@[] blobs;
 			getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @blobs);
-			for (int i = 0; i < blobs.length(); i++)
+			for (int i = 0; i < blobs.length; i++)
 			{
 				if (blobs[i].hasTag("control") && blobs[i].get_string("playerOwner") == name)
 				{
@@ -188,7 +188,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 		//Owner name text (top left)
 		if (ship.owner != "" && ship.owner != "*")
 		{
-			string lastChar = ship.owner.substr( ship.owner.length() -1);
+			string lastChar = ship.owner.substr(ship.owner.size() -1);
 			string ownership = ship.owner + (lastChar == "s" ? "'" : "'s") +" "+Trans::Ship;
 			Vec2f size;
 			GUI::GetTextDimensions(ownership, size);

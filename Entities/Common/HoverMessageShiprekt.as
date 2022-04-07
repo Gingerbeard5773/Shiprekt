@@ -80,7 +80,7 @@ shared class HoverMessageShiprekt
 
     // Singularize, or de-pluralize, a string
     private string singularize(string str) {
-        uint len = str.length();
+        uint len = str.size();
         string lastChar = str.substr(len-1);
 
         if (lastChar == "s") {
@@ -184,7 +184,7 @@ shared class HoverMessageShiprekt2
 
     // Singularize, or de-pluralize, a string
     private string singularize(string str) {
-        uint len = str.length();
+        uint len = str.size();
         string lastChar = str.substr(len-1);
 
         if (lastChar == "s") {

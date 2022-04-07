@@ -67,14 +67,14 @@ string getRandomMap(CRules@ this)
 		maps.push_back("TestMap2.png");
 	}*/
 	
-	if (maps.length() <= 0)
+	if (maps.length <= 0)
 	{
 		warn("SRRestartAfterShortPostGame.as: could not load random map");
 		return "";
 	}
 	
 	//remove current map
-	if (maps.length() > 1)
+	if (maps.length > 1)
 	{
 		int mIndex = maps.find(currentMap);
 		if (mIndex > -1)
@@ -82,7 +82,7 @@ string getRandomMap(CRules@ this)
 	}
 	
 	//choose random map from list
-	string map = maps[XORRandom(maps.length())];
+	string map = maps[XORRandom(maps.length)];
 	
 	return map;
 }
