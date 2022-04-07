@@ -89,26 +89,34 @@ void onTick(CRules@ this)
 		UpdateShips(this);//client-side integrate
 }
 
-void getOverlappingShips(CBlob@[] blocks, Ship@[]@ touchingShips)
+bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
 {
+	Ship@[] touchingShips;
+	//grab ships from adjacent blocks
 	for (uint i = 0; i < blocks.length; i++)
 	{
 		CBlob@ block = blocks[i];
 		
 		CBlob@[] overlapping;
-		block.getOverlapping(@overlapping);
+		#ifdef STAGING //use blobsinradius for staging since getOverlapping doesn't work on staging
+			getMap().getBlobsInRadius(block.getPosition(), 8.0f, @overlapping);
+		#endif
+		#ifndef STAGING
+			block.getOverlapping(@overlapping);
+		#endif
 		
-		for (uint i = 0; i < overlapping.length; i++)
+		for (uint q = 0; q < overlapping.length; q++)
 		{
-			CBlob@ b = overlapping[i];
+			CBlob@ b = overlapping[q];
 			Ship@ ship = getShip(b.getShape().getVars().customData);
-			if (ship is null || (b.getPosition() - block.getPosition()).LengthSquared() > 78) continue;
-			
+			if (ship is null || (b.getPosition() - block.getPosition()).LengthSquared() > 78)
+				continue;
+				
 			//shitty algorithm to make sure there is no duplicates
 			bool pushShip = true;
-			for (uint i = 0; i < touchingShips.length; i++)
+			for (uint p = 0; p < touchingShips.length; p++)
 			{
-				if (ship.id == touchingShips[i].id)
+				if (ship.id == touchingShips[p].id)
 				{
 					pushShip = false;
 					break;
@@ -118,15 +126,9 @@ void getOverlappingShips(CBlob@[] blocks, Ship@[]@ touchingShips)
 				touchingShips.push_back(ship);
 		}
 	}
-}
-
-bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
-{
-	Ship@[] touchingShips;
-	getOverlappingShips(blocks, @touchingShips);
 	
 	if (touchingShips.length != 1)
-		return false;
+		return false; //create new ship or combine existing ships
 	
 	Ship@ ship = touchingShips[0];
 	if (ship.centerBlock is null)
@@ -281,7 +283,12 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	}
 	
 	CBlob@[] overlapping;
-	this.getOverlapping(@overlapping);
+	#ifdef STAGING //use blobsinradius for staging since getOverlapping doesn't work on staging
+		getMap().getBlobsInRadius(this.getPosition(), 8.0f, @overlapping);
+	#endif
+	#ifndef STAGING
+		this.getOverlapping(@overlapping);
+	#endif
 	
 	for (uint i = 0; i < overlapping.length; i++)
 	{
