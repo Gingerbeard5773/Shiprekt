@@ -20,6 +20,8 @@ void onRestart(CRules@ this)
 void Reset(CRules@ this)
 {
 	this.set_bool("whirlpool", false);
+	this.Sync("whirlpool", true);
+	
 	setStartingBooty(this);
 	server_resetTotalBooty(this);
 	
