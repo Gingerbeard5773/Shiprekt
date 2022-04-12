@@ -40,8 +40,8 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	
 	//blow up inside the target (big damage)
 	const bool sameTeam = this.getTeamNum() == b.getTeamNum();
-	if ((b.hasTag("solid")) || b.hasTag("door") || ((b.hasTag("core") || b.hasTag("weapon") || b.hasTag("projectile") || b.hasTag("bomb")) && !sameTeam)
-		|| (b.hasTag("player") && !b.isAttached()))
+	if ((b.hasTag("solid")) || b.hasTag("door") || 
+		(!sameTeam && ((b.hasTag("core") || b.hasTag("weapon") || b.hasTag("projectile") || b.hasTag("bomb")) || (b.hasTag("player") && !b.isAttached()))))
 	{
 		this.server_Hit(b, point1, Vec2f_zero, getDamage(b) * 7, Hitters::bomb, true);
 		this.Tag("noFlakBoom");
@@ -80,8 +80,8 @@ void flak(CBlob@ this)
 				if (b is null || b is this) continue;
 									
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
-				if (b.hasTag("solid") || (!sameTeam
-					&& (b.hasTag("seat") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("core") || b.hasTag("door") || b.hasTag("bomb") || (b.hasTag("player") && !b.isAttached()))))
+				if (b.hasTag("solid") || b.hasTag("door") || (!sameTeam
+					&& (b.hasTag("seat") || b.hasTag("weapon") || b.hasTag("projectile") || b.hasTag("core") || b.hasTag("bomb") || (b.hasTag("player") && !b.isAttached()))))
 				{
 					this.server_Hit(b, hitInfos[i].hitpos, Vec2f_zero, getDamage(b), Hitters::bomb, true);
 					break;
