@@ -68,7 +68,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (!canShoot(this)) return;
 		
 		u16 shooterID;
-		if (!params.saferead_u16(shooterID)) return;
+		if (!params.saferead_netid(shooterID)) return;
 			
 		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null) return;

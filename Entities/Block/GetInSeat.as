@@ -31,7 +31,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	else if (!this.hasAttached())
 	{
 		CBitStream params;
-		params.write_u16(caller.getNetworkID());
+		params.write_netid(caller.getNetworkID());
 		CButton@ button = caller.CreateGenericButton(this.get_u8("seat icon"), Vec2f_zero, this, this.getCommandID("get in seat"), this.get_string("seat label"), params);
 		if (button !is null)
 		{

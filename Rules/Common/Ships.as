@@ -769,8 +769,8 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 			{
 				stream.write_Vec2f(ship.pos);
 				CPlayer@ owner = getPlayerByUsername(ship.owner);
-				stream.write_u16(owner !is null ? owner.getNetworkID() : 0);
-				stream.write_u16(ship.centerBlock !is null ? ship.centerBlock.getNetworkID() : 0);
+				stream.write_netid(owner !is null ? owner.getNetworkID() : 0);
+				stream.write_netid(ship.centerBlock !is null ? ship.centerBlock.getNetworkID() : 0);
 				stream.write_Vec2f(ship.vel);
 				stream.write_f32(ship.angle);
 				stream.write_f32(ship.angle_vel);			
@@ -809,7 +809,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 				{
 					stream.write_bool(true);
 					CPlayer@ owner = getPlayerByUsername(ship.owner);
-					stream.write_u16(owner !is null ? owner.getNetworkID() : 0);			
+					stream.write_netid(owner !is null ? owner.getNetworkID() : 0);			
 					if ((ship.net_pos - ship.pos).LengthSquared() > thresh)
 					{
 						stream.write_bool(true);
@@ -874,10 +874,10 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 					warn("ships sync: ship.pos not found");
 					return;
 				}
-				u16 ownerID = params.read_u16();
+				u16 ownerID = params.read_netid();
 				CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
 				ship.owner = owner !is null ? owner.getUsername() : "";
-				u16 centerBlockID = params.read_u16();
+				u16 centerBlockID = params.read_netid();
 				@ship.centerBlock = centerBlockID != 0 ? getBlobByNetworkID(centerBlockID) : null;
 				ship.vel = params.read_Vec2f();
 				ship.angle = params.read_f32();
@@ -971,7 +971,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 				if (params.read_bool())
 				{
 					Ship @ship = ships[i];
-					u16 ownerID = params.read_u16();
+					u16 ownerID = params.read_netid();
 					CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
 					ship.owner = owner !is null ? owner.getUsername() : "";
 					if (params.read_bool())

@@ -451,7 +451,7 @@ void onTick(CBlob@ this)
 						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
 						{
 							CBitStream bs;
-							bs.write_u16(occupier.getNetworkID());
+							bs.write_netid(occupier.getNetworkID());
 							weap.SendCommand(weap.getCommandID("fire"), bs);
 						}
 					}
@@ -478,7 +478,7 @@ void onTick(CBlob@ this)
 						u8 index = this.get_u8("cannonFireIndex");
 						CBlob@ weap = fireCannons[index % fireCannons.length];
 						CBitStream bs;
-						bs.write_u16(occupier.getNetworkID());
+						bs.write_netid(occupier.getNetworkID());
 						weap.SendCommand(weap.getCommandID("fire"), bs);
 						this.set_u32("lastCannonFire", gameTime);
 						this.set_u8("cannonFireIndex", index + 1);

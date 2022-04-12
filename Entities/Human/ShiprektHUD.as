@@ -49,7 +49,7 @@ void onTick(CSprite@ this)
 			if (seatID > 0)
 			{
 				CBitStream params;
-				params.write_u16(seatID);
+				params.write_netid(seatID);
 				blob.SendCommand(blob.getCommandID("releaseOwnership"), params);
 				Sound::Play("LoadingTick2.ogg");
 			}

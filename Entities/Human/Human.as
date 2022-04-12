@@ -370,6 +370,7 @@ void PlayerControls(CBlob@ this)
 					if (this.get_bool("getting block"))
 					{
 						this.set_bool("getting block", false);
+						this.Sync("getting block", false);
 						this.getSprite().PlaySound("join");
 					}
 					else if (canShop)
@@ -389,9 +390,10 @@ void PlayerControls(CBlob@ this)
 					if (buildMenuOpen)
 					{
 						CBitStream params;
-						params.write_u16(this.getNetworkID());
+						params.write_netid(this.getNetworkID());
 						params.write_string(this.get_string("last buy"));
 						params.write_u16(getCost(this.get_string("last buy")));
+						params.write_bool(false);
 						core.SendCommand(core.getCommandID("buyBlock"), params);
 					}
 					
@@ -402,7 +404,7 @@ void PlayerControls(CBlob@ this)
 			else if (Human::isHoldingBlocks(this))
 			{
 				CBitStream params;
-				params.write_u16(this.getNetworkID());
+				params.write_netid(this.getNetworkID());
 				core.SendCommand(core.getCommandID("returnBlocks"), params);
 			}
 		}
@@ -415,12 +417,12 @@ void PlayerControls(CBlob@ this)
 		if (core !is null && !core.hasTag("critical"))
 		{
 			CBitStream params;
-			params.write_u16(this.getNetworkID());
+			params.write_netid(this.getNetworkID());
 			params.write_string(this.get_string("last buy"));
 			params.write_u16(getCost(this.get_string("last buy")));
+			params.write_bool(true);
 			core.SendCommand(core.getCommandID("buyBlock"), params);
 		}
-		this.set_bool("getting block", false);
 	}
 	
 	if (this.isKeyJustReleased(key_action1))
@@ -555,9 +557,10 @@ CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, string block, string icon, s
 	u16 cost = getCost(block);
 	
 	CBitStream params;
-	params.write_u16(this.getNetworkID());
+	params.write_netid(this.getNetworkID());
 	params.write_string(block);
 	params.write_u16(cost);
+	params.write_bool(false);
 			
 	CGridButton@ button = menu.AddButton(icon, bname + " $" + cost, core.getCommandID("buyBlock"), params);
 
@@ -651,7 +654,7 @@ void Punch(CBlob@ this)
 					if (this.isMyPlayer())
 					{
 						CBitStream params;
-						params.write_u16(b.getNetworkID());
+						params.write_netid(b.getNetworkID());
 						this.SendCommand(this.getCommandID("punch"), params);
 					}
 					return;
@@ -769,7 +772,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 	else if (this.getCommandID("punch") == cmd && canPunch(this))
 	{
-		CBlob@ b = getBlobByNetworkID(params.read_u16());
+		CBlob@ b = getBlobByNetworkID(params.read_netid());
 		if (b !is null && b.getName() == this.getName() && b.getDistanceTo(this) < 100.0f)
 		{
 			Vec2f pos = b.getPosition();
@@ -862,7 +865,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			if (ship !is null)
 			{
 				string shipOwner = ship.owner;
-				CBlob@ mBlobOwnerBlob = getBlobByNetworkID(mBlob.get_u16("ownerID"));
+				CBlob@ mBlobOwnerBlob = getBlobByNetworkID(mBlob.get_netid("ownerID"));
 				
 				if (currentTool == "deconstructor" && !mBlob.hasTag("mothership") && mBlobCost > 0)
 				{
@@ -985,7 +988,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	else if (isServer() && this.getCommandID("releaseOwnership") == cmd)
 	{
 		CPlayer@ player = this.getPlayer();
-		CBlob@ seat = getBlobByNetworkID(params.read_u16());
+		CBlob@ seat = getBlobByNetworkID(params.read_netid());
 		
 		if (player is null || seat is null) return;
 		

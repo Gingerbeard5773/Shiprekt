@@ -20,7 +20,7 @@ void ProduceBlock(CRules@ this, CBlob@ blob, string type, u8 amount = 1)
 
 			//set block infos
 			b.set_Vec2f("offset", b.getPosition());			
-        	b.set_u16("ownerID", blobID);
+        	b.set_netid("ownerID", blobID);
     		b.getShape().getVars().customData = -1; // don't push on ship
     	}
 	}

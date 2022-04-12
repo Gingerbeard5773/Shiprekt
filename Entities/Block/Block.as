@@ -29,7 +29,7 @@ void onTick(CBlob@ this)
 		//Set Owner
 		if (isServer())
 		{
-			CBlob@ owner = getBlobByNetworkID(this.get_u16("ownerID"));    
+			CBlob@ owner = getBlobByNetworkID(this.get_netid("ownerID"));    
 			if (owner !is null)
 			{
 				this.set_string("playerOwner", owner.getPlayer().getUsername());
@@ -437,13 +437,13 @@ void onGib(CSprite@ this)
 void onSendCreateData(CBlob@ this, CBitStream@ stream)
 {
 	stream.write_u8(this.getSprite().getFrame());
-	stream.write_netid(this.get_u16("ownerID"));
+	stream.write_netid(this.get_netid("ownerID"));
 }
 
 bool onReceiveCreateData(CBlob@ this, CBitStream@ stream)
 {
 	u8 type = 0;
-	u16 ownerID = 0;
+	u16 ownerID = 0; //netid
 	
 	if (!stream.saferead_u8(type))
 	{
@@ -451,7 +451,7 @@ bool onReceiveCreateData(CBlob@ this, CBitStream@ stream)
 		return false;	
 	}
 
-	if (!stream.saferead_u16(ownerID))
+	if (!stream.saferead_netid(ownerID))
 	{
 		warn("Block::onReceiveCreateData - missing ownerID");
 		return false;	

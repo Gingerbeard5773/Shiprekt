@@ -111,7 +111,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		this.set_u16("ammo", ammo);
 
 		u16 shooterID;
-		if (!params.saferead_u16(shooterID))
+		if (!params.saferead_netid(shooterID))
 			return;
 
 		CBlob@ shooter = getBlobByNetworkID(shooterID);

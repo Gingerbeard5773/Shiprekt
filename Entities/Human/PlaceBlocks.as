@@ -281,7 +281,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				CBlob@ b = blocks[i];
 				if (b !is null)
 				{
-					b.set_u16("ownerID", 0);//so it wont add to owner blocks
+					b.set_netid("ownerID", 0);//so it wont add to owner blocks
 					f32 z = 510.0f;
 					if (b.hasTag("platform")) z = 509.0f;//platforms
 					else if (b.hasTag("weapon")) z = 511.0f;//weaps
@@ -335,6 +335,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				if (canShop)
 				{
 					this.set_bool("getting block", true);
+					this.Sync("getting block", false);
 				}
 			}
 		}

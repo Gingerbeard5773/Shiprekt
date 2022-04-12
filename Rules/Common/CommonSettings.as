@@ -98,7 +98,7 @@ void ShowTeamMenu(CRules@ this)
 		menu.SetDefaultCommand(this.getCommandID("pick none"), exitParams);
 
         CBitStream params;
-        params.write_u16(local.getNetworkID());
+        params.write_netid(local.getNetworkID());
         if (local.getTeamNum() == this.getSpectatorTeamNum())
         {
 			CGridButton@ button = menu.AddButton("$TEAMS$", "Auto-pick teams", this.getCommandID("pick teams"), Vec2f(BUTTON_SIZE, BUTTON_SIZE), params);
@@ -112,7 +112,7 @@ void ShowTeamMenu(CRules@ this)
 
 void ReadChangeTeam(CRules@ this, CBitStream @params, int team)
 {
-    CPlayer@ player = getPlayerByNetworkId(params.read_u16());
+    CPlayer@ player = getPlayerByNetworkId(params.read_netid());
     if (player is getLocalPlayer())
     {
         player.client_ChangeTeam(team);

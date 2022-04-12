@@ -44,13 +44,23 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("buyBlock"))
     {
-		CBlob@ caller = getBlobByNetworkID(params.read_u16());
-		if (caller is null) return;
-		
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		string block = params.read_string();
-		caller.set_string("last buy", block);
-			
 		u16 cost = params.read_u16();
+		bool autoBlock = params.read_bool();
+		
+		if (caller is null)
+			return;
+		
+		if (autoBlock && !caller.get_bool("getting block"))
+			return;
+			
+		if (caller.isMyPlayer())
+		{
+			caller.set_bool("getting block", false);
+			caller.Sync("getting block", false);
+		}
+		caller.set_string("last buy", block);
 
 		if (getGameTime() - caller.get_u32("placedTime") > 26)
 			caller.set_u32("placedTime", getGameTime() - 20);
@@ -62,7 +72,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
     else if (cmd == this.getCommandID("returnBlocks"))
 	{
-		CBlob@ caller = getBlobByNetworkID(params.read_u16());
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		if (caller !is null)
 			ReturnBlocks(caller);
 	}
