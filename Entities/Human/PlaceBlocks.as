@@ -218,7 +218,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 		block.setPosition(cursor_pos + offset);//align to ship grid
 		block.setAngleDegrees((refBAngle + blocks_angle + (block.hasTag("engine") ? 90.0f : 0.0f)) % 360.0f);//set angle: reference angle + rotation angle
 
-		SetDisplay(block, color_white, RenderStyle::additive, 560.0f);
+		SetDisplay(block, color_white, RenderStyle::additive, 315.0f);
 	}
 }
 
@@ -282,9 +282,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				if (b !is null)
 				{
 					b.set_netid("ownerID", 0);//so it wont add to owner blocks
-					f32 z = 510.0f;
-					if (b.hasTag("platform")) z = 509.0f;//platforms
-					else if (b.hasTag("weapon")) z = 511.0f;//weaps
+					f32 z = 310.0f;
+					if (b.hasTag("platform")) z = 309.0f;//platforms
+					else if (b.hasTag("weapon")) z = 311.0f;//weaps
 					SetDisplay(b, color_white, RenderStyle::normal, z);
 					if (!isServer())//add it locally till a sync
 					{

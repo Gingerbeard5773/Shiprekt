@@ -10,6 +10,6 @@ void makeHealParticle(CBlob@ this, string particleName = "HealParticle"+(XORRand
 		p.diesoncollide = true;
 		p.fastcollision = true;
 		p.lighting = true;
-		p.Z = 550.0f;
+		p.Z = 650.0f;
 	}
 }

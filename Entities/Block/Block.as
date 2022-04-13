@@ -10,7 +10,7 @@ void onInit(CBlob@ this)
 	this.Tag("block");
 	
 	CSprite@ sprite = this.getSprite();
-	sprite.SetZ(510.0f);
+	sprite.SetZ(310.0f);
 	sprite.asLayer().SetLighting(false);
 	
 	ShapeConsts@ consts = this.getShape().getConsts();

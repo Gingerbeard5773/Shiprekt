@@ -82,7 +82,7 @@ void Repulse(CBlob@ this)
 										  0.0f, //gravity
 										  true); //selflit
 	if (p !is null)
-		p.Z = -100.0f;
+		p.Z = 4.0f;
 	
 	this.server_Die();
 }

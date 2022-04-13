@@ -331,7 +331,7 @@ void onTick(CBlob@ this)
 					CParticle@ p = ParticlePixel(pos, dir.RotateBy(15), getTeamColor(this.getTeamNum()), true);
 					if (p !is null)
 					{
-						p.Z = 10.0f;
+						p.Z = 700.0f;
 						p.timeout = 4;
 					}
 				}
@@ -380,7 +380,7 @@ void onTick(CBlob@ this)
 			CParticle@ p = ParticlePixel(pos, getRandomVelocity(90, 4, 360), getTeamColor(this.getTeamNum()), true);
 			if (p !is null)
 			{
-				p.Z = 10.0f;
+				p.Z = 670.0f;
 				p.timeout = XORRandom(3) + 2;
 			}
 		}

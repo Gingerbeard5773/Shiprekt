@@ -15,7 +15,7 @@ void sparks(Vec2f pos, int amount, f32 spread = 1.0f, int16 pTime = 10)
         p.scale = 0.5f + spark.NextFloat();
         p.damping = 0.95f;
 		p.collides = false;
-		p.Z = 550.0f;
+		p.Z = 650.0f;
     }
 }
 
@@ -26,7 +26,7 @@ void ShrapnelParticle(Vec2f pos, Vec2f vel)
 	{
 		p.timeout = 10 + XORRandom(6);
 		p.scale = 1.5f;
-		p.Z = 550.0f;
+		p.Z = 650.0f;
 		p.damping = 0.85f;
 	}
 }
@@ -45,7 +45,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 										true); //selflit
 		if (p !is null)
 		{
-			p.Z = 550.0f;
+			p.Z = 650.0f;
 		}
 	}
 	
@@ -71,7 +71,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 											true); //selflit
 			if (p !is null)
 			{
-				p.Z = 540.0f;
+				p.Z = 640.0f;
 			}
 		}
 	}

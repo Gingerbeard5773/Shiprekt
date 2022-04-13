@@ -403,9 +403,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 								0.0f, true);			
 								
 			if (p !is null)
-			{
-				p.Z = 550;
-			}
+				p.Z = 650;
 		}
 	}
 	else if (cmd == this.getCommandID("unhook"))

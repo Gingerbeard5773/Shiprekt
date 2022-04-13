@@ -57,5 +57,5 @@ void onTick(CSprite@ this)
 			}
 		}
 	}
-	this.SetZ(540.0f);
+	this.SetZ(320.0f);
 }

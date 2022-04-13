@@ -301,7 +301,7 @@ void smoke(Vec2f pos, int amount)
 		
         p.scale = 0.5f + _smoke_r.NextFloat()*0.5f;
         p.damping = 0.8f;
-		p.Z = 550.0f;
+		p.Z = 650.0f;
     }
 }
 
@@ -326,6 +326,6 @@ void blast(Vec2f pos, int amount)
 		
         p.scale = 0.5f + _blast_r.NextFloat()*0.5f;
         p.damping = 0.85f;
-		p.Z = 550.0f;
+		p.Z = 650.0f;
     }
 }

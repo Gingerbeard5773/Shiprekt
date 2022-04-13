@@ -211,6 +211,6 @@ void sparksDirectional(Vec2f pos, Vec2f blobVel, int amount)
         p.timeout = 20 + _sprk_r.NextRanged(20);
         p.scale = 1.0f + _sprk_r.NextFloat();
         p.damping = 0.85f;
-		p.Z = 550.0f;
+		p.Z = 650.0f;
     }
 }

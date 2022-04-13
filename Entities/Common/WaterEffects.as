@@ -13,7 +13,7 @@ CParticle@ MakeWaterParticle(Vec2f pos, Vec2f vel)
 												  0.0f, //gravity
 												  true); //selflit
 		if (p !is null)
-			p.Z = 100.0f;
+			p.Z = 2.0f;
 
 		return p;
 	}
@@ -30,7 +30,7 @@ CParticle@ MakeWaterWave(Vec2f pos, Vec2f vel, float angle)
 											  0.0f, //gravity
 											  true); //selflit
 	if (p !is null)
-		p.Z = 100.0f;
+		p.Z = 2.0f;
 
 	return p;
 }

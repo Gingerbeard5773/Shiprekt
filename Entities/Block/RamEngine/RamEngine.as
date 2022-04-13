@@ -219,5 +219,5 @@ void smoke(Vec2f pos)
 											  0.0f, //gravity
 											  true); //selflit
 	if (p !is null)
-		p.Z = 110.0f;
+		p.Z = 640.0f;
 }
