@@ -94,8 +94,11 @@ void onTick(CBlob@ this)
 		u32 gameTime = getGameTime();
 		if (isServer() && gameTime == this.get_u32("detonationTime") - 1)
 		{
+			Ship@ ship = getShip(this.getShape().getVars().customData);
+			if (ship !is null)
+				getRules().push("dirtyShips", ship);
+			
 			this.getShape().getVars().customData = -1;
-			getRules().set_bool("dirty ships", true);
 		}
 		else if (gameTime == this.get_u32("detonationTime"))
 			Repulse(this);

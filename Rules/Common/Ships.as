@@ -714,7 +714,7 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 				}
 			}
 			
-			if (isServer())
+			if (isServer() && !blob.hasTag("activated"))
 			{
 				bool pushShip = true;
 				
