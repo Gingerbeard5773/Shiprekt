@@ -289,12 +289,6 @@ void PlayerControls(CBlob@ this)
 	CHUD@ hud = getHUD();
 	CControls@ controls = getControls();
 	bool toolsKey = controls.isKeyJustPressed(controls.getActionKeyKey(AK_PARTY));
-	
-	// bubble menu
-	if (this.isKeyJustPressed(key_bubbles))
-	{
-		this.CreateBubbleMenu();
-	}
 
 	if (this.isAttached())
 	{
