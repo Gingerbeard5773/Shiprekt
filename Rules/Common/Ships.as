@@ -1018,7 +1018,7 @@ f32 loopAngle(f32 angle)
 
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
-	if (isServer())
+	if (!player.isMyPlayer())
 		Synchronize(this, true, player); // will set old values
 }
 
