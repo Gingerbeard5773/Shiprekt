@@ -1,7 +1,6 @@
 #include "ShipsCommon.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleHeal.as";
-#include "PlankCommon.as";
 
 // onInit: called from engine after blob is created with server_CreateBlob()
 
@@ -117,6 +116,15 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 	return (this.getShape().getVars().customData > 0 && this.getTickSinceCreated() > 0);
 }
 
+bool doesCollideWithPlank(CBlob@ plank, Vec2f blobPos)
+{
+	//done by position rather than velocity since blocks are never actually given a velocity (ship.as)
+	Vec2f direction = Vec2f(0.0f, -1.0f).RotateBy(plank.getAngleDegrees());
+	f32 hitAngle = direction.AngleWith(plank.getPosition() - blobPos);
+
+	return !(hitAngle > -90.0f && hitAngle < 90.0f);
+}
+
 void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
 	if (blob is null || this.hasTag("noCollide") || blob.hasTag("noCollide"))
@@ -130,9 +138,9 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		Ship@ ship = getShip(color);
 		Ship@ other_ship = getShip(other_color);
 		
-		if (blob.hasTag("plank") && other_ship.vel.Length() > 0.1f  ? !CollidesWithPlank(blob, ship.vel) : false)
+		if (blob.hasTag("plank") ? !doesCollideWithPlank(blob, this.getPosition()) : false)
 			return;
-		if (this.hasTag("plank") && ship.vel.Length() > 0.1f ? !CollidesWithPlank(this, other_ship.vel) : false)
+		if (this.hasTag("plank") ? !doesCollideWithPlank(this, blob.getPosition()) : false)
 			return;
 	
 		bool docking;
