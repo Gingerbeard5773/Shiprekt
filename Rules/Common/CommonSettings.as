@@ -81,6 +81,11 @@ void onInit(CRules@ this)
 	}*/
 }
 
+void onRestart(CRules@ this)
+{
+	this.set_bool("whirlpool", false);
+}
+
 void ShowTeamMenu(CRules@ this)
 {
 	CPlayer@ local = getLocalPlayer();

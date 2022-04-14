@@ -7,20 +7,17 @@ const u16 STATION_BOOTY = 4;
 
 void onInit(CRules@ this)
 {
-	this.set_u8("endCount", 0);
 	Reset(this);
 }
 
 void onRestart(CRules@ this)
 {
-	this.set_u8("endCount", 0);
 	Reset(this);
 }
 
 void Reset(CRules@ this)
 {
-	this.set_bool("whirlpool", false);
-	this.Sync("whirlpool", true);
+	this.set_u8("endCount", 0);
 	
 	setStartingBooty(this);
 	server_resetTotalBooty(this);
