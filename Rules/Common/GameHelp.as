@@ -107,7 +107,7 @@ void onRender(CRules@ this)
 			Vec2f introSize;
 			GUI::GetTextDimensions(intro, introSize);
 			GUI::SetFont("normal");
-			GUI::DrawText(intro, Vec2f(Maths::Max(tlBox.x, sWidth/2 - tlBox.x/2), tlBox.y + 10), tipsColor);
+			GUI::DrawTextCentered(intro, Vec2f(sWidth/2, tlBox.y + 20), tipsColor);
 		} 
 		
 		//helptoggle, image && textInfo
@@ -118,7 +118,7 @@ void onRender(CRules@ this)
 			Vec2f toggleSize;
 			GUI::GetTextDimensions(helpToggle, toggleSize);
 			
-			GUI::SetFont("normal");
+			GUI::SetFont("menu");
 			GUI::DrawTextCentered(helpToggle, Vec2f(sWidth/2, tlBox.y + 40), tipsColor);
 			if (page1)
 				GUI::DrawTextCentered(helpToggle, Vec2f(sWidth/2, tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
@@ -127,20 +127,19 @@ void onRender(CRules@ this)
 		if (page1)
 		{
 			//PAGE 1
-			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.49\n";
+			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.50\n";
 			string lastChangesInfo = Trans::LastChanges+":\n"
-			+ "- 3-27-2022 - v1.49 By Gingerbeard\n"
-			+ "  * Added the ability to self-destruct your team's mothership through a vote.\n"
-			+ "  * The method of capturing stations is changed, sit next to a station to capture it.\n"
-			+ "  * Replaced ministations with normal stations.\n"
-			+ "  * Tweaked weapon refills to be slower.\n"
-			+ "  * Tweaked flak cannons and flak shells.\n"
-			+ "  * Fixed various movement-related problems.\n"
-			+ "  * Fixed a problem with the screen shaking uncontrollably.\n"
-			+ "  * Driving on shoals will slow your ship less than before.\n"
-			+ "  * Fixed a problem where you could punch other players through blocks.\n"
-			+ "  * Killing a shark will reward booty regardless of how you killed it.\n";
+			+ "- 4-14-2022 - By Gingerbeard & GoldenGuy\n"
+			+ "  * Added a new block, the plank.\n"
+			+ "  * Removed the piston block.\n"
+			+ "  * Shiprekt now supports KAG Staging.\n"
+			+ "  * Ram will damage cores.\n"
+			+ "  * Tweaked rockets to be weaker.\n"
+			+ "  * Fixed a problem where players would be in 'no gravity' through water.\n"
+			+ "  * Flak will no longer kill team-mates.\n"
+			+ "  * Fixed a problem where a 1v0 vote wouldn't pass.\n";
 			
+			GUI::SetFont("menu");
 			Vec2f lastChangesSize;
 			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
 		
@@ -171,12 +170,12 @@ void onRender(CRules@ this)
 			
 			GUI::SetFont("thick font");
 			
-			GUI::DrawText(infoTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 20), tipsColor);
-			GUI::DrawText(controlsTitle, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 240), tipsColor);
+			GUI::DrawText(infoTitle, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 20), tipsColor);
+			GUI::DrawText(controlsTitle, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 240), tipsColor);
 			
 			GUI::SetFont("menu");
-			GUI::DrawText(textInfo, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 60), tipsColor);
-			GUI::DrawText(controlsInfo, Vec2f(sWidth/2 - tlBox.x/1.5f, tlBox.y + boxMargin + 280), tipsColor);
+			GUI::DrawText(textInfo, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 60), tipsColor);
+			GUI::DrawText(controlsInfo, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 280), tipsColor);
 			
 			if (!v_fastrender)
 			{

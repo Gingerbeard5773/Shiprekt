@@ -17,6 +17,8 @@
 // Refill a weapon's ammunition by docking with your mothership or station.   #game tip
 // Wheel Joint   #name for wheel joint block
 // A wheel joint, it can rotate connected parts of a ship to face different directions   #wheel desc
+// Plank   #plank 
+// Acts as a one way exit. Collides with projectiles and blocks only on the front side.   #plank desc
 //
 // #self destruct vote
 // Your mothership is blowing up!
@@ -103,7 +105,7 @@ namespace Trans
 	Failed        = Translate("Failed\\Неудача\\Falhou\\Przegrany\\Échoué"),
 	
 	//Help menu
-	Welcome       = Translate("Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\nLast changes and fixes by\\Добро пожаловать в Shiprekt! Мод создан Strathos, Chrispin и другими членами сообщества.{\n} Последние изменения и исправления:\\Bem-vindo ao Shiprekt! Feito por Strathos, Chrispin e diversos membros da comunidade.\nÚltimas mudanças e correções por\\Witamy w Shiprekt! Wykonane przez Strathosa, Chrispina i różnych innych członków społeczności.\nOstatnie zmiany i poprawki autorstwa\\Bienvenue dans Shiprekt! Créé pas Strathos, Chrispin et divers autres membres de la communauté.\nDernièrs changements et corrections par"),
+	Welcome       = Translate("Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\nLast changes and fixes by\\Добро пожаловать в Shiprekt! Мод создан Strathos, Chrispin и другими членами сообщества.\n Последние изменения и исправления:\\Bem-vindo ao Shiprekt! Feito por Strathos, Chrispin e diversos membros da comunidade.\nÚltimas mudanças e correções por\\Witamy w Shiprekt! Wykonane przez Strathosa, Chrispina i różnych innych członków społeczności.\nOstatnie zmiany i poprawki autorstwa\\Bienvenue dans Shiprekt! Créé pas Strathos, Chrispin et divers autres membres de la communauté.\nDernièrs changements et corrections par"),
 	Version       = Translate("Version\\Версия\\Versão\\Wersja\\Version"),
 	LastChanges   = Translate("Last Changes\\Последние изменения\\Últimas mudanças\\Ostatnie zmiany\\Derniers changements"),
 	Go_to_the     = Translate("Go to the\\Перейти\\Vá para o\\Przejdź do\\Allez à l"),
