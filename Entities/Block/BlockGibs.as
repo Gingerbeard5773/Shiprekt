@@ -15,7 +15,7 @@ void onGib(CSprite@ this)
     	Vec2f veladd(0,_r.NextFloat() + 0.1f * (i+1));
     	veladd.RotateBy(_r.NextFloat() * 360.0f, Vec2f());
 
-	    CParticle@ gib = makeGibParticle("BlockGibs.png",
+	    CParticle@ gib = makeGibParticle("BlockGibs"+blob.get_u8("gibType")+".png",
 	    										pos,
 	    										vel + veladd,
 	    										0,

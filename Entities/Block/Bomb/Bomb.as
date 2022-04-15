@@ -11,6 +11,7 @@ const f32 BOMB_BASE_DAMAGE = 2.7f;
 void onInit(CBlob@ this)
 {
 	this.Tag("bomb");
+	this.set_u8("gibType", 1);
     this.getCurrentScript().tickFrequency = 60;
 	
 	this.set_f32("weight", 2.0f);
