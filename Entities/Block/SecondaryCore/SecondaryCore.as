@@ -55,7 +55,7 @@ void onTick(CBlob@ this)
 		}
 	}
 
-	if (this.hasTag('critical'))
+	if (isClient() && this.hasTag('critical'))
 	{
 		//Ship@ ship = getShip(this.getShape().getVars().customData);
 		//ship.vel *= 0.8f;
@@ -65,7 +65,7 @@ void onTick(CBlob@ this)
 			CParticle@ particle = ParticlePixel(this.getPosition(), getRandomVelocity(90, 4, 360), getTeamColor(team), true);
 			if (particle !is null)
 			{
-				particle.Z = 10.0f;
+				particle.Z = 670.0f;
 				particle.timeout = XORRandom(3) + 2;
 			}
 		}
