@@ -69,7 +69,7 @@ void onTick(CBlob@ this)
                 return;
             }
 
-			if (isClient())
+			//if (isClient())
 				PositionBlocks(@blocks, pos, aimPos, blocks_angle, centerBlock, refBlob);
 
 			CPlayer@ player = this.getPlayer();
@@ -265,10 +265,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		f32 shipAngle = ship.centerBlock.getAngleDegrees();
 		f32 angleDelta = centerBlock.getAngleDegrees() - ship_angle;//to account for ship angle lag
 		
-		bool overlappingShip = false;
         CBlob@[]@ blocks;
         if (this.get("blocks", @blocks) && blocks.size() > 0)                 
-        {	
+        {
 			if (isServer())
 			{
 				getRules().push("dirtyBlocks", blocks);

@@ -98,12 +98,7 @@ bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
 		CBlob@ block = blocks[i];
 		
 		CBlob@[] overlapping;
-		#ifdef STAGING //use blobsinradius for staging since getOverlapping doesn't work on staging
-			getMap().getBlobsInRadius(block.getPosition(), 8.0f, @overlapping);
-		#endif
-		#ifndef STAGING
-			block.getOverlapping(@overlapping);
-		#endif
+		block.getOverlapping(@overlapping);
 		
 		for (uint q = 0; q < overlapping.length; q++)
 		{
@@ -283,12 +278,7 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	}
 	
 	CBlob@[] overlapping;
-	#ifdef STAGING //use blobsinradius for staging since getOverlapping doesn't work on staging
-		getMap().getBlobsInRadius(this.getPosition(), 8.0f, @overlapping);
-	#endif
-	#ifndef STAGING
-		this.getOverlapping(@overlapping);
-	#endif
+	this.getOverlapping(@overlapping);
 	
 	for (uint i = 0; i < overlapping.length; i++)
 	{
