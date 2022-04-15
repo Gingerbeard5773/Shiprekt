@@ -40,15 +40,15 @@ void SpawnMothership(Vec2f pos, const int team)
 	// platforms
 	
 	makeBlock(pos + Vec2f(-8, -8), 0.0f, "platform", team);
-	makeBlock(pos + Vec2f(0, -8), 0.0f, "platform", team).getSprite().SetFrame(2);
+	makeBlock(pos + Vec2f(0, -8), 0.0f, "platform", team);
 	makeBlock(pos + Vec2f(8, -8), 0.0f, "platform", team);
 
-	makeBlock(pos + Vec2f(-8, 0), 0.0f, "platform", team).getSprite().SetFrame(5);	
+	makeBlock(pos + Vec2f(-8, 0), 0.0f, "platform", team);	
 	makeBlock(pos, 0.0f, "mothership", team);
-	makeBlock(pos + Vec2f(8, 0), 0.0f, "platform", team).getSprite().SetFrame(3);
+	makeBlock(pos + Vec2f(8, 0), 0.0f, "platform", team);
 
 	makeBlock(pos + Vec2f(-8, 8), 0.0f, "platform", team);
-	makeBlock(pos + Vec2f(0, 8), 0.0f, "platform", team).getSprite().SetFrame(4);
+	makeBlock(pos + Vec2f(0, 8), 0.0f, "platform", team);
 	makeBlock(pos + Vec2f(8, 8), 0.0f, "platform", team);
 
 	// surrounding
