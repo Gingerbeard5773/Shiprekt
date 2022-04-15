@@ -15,6 +15,7 @@
 // Wins!   #used in context of a winning team
 // A direct bomb hit to a Core can deal significant damage!   #game tip
 // Refill a weapon's ammunition by docking with your mothership or station.   #game tip
+// Miniships can dock not just with their own mothership, but enemy motherships as well!    #game tip
 // Wheel Joint   #name for wheel joint block
 // A wheel joint, it can rotate connected parts of a ship to face different directions   #wheel desc
 // Plank   #plank 

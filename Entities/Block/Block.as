@@ -152,10 +152,9 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 				return;
 				
 			docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
-					&& ((ship.isMothership || other_ship.isMothership) || (ship.isSecondaryCore || other_ship.isSecondaryCore)
-					|| (ship.isStation || other_ship.isStation))
-					&& this.getTeamNum() == blob.getTeamNum()
-					&& ((!ship.isMothership && ship.owner != "") || (!other_ship.isMothership && other_ship.owner != ""));
+					&& ((ship.isMothership || other_ship.isMothership) || (ship.isSecondaryCore || other_ship.isSecondaryCore) || (ship.isStation || other_ship.isStation))
+					//&& this.getTeamNum() == blob.getTeamNum()
+					&& ((!ship.isMothership && !ship.isSecondaryCore && ship.owner != "") || (!other_ship.isMothership && !other_ship.isSecondaryCore && other_ship.owner != ""));
 								
 			ramming = (this.hasTag("ram") || blob.hasTag("ram") || 
 					   this.hasTag("ramengine") || blob.hasTag("ramengine") || 
