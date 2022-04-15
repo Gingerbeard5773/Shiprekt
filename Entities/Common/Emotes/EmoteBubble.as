@@ -62,8 +62,8 @@ void onTick(CBlob@ blob)
 						emote.animation.frame = Emotes::up;
 						Vec2f aimVec;
 						const int direction = blob.getAimDirection(aimVec);
-						const f32 camRotation = blob.isMyPlayer() ? camera.getRotation() : blob.get_f32("cam rotation");
-						//const f32 camRotation = camera.getRotation();
+						//const f32 camRotation = blob.isMyPlayer() ? camera.getRotation() : blob.get_f32("camera rotation");
+						const f32 camRotation = camera.getRotation();
 						Vec2f blobCamVec = Vec2f(0.0f, 1.0f);
 							blobCamVec.RotateBy(camRotation);
 						Vec2f localCamVec = Vec2f(0.0f, 1.0f);

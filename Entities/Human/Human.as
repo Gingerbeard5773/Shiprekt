@@ -49,7 +49,7 @@ void onInit(CBlob@ this)
 	this.set_string("current tool", "pistol");
 	this.set_u32("fire time", 0);
 	this.set_u32("punch time", 0);
-	this.set_f32("cam rotation", 0);
+	this.set_f32("camera rotation", 0);
 	
 	if (this.isMyPlayer())
 	{	
@@ -95,7 +95,7 @@ void onTick(CBlob@ this)
 
 void Move(CBlob@ this)
 {
-	const bool blobInitialized = this.getTickSinceCreated() > 4; //solves some strange problems
+	const bool blobInitialized = this.getTickSinceCreated() > 30; //solves some strange problems, 1 full second
 	const bool myPlayer = this.isMyPlayer();
 	const bool isBot = isServer() && this.getPlayer() !is null && this.getPlayer().isBot();
 	Vec2f pos = this.getPosition();	
@@ -103,21 +103,21 @@ void Move(CBlob@ this)
 	Vec2f forward = aimpos - pos;
 	CShape@ shape = this.getShape();
 	CSprite@ sprite = this.getSprite();
-
-	if (myPlayer && blobInitialized)
-	{
-		const f32 camRotation = getCamera().getRotation();
-		if (this.get_f32("cam rotation") != camRotation)
-		{
-			this.set_f32("cam rotation", camRotation);
-			this.Sync("cam rotation", false); //1732223106 !! has a history of causing bad deltas !!
-		}
-	}
-	
-	const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("cam rotation");
 	
 	if (!this.isAttached())
 	{
+		if (myPlayer && blobInitialized)
+		{
+			const f32 camRotation = getCamera().getRotation();
+			if (this.get_f32("camera rotation") != camRotation && this.exists("camera rotation"))
+			{
+				this.set_f32("camera rotation", camRotation);
+				this.Sync("camera rotation", false); //1732223106 !! has a history of causing bad deltas !!
+			}
+		}
+		
+		const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("camera rotation");
+		
 		const bool up = this.isKeyPressed(key_up);
 		const bool down = this.isKeyPressed(key_down);
 		const bool left = this.isKeyPressed(key_left);
