@@ -736,7 +736,11 @@ void Synchronize(CRules@ this, bool full_sync, CPlayer@ player = null)
     {
         if (player is null)
         {
-            this.SendCommand(full_sync ? this.getCommandID("ships sync") : this.getCommandID("ships update"), bs);
+			for (int i = 0; i < getPlayersCount(); i++)
+			{
+				if (getPlayer(i) !is null)
+					this.SendCommand(full_sync ? this.getCommandID("ships sync") : this.getCommandID("ships update"), bs, getPlayer(i));
+			}
         }
         else
         {
