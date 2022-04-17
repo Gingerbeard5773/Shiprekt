@@ -1149,7 +1149,6 @@ void onDie(CBlob@ this)
 			}
 		}
 		Human::clearHeldBlocks(this);
-		this.set_bool("blockPlacementWarn", false);
 	}
 }
 

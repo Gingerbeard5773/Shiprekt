@@ -112,7 +112,7 @@ void onTick(CRules@ this)
 		u8 teams = cores.length;
 		u16 initBooty = Maths::Round(getRules().get_u16("starting_booty") * 0.75f);
 		u8 players = getPlayersCount();
-		u8 median = Maths::Round(players/teams);
+		u8 median = teams <= 0 ? 1 : Maths::Round(players/teams);
 		//player per team
 		u8[] teamPlayers;
 		for (u8 t = 0; t < 16; t++)

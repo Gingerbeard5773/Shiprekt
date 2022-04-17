@@ -24,22 +24,29 @@ void onTick(CBlob@ this)
 void Explode(CBlob@ this)
 {
 	Vec2f pos = this.getPosition();
-	//explosion effect
-	directionalSoundPlay("KegExplosion.ogg", pos);
-    makeBrightExplosionParticle(pos);
-	
-	if (this.isOnScreen())
-	    ShakeScreen(30, 20, pos);
+	if (isClient())
+	{
+		//explosion effect
+		directionalSoundPlay("KegExplosion.ogg", pos);
+		makeSmallExplosionParticle(pos);
+		//makeBrightExplosionParticle(pos);
+		
+		if (this.isOnScreen())
+			ShakeScreen(30, 20, pos);
+	}
 
 	if (!isServer()) return;
 	
 	//grab players nearby and damage them
-	CBlob@[] blobs;
-	getMap().getBlobsInRadius(pos, 8.0f, @blobs);
+	CBlob@[] overlapping;
+	this.getOverlapping(@overlapping);
 
-	for (uint i = 0; i < blobs.length; i++)
-		if (blobs[i] !is this && blobs[i].hasTag("player"))
-			this.server_Hit(blobs[i], pos, Vec2f_zero, blobs[i].getInitialHealth()/4.0f, Hitters::bomb, true);
+	for (uint i = 0; i < overlapping.length; i++)
+	{
+		CBlob@ blob = overlapping[i];
+		if (blob.hasTag("player"))
+			this.server_Hit(blob, pos, Vec2f_zero, blob.getInitialHealth()/5.0f, Hitters::bomb, true);
+	}
 	
 	//damage self
 	if (!this.hasTag("mothership"))

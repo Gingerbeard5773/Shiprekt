@@ -15,8 +15,7 @@ const f32 HEAL_AMMOUNT = 0.1f;
 const f32 HEAL_RADIUS = 16.0f;
 const u16 SELF_DESTRUCT_TIME = 8 * 30;
 const f32 BLAST_RADIUS = 25 * 8.0f;
-const u8 MAX_TEAM_FLAKS = 100;
-const u8 MAX_TOTAL_FLAKS = 1000;
+const u8 MAX_TEAM_FLAKS = 40;
 
 void onInit(CBlob@ this)
 {
@@ -116,7 +115,7 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 			ProduceBlock(getRules(), caller, bType, amount);
 		}
 	}
-	else if (teamFlaks >= MAX_TEAM_FLAKS)
+	else if (teamFlaks >= MAX_TEAM_FLAKS && player !is null)
 	{
 		rules.set_bool("display_flak_team_max", false);
 		rules.SyncToPlayer("display_flak_team_max", player);
@@ -151,11 +150,13 @@ void ReturnBlocks(CBlob@ this)
 		}
 		
 		Human::clearHeldBlocks(this);
-		this.set_bool("blockPlacementWarn", false);
 		this.set_u32("placedTime", getGameTime());
 		
 		if (this.isMyPlayer())
+		{
+			this.set_bool("blockPlacementWarn", false);
 			this.getSprite().PlaySound("join");
+		}
 	}
 	else
 		warn("returnBlocks cmd: no blocks"); //happens when block placing & block returning happens at same time
@@ -298,25 +299,25 @@ void onDie(CBlob@ this)
 //healing, repelling, dmgmanaging, selfDestruct, damagesprite
 void onTick(CBlob@ this)
 {
-	f32 hp = this.getHealth();
 	Vec2f pos = this.getPosition();
-	int color1 = this.getShape().getVars().customData;
-	Ship@ ship = getShip(color1);
+	int color = this.getShape().getVars().customData;
 	CRules@ rules = getRules();
 	
 	//repel
-/* 	CBlob@[] cores;
-	getBlobsByTag("mothership", @cores);
-	for (u8 i = 0; i < cores.length; i++)
+	/*f32 hp = this.getHealth();
+	Ship@ ship = getShip(color1);
+	if (ship !is null)
 	{
-		f32 distance = cores[i].getDistanceTo(this);
-		
-		int color2 = cores[i].getShape().getVars().customData;
-		if (cores[i] !is this && color1 != color2 && distance < 125.0f)
+		CBlob@[] cores;
+		getBlobsByTag("mothership", @cores);
+		for (u8 i = 0; i < cores.length; i++)
 		{
-			//sparks in the direction of the ship
-			if (ship !is null)
+			f32 distance = cores[i].getDistanceTo(this);
+			
+			int color2 = cores[i].getShape().getVars().customData;
+			if (cores[i] !is this && color != color2 && distance < 125.0f)
 			{
+				//sparks in the direction of the ship
 				Vec2f dir = pos - cores[i].getPosition();
 				dir.Normalize();
 				
@@ -324,15 +325,18 @@ void onTick(CBlob@ this)
 				f32 healthFactor = Maths::Max(0.25f, hp/this.getInitialHealth());
 				ship.vel += dir * healthFactor*whirlpoolFactor/distance;
 				
-				dir.RotateBy(-45.0f);
-				dir *= -6.0f * healthFactor;
-				for (int i = 0; i < 5; i++)
+				if (isClient())
 				{
-					CParticle@ p = ParticlePixel(pos, dir.RotateBy(15), getTeamColor(this.getTeamNum()), true);
-					if (p !is null)
+					dir.RotateBy(-45.0f);
+					dir *= -6.0f * healthFactor;
+					for (int i = 0; i < 5; i++)
 					{
-						p.Z = 700.0f;
-						p.timeout = 4;
+						CParticle@ p = ParticlePixel(pos, dir.RotateBy(15), getTeamColor(this.getTeamNum()), true);
+						if (p !is null)
+						{
+							p.Z = 700.0f;
+							p.timeout = 4;
+						}
 					}
 				}
 			}
@@ -351,11 +355,12 @@ void onTick(CBlob@ this)
 
 			for (int i = 0; i < humans.length; i++)
 			{
-				if (humans[i].getTeamNum() == coreTeam && humans[i].getHealth() < humans[i].getInitialHealth())
+				CBlob@ human = humans[i];
+				if (human.getTeamNum() == coreTeam && human.getHealth() < human.getInitialHealth())
 				{
-					Ship@ hShip = getShip(humans[i]);
-					if (hShip !is null && hShip.centerBlock !is null && color1 == hShip.centerBlock.getShape().getVars().customData)
-						humans[i].server_Heal(HEAL_AMMOUNT);
+					Ship@ hShip = getShip(human);
+					if (hShip !is null && hShip.centerBlock !is null && color == hShip.centerBlock.getShape().getVars().customData)
+						human.server_Heal(HEAL_AMMOUNT);
 				}
 			}
 		}
@@ -408,14 +413,15 @@ void initiateSelfDestruct(CBlob@ this)
 	this.Tag("critical");
 	this.set_u32("dieTime", getGameTime() + SELF_DESTRUCT_TIME);
 	
-	//effects
-	directionalSoundPlay("ShipExplosion.ogg", pos, 1.5f);
-    makeLargeExplosionParticle(pos);
+	if (isClient())
+	{
+		//effects
+		directionalSoundPlay("ShipExplosion.ogg", pos, 2.0f);
+		makeLargeExplosionParticle(pos);
+	}
 
 	//add block explosion scripts
 	const int color = this.getShape().getVars().customData;
-    if (color == 0) return;
-
 	Ship@ ship = getShip(color);
 	if (ship is null || ship.blocks.length < 10) return;
 		
@@ -439,45 +445,56 @@ void selfDestruct(CBlob@ this)
 	Vec2f pos = this.getPosition();
 	
 	//effects
-	directionalSoundPlay("ShipExplosion", pos, 2.0f);
-	makeWaveRing(pos, 4.5f, 15);
-    makeHugeExplosionParticle(pos);
-    ShakeScreen(90, 80, pos);
-	if (this.isOnScreen())
-		SetScreenFlash(150, 255, 255, 255);
-
+	if (isClient())
+	{
+		directionalSoundPlay("ShipExplosion", pos, 2.0f);
+		makeWaveRing(pos, 4.5f, 15);
+		makeHugeExplosionParticle(pos);
+		ShakeScreen(90, 80, pos);
+		if (this.isOnScreen())
+			SetScreenFlash(150, 255, 255, 255);
+	}
+	
 	if (!isServer()) return;
-		
+	
 	u8 teamNum = this.getTeamNum();
+	
 	//kill team players
 	CBlob@[] dieBlobs;
 	getBlobsByName("human", @dieBlobs);
 	for (u16 i = 0; i < dieBlobs.length; i++)
-		if (dieBlobs[i].getTeamNum() == teamNum)
-			dieBlobs[i].server_Die();
+	{
+		CBlob@ human = dieBlobs[i];
+		if (human.getTeamNum() == teamNum)
+			this.server_Hit(human, human.getPosition(), Vec2f_zero, human.getInitialHealth(), Hitters::bomb, true);
+	}
 	
 	//turrets go neutral
 	CBlob@[] turrets;
 	getBlobsByTag("weapon", @turrets);
 	for (u16 i = 0; i < turrets.length; i++)
-		if (turrets[i].getTeamNum() == teamNum)
-			turrets[i].server_setTeamNum(-1);
+	{
+		CBlob@ turret = turrets[i];
+		if (turret.getTeamNum() == teamNum)
+			turret.server_setTeamNum(-1);
+	}
 			
 	//damage nearby blobs
 	CBlob@[] blastBlobs;
 	getMap().getBlobsInRadius(pos, BLAST_RADIUS, @blastBlobs);
 	for (u16 i = 0; i < blastBlobs.length; i++)
-		if (blastBlobs[i] !is this)
+	{
+		CBlob@ blastBlob = blastBlobs[i];
+		if (blastBlob !is this)
 		{
-			f32 maxHealth = blastBlobs[i].getInitialHealth();
-			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlobs[i]))/BLAST_RADIUS;
-			this.server_Hit(blastBlobs[i], pos, Vec2f_zero, damage, Hitters::bomb, true);
+			f32 maxHealth = blastBlob.getInitialHealth();
+			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlob))/BLAST_RADIUS;
+			this.server_Hit(blastBlob, pos, Vec2f_zero, damage, Hitters::bomb, true);
 		}
+	}
 
 	//kill ship
 	const int color = this.getShape().getVars().customData;
-    if (color == 0)		return;
-
 	Ship@ ship = getShip(color);
 	if (ship is null || ship.blocks.length < 10) return;
 
