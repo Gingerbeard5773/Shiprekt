@@ -1,6 +1,7 @@
 void onInit(CBlob@ this)
 {
 	this.Tag("decoyCore");
+	this.Tag("core");
 	
 	this.set_f32("weight", 6.0f);
 

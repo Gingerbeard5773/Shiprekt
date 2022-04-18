@@ -20,6 +20,7 @@ const u8 MAX_TEAM_FLAKS = 40;
 void onInit(CBlob@ this)
 {
 	this.Tag("mothership");
+	this.Tag("core");
 	this.Tag("noRenderHealth");
 	this.addCommandID("buyBlock");
 	this.addCommandID("returnBlocks");

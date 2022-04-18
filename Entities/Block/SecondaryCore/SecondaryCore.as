@@ -11,6 +11,7 @@ void onInit(CBlob@ this)
 	this.set_f32("weight", 12.0f);
 	
 	this.Tag("secondaryCore");
+	this.Tag("core");
 
 	if (isClient())
 	{

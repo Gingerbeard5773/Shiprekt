@@ -34,10 +34,7 @@ void updateCores(CBlob@ this)
 		CBlob@ b = overlapping[i];
 		if (b.hasTag("core"))
 		{
-			BlockHooks@ blockHooks;
-			b.get("BlockHooks", @blockHooks);
-			if (blockHooks !is null)
-				blockHooks.update("onColored", @b);
+			b.set_bool("updateLayers", true);
 		}
 	}
 }
