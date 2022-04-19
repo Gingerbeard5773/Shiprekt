@@ -25,8 +25,8 @@ void onTick(CRules@ this)
 		}
 	}
 	
-	if (getGameTime() % SHOW_FREQUENCY == 0 && shiprektTips.length > 0)
-		client_AddToChat(">TIP: " + shiprektTips[XORRandom(shiprektTips.length)]);
+	//if (getGameTime() % SHOW_FREQUENCY == 0 && shiprektTips.length > 0)
+		//client_AddToChat(">TIP: " + shiprektTips[XORRandom(shiprektTips.length)]);
 }
 
 void onRender(CRules@ this)
