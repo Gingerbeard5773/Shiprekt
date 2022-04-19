@@ -44,7 +44,7 @@ void onRender(CRules@ this)
 	Vec2f panelStart = Vec2f(getScreenWidth() - panelWidth - 5, 15);
 
 	//background
-	GUI::DrawButtonPressed(panelStart - Vec2f(10, 10), panelStart + Vec2f(panelWidth, 10 + lineHeight * (boardTeams.length + 1)));
+	GUI::DrawFramedPane(panelStart - Vec2f(10, 10), panelStart + Vec2f(panelWidth, 10 + lineHeight * (boardTeams.length + 1)));
 	
 	//teams column
 	string header = Trans::Total+" "+Trans::Booty;
