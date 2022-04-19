@@ -28,7 +28,7 @@ void onTick(CRules@ this)
 	{
 		for (uint i = 0; i < blobsAtBorder.length; i++)
 		{
-			CBlob @b = blobsAtBorder[i];
+			CBlob@ b = blobsAtBorder[i];
 			Ship@ ship = getShip(b.getShape().getVars().customData);
 			if (ship !is null && ship.vel.LengthSquared() > 0)
 			{
@@ -115,7 +115,7 @@ void server_turnOffPropellers(Ship@ ship)
 	}
 }
 
-void onCommand(CRules@ this, u8 cmd, CBitStream @params)
+void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("ship bounce"))
 	{

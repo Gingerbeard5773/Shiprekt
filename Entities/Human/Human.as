@@ -351,8 +351,8 @@ void PlayerControls(CBlob@ this)
     {
         if (this.isKeyJustPressed(key_action1))
         {
-		    CGridMenu @gmenu;
-		    CGridButton @gbutton;
+		    CGridMenu@ gmenu;
+		    CGridButton@ gbutton;
 		    this.ClickGridMenu(0, gmenu, gbutton); 
 	    }
 	}
@@ -765,7 +765,7 @@ void Construct(CBlob@ this)
 	}
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (isServer() && this.getCommandID("get out") == cmd)
 	{
@@ -1123,7 +1123,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 }
 
-void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
+void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 {
 	this.getShape().getVars().onground = true;
 	this.set_u16("shipID", detached.getNetworkID());

@@ -39,7 +39,7 @@ void onInit(CBlob@ this)
     sprite.SetEmitSoundPaused(true);
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("on/off") && isServer())
     {

@@ -788,7 +788,7 @@ void Callback_Surrender(CBitStream@ params)
 }
 
 //actually setting up the votes
-void onCommand(CRules@ this, u8 cmd, CBitStream @params)
+void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (Rules_AlreadyHasVote(this))
 		return;

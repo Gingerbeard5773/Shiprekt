@@ -591,7 +591,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 	}
 }
 
-void UpdateShipBlob(CBlob@ blob, Ship @ship, ShipBlock@ ship_block)
+void UpdateShipBlob(CBlob@ blob, Ship@ ship, ShipBlock@ ship_block)
 {
 	Vec2f offset = ship_block.offset;
 	offset.RotateBy(ship.angle);
@@ -754,7 +754,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 		bool atLeastOne = false;
 		for (uint i = 0; i < ships.length; ++i)
 		{
-			Ship @ship = ships[i];
+			Ship@ ship = ships[i];
 			if (full_sync)
 			{
 				stream.write_Vec2f(ship.pos);
@@ -845,7 +845,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 	return false;
 }
 
-void onCommand(CRules@ this, u8 cmd, CBitStream @params)
+void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (isServer()) return;
 
@@ -958,13 +958,13 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 			}
 			for (uint i = 0; i < count; ++i)
 			{
-				if (params.read_bool())
+				if (params.read_bool()) //do we update?
 				{
-					Ship @ship = ships[i];
+					Ship@ ship = ships[i];
 					u16 ownerID = params.read_netid();
 					CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
 					ship.owner = owner !is null ? owner.getUsername() : "";
-					if (params.read_bool())
+					if (params.read_bool()) //passed position thresh
 					{
 						Vec2f dDelta = params.read_Vec2f() - ship.pos;
 						if (dDelta.LengthSquared() < 512)//8 blocks threshold
@@ -972,18 +972,18 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 						else
 							ship.pos += dDelta; 
 					}
-					if (params.read_bool())
+					if (params.read_bool()) //passed velocity thresh
 					{
 						ship.vel = params.read_Vec2f()/VEL_DAMPING;
 					}
-					if (params.read_bool())
+					if (params.read_bool()) //passed angle thresh
 					{
 						f32 aDelta =  params.read_f32() - ship.angle;
 						if (aDelta > 180)	aDelta -= 360;
 						if (aDelta < -180)	aDelta += 360;
 						ship.angle = loopAngle(ship.angle + aDelta/UPDATE_DELTA_SMOOTHNESS);
 					}
-					if (params.read_bool())
+					if (params.read_bool()) //passed angle-velocity thresh
 					{
 						ship.angle_vel = params.read_f32()/ANGLE_VEL_DAMPING;
 					}
@@ -1068,7 +1068,7 @@ void onRender(CRules@ this)
 		{
 			for (uint i = 0; i < ships.length; ++i)
 			{
-				Ship @ship = ships[i];
+				Ship@ ship = ships[i];
 				if (ship.centerBlock !is null)
 				{
 					Vec2f cbPos = getDriver().getScreenPosFromWorldPos(ship.centerBlock.getPosition());
@@ -1077,7 +1077,7 @@ void onRender(CRules@ this)
 					GUI::DrawArrow2D(cbPos, cbPos + iVel, SColor(175, 0, 200, 0));
 					if (camera.targetDistance <= 1.0f)
 						GUI::DrawText("" + ship.centerBlock.getShape().getVars().customData, cbPos, SColor(255,255,255,255));
-					//GUI::DrawText("" + ship.vel.Length(), cbPos, SColor( 255,255,255,255));
+					//GUI::DrawText("" + ship.vel.Length(), cbPos, SColor(255,255,255,255));
 				}
 					
 				for (uint i = 0; i < ship.blocks.length; ++i)

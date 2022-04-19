@@ -61,7 +61,7 @@ bool canShoot(CBlob@ this)
 	return (this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime());
 }
  
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("fire"))
     {

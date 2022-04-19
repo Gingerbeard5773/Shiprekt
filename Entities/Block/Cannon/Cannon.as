@@ -82,7 +82,7 @@ void onTick(CBlob@ this)
 	}
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("fire"))
 	{

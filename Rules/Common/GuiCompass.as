@@ -80,7 +80,7 @@ void onTick(CRules@ this)
 	
 	//center
 	CMap@ map = getMap();
-	Vec2f mapCenter = Vec2f( map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
+	Vec2f mapCenter = Vec2f(map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
 	Vec2f centerVec = mapCenter - pos;
 	_vars.center_angle = centerVec.Angle() * -1.0f; 
 	_vars.center_distance = centerVec.Length();
@@ -272,7 +272,7 @@ void onRender(CRules@ this)
 
         pos.RotateBy(_vars.center_angle - camangle);
 		
-		if ( !getRules().get_bool("whirlpool"))
+		if (!getRules().get_bool("whirlpool"))
 			GUI::DrawIcon(gui_image_fname, 13, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
 		else
 			GUI::DrawIcon("WhirlpoolIcon.png", 0, Vec2f(16,16), (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);

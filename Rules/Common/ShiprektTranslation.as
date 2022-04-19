@@ -1,4 +1,4 @@
-
+// Gingerbeard @ 3/5/2022
 //translated strings for shiprekt
 
 //works by seperating each language by token '\\'
@@ -8,39 +8,42 @@
 //Translators: GoldenGuy, Moz, Space Luke, Nova & Gizmodious
 
 //TODO:
-// Perhaps switch to a dictionary once kag updates to staging
+// Perhaps switch to a dictionary once kag updates to newer AS version
 // Could also seperate languages by namespaces and then call from namespaces from namespaces depending on locale, this would enable the ability to seperate languages by file
 
-//TODO TRANSLATIONS:
-// Wins!   #used in context of a winning team
-// A direct bomb hit to a Core can deal significant damage!   #game tip
-// Refill a weapon's ammunition by docking with your mothership or station.   #game tip
-// Miniships can dock not just with their own mothership, but enemy motherships as well!    #game tip
-// Wheel Joint   #name for wheel joint block
-// A wheel joint, it can rotate connected parts of a ship to face different directions   #wheel desc
-// Plank   #plank 
-// Acts as a one way exit. Collides with projectiles and blocks only on the front side.   #plank desc
-//
-// #self destruct vote
-// Your mothership is blowing up!
-// Mothership self-destruction vote failed!
-// Enable self-destruction
-// Self-Destruct Mothership
-// Vote to blow up your mothership
-// Blow up!
+///TODO TRANSLATIONS:
+/// Wins!   #used in context of a winning team
+/// Wheel Joint   #name for wheel joint block
+/// A wheel joint, it can rotate connected parts of a ship to face different directions   #wheel desc
+/// Plank   #plank 
+/// Acts as a one way exit. Collides with projectiles and blocks only on the front side.   #plank desc
+///
+/// #self destruct vote
+/// Your mothership is blowing up!
+/// Mothership self-destruction vote failed!
+/// Enable self-destruction
+/// Self-Destruct Mothership
+/// Vote to blow up your mothership
+/// Blow up!
+///
+/// #game tips
+/// A direct bomb hit to a Core can deal significant damage!
+/// Refill a weapon's ammunition by docking with your mothership or station.
+/// Miniships can dock not just with their own mothership, but enemy motherships as well!
+/// Bombs stack with power when placed together.
 
 string Translate(string words)
 {
 	string[]@ tokens = words.split("\\");
-	if (g_locale == "en")
+	if (g_locale == "en") //english
 		return tokens[0];
-	if (g_locale == "ru")
+	if (g_locale == "ru") //russian
 		return tokens[1];
-	if (g_locale == "br")
+	if (g_locale == "br") //porteguese
 		return tokens[2];
-	if (g_locale == "fr")
+	if (g_locale == "fr") //french
 		return tokens[4];
-	if (g_locale == "pl")
+	if (g_locale == "pl") //polish
 		return tokens[3];
 	
 	return tokens[0];
@@ -53,7 +56,7 @@ namespace Trans
 	//Generic
 	Captain       = Translate("Captain\\Капитан\\Capitão\\Kapitan\\Capitaine"),
 	Total         = Translate("Total\\Всего\\Total\\Łączny\\Totale"),
-	Wooden        = Translate("Wooden\\Деревянный\\de madeira\\Drewniany\\en bois"), //unused
+	//Wooden        = Translate("Wooden\\Деревянный\\de madeira\\Drewniany\\en bois"),
 	Booty         = Translate("Booty\\Добыча\\Saque\\Łup\\Trésor"),
 	Core          = Translate("Core\\Сердце\\Núcleo\\Rdzeń\\Noyaux"),
 	Mothership    = Translate("Mothership\\Главный корабль\\Navio-mãe\\Mothership\\Navire-mère"),

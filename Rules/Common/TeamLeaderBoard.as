@@ -24,7 +24,7 @@ void onTick(CRules@ this)
 	for (u8 b = 0; b < boardBooty.length; b++)
 		for (u8 i = 0; i < cores.length; i++)
 		{
-			u8 coreTeamNum =  cores[i].getTeamNum();
+			u8 coreTeamNum = cores[i].getTeamNum();
 			if (boardBooty[b] == this.get_u16("bootyTeam_total" + coreTeamNum) && boardTeams.find(coreTeamNum) == -1)
 				boardTeams.push_back(coreTeamNum);
 		}

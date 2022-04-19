@@ -210,7 +210,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	//rotate and position blocks
 	for (uint i = 0; i < blocks.length; ++i)
 	{
-		CBlob @block = blocks[i];
+		CBlob@ block = blocks[i];
 		Vec2f offset = block.get_Vec2f("offset");
 		offset.RotateBy(blocks_angle);
 		offset.RotateBy(refBAngle);
@@ -231,7 +231,7 @@ Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
     return pos;
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("place"))
     {

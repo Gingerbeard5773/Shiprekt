@@ -1,3 +1,4 @@
+// Gingebeard @ 4/19/2022
 //core ring spritelayers
 
 void onInit(CSprite@ this)

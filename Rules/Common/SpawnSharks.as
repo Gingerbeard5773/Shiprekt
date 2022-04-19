@@ -36,7 +36,7 @@ void SpawnShark(CRules@ this, Vec2f pos)
         Vec2f spawnPos = pos + radius;
         if (isInWater(spawnPos) && !isTouchingShoal(spawnPos) && !getMap().rayCastSolid(spawnPos, pos))
         {
-            CBlob @shark = server_CreateBlob("shark", -1, spawnPos);
+            CBlob@ shark = server_CreateBlob("shark", -1, spawnPos);
         }
     }
 }
@@ -49,7 +49,7 @@ int getSharkCountInArea(CRules@ this, Vec2f pos, const f32 radius = SHARK_SPAWN_
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
-			CBlob @b = blobsInRadius[i];
+			CBlob@ b = blobsInRadius[i];
 			if (b.getName() == "shark")
 			{
 				sharks++;

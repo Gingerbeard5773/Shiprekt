@@ -1,5 +1,6 @@
 //#define CLIENT_ONLY
-
+// Gingerbeard @ 2/23/2022
+// taken from base kag and manipulated for multiple team support
 //note: the mothership kills and deaths are set in Mothership.as. the score at Booty.as
 
 #include "ScoreboardCommon.as";

@@ -58,7 +58,7 @@ Ship@ getShip(CBlob@ this) //reference a ship from a non-block (e.g human)
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
-			CBlob @b = blobsInRadius[i];
+			CBlob@ b = blobsInRadius[i];
             const int color = b.getShape().getVars().customData;
             if (color > 0)
             {
@@ -122,7 +122,7 @@ bool blocksOverlappingShip(CBlob@[]@ blocks)
 {
     for (uint i = 0; i < blocks.length; ++i)
     {
-        CBlob @block = blocks[i];
+        CBlob@ block = blocks[i];
         if (blockOverlappingShip(block))
             return true;
     }

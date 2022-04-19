@@ -158,10 +158,9 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
     if (player !is null)
     {
         // remove previous players blob
-        CBlob @blob = player.getBlob();		   
+        CBlob@ blob = player.getBlob();		   
         if (blob !is null)
         {
-            CBlob @blob = player.getBlob();
             blob.server_SetPlayer(null);
             blob.server_Die();
         }

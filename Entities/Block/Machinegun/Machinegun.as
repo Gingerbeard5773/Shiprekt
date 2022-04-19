@@ -114,7 +114,7 @@ bool canIncreaseFirePause(CBlob@ this)
 	return (MIN_FIRE_PAUSE < getGameTime());
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("fire"))
     {

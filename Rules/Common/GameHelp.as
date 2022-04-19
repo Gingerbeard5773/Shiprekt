@@ -102,7 +102,7 @@ void onRender(CRules@ this)
 		//welcome
 		if (justJoined)
 		{
-			string intro = Trans::Welcome+" Gingerbeard.";
+			string intro = Trans::Welcome+" Gingerbeard."; //last editor
 			
 			Vec2f introSize;
 			GUI::GetTextDimensions(intro, introSize);

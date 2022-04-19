@@ -55,7 +55,7 @@ void onTick(CBlob@ this)
 		}
 	}*/
 
-	if (isClient() && this.hasTag('critical'))
+	if (isClient() && this.hasTag("critical"))
 	{
 		//Ship@ ship = getShip(this.getShape().getVars().customData);
 		//ship.vel *= 0.8f;

@@ -1,3 +1,5 @@
+// GingerBeard @ 4/14/2022
+
 void onInit(CBlob@ this)
 {
 	this.Tag("plank");

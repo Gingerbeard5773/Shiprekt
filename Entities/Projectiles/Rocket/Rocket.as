@@ -270,8 +270,7 @@ void onDie(CBlob@ this)
 		{
 			for (uint i = 0; i < blobsInRadius.length; i++)
 			{
-				CBlob @b = blobsInRadius[i];
-				
+				CBlob@ b = blobsInRadius[i];
 				if (!b.hasTag("hasSeat") && !b.hasTag("mothership") && b.hasTag("block") && b.getShape().getVars().customData > 0)
 					this.server_Hit(b, Vec2f_zero, Vec2f_zero, getDamage(b) * SPLASH_DAMAGE, Hitters::explosion, false);
 			}

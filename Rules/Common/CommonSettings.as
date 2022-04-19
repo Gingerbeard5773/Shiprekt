@@ -70,7 +70,7 @@ void onInit(CRules@ this)
 
 	//sandbox notice
 	if (getPlayersCount() == 0)
-		client_AddToChat( "> Free building mode set until more players join! <");
+		client_AddToChat("> Free building mode set until more players join! <");
 	//warn for black water glitch
 	/*if (v_postprocess)
 	{
@@ -115,7 +115,7 @@ void ShowTeamMenu(CRules@ this)
     }
 }
 
-void ReadChangeTeam(CRules@ this, CBitStream @params, int team)
+void ReadChangeTeam(CRules@ this, CBitStream@ params, int team)
 {
     CPlayer@ player = getPlayerByNetworkId(params.read_netid());
     if (player is getLocalPlayer())
@@ -125,7 +125,7 @@ void ReadChangeTeam(CRules@ this, CBitStream @params, int team)
     }
 }
 
-void onCommand(CRules@ this, u8 cmd, CBitStream @params)
+void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("pick teams"))
     {

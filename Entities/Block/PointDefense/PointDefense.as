@@ -99,7 +99,7 @@ void Auto(CBlob@ this)
 	{
 		for (uint i = 0; i < blobsInRadius.length; i++)
 		{
-			CBlob @b = blobsInRadius[i];
+			CBlob@ b = blobsInRadius[i];
 			if (b.getTeamNum() != this.getTeamNum()
 					&& (b.getName() == "human"|| b.hasTag("projectile")))
 			{
@@ -216,7 +216,7 @@ void Rotate(CBlob@ this, Vec2f aimVector)
 	}
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("fire"))
     {

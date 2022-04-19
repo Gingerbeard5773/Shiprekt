@@ -58,10 +58,12 @@ void onTick(CRules@ this)
 					{
 						CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
 						if (b !is null)
+						{
 							if (b.hasTag("engine"))
 								propellers++;
 							else if (b.hasTag("coupling"))
 								couplings++;
+						}
 					}
 
 					if (((ship.blocks.length - propellers - couplings)/propellers > 3) || this.isWarmup())

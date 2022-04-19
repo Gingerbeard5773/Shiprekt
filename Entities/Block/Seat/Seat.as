@@ -497,7 +497,7 @@ void onTick(CBlob@ this)
 }
 
 //stop props on sit down if possible
-void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
+void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ attachedPoint)
 {
 	if (isServer())
 	{

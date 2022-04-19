@@ -39,6 +39,8 @@ void onTick(CRules@ this)
 	}
 }
 
+// Water rendering by GoldenGuy
+
 #ifdef STAGING
 
 void onInit(CRules@ this)

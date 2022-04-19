@@ -1,10 +1,10 @@
 // fzzle @ 25/03/17
 
-#include 'ShipsCommon.as';
-#include 'AccurateSoundPlay.as';
-#include 'ExplosionEffects.as';
-#include 'WaterEffects.as';
-#include 'Hitters.as';
+#include "ShipsCommon.as";
+#include "AccurateSoundPlay.as";
+#include "ExplosionEffects.as";
+#include "WaterEffects.as";
+#include "Hitters.as";
 
 namespace Destruct
 {
@@ -13,20 +13,22 @@ namespace Destruct
 	{
 		Vec2f position = this.getPosition();
 
-		//effects
-		directionalSoundPlay('ShipExplosion', position);
-		makeWaveRing(position, 4.5f, 7);
-		makeLargeExplosionParticle(position);
-		ShakeScreen(45, 40, position);
+		if (isClient())
+		{
+			//effects
+			directionalSoundPlay("ShipExplosion", position);
+			makeWaveRing(position, 4.5f, 7);
+			makeLargeExplosionParticle(position);
+			ShakeScreen(45, 40, position);
+		}
 
 		if (!isServer()) return;
 
 		// Damage nearby entities
 		CMap@ map = getMap();
-		array<CBlob@> surrounding;
+		CBlob@[] surrounding;
 
 		map.getBlobsInRadius(position, radius, @surrounding);
-
 		for (uint16 i = 0; i < surrounding.length; ++ i)
 		{
 			CBlob@ blob = surrounding[i];

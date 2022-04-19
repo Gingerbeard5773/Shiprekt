@@ -135,7 +135,7 @@ void ChainReaction(CBlob@ this, u32 time)
 	}
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("activate") && !this.hasTag("activated"))
 		Activate(this, params.read_u32());

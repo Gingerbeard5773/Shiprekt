@@ -21,7 +21,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	}
 }
 
-void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("decouple"))
     {
