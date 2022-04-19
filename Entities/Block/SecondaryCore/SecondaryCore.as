@@ -1,6 +1,6 @@
 // fzzle @ 25/03/17
 #include "TeamColour.as"
-#include 'DestructCommon.as';
+#include "DestructCommon.as";
 
 const uint16 SELF_DESTRUCT_SECONDS = 8;
 const float BLAST_RADIUS = 100.0f;
@@ -30,31 +30,30 @@ void onTick(CBlob@ this)
 {
 	uint8 team = this.getTeamNum();
 
-	if (isServer())
-	{ 
+	/*if (isServer())
+	{
+		//heal humans every so often if they are overlapping this block
 		if (getGameTime() % 60 == 0)
 		{
-			CBlob@[] humans;
-			getBlobsByName("human", humans);
-
-			for (uint i = 0; i < humans.length; ++ i)
+			Ship@ ship = getShip(this.getShape().getVars().customData);
+			if (ship !is null && !ship.isMothership)
 			{
-				CBlob@ human = humans[i];
+				CBlob@[] humans;
+				getBlobsByName("human", humans);
 
-				if (human.getTeamNum() != team || human.getHealth() >= human.getInitialHealth())
-					continue;
+				for (uint i = 0; i < humans.length; ++ i)
+				{
+					CBlob@ human = humans[i];
+					if (human.getTeamNum() != team || human.getHealth() >= human.getInitialHealth())
+						continue;
 
-				Ship@ ship = getShip(this.getShape().getVars().customData);
-				if (ship is null) continue;
+					if (!this.isOverlapping(human)) continue;
 
-				if (ship.isMothership) continue;
-
-				if (!this.isOverlapping(human)) continue;
-
-				human.server_Heal(HEAL_AMOUNT);  
+					human.server_Heal(HEAL_AMOUNT);  
+				}
 			}
 		}
-	}
+	}*/
 
 	if (isClient() && this.hasTag('critical'))
 	{
@@ -77,21 +76,23 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 {
 	if (damage >= this.getHealth())
 	{
-		if (this.hasTag('critical')) return 0.0f;
+		if (this.hasTag("critical")) return 0.0f;
 
 		CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
 		if (owner !is null)
 			this.SetDamageOwnerPlayer(owner);
 		
-		this.Tag('critical');
+		this.Tag("critical");
 		this.server_SetTimeToDie(SELF_DESTRUCT_SECONDS);
+		
+		if (isClient())
+		{
+			Vec2f pos = this.getPosition();
+			directionalSoundPlay("ShipExplosion", pos);
+			makeSmallExplosionParticle(pos);
+		}
 
-		Vec2f position = this.getPosition();
-
-		directionalSoundPlay('ShipExplosion', position);
-		makeSmallExplosionParticle(position);
-
-		this.AddScript('Block_Explode.as');
+		this.AddScript("Block_Explode.as");
 
 		const int color = this.getShape().getVars().customData;
 		if (color == 0) return 0.0f;
@@ -102,14 +103,13 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 		for (uint i = 0; i < ship.blocks.length; ++ i)
 		{
 			ShipBlock@ block = ship.blocks[i];
-
 			CBlob@ blob = getBlobByNetworkID(block.blobID);
 
 			if (blob !is null && this.getTeamNum() == blob.getTeamNum())
 			{
 				if (i % 4 == 0 && !blob.hasTag("coupling"))
 				{
-					blob.AddScript('Block_Explode.as');
+					blob.AddScript("Block_Explode.as");
 				}
 			}
 		}
