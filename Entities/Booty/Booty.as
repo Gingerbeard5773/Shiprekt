@@ -135,7 +135,7 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 		if (victimShip !is null && victimShip.blocks.length > 3 //minimum size requirement
 			&& (victimShip.owner != "" || victimShip.isMothership) //verified ship
 			&& victim.getTeamNum() != attacker.getTeamNum() //not teammates
-			&& (victim.hasTag("weapon") || victim.hasTag("bomb") || victim.hasTag("seat") || victim.hasTag("mothership") || //for sure reward
+			&& (victim.hasTag("weapon") || victim.hasTag("bomb") || victim.hasTag("seat") || victim.hasTag("mothership") || victim.hasTag("secondaryCore") || //for sure reward
 				rewardBlocks) //individual blocks for each
 			)
 		{
@@ -150,7 +150,7 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 					reward += Maths::Clamp(reward/2, 1, 3);
 				else if (victim.hasTag("weapon"))
 					reward += Maths::Clamp(reward/2, 1, 8);
-				else if (victim.hasTag("bomb"))
+				else if (victim.hasTag("bomb") || victim.hasTag("secondaryCore"))
 					reward += Maths::Clamp(reward/2, 2, 10);
 				else if (victim.hasTag("mothership"))
 					reward *= 2.0f;
