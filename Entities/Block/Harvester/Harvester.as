@@ -98,7 +98,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
 				
-				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector))) 
+				Ship@ ship = getShip(b.getShape().getVars().customData);
+				
+				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector) && (ship !is null && ship.owner != ""))) 
 					continue;
 
 				if (b.hasTag("block") && b.getShape().getVars().customData > 0)
@@ -118,7 +120,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					const f32 initialHealth = b.getInitialHealth();
 					f32 currentReclaim = b.get_f32("current reclaim");
 
-					Ship@ ship = getShip(b.getShape().getVars().customData);
 					if (ship !is null && bCost > 0)
 					{
 						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
