@@ -12,6 +12,7 @@
 
 const int CONSTRUCT_VALUE = 5;
 const int CONSTRUCT_RANGE = 48;
+const f32 MOTHERSHIP_HEAL = 0.1f;
 const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
@@ -168,16 +169,19 @@ void Move(CBlob@ this)
 				moveVel *= Human::swimSlow;
 			}
 
-			const u32 gameTime = getGameTime();
-			u8 tickStep = v_fastrender ? 15 : 5;
-
-			if ((gameTime + this.getNetworkID()) % tickStep == 0)
-				MakeWaterParticle(pos, Vec2f()); 
-
-			if (this.wasOnGround() && gameTime - this.get_u32("lastSplash") > 45)
+			if (isClient())
 			{
-				directionalSoundPlay("SplashFast", pos);
-				this.set_u32("lastSplash", gameTime);
+				const u32 gameTime = getGameTime();
+				u8 tickStep = v_fastrender ? 15 : 5;
+
+				if ((gameTime + this.getNetworkID()) % tickStep == 0)
+					MakeWaterParticle(pos, Vec2f()); 
+
+				if (this.wasOnGround() && gameTime - this.get_u32("lastSplash") > 45)
+				{
+					directionalSoundPlay("SplashFast", pos);
+					this.set_u32("lastSplash", gameTime);
+				}
 			}
 		}
 		else
@@ -188,12 +192,19 @@ void Move(CBlob@ this)
 				Punch(this);
 			}
 			
-			//speedup on own mothership
+			//when on our mothership
 			if (ship !is null && ship.isMothership && ship.centerBlock !is null)
 			{
 				CBlob@ thisCore = getMothership(this.getTeamNum());
 				if (thisCore !is null && thisCore.getShape().getVars().customData == ship.centerBlock.getShape().getVars().customData)
-					moveVel *= 1.35f;
+				{
+					moveVel *= 1.35f; //speedup on own mothership
+					
+					if (isServer() && getGameTime() % 60 == 0) //heal on own mothership
+					{
+						this.server_Heal(MOTHERSHIP_HEAL);
+					}
+				}
 			}
 		}
 		
@@ -611,11 +622,11 @@ void Punch(CBlob@ this)
 	Vec2f aimVector = this.getAimPos() - pos;
 	
     HitInfo@[] hitInfos;
-	if (map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
+	if (this.isMyPlayer() && map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
 	{
 		for (uint i = 0; i < hitInfos.length; i++)
 		{
-			CBlob @b = hitInfos[i].blob;
+			CBlob@ b = hitInfos[i].blob;
 			if (b is null) continue;
 			//dirty fix: get occupier if seat
 			if (b.hasTag("hasSeat"))
@@ -644,12 +655,9 @@ void Punch(CBlob@ this)
 				
 				if (!hitBlock)
 				{
-					if (this.isMyPlayer())
-					{
-						CBitStream params;
-						params.write_netid(b.getNetworkID());
-						this.SendCommand(this.getCommandID("punch"), params);
-					}
+					CBitStream params;
+					params.write_netid(b.getNetworkID());
+					this.SendCommand(this.getCommandID("punch"), params);
 					return;
 				}
 			}
@@ -858,7 +866,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			if (ship !is null)
 			{
 				string shipOwner = ship.owner;
-				CBlob@ mBlobOwnerBlob = getBlobByNetworkID(mBlob.get_netid("ownerID"));
 				
 				if (currentTool == "deconstructor" && !mBlob.hasTag("mothership") && mBlobCost > 0)
 				{
@@ -883,7 +890,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 						this.set_bool("reclaimPropertyWarn", true);					
 					}
 					
-					if ((currentReclaim - deconstructAmount) <=0)
+					if ((currentReclaim - deconstructAmount) <= 0)
 					{
 						server_addPlayerBooty(thisPlayer.getUsername(), (!mBlob.hasTag("coupling") ? getCost(mBlob.getName()) : 1) *(mBlobHealth/mBlobInitHealth));
 						directionalSoundPlay("/ChaChing.ogg", pos);

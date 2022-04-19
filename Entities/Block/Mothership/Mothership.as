@@ -16,6 +16,7 @@ const f32 HEAL_RADIUS = 16.0f;
 const u16 SELF_DESTRUCT_TIME = 8 * 30;
 const f32 BLAST_RADIUS = 25 * 8.0f;
 const u8 MAX_TEAM_FLAKS = 40;
+u8 maxBlockTimer; //can be global since only used for myplayer
 
 void onInit(CBlob@ this)
 {
@@ -344,27 +345,9 @@ void onTick(CBlob@ this)
 		}
 	}*/
 
-	//heal
 	if (getGameTime() % 60 == 0)
 	{
 		u8 coreTeam = this.getTeamNum();
-		
-		if (isServer())
-		{
-			CBlob@[] humans;
-			getBlobsByName("human", humans);
-
-			for (int i = 0; i < humans.length; i++)
-			{
-				CBlob@ human = humans[i];
-				if (human.getTeamNum() == coreTeam && human.getHealth() < human.getInitialHealth())
-				{
-					Ship@ hShip = getShip(human);
-					if (hShip !is null && hShip.centerBlock !is null && color == hShip.centerBlock.getShape().getVars().customData)
-						human.server_Heal(HEAL_AMMOUNT);
-				}
-			}
-		}
 
 		//dmgmanaging
 		f32 msDMG = rules.get_f32("msDMG" + coreTeam);
@@ -393,15 +376,13 @@ void onTick(CBlob@ this)
 	}
 	
 	//displayed by ShiprektHUD.as
-	if (rules.get_bool("display_flak_team_max"))
+	if (isClient() && rules.get_bool("display_flak_team_max"))
 	{
-		rules.add_u8("flak_team_max_timer", 1);
-		if (rules.get_u8("flak_team_max_timer") == 2)
-			client_AddToChat("Too many team flaks!");
-		if (rules.get_u8("flak_team_max_timer") >= 30*5)
+		maxBlockTimer++;
+		if (maxBlockTimer >= 30*5)
 		{
 			rules.set_bool("display_flak_team_max", false);
-			rules.set_u8("flak_team_max_timer", 0);
+			maxBlockTimer = 0;
 		}
 	}
 }
