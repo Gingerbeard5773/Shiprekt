@@ -461,6 +461,7 @@ void onTick(CBlob@ this)
 				{
 					CBlob@[] fireCannons;
 					Vec2f aim = occupier.getAimPos() - this.getPosition();//relative to seat
+					CBlob@ fitCannon = getMap().getBlobAtPosition(occupier.getAimPos());
 					
 					for (uint i = 0; i < cannons.length; ++i)
 					{
@@ -469,7 +470,9 @@ void onTick(CBlob@ this)
 							continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
-						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
+						if (fitCannon !is null)
+							fireCannons.push_back(fitCannon);
+						else if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
 							fireCannons.push_back(weap);
 					}
 					
