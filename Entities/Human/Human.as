@@ -552,6 +552,10 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			description = Trans::LauncherDesc+"\n"+Trans::AmmoCap+": 8";
 			AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, warmup);
 		}
+		{ //Mortar
+			description = Trans::MortarDesc+"\n"+Trans::AmmoCap+": 5";
+			AddBlock(this, menu, "mortar", "$MORTAR$", Trans::Mortar, description, core, 6.0f, warmup);
+		}
 	}
 }
 
