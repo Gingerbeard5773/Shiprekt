@@ -11,11 +11,11 @@ const uint8 MAX_AMMO = 12;
 
 // Amount of ammunition to refill when
 // connected to motherships and stations
-const uint8 REFILL_AMOUNT = 3;
+const uint8 REFILL_AMOUNT = 1;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 2;
+const uint8 REFILL_SECONDS = 5;
 
 // How often to refill when connected
 // to secondary cores
@@ -60,25 +60,34 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	if (this.getShape().getVars().customData <= 0)
-		return;
+	int col = this.getShape().getVars().customData;
+	if (col <= 0) return; //not placed yet
 
 	u32 gameTime = getGameTime();
 
 	//fire ready
 	u32 fireTime = this.get_u32("fire time");
 	this.set_bool("fire ready", (gameTime > fireTime + FIRE_RATE));
-	//sprite ready
-	if (fireTime + FIRE_RATE - 15 == gameTime)
+	
+	if (isClient())
 	{
-		this.getSprite().animation.SetFrameIndex(0);
-
-		directionalSoundPlay("Charging.ogg", this.getPosition(), 2.0f);
+		//sprite ready
+		if (fireTime + FIRE_RATE - 15 == gameTime)
+		{
+			this.getSprite().animation.SetFrameIndex(0);
+			directionalSoundPlay("Charging.ogg", this.getPosition(), 2.0f);
+		}
 	}
 
 	if (isServer())
 	{
-		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+		Ship@ ship = getShip(col);
+		if (ship !is null)
+		{
+			checkDocked(this, ship);
+			if (this.get_bool("fire ready"))
+				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+		}
 	}
 }
 
@@ -86,7 +95,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("fire"))
 	{
-		if (!this.get_bool("fire ready")) return;
+		if (!this.get_bool("fire ready") || this.get_bool("docked")) return;
 
 		Vec2f pos = this.getPosition();
 

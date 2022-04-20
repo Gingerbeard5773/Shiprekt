@@ -14,7 +14,7 @@ const uint8 REFILL_AMOUNT = 1;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 10;
+const uint8 REFILL_SECONDS = 8;
 
 // How often to refill when connected
 // to secondary cores
@@ -52,18 +52,24 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	if (this.getShape().getVars().customData <= 0)//not placed yet
-		return;
+	int col = this.getShape().getVars().customData;
+	if (col <= 0) return; //not placed yet
 
 	if (isServer())
 	{
-		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+		Ship@ ship = getShip(col);
+		if (ship !is null)
+		{
+			checkDocked(this, ship);
+			if (canShoot(this))
+				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+		}
 	}
 }
 
 bool canShoot(CBlob@ this)
 {
-	return (this.get_u32("fire time") + FIRE_RATE < getGameTime()) ;
+	return (this.get_u32("fire time") + FIRE_RATE < getGameTime());
 }
 
 bool isClear(CBlob@ this)
@@ -92,7 +98,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if (!canShoot(this))
+		if (!canShoot(this) || this.get_bool("docked"))
 			return;
 
 		u16 shooterID;

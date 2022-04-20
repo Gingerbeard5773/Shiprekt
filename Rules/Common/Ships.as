@@ -150,7 +150,7 @@ bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
 			blockHooks.update("onColored", @block);
 	}
 	
-	SetUpdateSeatArrays(shipColor);
+	SetUpdateArrays(shipColor);
 	@ship.centerBlock = null; //reset ship so positions update
 	StoreVelocities(ship);
 
@@ -191,13 +191,13 @@ void GenerateShips(CRules@ this)
 				this.getLast("ships", @p_ship);
 				
 				ColorBlocks(b, p_ship, color);
-				SetUpdateSeatArrays(color);
+				SetUpdateArrays(color);
 			}
 		}	
 		for (uint i = 0; i < blocks.length; ++i)
 		{
 			CBlob@ b = blocks[i];
-			b.set_u16("last color", b.getShape().getVars().customData);				
+			b.set_u16("last color", b.getShape().getVars().customData);
 		}
 	}
 
@@ -224,7 +224,7 @@ void SeperateShip(CRules@ this, Ship@ ship)
 	for (uint i = 0; i < blocks.length; ++i)
 	{
 		if (blocks[i].getShape().getVars().customData > 0)
-			blocks[i].getShape().getVars().customData = 0;			
+			blocks[i].getShape().getVars().customData = 0;
 	}
 
 	for (uint i = 0; i < blocks.length; ++i)
@@ -251,13 +251,13 @@ void SeperateShip(CRules@ this, Ship@ ship)
 			}
 			
 			ColorBlocks(b, p_ship, newCol);
-			SetUpdateSeatArrays(newCol);
+			SetUpdateArrays(newCol);
 		}
 	}	
 	for (uint i = 0; i < blocks.length; ++i)
 	{
 		CBlob@ b = blocks[i];
-		b.set_u16("last color", b.getShape().getVars().customData);				
+		b.set_u16("last color", b.getShape().getVars().customData);
 	}
 }
 
@@ -532,7 +532,8 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 						for (int q = 0; q < seatIDs.length; q++)
 						{
 							CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
-							if (oldestSeat !is null && coreLinkedDirectional(oldestSeat, getGameTime(), core.getPosition()))
+							u16[] checkedIDs;
+							if (oldestSeat !is null && coreLinkedDirectional(oldestSeat, checkedIDs, core.getPosition()))
 							{
 								oldestSeatOwner = oldestSeat.get_string("playerOwner");
 								break;
@@ -661,16 +662,16 @@ void StoreVelocities(Ship@ ship)
 	}
 }
 
-void SetUpdateSeatArrays(int shipColor)
+void SetUpdateArrays(int shipColor)
 {
-	CBlob@[] seats;
-	if (getBlobsByTag("seat", @seats))
+	CBlob@[] blocks;
+	getBlobsByTag("weapon", @blocks);
+	getBlobsByTag("seat", @blocks);
+	
+	for (uint i = 0; i < blocks.length; i++)
 	{
-		for (uint i = 0; i < seats.length; i++)
-		{
-			if (seats[i].getShape().getVars().customData == shipColor)
-				seats[i].set_bool("updateArrays", true);
-		}
+		if (blocks[i].getShape().getVars().customData == shipColor)
+			blocks[i].set_bool("updateArrays", true);
 	}
 }
 

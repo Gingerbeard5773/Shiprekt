@@ -13,6 +13,9 @@
 
 ///TODO TRANSLATIONS:
 /// Wins!   #used in context of a winning team
+/// Weapons refill very slowly.    #help menu tip
+/// Dock on a mothership to refill spent ammunition.
+/// 
 /// Wheel Joint   #name for wheel joint block
 /// A wheel joint, it can rotate connected parts of a ship to face different directions   #wheel desc
 /// Plank   #plank 
@@ -27,6 +30,8 @@
 /// Blow up!
 ///
 /// #game tips
+/// Weapons on a miniship refill faster than weapons on a mothership.
+/// Watch your shooting! Weapons can only refill if they aren't being fired!
 /// A direct bomb hit to a Core can deal significant damage!
 /// Refill a weapon's ammunition by docking with your mothership or station.
 /// Miniships can dock not just with their own mothership, but enemy motherships as well!
@@ -256,5 +261,11 @@ const string[] shiprektTips =
 	Translate("Repulsors will activate propellers in near vicinity on detonation.\\репульсоры активируют пропеллеры в непосредственной близости от детонации.\\repulsores ativarão as hélices nas proximidades na detonação.\\odpychacze aktywują śmigła w pobliżu podczas detonacji.\\les répulseurs activent les hélices à proximité lors de leur détonation."),
 	Translate("Keep an eye on your torpedoes, they can change direction if they bounce off the border!\\следите за своими торпедами, они могут изменить направление, если отскочат от границы карты!\\fique de olho em seus torpedos, eles podem mudar de direção se baterem no limite do mapa!\\miej oko na swoje torpedy, mogą zmienić kierunek, jeśli odbiją się od granicy!\\gardez un œil sur vos torpilles, elles peuvent changer de direction si elles rebondissent sur la bordure!"),
 	Translate("Killing players while you're onboard their mothership gives you 3x the Booty reward!\\убивая игроков, пока вы находитесь на борту их материнского корабля, вы получаете в 3 раза больше добычи!\\matar jogadores enquanto você estiver no Navio-mãe deles fornecerá 3x a recompensa de Saque!\\Zabijanie graczy, gdy jesteś na pokładzie ich statku-matki, daje ci 3x nagrodę Booty!\\tuer des joueurs alors que vous êtes à bord de leur navire-mère vous donne 3x la récompense de Trésor!"),
-	Translate("Auxilliary cores can be improvised into high-end explosives.\\вспомогательные сердца могут быть импровизированы в высококлассные взрывчатые вещества.\\núcleos auxiliares podem ser improvisados em explosivos de alta qualidade.\\rdzenie pomocnicze można improwizować w wysokiej klasy materiały wybuchowe.\\les noyaux auxiliaires peuvent être des explosifs improvisés haut de gamme.")
+	Translate("Auxilliary cores can be improvised into high-end explosives.\\вспомогательные сердца могут быть импровизированы в высококлассные взрывчатые вещества.\\núcleos auxiliares podem ser improvisados em explosivos de alta qualidade.\\rdzenie pomocnicze można improwizować w wysokiej klasy materiały wybuchowe.\\les noyaux auxiliaires peuvent être des explosifs improvisés haut de gamme."),
+	"Weapons on a miniship refill faster than weapons on a mothership.",
+	"Watch your shooting! Weapons can only refill if they aren't being fired!",
+	"A direct bomb hit to a Core can deal significant damage!",
+	"Refill a weapon's ammunition by docking with your mothership or station.",
+	"Miniships can dock not just with their own mothership, but enemy motherships as well!",
+	"Bombs stack with power when placed together."
 };

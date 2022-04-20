@@ -77,8 +77,8 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	if (this.getShape().getVars().customData <= 0)//not placed yet
-		return;
+	int col = this.getShape().getVars().customData;
+	if (col <= 0) return; //not placed yet
 
 	u32 gameTime = getGameTime();
 	f32 currentFirePause = this.get_f32("fire pause");
@@ -96,7 +96,13 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+		Ship@ ship = getShip(col);
+		if (ship !is null)
+		{
+			checkDocked(this, ship);
+			if (canShoot(this))
+				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+		}
 	}
 
 	//reset the random seed periodically so joining clients see the same bullet paths
@@ -118,7 +124,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if (!canShoot(this))
+		if (!canShoot(this) || this.get_bool("docked"))
 			return;
 
 		u16 shooterID;

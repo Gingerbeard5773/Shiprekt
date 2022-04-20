@@ -97,7 +97,7 @@ CBlob@ getMothership(const u8 team) //Gets the mothership core block on determin
 {
     CBlob@[] ships;
     getBlobsByTag("mothership", @ships);
-    for (uint i=0; i < ships.length; i++)
+    for (uint i = 0; i < ships.length; i++)
     {
         CBlob@ ship = ships[i];  
         if (ship.getTeamNum() == team)
@@ -148,12 +148,13 @@ bool blockOverlappingShip(CBlob@ blob)
     return false;
 }
 
-bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos)//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
+bool coreLinkedDirectional(CBlob@ this, u16[] checkedIDs, Vec2f corePos)//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
 {
 	if (this.hasTag("mothership"))
 		return true;
 
-	this.set_u16("checkToken", token);
+	checkedIDs.push_back(this.getNetworkID());
+	
 	bool childsLinked = false;
 	Vec2f thisPos = this.getPosition();
 	
@@ -168,8 +169,9 @@ bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos)//checks if the
 			CBlob@ b = overlapping[i];
 			Vec2f bPos = b.getPosition();
 			
+			//estimate the best possible route
 			f32 coreDist = (bPos - corePos).LengthSquared();
-			if (b.get_u16("checkToken") != token && (bPos - thisPos).LengthSquared() < 78 && !b.hasTag("removable") && b.hasTag("block"))//maybe should do a color > 0 check
+			if (checkedIDs.find(b.getNetworkID()) < 0 && (bPos - thisPos).LengthSquared() < 78 && !b.hasTag("removable") && b.hasTag("block"))//maybe should do a color > 0 check
 			{
 				if (coreDist <= minDist)
 				{
@@ -190,7 +192,7 @@ bool coreLinkedDirectional(CBlob@ this, u16 token, Vec2f corePos)//checks if the
 		for (int i = 0; i < optimal.length; i++)
 		{
 			//print((optimal[i].hasTag("mothership") ? "[>] " : "[o] ") + optimal[i].getNetworkID());
-			if (coreLinkedDirectional(optimal[i], token, corePos))
+			if (coreLinkedDirectional(optimal[i], checkedIDs, corePos))
 			{
 				childsLinked = true;
 				break;

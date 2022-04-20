@@ -63,8 +63,8 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	if (this.getShape().getVars().customData <= 0)
-		return;
+	int col = this.getShape().getVars().customData;
+	if (col <= 0) return; //not placed yet
 
 	CSprite@ sprite = this.getSprite();
     CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
@@ -76,7 +76,9 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		refillAmmo(this, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+		Ship@ ship = getShip(col);
+		if (ship !is null && canShootAuto(this))
+			refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 	}
 }
 

@@ -102,7 +102,10 @@ void onTick(CBlob@ this)
 					{
 						CBlob@ core = getMothership(this.getTeamNum());//could get the core properly based on adjacent blocks
 						if (core !is null)
-							cLinked = coreLinkedDirectional(block, gameTime, core.getPosition());
+						{
+							u16[] checkedIDs;
+							cLinked = coreLinkedDirectional(block, checkedIDs, core.getPosition());
+						}
 					}
 					 
 					if (cLinked)
