@@ -1,4 +1,3 @@
-//trap block script for devious builders
 #include "AccurateSoundPlay.as";
 
 void onInit(CBlob@ this)
@@ -11,20 +10,17 @@ void onInit(CBlob@ this)
 	this.getShape().getConsts().collidable = true;
 
 	CSprite@ sprite = this.getSprite();
-    if (sprite !is null)
-    {
-        //default
-        {
-            Animation@ anim = sprite.addAnimation("default", 0, false);
-            anim.AddFrame(0);
-        }
-        //folding
-        {
-            Animation@ anim = sprite.addAnimation("open", 2, false);
-            int[] frames = {0, 1};
-            anim.AddFrames(frames);
-        }
-    }
+	//default
+	{
+		Animation@ anim = sprite.addAnimation("default", 0, false);
+		anim.AddFrame(0);
+	}
+	//folding
+	{
+		Animation@ anim = sprite.addAnimation("open", 2, false);
+		int[] frames = {0, 1};
+		anim.AddFrames(frames);
+	}
 }
 
 bool isOpen(CBlob@ this)
@@ -32,7 +28,7 @@ bool isOpen(CBlob@ this)
 	return !this.getShape().getConsts().collidable;
 }
 
-void setOpen(CBlob@ this, bool open, bool faceLeft = false)
+void setOpen(CBlob@ this, bool open)
 {
 	CSprite@ sprite = this.getSprite();
 
@@ -40,7 +36,6 @@ void setOpen(CBlob@ this, bool open, bool faceLeft = false)
 	{
         sprite.SetAnimation("open");//update sprite
 		this.getShape().getConsts().collidable = false;
-		sprite.SetFacingLeft(faceLeft);   // swing left or right
 		directionalSoundPlay("/DoorOpen.ogg", this.getPosition());
 	}
 	else
@@ -58,49 +53,31 @@ bool canClose(CBlob@ this)
 	for (uint step = 0; step < count; ++step)
 	{
 		CBlob@ blob = this.getTouchingByIndex(step);
-		if (blob.getName() == "human")
-		{
+		if (blob.hasTag("player"))
 			collided++;
-		}
 	}
 	return collided == 0;
-}
-
-void onCollision(CBlob@ this, CBlob@ blob, bool solid)
-{
-	if (blob !is null)
-	{
-		this.getCurrentScript().tickFrequency = 3;
-	}
 }
 
 void onEndCollision(CBlob@ this, CBlob@ blob)
 {
 	if (blob !is null)
 	{
-		if (canClose(this))
-		{
-			if (isOpen(this))
-			{
-				setOpen(this, false);
-			}
-			this.getCurrentScript().tickFrequency = 0;
-		}
+		if (canClose(this) && isOpen(this))
+			setOpen(this, false);
 	}
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
-	if (isOpen(this))
+	if (isOpen(this) || this.getShape().getVars().customData <= 0)
 		return false;
 
 	if (blob.getShape().getConsts().collidable && //can collide
 		this.getTeamNum() == blob.getTeamNum() && //is same team
 		blob.hasTag("player"))                    //is human
 	{
-		Vec2f direction = Vec2f(1, 0);
-		direction.RotateBy(this.getAngleDegrees());
-		setOpen(this, true, ((this.getPosition() - blob.getPosition()) * direction) < 0.0f);
+		setOpen(this, true);
 		return false;
 	}
 	return true;
