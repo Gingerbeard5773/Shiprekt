@@ -234,6 +234,29 @@ Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
     return pos;
 }
 
+bool blocksOverlappingShip(CBlob@[]@ blocks)
+{
+    for (uint i = 0; i < blocks.length; ++i)
+    {
+        CBlob@ block = blocks[i];
+		
+		CBlob@[] overlapping;
+		if (block.getOverlapping(@overlapping))
+		{
+			for (uint i = 0; i < overlapping.length; i++)
+			{
+				CBlob@ b = overlapping[i];
+				if (b.getShape().getVars().customData > 0)
+				{
+					if ((b.getPosition() - block.getPosition()).getLength() < block.getRadius()*0.4f)
+						return true;
+				}
+			}
+		}
+    }
+    return false; 
+}
+
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("place"))

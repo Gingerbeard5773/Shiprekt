@@ -118,36 +118,6 @@ string getCaptainName(u8 team) //Gets the name of the mothership's captain
 	return "";
 }
 
-bool blocksOverlappingShip(CBlob@[]@ blocks)
-{
-    for (uint i = 0; i < blocks.length; ++i)
-    {
-        CBlob@ block = blocks[i];
-        if (blockOverlappingShip(block))
-            return true;
-    }
-    return false; 
-}
-
-bool blockOverlappingShip(CBlob@ blob)
-{
-    CBlob@[] overlapping;
-    if (getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @overlapping))
-    {
-        for (uint i = 0; i < overlapping.length; i++)
-        {
-            CBlob@ b = overlapping[i];
-            int color = b.getShape().getVars().customData;
-            if (color > 0)
-            {
-                if ((b.getPosition() - blob.getPosition()).getLength() < blob.getRadius()*0.4f)
-                    return true;
-            }
-        }
-    }
-    return false;
-}
-
 bool coreLinkedDirectional(CBlob@ this, u16[] checkedIDs, Vec2f corePos)//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
 {
 	if (this.hasTag("mothership"))
