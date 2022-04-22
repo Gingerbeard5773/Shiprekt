@@ -624,7 +624,8 @@ void Punch(CBlob@ this)
     HitInfo@[] hitInfos;
 	if (this.isMyPlayer() && map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
 	{
-		for (uint i = 0; i < hitInfos.length; i++)
+		const int hitLength = hitInfos.length;
+		for (uint i = 0; i < hitLength; i++)
 		{
 			CBlob@ b = hitInfos[i].blob;
 			if (b is null) continue;
@@ -642,7 +643,8 @@ void Punch(CBlob@ this)
 				HitInfo@[] rayInfos;
 				if (map.getHitInfosFromRay(this.getPosition(), -dir.Angle(), dir.Length(), this, @rayInfos))
 				{
-					for (uint q = 0; q < rayInfos.length; q++)
+					const int rayLength = rayInfos.length;
+					for (uint q = 0; q < rayLength; q++)
 					{
 						CBlob@ block = rayInfos[q].blob;
 						if (block !is null && block.hasTag("solid"))
@@ -1036,7 +1038,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				CBlob@[] crew;
 				CBlob@[] humans;
 				getBlobsByName("human", @humans);
-				for (u8 i = 0; i < humans.length; i++)
+				const int humansLength = humans.length;
+				for (u8 i = 0; i < humansLength; i++)
 				{
 					if (humans[i].getTeamNum() == teamNum && humans[i] !is this)
 					{
@@ -1046,12 +1049,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					}
 				}
 				
-				if (crew.length > 0)
+				const int crewLength = crew.length;
+				if (crewLength > 0)
 				{
 					print("$ " + pName + " transfers Booty to crew");
 					server_addPlayerBooty(pName, -transfer - fee);
-					u16 shareBooty = Maths::Floor(transfer/crew.length);
-					for (u8 i = 0; i < crew.length; i++)
+					u16 shareBooty = Maths::Floor(transfer/crewLength);
+					for (u8 i = 0; i < crewLength; i++)
 					{
 						CPlayer@ crewPlayer = crew[i].getPlayer();						
 						if (player is null) continue;

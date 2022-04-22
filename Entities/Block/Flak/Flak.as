@@ -163,7 +163,8 @@ void Auto(CBlob@ this)
 
 	if (getMap().getBlobsInRadius(pos, AUTO_RADIUS, @blobsInRadius))
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		const int blobsLength = blobsInRadius.length;
+		for (uint i = 0; i < blobsLength; i++)
 		{
 			CBlob@ b = blobsInRadius[i];
 			if (b.getTeamNum() != this.getTeamNum()
@@ -273,7 +274,8 @@ CBlob@ findFlakChild(CBlob@ this)
 	CBlob@[] flak;
 	CBlob@[] radBlobs;
 	getMap().getBlobsInRadius(this.getPosition(), CLONE_RADIUS, @radBlobs);
-	for (uint i = 0; i < radBlobs.length; i++)
+	const int blobsLength = radBlobs.length;
+	for (uint i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = radBlobs[i];
 		if (b.hasTag("flak") && !b.hasAttached() && b.get_u16("parentID") == 0 && color == b.getShape().getVars().customData)
@@ -300,19 +302,21 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 {
 	Vec2f pos = this.getPosition();
 	const f32 distanceToTarget = Maths::Max(aimVec.Length(), 80.0f);
-	HitInfo@[] hitInfos;
 	CMap@ map = getMap();
 
 	Vec2f offset = aimVec;
 	offset.Normalize();
 	offset *= 7.0f;
 
+	HitInfo@[] hitInfos;
 	map.getHitInfosFromRay(pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
 	map.getHitInfosFromRay(pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
-	if (hitInfos.length > 0)
+	
+	const int hitLength = hitInfos.length;
+	if (hitLength > 0)
 	{
 		//HitInfo objects are sorted, first come closest hits
-		for (uint i = 0; i < hitInfos.length; i++)
+		for (uint i = 0; i < hitLength; i++)
 		{
 			HitInfo@ hi = hitInfos[i];
 			CBlob@ b = hi.blob;

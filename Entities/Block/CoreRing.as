@@ -49,7 +49,8 @@ void checkBlock(CSprite@ this, CMap@ map, Vec2f pos, string layername)
 	
 	CBlob@[] blobs;
 	map.getBlobsAtPosition(pos, @blobs);
-	for (int i = 0; i < blobs.length; i++)
+	const int blobsLength = blobs.length;
+	for (int i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = blobs[i];
 		if (b.hasTag("platform") && b.getShape().getVars().customData > 0)

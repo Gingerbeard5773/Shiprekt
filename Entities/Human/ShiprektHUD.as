@@ -37,7 +37,8 @@ void onTick(CSprite@ this)
 			u16 seatID = 0;
 			CBlob@[] blobs;
 			getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @blobs);
-			for (int i = 0; i < blobs.length; i++)
+			const int blobsLength = blobs.length;
+			for (int i = 0; i < blobsLength; i++)
 			{
 				if (blobs[i].hasTag("control") && blobs[i].get_string("playerOwner") == name)
 				{
@@ -253,9 +254,9 @@ void DrawStationStatus(int teamnum, Vec2f tl, CControls@ controls)
 	CBlob@[] stations;
 	getBlobsByTag("station", @stations);
 	
-	u16 totalStationCount = stations.length;
+	const int totalStationCount = stations.length;
 	u16 teamStationCount = 0;
-	for (u8 u = 0; u < stations.length; u++)
+	for (u8 u = 0; u < totalStationCount; u++)
 	{
 		CBlob@ station = stations[u];
 		if (station is null)

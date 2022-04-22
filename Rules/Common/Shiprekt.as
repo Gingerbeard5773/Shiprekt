@@ -40,7 +40,9 @@ void onTick(CRules@ this)
 		u16 minBooty = this.get_u16("bootyRefillLimit");
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
-		for (u8 i = 0; i < cores.length; i++)
+		
+		const int coresLength = cores.length;
+		for (u8 i = 0; i < coresLength; i++)
 		{
 			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
 			if (ship !is null && ship.owner != "" && ship.owner  != "*")
@@ -54,7 +56,8 @@ void onTick(CRules@ this)
 					//consider blocks to propellers ratio
 					int propellers = 1;
 					int couplings = 0;
-					for (uint q = 0; q < ship.blocks.length; ++q)
+					const int blocksLength = ship.blocks.length;
+					for (uint q = 0; q < blocksLength; ++q)
 					{
 						CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
 						if (b !is null)
@@ -66,7 +69,7 @@ void onTick(CRules@ this)
 						}
 					}
 
-					if (((ship.blocks.length - propellers - couplings)/propellers > 3) || this.isWarmup())
+					if (((blocksLength - propellers - couplings)/propellers > 3) || this.isWarmup())
 					{
 						CBlob@ pBlob = player.getBlob();
 						CBlob@[]@ blocks;
@@ -77,7 +80,8 @@ void onTick(CRules@ this)
 			}
 		}
 		
-		for (int i = 0; i < getPlayersCount(); ++i)
+		const int plyCount = getPlayersCount();
+		for (int i = 0; i < plyCount; ++i)
 		{
 			CPlayer@ player = getPlayer(i);
 			u8 pteam = player.getTeamNum();
@@ -87,7 +91,8 @@ void onTick(CRules@ this)
 			u16 pStationCount = 0;
 			CBlob@[] stations;
 			getBlobsByTag("station", @stations);
-			for (u8 u = 0; u < stations.length; u++)
+			const int stationsLength = stations.length;
+			for (u8 u = 0; u < stationsLength; u++)
 			{
 				CBlob@ station = stations[u];
 				if (station is null)
@@ -120,10 +125,11 @@ void onTick(CRules@ this)
 		for (u8 t = 0; t < 16; t++)
 			teamPlayers.push_back(0);
 		
+		const int teamPlyLength = teamPlayers.length;
 		for (u8 p = 0; p < players; p++)
 		{
 			u8 team = getPlayer(p).getTeamNum();
-			if (team < teamPlayers.length)
+			if (team < teamPlyLength)
 				teamPlayers[team]++;
 		}
 		
@@ -133,7 +139,7 @@ void onTick(CRules@ this)
 		{
 			CPlayer@ player = getPlayer(p);
 			u8 team = player.getTeamNum();
-			if (team >= teamPlayers.length) continue;
+			if (team >= teamPlyLength) continue;
 				
 			f32 compensate = median/teamPlayers[team];
 			if (compensate > 1)
@@ -158,7 +164,9 @@ void onTick(CRules@ this)
 		CBlob@[] cores;
         getBlobsByTag("mothership", cores);
 		
-        bool oneTeamLeft = cores.length <= 1;
+		const int coresLength = cores.length;
+		
+        bool oneTeamLeft = coresLength <= 1;
 		u8 endCount = this.get_u8("endCount");
 		
 		if (oneTeamLeft && endCount == 0)//start endmatch countdown
@@ -172,7 +180,7 @@ void onTick(CRules@ this)
 				u8 teamWithPlayers = 0;
 				if (!this.isGameOver())
 				{
-					for (uint coreIt = 0; coreIt < cores.length; coreIt++)
+					for (uint coreIt = 0; coreIt < coresLength; coreIt++)
 					{
 						for (int i = 0; i < getPlayerCount(); i++)
 						{
@@ -183,7 +191,7 @@ void onTick(CRules@ this)
 					}
 				}
 				u8 coresAlive = 0;
-				for (int i = 0; i < cores.length; i++)
+				for (int i = 0; i < coresLength; i++)
 				{
 					if (!cores[i].hasTag("critical"))
 					coresAlive++;
@@ -273,8 +281,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 		if (text_in.substr(0,1) == "!")
 		{
 			string[]@ tokens = text_in.split(" ");
-
-			if (tokens.length > 1)
+			const int tokensLength = tokens.length;
+			if (tokensLength > 1)
 			{
 				CBlob@ pBlob = player.getBlob();
 				if (pBlob is null) return false;
@@ -295,7 +303,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
 				{
-					if (tokens.length > 2)
+					if (tokensLength > 2)
 						AddBot(tokens[1], parseInt(tokens[2]), 0);
 					else
 						AddBot(tokens[1]);
@@ -304,7 +312,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!team")
 				{
-					if (tokens.length > 2)
+					if (tokensLength > 2)
 					{
 						CPlayer@ nameplayer = getPlayerByUsername(tokens[1]);
 						if (nameplayer !is null)
@@ -400,12 +408,13 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					ConfigFile cfg;
 					
-					CBlob@ pBlob = player.getBlob();
-					if (pBlob is null)
-						return false;
-					
 					Vec2f playerPos = pBlob.getPosition();
 					Ship@ ship = getShip(player.getBlob());
+					if (ship is null)
+					{
+						warn("!saveship:: No ship found!");
+						return false;
+					}
 					int numBlocks = ship.blocks.length;
 					cfg.add_u16("total blocks", numBlocks);
 					for (uint i = 0; i < numBlocks; ++i)
@@ -430,12 +439,11 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					ConfigFile cfg;
 					
 					if (!cfg.loadFile("../Cache/SHIP_" + tokens[1] + ".cfg"))
+					{
+						warn("Failed to load ship "+tokens[1]);
 						return false;
-						
-					CBlob@ pBlob = player.getBlob();
-					if (pBlob is null)
-						return false;
-						
+					}
+					
 					Vec2f playerPos = pBlob.getPosition();
 				
 					int numBlocks = cfg.read_u16("total blocks");
@@ -445,8 +453,10 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						f32 blockPosX = cfg.read_f32("block" + i + "positionX");
 						f32 blockPosY = cfg.read_f32("block" + i + "positionY");
 						f32 blockAngle = cfg.read_f32("block" + i + "angle");
-						CBlob@ b = makeBlock(playerPos + Vec2f(blockPosX, blockPosY), blockAngle, blockType, pBlob.getTeamNum());
+						
+						makeBlock(playerPos + Vec2f(blockPosX, blockPosY), blockAngle, blockType, pBlob.getTeamNum());
 					}
+					print(player.getUsername()+" Generated ship "+tokens[1], color_white);
 				}
 			}
 			else
@@ -462,45 +472,41 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					if (ship !is null)
 					{
 						int numBlocks = ship.blocks.length;
-						if (isServer()) 
+						for (uint i = 0; i < numBlocks; ++i)
 						{
-							for (uint i = 0; i < numBlocks; ++i)
-							{
-								ShipBlock@ ship_block = ship.blocks[i];
-								if (ship_block is null) continue;
+							ShipBlock@ ship_block = ship.blocks[i];
+							if (ship_block is null) continue;
 
-								CBlob@ block = getBlobByNetworkID(ship_block.blobID);
-								if (block is null) continue;
-								
-								if (!block.hasTag("mothership") || numBlocks == 1)
-								{
-									block.Tag("noCollide");
-									block.server_Die();
-								}
+							CBlob@ block = getBlobByNetworkID(ship_block.blobID);
+							if (block is null) continue;
+							
+							if (!block.hasTag("mothership") || numBlocks == 1)
+							{
+								block.Tag("noCollide");
+								block.server_Die();
 							}
 						}
+						print(player.getUsername()+" destroyed "+numBlocks+" blocks", color_white);
 					}
 				}
 				else if (tokens[0] == "!clearmap")
 				{
 					CBlob@[] blocks;
 					if (getBlobsByTag("block", @blocks))
-					{							
-						if (isServer()) 
+					{
+						const int blocksLength = blocks.length;
+						for (uint i = 0; i < blocksLength; ++i)
 						{
-							for (uint i = 0; i < blocks.length; ++i)
+							CBlob@ block = blocks[i];
+							if (block is null) continue;
+							
+							if (!block.hasTag("mothership"))
 							{
-								CBlob@ block = blocks[i];
-								if (block is null) continue;
-								
-								if (!block.hasTag("mothership"))
-								{
-									block.Tag("noCollide");
-									block.server_Die();
-								}
+								block.Tag("noCollide");
+								block.server_Die();
 							}
 						}
-						print("Clearing "+blocks.length+" blocks", color_white);
+						print("Clearing "+blocksLength+" blocks", color_white);
 					}
 					return false;
 				}				
@@ -564,6 +570,11 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					print("Setting sv_test "+ (sv_test ? "on" : "off"), color_white);
 					return false;
 				}
+				else if (tokens[0] == "!performance")
+				{
+					g_measureperformance = !g_measureperformance;
+					print("Setting g_measureperformance to "+g_measureperformance, color_white);
+				}
 				else if (tokens[0] == "!freebuild") //toggle freebuild mode
 				{
 					getNet().server_SendMsg("*** Setting freebuild mode "+ (this.get_bool("freebuild") ? "off" : "on") +" ***");
@@ -587,7 +598,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					Ship[]@ ships;
 					if (!this.get("ships", @ships)) return false;
 					
-					for (uint i = 0; i < ships.length; ++i)
+					const int shipsLength = ships.length;
+					for (uint i = 0; i < shipsLength; ++i)
 					{
 						//commence pain
 						Ship@ ship = ships[i];

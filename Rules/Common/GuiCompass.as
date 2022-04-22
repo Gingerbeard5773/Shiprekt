@@ -88,7 +88,8 @@ void onTick(CRules@ this)
 	//cores
     CBlob@[] cores;
     getBlobsByTag("mothership", @cores);
-	for (uint i = 0; i < cores.length; i++)
+	const int coresLength = cores.length;
+	for (uint i = 0; i < coresLength; i++)
     {
         CBlob@ core = cores[i];
 
@@ -102,7 +103,8 @@ void onTick(CRules@ this)
 	
 	CBlob@[] decoycores;
     getBlobsByTag("decoyCore", @decoycores);
-    for (uint i = 0; i < decoycores.length; i++)
+	const int decoyLength = decoycores.length;
+    for (uint i = 0; i < decoyLength; i++)
     {
         CBlob@ decoycore = decoycores[i];
 			
@@ -117,7 +119,8 @@ void onTick(CRules@ this)
 	//stations
     CBlob@[] stations;
     getBlobsByTag("station", @stations);
-    for (uint i = 0; i < stations.length; i++)
+	const int stationsLength = stations.length;
+    for (uint i = 0; i < stationsLength; i++)
     {
         CBlob@ station = stations[i];
 
@@ -132,7 +135,8 @@ void onTick(CRules@ this)
 	//humans
     CBlob@[] humans;
     getBlobsByTag("player", @humans);
-    for (uint i = 0; i < humans.length; i++)
+	const int humansLength = humans.length;
+    for (uint i = 0; i < humansLength; i++)
     {
         CBlob@ human = humans[i];		
         Vec2f offset = (human.getPosition() - pos);
@@ -153,7 +157,8 @@ void onTick(CRules@ this)
     getBlobsByTag("booty", @booty);	
 	f32 closestBootyDist = 999999.9f;
 	s16 closestBootyIndex = -1;
-    for (uint i = 0; i < booty.length; i++)
+	const int bootyLength = booty.length;
+    for (uint i = 0; i < bootyLength; i++)
     {
         CBlob@ currBooty = booty[i];
 		Vec2f bootyPos = currBooty.getPosition();
@@ -303,7 +308,8 @@ void onRender(CRules@ this)
     }*/
 	
 	//station icons
-    for (uint i = 0; i < _vars.station_teams.length; i++)
+	const int stationsLength = _vars.station_teams.length;
+    for (uint i = 0; i < stationsLength; i++)
     {
         Vec2f pos(Maths::Min(18.0f, _vars.station_distances[i] / 48.0f), 0.0f);
 
@@ -315,7 +321,8 @@ void onRender(CRules@ this)
     }
 	
 	//human icons
-    for (uint i = 0; i < _vars.human_teams.length; i++)
+	const int humansLength = _vars.human_teams.length;
+    for (uint i = 0; i < humansLength; i++)
     {
         Vec2f pos(Maths::Min(18.0f, _vars.human_distances[i] / 48.0f), 0.0f);
 		
@@ -329,13 +336,15 @@ void onRender(CRules@ this)
     }
 	
 	//core icons
-    for (uint i = 0; i < _vars.core_teams.length; i++)
+	const int coresLength = _vars.core_teams.length;
+    for (uint i = 0; i < coresLength; i++)
     {
     	bool decoyExists = false;
     	uint decoycore_index = 0;
-    	if (_vars.decoycore_teams.length > 0)
+		const int decoysLength = _vars.decoycore_teams.length;
+    	if (decoysLength > 0)
     	{
-	    	for (uint h = 0; h < _vars.decoycore_teams.length; h++)
+	    	for (uint h = 0; h < decoysLength; h++)
 	    	{
 	    		if (_vars.core_teams[i] == _vars.decoycore_teams[h])
 	    		{

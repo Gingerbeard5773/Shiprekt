@@ -53,7 +53,8 @@ void onTick(CBlob@ this)
 				if (getMap().getHitInfosFromRay(this.getPosition(), -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
 				{
 					//HitInfo objects are sorted, first come closest hits
-					for (uint i = 0; i < hitInfos.length; i++)
+					const int hitLength = hitInfos.length;
+					for (uint i = 0; i < hitLength; i++)
 					{
 						CBlob@ blob =  hitInfos[i].blob;	  
 						if (blob is null || blob is this) continue;
@@ -166,7 +167,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		if (ship !is null && !docking && !ramming)
 		{
 			bool shouldCollide = true;
-			for (uint i = 0; i < ship.blocks.length; ++i)
+			const int blocksLength = ship.blocks.length;
+			for (uint i = 0; i < blocksLength; ++i)
 			{
 				ShipBlock@ ship_block = ship.blocks[i];
 				if (ship_block is null) continue;

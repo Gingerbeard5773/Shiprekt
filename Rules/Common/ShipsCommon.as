@@ -44,9 +44,7 @@ Ship@ getShip(const int colorIndex)
 	if (getRules().get("ships", @ships))
 	{
 		if (colorIndex > 0 && colorIndex <= ships.length)
-		{
 			return ships[colorIndex-1];
-		}
 	}
 	return null;
 }
@@ -56,14 +54,12 @@ Ship@ getShip(CBlob@ this) //reference a ship from a non-block (e.g human)
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius)) 
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		const int blobsLength = blobsInRadius.length;
+		for (uint i = 0; i < blobsLength; i++)
 		{
-			CBlob@ b = blobsInRadius[i];
-            const int color = b.getShape().getVars().customData;
+            const int color = blobsInRadius[i].getShape().getVars().customData;
             if (color > 0)
-            {
             	return getShip(color);
-            }
 		}
 	}
     return null;
@@ -72,18 +68,20 @@ Ship@ getShip(CBlob@ this) //reference a ship from a non-block (e.g human)
 CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positioned
 {
 	CBlob@ b = null;
-	f32 mDist = 9999;
-	CBlob@[] blobsInRadius;	   
+	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius))
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		f32 mDist = 9999;
+		const int blobsLength = blobsInRadius.length;
+		for (uint i = 0; i < blobsLength; i++)
 		{
-			if (blobsInRadius[i].getShape().getVars().customData > 0)
+			CBlob@ blob = blobsInRadius[i];
+			if (blob.getShape().getVars().customData > 0)
 			{
-				f32 dist = this.getDistanceTo(blobsInRadius[i]);
+				f32 dist = this.getDistanceTo(blob);
 				if (dist < mDist)
 				{
-					@b = blobsInRadius[i];
+					@b = blob;
 					mDist = dist;
 				}
 			}
@@ -95,13 +93,15 @@ CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positio
 
 CBlob@ getMothership(const u8 team) //Gets the mothership core block on determined team 
 {
-    CBlob@[] ships;
-    getBlobsByTag("mothership", @ships);
-    for (uint i = 0; i < ships.length; i++)
+    CBlob@[] cores;
+    getBlobsByTag("mothership", @cores);
+	
+	const int coresLength = cores.length;
+    for (uint i = 0; i < coresLength; i++)
     {
-        CBlob@ ship = ships[i];  
-        if (ship.getTeamNum() == team)
-            return ship;
+        CBlob@ core = cores[i];  
+        if (core.getTeamNum() == team)
+            return core;
     }
     return null;
 }

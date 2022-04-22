@@ -53,7 +53,9 @@ void onTick(CBlob@ this)
 	//suck in ships
 	Ship[]@ ships;
 	if (rules.get("ships", @ships))
-		for (uint i = 0; i < ships.length; ++i)
+	{
+		const int shipsLength = ships.length;
+		for (uint i = 0; i < shipsLength; ++i)
 		{
 			Ship@ ship = ships[i];	
 			Vec2f attractDir = ship.pos - pos;
@@ -78,6 +80,7 @@ void onTick(CBlob@ this)
 			
 			ship.vel -= (attractDir + perpDir)/massFactor;
 		}
+	}
 	
 	//increase factor, damage blobs
 	if (this.getTickSinceCreated() > 300 && getGameTime() % 30 == 0)
@@ -168,11 +171,12 @@ void damageBlobs(CBlob@ this)
 	CBlob@[] nearby;
 	if (getMap().getBlobsInRadius(this.getPosition(), 50.0f, @nearby))
 	{
-		for (int i = 0; i < nearby.length; i++)
+		const int blobsLength = nearby.length;
+		for (int i = 0; i < blobsLength; i++)
 		{
 			CBlob@ blob = nearby[i];
 			if ((blob.hasTag("block") && XORRandom(2) == 0) || (blob.getName() == "human" && !blob.isOnGround()))
-				this.server_Hit(nearby[i], Vec2f_zero, Vec2f_zero, this.getInitialHealth()/4.0f, Hitters::drown, true);
+				this.server_Hit(blob, Vec2f_zero, Vec2f_zero, this.getInitialHealth()/4.0f, Hitters::drown, true);
 			
 			if (blob !is this && this.getDistanceTo(blob) < 15.0f)
 			{

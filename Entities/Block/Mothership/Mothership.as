@@ -99,7 +99,8 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 		//Max turrets to avoid lag
 		CBlob@[] turrets;
 		getBlobsByTag("flak", @turrets);
-		for (u16 i = 0; i < turrets.length; i++)
+		const int turretsLength = turrets.length;
+		for (u16 i = 0; i < turretsLength; i++)
 		{
 			if (turrets[i].getTeamNum() == this.getTeamNum())
 				teamFlaks++;
@@ -139,7 +140,8 @@ void ReturnBlocks(CBlob@ this)
 			{
 				string pName = player.getUsername();
 				u16 returnBooty = 0;
-				for (uint i = 0; i < blocks.length; ++i)
+				const int blocksLength = blocks.length;
+				for (uint i = 0; i < blocksLength; ++i)
 				{
 					CBlob@ block = blocks[i];
 					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
@@ -221,8 +223,8 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			//got a possible winner team
 			u8 thisPlayers = 0;
 			u8 hitterPlayers = 0;
-			u8 playersCount = getPlayersCount();
-			for (u8 i = 0; i < playersCount; i++)
+			u8 plyCount = getPlayersCount();
+			for (u8 i = 0; i < plyCount; i++)
 			{
 				u8 pteam = getPlayer(i).getTeamNum();
 				if (pteam == thisTeamNum)
@@ -264,7 +266,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			if (isServer())
 			{
 				u16 reward = Maths::Round(totalReward/hitterPlayers);
-				for (u8 i = 0; i < playersCount; i++)
+				for (u8 i = 0; i < plyCount; i++)
 				{
 					CPlayer@ player = getPlayer(i);
 					u8 teamNum = player.getTeamNum();
@@ -404,12 +406,15 @@ void initiateSelfDestruct(CBlob@ this)
 
 	//add block explosion scripts
 	const int color = this.getShape().getVars().customData;
-	Ship@ ship = getShip(color);
-	if (ship is null || ship.blocks.length < 10) return;
+	Ship@ ship = getShip(color); 
+	if (ship is null) return;
+	
+	const int blocksLength = ship.blocks.length;
+	if (blocksLength < 10) return;
 		
 	this.AddScript("Block_Explode.as");
 	u8 teamNum = this.getTeamNum();
-	for (uint i = 0; i < ship.blocks.length; ++i)
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
@@ -442,11 +447,12 @@ void selfDestruct(CBlob@ this)
 	u8 teamNum = this.getTeamNum();
 	
 	//kill team players
-	CBlob@[] dieBlobs;
-	getBlobsByName("human", @dieBlobs);
-	for (u16 i = 0; i < dieBlobs.length; i++)
+	CBlob@[] humans;
+	getBlobsByName("human", @humans);
+	const int humansLength = humans.length;
+	for (u16 i = 0; i < humansLength; i++)
 	{
-		CBlob@ human = dieBlobs[i];
+		CBlob@ human = humans[i];
 		if (human.getTeamNum() == teamNum)
 			this.server_Hit(human, human.getPosition(), Vec2f_zero, human.getInitialHealth(), Hitters::bomb, true);
 	}
@@ -454,7 +460,8 @@ void selfDestruct(CBlob@ this)
 	//turrets go neutral
 	CBlob@[] turrets;
 	getBlobsByTag("weapon", @turrets);
-	for (u16 i = 0; i < turrets.length; i++)
+	const int turretsLength = turrets.length;
+	for (u16 i = 0; i < turretsLength; i++)
 	{
 		CBlob@ turret = turrets[i];
 		if (turret.getTeamNum() == teamNum)
@@ -464,7 +471,8 @@ void selfDestruct(CBlob@ this)
 	//damage nearby blobs
 	CBlob@[] blastBlobs;
 	getMap().getBlobsInRadius(pos, BLAST_RADIUS, @blastBlobs);
-	for (u16 i = 0; i < blastBlobs.length; i++)
+	const int blastBlobsLength = blastBlobs.length;
+	for (u16 i = 0; i < blastBlobsLength; i++)
 	{
 		CBlob@ blastBlob = blastBlobs[i];
 		if (blastBlob !is this)
@@ -478,9 +486,12 @@ void selfDestruct(CBlob@ this)
 	//kill ship
 	const int color = this.getShape().getVars().customData;
 	Ship@ ship = getShip(color);
-	if (ship is null || ship.blocks.length < 10) return;
+	if (ship is null) return;
+	
+	const int blocksLength = ship.blocks.length;
+	if (blocksLength < 10) return;
 
-	for (uint i = 0; i < ship.blocks.length; ++i)
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		CBlob@ b = getBlobByNetworkID(ship_block.blobID);

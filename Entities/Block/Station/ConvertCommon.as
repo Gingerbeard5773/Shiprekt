@@ -39,7 +39,8 @@ void onTick(CBlob@ this)
 	getMap().getBlobsInRadius(this.getPosition(), capture_radius, @blobsInRadius);
 	
 	//use players in radius
-	for (uint i = 0; i < blobsInRadius.length; i++)
+	const int blobsLength = blobsInRadius.length;
+	for (uint i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = blobsInRadius[i];
 		u8 bTeamNum = b.getTeamNum();
@@ -59,11 +60,12 @@ void onTick(CBlob@ this)
 	{
 		blobsInRadius.clear();
 		getShipCrew(ship.centerBlock, @blobsInRadius);
-		if (blobsInRadius.length > 0 && ship.centerBlock.getTeamNum() != thisTeamNum)
+		const int blobsLength = blobsInRadius.length;
+		if (blobsLength > 0 && ship.centerBlock.getTeamNum() != thisTeamNum)
 		{
 			if (capture.converterTeam == thisTeamNum) //claim attack cycle
 				capture.converterTeam = ship.centerBlock.getTeamNum();
-			crewNum = blobsInRadius.length;
+			crewNum = blobsLength;
 		}
 	}*/
 	
@@ -115,7 +117,8 @@ void getShipCrew(CBlob@ shipBlock, CBlob@[]@ crew) //Gets all the friendly playe
 	int coreColor = shipBlock.getShape().getVars().customData;
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
-	for (u8 i = 0; i < humans.length; i++)
+	const int humansLength = humans.length;
+	for (u8 i = 0; i < humansLength; i++)
 	{
 		CBlob@ human = humans[i];
 		if (human.getTeamNum() == shipBlock.getTeamNum())

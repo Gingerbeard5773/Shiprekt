@@ -30,31 +30,6 @@ void onTick(CBlob@ this)
 {
 	uint8 team = this.getTeamNum();
 
-	/*if (isServer())
-	{
-		//heal humans every so often if they are overlapping this block
-		if (getGameTime() % 60 == 0)
-		{
-			Ship@ ship = getShip(this.getShape().getVars().customData);
-			if (ship !is null && !ship.isMothership)
-			{
-				CBlob@[] humans;
-				getBlobsByName("human", humans);
-
-				for (uint i = 0; i < humans.length; ++ i)
-				{
-					CBlob@ human = humans[i];
-					if (human.getTeamNum() != team || human.getHealth() >= human.getInitialHealth())
-						continue;
-
-					if (!this.isOverlapping(human)) continue;
-
-					human.server_Heal(HEAL_AMOUNT);  
-				}
-			}
-		}
-	}*/
-
 	if (isClient() && this.hasTag("critical"))
 	{
 		//Ship@ ship = getShip(this.getShape().getVars().customData);
@@ -95,12 +70,13 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 		this.AddScript("Block_Explode.as");
 
 		const int color = this.getShape().getVars().customData;
-		if (color == 0) return 0.0f;
-
 		Ship@ ship = getShip(color);
-		if (ship is null || ship.blocks.length < 10 || ship.isMothership) return 0.0f;
+		if (ship is null || ship.isMothership) return 0.0f;
+		
+		const int blocksLength = ship.blocks.length;
+		if (blocksLength < 10) return 0.0f;
 
-		for (uint i = 0; i < ship.blocks.length; ++ i)
+		for (uint i = 0; i < blocksLength; ++ i)
 		{
 			ShipBlock@ block = ship.blocks[i];
 			CBlob@ blob = getBlobByNetworkID(block.blobID);

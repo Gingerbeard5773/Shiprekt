@@ -40,8 +40,9 @@ void Explode(CBlob@ this)
 	//grab players nearby and damage them
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
-
-	for (uint i = 0; i < overlapping.length; i++)
+	
+	const int overlappingLength = overlapping.length;
+	for (uint i = 0; i < overlappingLength; i++)
 	{
 		CBlob@ blob = overlapping[i];
 		if (blob.hasTag("player"))

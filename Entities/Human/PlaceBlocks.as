@@ -32,7 +32,8 @@ CBlob@ getReferenceBlock(CBlob@ this, Ship@ ship) //find specific origin blocks 
 			getBlobsByTag("station", @references);
 		else getBlobsByTag("seat", @references);
 		
-		for (uint i = 0; i < references.length; i++)
+		const int refLength = references.length;
+		for (uint i = 0; i < refLength; i++)
 		{
 			CBlob@ ref = references[i];
 			if (ref.getTeamNum() == this.getTeamNum() && 
@@ -52,6 +53,7 @@ void onTick(CBlob@ this)
     if (this.get("blocks", @blocks) && blocks.size() > 0)
     {
 		Vec2f pos = this.getPosition();
+		const int blocksLength = blocks.length;
 	
         Ship@ ship = getShip(this);
 		if (ship !is null && ship.centerBlock !is null)
@@ -81,7 +83,7 @@ void onTick(CBlob@ this)
 				bool cLinked = false;
 				bool onRock = false;
                 const bool overlappingShip = blocksOverlappingShip(@blocks);
-				for (uint i = 0; i < blocks.length; ++i)
+				for (uint i = 0; i < blocksLength; ++i)
 				{
 					CBlob@ block = blocks[i];
 					CMap@ map = getMap();
@@ -168,7 +170,7 @@ void onTick(CBlob@ this)
         else
         {
             // cant place in water
-            for (uint i = 0; i < blocks.length; ++i)
+            for (uint i = 0; i < blocksLength; ++i)
             {
                 CBlob@ block = blocks[i];
                 SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::light, -10.0f);
@@ -211,7 +213,8 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	Vec2f cursor_pos = ship_pos + shipAim;//position of snapped buildblock
 	
 	//rotate and position blocks
-	for (uint i = 0; i < blocks.length; ++i)
+	const int blocksLength = blocks.length;
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ block = blocks[i];
 		Vec2f offset = block.get_Vec2f("offset");
@@ -236,14 +239,16 @@ Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
 
 bool blocksOverlappingShip(CBlob@[]@ blocks)
 {
-    for (uint i = 0; i < blocks.length; ++i)
+	const int blocksLength = blocks.length;
+    for (uint i = 0; i < blocksLength; ++i)
     {
         CBlob@ block = blocks[i];
 		
 		CBlob@[] overlapping;
 		if (block.getOverlapping(@overlapping))
 		{
-			for (uint i = 0; i < overlapping.length; i++)
+			const int overlappingLength = overlapping.length;
+			for (uint i = 0; i < overlappingLength; i++)
 			{
 				CBlob@ b = overlapping[i];
 				if (b.getShape().getVars().customData > 0)
@@ -301,7 +306,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			}
 
 			int iColor = centerBlock.getShape().getVars().customData;
-			for (uint i = 0; i < blocks.length; ++i)
+			const int blocksLength = blocks.length;
+			for (uint i = 0; i < blocksLength; ++i)
 			{
 				CBlob@ b = blocks[i];
 				if (b !is null)

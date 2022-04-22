@@ -180,7 +180,8 @@ bool isClear(CBlob@ this)
 	HitInfo@[] hitInfos;
 	if (getMap().getHitInfosFromRay(this.getPosition(), -aimVector.Angle(), 60.0f, this, @hitInfos))
 	{
-		for (uint i = 0; i < hitInfos.length; i++)
+		const int hitLength = hitInfos.length;
+		for (uint i = 0; i < hitLength; i++)
 		{
 			CBlob@ b =  hitInfos[i].blob;
 			if (b is null || b is this) continue;

@@ -22,7 +22,8 @@ bool mouseWasPressed2 = false;
 float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 {
 	CTeam@ team = getRules().getTeam(teamNum);
-	if (players.size() <= 0 || team is null)
+	const int playersLength = players.length;
+	if (playersLength <= 0 || team is null)
 		return topleft.y;
 
 	CRules@ rules = getRules();
@@ -31,7 +32,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 	f32 lineheight = 16;
 	f32 padheight = 2;
 	f32 stepheight = lineheight + padheight;
-	Vec2f bottomright(Maths::Min(getScreenWidth() - 100, screenMidX+maxMenuWidth), topleft.y + (players.length + 5.5) * stepheight);
+	Vec2f bottomright(Maths::Min(getScreenWidth() - 100, screenMidX+maxMenuWidth), topleft.y + (playersLength + 5.5) * stepheight);
 	GUI::DrawPane(topleft, bottomright, team.color);
 
 	//offset border
@@ -43,7 +44,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 
 	//draw team info
 	GUI::DrawText(teamColors[teamNum]+" "+Trans::Team, Vec2f(topleft.x, topleft.y), SColor(0xffffffff));
-	GUI::DrawText(getTranslatedString("Players: {PLAYERCOUNT}").replace("{PLAYERCOUNT}", "" + players.length), Vec2f(bottomright.x - 470, topleft.y), SColor(0xffffffff));
+	GUI::DrawText(getTranslatedString("Players: {PLAYERCOUNT}").replace("{PLAYERCOUNT}", "" + playersLength), Vec2f(bottomright.x - 470, topleft.y), SColor(0xffffffff));
 
 	topleft.y += stepheight * 2;
 	
@@ -63,7 +64,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 	Vec2f mousePos = controls.getMouseScreenPos();
 
 	//draw players
-	for (u32 i = 0; i < players.length; i++)
+	for (u32 i = 0; i < playersLength; i++)
 	{
 		CPlayer@ p = players[i];
 
@@ -185,7 +186,8 @@ void onRenderScoreboard(CRules@ this)
 	const int playingTeamsCount = 8; //change this depending on how many teams in the gamemode, this.getTeamsNum() causes errors
 	CPlayer@[][] teamsPlayers(playingTeamsCount); //holds all teams and their players
 	CPlayer@[] spectators;
-	for (u32 i = 0; i < getPlayersCount(); i++)
+	const int plyCount = getPlayersCount();
+	for (u32 i = 0; i < plyCount; i++)
 	{
 		CPlayer@ p = getPlayer(i);
 		if (p.getTeamNum() == this.getSpectatorTeamNum())
@@ -213,8 +215,9 @@ void onRenderScoreboard(CRules@ this)
 	topleft.y -= scrollOffset;
 
 	//draw the scoreboards
-
-	for (u32 i = 0; i < teamsPlayers.length; i++)
+	
+	const int teamsPlyLength = teamsPlayers.length;
+	for (u32 i = 0; i < teamsPlyLength; i++)
 	{
 		if (teamsPlayers[i].length > 0)
 		{
@@ -223,7 +226,8 @@ void onRenderScoreboard(CRules@ this)
 		}
 	}
 
-	if (spectators.length > 0)
+	const int spectatorsLength = spectators.length;
+	if (spectatorsLength > 0)
 	{
 		//draw spectators
 		f32 stepheight = 16;
@@ -238,13 +242,13 @@ void onRenderScoreboard(CRules@ this)
 		GUI::DrawText(s, Vec2f(topleft.x + 5, specy), SColor(0xffaaaaaa));
 
 		f32 specx = topleft.x + textdim.x + 15;
-		for (u32 i = 0; i < spectators.length; i++)
+		for (u32 i = 0; i < spectatorsLength; i++)
 		{
 			CPlayer@ p = spectators[i];
 			if (specx < bottomright.x - 100)
 			{
 				string name = p.getCharacterName();
-				if (i != spectators.length - 1)
+				if (i != spectatorsLength - 1)
 					name += ",";
 				GUI::GetTextDimensions(name, textdim);
 				SColor namecolour = getNameColour(p);
@@ -299,7 +303,8 @@ void onTick(CRules@ this)
 		string[] captains;
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
-		for (u8 i = 0; i < cores.length; i++)
+		const int coresLength = cores.length;
+		for (u8 i = 0; i < coresLength; i++)
 		{
 			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
 			if (ship !is null && ship.owner != "")
@@ -307,7 +312,8 @@ void onTick(CRules@ this)
 		}
 		
 		//set vars
-		for (u8 i = 0; i < getPlayersCount(); i++)
+		const int plyCount = getPlayersCount();
+		for (u8 i = 0; i < plyCount; i++)
 		{
 			CPlayer@ player = getPlayer(i);
 			if (captains.find(player.getUsername()) > -1)

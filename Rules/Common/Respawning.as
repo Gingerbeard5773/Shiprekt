@@ -29,7 +29,8 @@ void onInit(CRules@ this)
 void onReload(CRules@ this)
 {
     this.clear("respawns"); 
-    for (int i = 0; i < getPlayerCount(); i++)
+	const int plyCount = getPlayerCount();
+    for (int i = 0; i < plyCount; i++)
     {
         CPlayer@ player = getPlayer(i);
         if (player.getTeamNum() == this.getSpectatorTeamNum())
@@ -48,7 +49,8 @@ void onRestart(CRules@ this)
 	this.clear("respawns");
 	
 	CPlayer@[] players;
-	for (int i = 0; i < getPlayerCount(); i++)
+	const int plyCount = getPlayerCount();
+	for (int i = 0; i < plyCount; i++)
 	{
 		//assign player teams
 		CPlayer@ player = getPlayer(i);
@@ -105,7 +107,8 @@ void assignTeam(CRules@ this, CPlayer@ player)
 	
 	 //calc the minimum player count, dequalify teams
     int minplayers = 1000;
-    for (int i = 0; i < playersperteam.length; i++)
+	const int playerLength = playersperteam.length;
+    for (int i = 0; i < playerLength; i++)
     {
         if (playersperteam[i] < -1 || getMothership(i) is null)
             playersperteam[i] += 500;
@@ -209,7 +212,8 @@ bool isRespawnAdded(CRules@ this, const string username)
 	Respawn[]@ respawns;
 	if (this.get("respawns", @respawns))
 	{
-		for (uint i = 0; i < respawns.length; i++)
+		const int respawnLength = respawns.length;
+		for (uint i = 0; i < respawnLength; i++)
 		{
 			Respawn@ r = respawns[i];
 			if (r.username == username)

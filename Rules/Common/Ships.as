@@ -89,11 +89,13 @@ void onTick(CRules@ this)
 		UpdateShips(this);//client-side integrate
 }
 
-bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
+// reference from nearby ship and add more blocks onto that ship
+bool AddToShip(CBlob@[] blocks)
 {
 	Ship@[] touchingShips;
 	//grab ships from adjacent blocks
-	for (uint i = 0; i < blocks.length; i++)
+	const int blocksLength = blocks.length;
+	for (uint i = 0; i < blocksLength; i++)
 	{
 		CBlob@ block = blocks[i];
 		
@@ -109,7 +111,8 @@ bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
 				
 			//shitty algorithm to make sure there is no duplicates
 			bool pushShip = true;
-			for (uint p = 0; p < touchingShips.length; p++)
+			const int touchingShipsLength = touchingShips.length;
+			for (uint p = 0; p < touchingShipsLength; p++)
 			{
 				if (ship.id == touchingShips[p].id)
 				{
@@ -132,7 +135,7 @@ bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
 	int shipColor = ship.centerBlock.getShape().getVars().customData;
 	
 	//set block information
-	for (uint i = 0; i < blocks.length; i++)
+	for (uint i = 0; i < blocksLength; i++)
 	{
 		CBlob@ block = blocks[i];
 		
@@ -157,11 +160,15 @@ bool AddToShip(CBlob@[] blocks) //reference from nearby block and copy onto ship
 	return true;
 }
 
+// re-calibrate all existing ships
+// can create a new ship, or combine existing ships
 void GenerateShips(CRules@ this)
 {
 	Ship[]@ ships;
 	this.get("ships", @ships);
-	for (uint i = 0; i < ships.length; ++i)
+	
+	int shipsLength = ships.length;
+	for (uint i = 0; i < shipsLength; ++i)
 	{
 		StoreVelocities(ships[i]);
 	}
@@ -169,15 +176,16 @@ void GenerateShips(CRules@ this)
 	CBlob@[] blocks;
 	this.clear("ships");
 	if (getBlobsByTag("block", @blocks))
-	{	
+	{
 		color = 0;
-		for (uint i = 0; i < blocks.length; ++i)
+		const int blocksLength = blocks.length;
+		for (uint i = 0; i < blocksLength; ++i)
 		{
-			if (blocks[i].getShape().getVars().customData > 0)
-				blocks[i].getShape().getVars().customData = 0;			
+			CBlob@ b = blocks[i];
+			if (b.getShape().getVars().customData > 0)
+				b.getShape().getVars().customData = 0;			
 		}
-
-		for (uint i = 0; i < blocks.length; ++i)
+		for (uint i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = blocks[i];
 			if (b.getShape().getVars().customData == 0)
@@ -194,7 +202,7 @@ void GenerateShips(CRules@ this)
 				SetUpdateArrays(color);
 			}
 		}	
-		for (uint i = 0; i < blocks.length; ++i)
+		for (uint i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = blocks[i];
 			b.set_u16("last color", b.getShape().getVars().customData);
@@ -204,30 +212,32 @@ void GenerateShips(CRules@ this)
 	//print("Generated " + color + " ships");
 }
 
+// seperate one ship into two or more ships
 void SeperateShip(CRules@ this, Ship@ ship)
 {
 	StoreVelocities(ship);
 	
 	CBlob@[] blocks;
-	for (uint i = 0; i < ship.blocks.length; ++i)
+	const int shipBlocks = ship.blocks.length;
+	for (uint i = 0; i < shipBlocks; ++i)
 	{
 		CBlob@ block = getBlobByNetworkID(ship.blocks[i].blobID);
 		if (block !is null)
 			blocks.push_back(block);
 	}
 	
-	if (blocks.length <= 0) return;
+	const int blocksLength = blocks.length;
+	if (blocksLength <= 0) return;
 	
 	CBlob@ refBlock = blocks[0];
 	int referenceCol = refBlock.getShape().getVars().customData;
 	
-	for (uint i = 0; i < blocks.length; ++i)
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		if (blocks[i].getShape().getVars().customData > 0)
 			blocks[i].getShape().getVars().customData = 0;
 	}
-
-	for (uint i = 0; i < blocks.length; ++i)
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ b = blocks[i];
 		if (b.getShape().getVars().customData == 0)
@@ -254,7 +264,7 @@ void SeperateShip(CRules@ this, Ship@ ship)
 			SetUpdateArrays(newCol);
 		}
 	}	
-	for (uint i = 0; i < blocks.length; ++i)
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ b = blocks[i];
 		b.set_u16("last color", b.getShape().getVars().customData);
@@ -280,7 +290,8 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
 	
-	for (uint i = 0; i < overlapping.length; i++)
+	const int overlappingLength = overlapping.length;
+	for (uint i = 0; i < overlappingLength; i++)
 	{
 		CBlob@ b = overlapping[i];
 		
@@ -299,10 +310,11 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 {
 	Vec2f center, vel;
 	f32 angle_vel = 0.0f;
+	const int blocksLength = ship.blocks.length;
 	if (ship.centerBlock is null)//when clients InitShip(), they should have key values pre-synced. no need to calculate
 	{
 		//get ship vels (stored previously on all blobs), center
-		for (uint i = 0; i < ship.blocks.length; ++i)
+		for (uint i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 			if (b !is null)
@@ -315,15 +327,15 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 				}
 			}
 		}
-		center /= float(ship.blocks.length);
+		center /= float(blocksLength);
 
 		//find center block and mass and if it's mothership
 		f32 totalMass = 0.0f;
 		f32 maxDistance = 999999.9f;
 		bool choseCenterBlock = false;
-		if (ship.blocks.length == 2) //choose engine as centerblock for 2 block torpedos
+		if (blocksLength == 2) //choose engine as centerblock for 2 block torpedos
 		{
-			for (uint i = 0; i < ship.blocks.length; ++i) //shitty fix for torpedo bouncing
+			for (uint i = 0; i < blocksLength; ++i) //shitty fix for torpedo bouncing
 			{
 				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 				if (b !is null && b.hasTag("engine"))
@@ -334,7 +346,7 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 				}
 			}
 		}
-		for (uint i = 0; i < ship.blocks.length; ++i)
+		for (uint i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 			if (b !is null)
@@ -381,7 +393,7 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 	//print(ship.id + " mass: " + totalMass + "; effective: " + ship.mass);
 	
 	//update block positions/angle array
-	for (uint i = 0; i < ship.blocks.length; ++i)
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
@@ -399,19 +411,21 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 	CMap@ map = getMap();
 	
 	Ship[]@ ships;
-	this.get("ships", @ships);	
-	for (uint i = 0; i < ships.length; ++i)
+	this.get("ships", @ships);
+	
+	const int shipsLength = ships.length;
+	for (uint i = 0; i < shipsLength; ++i)
 	{
 		Ship@ ship = ships[i];
-		if (ship.blocks.length == 0)
-			continue;
+		const int blocksLength = ship.blocks.length;
+		if (blocksLength == 0) continue;
 
 		ship.soundsPlayed = 0;
 		ship.carryMass = 0;
 		
 		if (!ship.initialized || ship.centerBlock is null)
 		{
-			//if (!isServer()) print ("client: initializing ship: " + ship.blocks.length);
+			//if (!isServer()) print ("client: initializing ship: " + blocksLength);
 			InitShip(ship);
 			ship.initialized = true;
 		}
@@ -430,7 +444,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			int beachedBlocks = 0;
 			int slowedBlocks = 0;
 			
-			for (uint q = 0; q < ship.blocks.length; ++q)
+			for (uint q = 0; q < blocksLength; ++q)
 			{
 				ShipBlock@ ship_block = ship.blocks[q];
 				CBlob@ b = getBlobByNetworkID(ship_block.blobID);
@@ -475,14 +489,12 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 
 		if (!isServer() || (!forceOwnerSearch && (getGameTime() + ship.id * 33) % 45 > 0))//updateShipBlobs if !isServer OR isServer and not on a 'second tick'
 		{
-			for (uint q = 0; q < ship.blocks.length; ++q)
+			for (uint q = 0; q < blocksLength; ++q)
 			{
 				ShipBlock@ ship_block = ship.blocks[q];
 				CBlob@ b = getBlobByNetworkID(ship_block.blobID);
 				if (b !is null)
-				{
 					UpdateShipBlob(b, ship, ship_block);
-				}
 			}
 		}
 		else //(server) updateShipBlobs and find ship.owner once a second or after GenerateShips()
@@ -493,7 +505,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			s8 teamComp = -1;	
 			u16[] seatIDs;
 			
-			for (uint q = 0; q < ship.blocks.length; ++q)
+			for (uint q = 0; q < blocksLength; ++q)
 			{
 				ShipBlock@ ship_block = ship.blocks[q];
 				CBlob@ b = getBlobByNetworkID(ship_block.blobID);
@@ -520,7 +532,8 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			
 			string oldestSeatOwner = "";
 			
-			if (seatIDs.length > 0)
+			const int seatLength = seatIDs.length;
+			if (seatLength > 0)
 			{
 				seatIDs.sortAsc();
 				if (ship.isMothership)
@@ -529,7 +542,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 						oldestSeatOwner = "*";
 					else if (core !is null)
 					{
-						for (int q = 0; q < seatIDs.length; q++)
+						for (int q = 0; q < seatLength; q++)
 						{
 							CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
 							u16[] checked; u16[] unchecked;
@@ -547,7 +560,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 						oldestSeatOwner = "*";
 					else
 					{
-						for (int q = 0; q < seatIDs.length; q++)
+						for (int q = 0; q < seatLength; q++)
 						{
 							CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
 							if (oldestSeat !is null)
@@ -636,7 +649,8 @@ void SetNextId(CRules@ this, Ship@ ship)
 void SetShipTeam(Ship@ ship, u8 teamNum = 255)
 {
 	//print ("setting team for " + ship.owner + "'s " + ship.id + " to " + teamNum);
-	for (uint i = 0; i < ship.blocks.length; ++i)
+	const int blocksLength = ship.blocks.length;
+	for (uint i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 		if (b !is null)
@@ -650,7 +664,8 @@ void StoreVelocities(Ship@ ship)
 {	
 	if (!ship.isStation)
 	{
-		for (uint i = 0; i < ship.blocks.length; ++i)
+		const int blocksLength = ship.blocks.length;
+		for (uint i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 			if (b !is null)
@@ -668,7 +683,8 @@ void SetUpdateArrays(int shipColor)
 	getBlobsByTag("weapon", @blocks);
 	getBlobsByTag("seat", @blocks);
 	
-	for (uint i = 0; i < blocks.length; i++)
+	const int blocksLength = blocks.length;
+	for (uint i = 0; i < blocksLength; i++)
 	{
 		if (blocks[i].getShape().getVars().customData == shipColor)
 			blocks[i].set_bool("updateArrays", true);
@@ -751,15 +767,20 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 	Ship[]@ ships;
 	if (this.get("ships", @ships))
 	{
-		stream.write_u16(ships.length);
+		int shipsLength = ships.length;
+		stream.write_u16(shipsLength);
+		
 		bool atLeastOne = false;
-		for (uint i = 0; i < ships.length; ++i)
+		
+		for (uint i = 0; i < shipsLength; ++i)
 		{
 			Ship@ ship = ships[i];
 			if (full_sync)
 			{
-				stream.write_Vec2f(ship.pos);
+				int blocksLength = ship.blocks.length;
 				CPlayer@ owner = getPlayerByUsername(ship.owner);
+				
+				stream.write_Vec2f(ship.pos);
 				stream.write_netid(owner !is null ? owner.getNetworkID() : 0);
 				stream.write_netid(ship.centerBlock !is null ? ship.centerBlock.getNetworkID() : 0);
 				stream.write_Vec2f(ship.vel);
@@ -769,8 +790,9 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 				stream.write_bool(ship.isMothership);
 				stream.write_bool(ship.isStation);
 				stream.write_bool(ship.isSecondaryCore);
-				stream.write_u16(ship.blocks.length);
-				for (uint q = 0; q < ship.blocks.length; ++q)
+				stream.write_u16(blocksLength);
+				
+				for (uint q = 0; q < blocksLength; ++q)
 				{
 					ShipBlock@ ship_block = ship.blocks[q];
 					CBlob@ b = getBlobByNetworkID(ship_block.blobID);
@@ -1067,7 +1089,8 @@ void onRender(CRules@ this)
 		Ship[]@ ships;
 		if (this.get("ships", @ships))
 		{
-			for (uint i = 0; i < ships.length; ++i)
+			const int shipsLength = ships.length;
+			for (uint i = 0; i < shipsLength; ++i)
 			{
 				Ship@ ship = ships[i];
 				if (ship.centerBlock !is null)
@@ -1080,8 +1103,9 @@ void onRender(CRules@ this)
 						GUI::DrawText("" + ship.centerBlock.getShape().getVars().customData, cbPos, SColor(255,255,255,255));
 					//GUI::DrawText("" + ship.vel.Length(), cbPos, SColor(255,255,255,255));
 				}
-					
-				for (uint i = 0; i < ship.blocks.length; ++i)
+				
+				const int blocksLength = ship.blocks.length;
+				for (uint i = 0; i < blocksLength; ++i)
 				{
 					ShipBlock@ ship_block = ship.blocks[i];
 					CBlob@ b = getBlobByNetworkID(ship_block.blobID);

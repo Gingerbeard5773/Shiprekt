@@ -245,7 +245,8 @@ class VoteNextmapFunctor : VoteFunctor
 				
 				CBlob@[] stations;
 				getBlobsByTag("station", @stations);
-				for (uint i = 0; i < stations.length; i++)
+				const int stationsLength = stations.length;
+				for (uint i = 0; i < stationsLength; i++)
 				{
 					CBlob@ station = stations[i];
 					
@@ -382,7 +383,8 @@ class VoteSurrenderFunctor : VoteFunctor
 				CBlob@ teamCore;
 				CBlob@[] cores;
 				getBlobsByTag("mothership", @cores);
-				for (uint i = 0; i < cores.length; i++)
+				const int coresLength = cores.length;
+				for (uint i = 0; i < coresLength; i++)
 				{
 					CBlob@ core = cores[i];  
 					if (core.getTeamNum() == team)

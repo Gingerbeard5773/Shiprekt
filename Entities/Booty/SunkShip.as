@@ -66,7 +66,9 @@ void onTick(CBlob@ this)
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
 	u16 minBooty = getRules().get_u16("bootyRefillLimit");
-	for (u8 i = 0; i < cores.length; i++)
+	const int coresLength = cores.length;
+	const int humansLength = humans.length;
+	for (u8 i = 0; i < coresLength; i++)
 	{
 		int coreColor = cores[i].getShape().getVars().customData;
 		Ship@ ship = getShip(coreColor);
@@ -78,7 +80,7 @@ void onTick(CBlob@ this)
 		if (this.getDistanceTo(cores[i]) <= FISH_RADIUS)
 		{
 			bool captainOnShip = false;
-			for (u8 i = 0; i < humans.length; i++)//get crew on mothership and check if captain is there
+			for (u8 i = 0; i < humansLength; i++)//get crew on mothership and check if captain is there
 			{
 				CPlayer@ player = humans[i].getPlayer();
 				if (player is null)
@@ -100,8 +102,10 @@ void onTick(CBlob@ this)
 			if (!captainOnShip)//go to next core
 				continue;
 				
+			const int crewLength = crew.length;
+				
 			u16 mothership_maxReward = Maths::Ceil(ammount * MAX_REWARD_FACTOR);
-			f32 mothership_crewRewardFactor = Maths::Min(MAX_REWARD_FACTOR * 0.5f,  CREW_REWARD_FACTOR_MOTHERSHIP * crew.length);
+			f32 mothership_crewRewardFactor = Maths::Min(MAX_REWARD_FACTOR * 0.5f,  CREW_REWARD_FACTOR_MOTHERSHIP * crewLength);
 			u16 mothership_crewTotalReward = Maths::Round(ammount * mothership_crewRewardFactor);
 
 			//booty to captain
@@ -113,13 +117,13 @@ void onTick(CBlob@ this)
 			gaveBooty = true;
 
 			//booty to crew
-			if (crew.length == 0 || !isServer())
+			if (crewLength == 0 || !isServer())
 				continue;
 				
-			for (u8 i = 0; i < crew.length; i++)
+			for (u8 i = 0; i < crewLength; i++)
 			{
 				served.push_back(crew[i]);
-				f32 rewardFactor = Maths::Max(mothership_crewRewardFactor/crew.length, CREW_REWARD_FACTOR);
+				f32 rewardFactor = Maths::Max(mothership_crewRewardFactor/crewLength, CREW_REWARD_FACTOR);
 				u16 reward = Maths::Ceil(ammount * rewardFactor);
 				server_giveBooty(crew[i], reward);
 				server_updateX(this, reward, false);
@@ -128,7 +132,7 @@ void onTick(CBlob@ this)
 	}
 	
 	//booty to over-sea crew
-	for (u8 i = 0; i < humans.length; i++)
+	for (u8 i = 0; i < humansLength; i++)
 	{
 		CPlayer@ player = humans[i].getPlayer();
 		if (player is null)

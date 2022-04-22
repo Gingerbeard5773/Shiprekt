@@ -268,7 +268,8 @@ void onDie(CBlob@ this)
 		CBlob@[] blobsInRadius;
 		if (getMap().getBlobsInRadius(pos, SPLASH_RADIUS, @blobsInRadius))
 		{
-			for (uint i = 0; i < blobsInRadius.length; i++)
+			const int blobsLength = blobsInRadius.length;
+			for (uint i = 0; i < blobsLength; i++)
 			{
 				CBlob@ b = blobsInRadius[i];
 				if (!b.hasTag("hasSeat") && !b.hasTag("mothership") && b.hasTag("block") && b.getShape().getVars().customData > 0)

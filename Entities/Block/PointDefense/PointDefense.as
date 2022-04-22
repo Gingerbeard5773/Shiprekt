@@ -99,7 +99,8 @@ void Auto(CBlob@ this)
 
 	if (this.getMap().getBlobsInRadius(this.getPosition(), AUTO_RADIUS, @blobsInRadius))
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		const int blobsLength = blobsInRadius.length;
+		for (uint i = 0; i < blobsLength; i++)
 		{
 			CBlob@ b = blobsInRadius[i];
 			if (b.getTeamNum() != this.getTeamNum()
@@ -170,10 +171,12 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 
 	map.getHitInfosFromRay(pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
 	map.getHitInfosFromRay(pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
-	if (hitInfos.length > 0)
+	
+	const int hitLength = hitInfos.length;
+	if (hitLength > 0)
 	{
 		//HitInfo objects are sorted, first come closest hits
-		for (uint i = 0; i < hitInfos.length; i++)
+		for (uint i = 0; i < hitLength; i++)
 		{
 			HitInfo@ hi = hitInfos[i];
 			CBlob@ b = hi.blob;

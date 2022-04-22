@@ -1,3 +1,4 @@
+// Gingerbeard @ 1/1/2022
 funcdef void Hook(CBlob@); //define hooks of this type
 
 class BlockHooks           
@@ -19,8 +20,9 @@ class BlockHooks
 	{
 		Hook@[]@ Hooks;
         HooksDict.get(key, @Hooks);
-
-		for (int i = 0; i < Hooks.length; i++)
+		
+		const int hooksLength = Hooks.length;
+		for (int i = 0; i < hooksLength; i++)
 		{
 			if (hook is Hooks[i]) return;
 		}
@@ -32,8 +34,9 @@ class BlockHooks
 	{
 		Hook@[]@ Hooks;
         HooksDict.get(key, @Hooks);
-
-		for (int i = 0; i < Hooks.length; i++)
+		
+		const int hooksLength = Hooks.length;
+		for (int i = 0; i < hooksLength; i++)
 		{
 			Hooks[i](@this); //find hooks and activate them
 		}

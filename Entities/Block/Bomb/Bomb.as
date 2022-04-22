@@ -84,7 +84,8 @@ void onColored(CBlob@ this) //activate when the block changes color
 		CBlob@[] overlapping;
 		this.getOverlapping(@overlapping);
 		
-		for (uint i = 0; i < overlapping.length; i++)
+		const int overlappingLength = overlapping.length;
+		for (uint i = 0; i < overlappingLength; i++)
 		{
 			CBlob@ b = overlapping[i];
 			if (b.getShape().getVars().customData == color && this.getTeamNum() != b.getTeamNum())

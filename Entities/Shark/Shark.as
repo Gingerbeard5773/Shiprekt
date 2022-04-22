@@ -153,7 +153,8 @@ Vec2f getTargetVel(CBlob@ this)
 	if (getMap().getBlobsInRadius(pos, 150.0f, @blobsInRadius))
 	{
 		f32 maxDistance = 9999999.9f;
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		const int blobsLength = blobsInRadius.length;
+		for (uint i = 0; i < blobsLength; i++)
 		{
 			CBlob @b = blobsInRadius[i];
 			if (!b.get_bool("onGround") && b.getName() == "human")

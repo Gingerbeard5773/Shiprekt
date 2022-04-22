@@ -13,7 +13,8 @@ void onTick(CRules@ this)
 
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
-	for (uint i=0; i < humans.length; i++)
+	const int humansLength = humans.length;
+	for (uint i = 0; i < humansLength; i++)
 	{
 		CBlob@ human = humans[i];
 		if (!human.get_bool("onGround")) //can't use regular isOnGround since server needs to calculate from the player's perspective
@@ -47,7 +48,8 @@ int getSharkCountInArea(CRules@ this, Vec2f pos, const f32 radius = SHARK_SPAWN_
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(pos, radius, @blobsInRadius))
 	{
-		for (uint i = 0; i < blobsInRadius.length; i++)
+		const int blobsLength = blobsInRadius.length;
+		for (uint i = 0; i < blobsLength; i++)
 		{
 			CBlob@ b = blobsInRadius[i];
 			if (b.getName() == "shark")
