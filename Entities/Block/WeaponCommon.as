@@ -35,13 +35,13 @@ void checkDocked(CBlob@ this, Ship@ ship)
 	if (!isServer() || !this.get_bool("updateArrays")) return;
 	
 	u32 gameTime = getGameTime();
-	if ((gameTime + this.getNetworkID() * 33) % 60 == 0)
+	if ((gameTime + this.getNetworkID() * 33) % 30 == 0)
 	{
 		if (ship.isMothership && !ship.isStation)
 		{
 			CBlob@ core = getMothership(this.getTeamNum());
-			u16[] checkedIDs;
-			this.set_bool("docked", core !is null ? !coreLinkedDirectional(this, checkedIDs, core.getPosition()) : false);
+			u16[] checked; u16[] unchecked;
+			this.set_bool("docked", core !is null ? !coreLinkedPathed(this, core, checked, unchecked) : false);
 		}
 		else
 			this.set_bool("docked", false);

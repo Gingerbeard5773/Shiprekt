@@ -532,8 +532,8 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 						for (int q = 0; q < seatIDs.length; q++)
 						{
 							CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
-							u16[] checkedIDs;
-							if (oldestSeat !is null && coreLinkedDirectional(oldestSeat, checkedIDs, core.getPosition()))
+							u16[] checked; u16[] unchecked;
+							if (oldestSeat !is null && coreLinkedPathed(oldestSeat, core, checked, unchecked))
 							{
 								oldestSeatOwner = oldestSeat.get_string("playerOwner");
 								break;

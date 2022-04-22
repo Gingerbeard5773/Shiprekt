@@ -103,8 +103,8 @@ void onTick(CBlob@ this)
 						CBlob@ core = getMothership(this.getTeamNum());//could get the core properly based on adjacent blocks
 						if (core !is null)
 						{
-							u16[] checkedIDs;
-							cLinked = coreLinkedDirectional(block, checkedIDs, core.getPosition());
+							u16[] checked; u16[] unchecked;
+							cLinked = coreLinkedPathed(block, core, checked, unchecked, false);
 						}
 					}
 					 

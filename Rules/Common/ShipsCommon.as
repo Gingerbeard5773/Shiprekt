@@ -118,57 +118,74 @@ string getCaptainName(u8 team) //Gets the name of the mothership's captain
 	return "";
 }
 
-bool coreLinkedDirectional(CBlob@ this, u16[] checkedIDs, Vec2f corePos)//checks if the block leads up to a core. doesn't follow up couplings/repulsors. accounts for core position
+//paths to specified block from start, returns true if it is connected
+//doesn't path through couplings and repulsors
+bool coreLinkedPathed(CBlob@ this, CBlob@ core, u16[] checked, u16[] unchecked, bool colorCheck = true)
 {
-	if (this.hasTag("mothership"))
-		return true;
-
-	checkedIDs.push_back(this.getNetworkID());
+	u16 networkID = this.getNetworkID();
+	checked.push_back(networkID);
 	
-	bool childsLinked = false;
-	Vec2f thisPos = this.getPosition();
+	// remove from unchecked blocks if this was marked as unchecked
+	u32 uncheckedIndex = unchecked.find(networkID);
+	if (uncheckedIndex > -1)
+	{
+		unchecked.erase(uncheckedIndex);
+	}
 	
 	CBlob@[] overlapping;
 	if (this.getOverlapping(@overlapping))
 	{
+		Vec2f thisPos = this.getPosition();
+		Vec2f corePos = core.getPosition();
+		const int coreColor = core.getShape().getVars().customData;
+		
 		f32 minDist = 99999.0f;
-		f32 minDist2;
-		CBlob@[] optimal;
-		for (int i = 0; i < overlapping.length; i++)
+		CBlob@ optimal = null;
+		const int overlappingLength = overlapping.length;
+		for (int i = 0; i < overlappingLength; i++)
 		{
 			CBlob@ b = overlapping[i];
 			Vec2f bPos = b.getPosition();
+			if (checked.find(b.getNetworkID()) >= 0 ||  // no repeated blocks
+				(bPos - thisPos).LengthSquared() >= 78 ||       // block has to be adjacent
+				b.hasTag("removable") || !b.hasTag("block") ||          // block is not a coupling or repulsor
+				(b.getShape().getVars().customData != coreColor && colorCheck))  // is a block, is same ship as core
+				continue;
 			
-			//estimate the best possible route
-			f32 coreDist = (bPos - corePos).LengthSquared();
-			if (checkedIDs.find(b.getNetworkID()) < 0 && (bPos - thisPos).LengthSquared() < 78 && !b.hasTag("removable") && b.hasTag("block"))//maybe should do a color > 0 check
+			f32 coreDist = (bPos - corePos).Length();
+			if (coreDist < minDist)
 			{
-				if (coreDist <= minDist)
-				{
-					optimal.insertAt(0, b);
-					minDist2 = minDist;	
-					minDist = coreDist;
-				}
-				else if (coreDist <= minDist2)
-				{
-					optimal.insertAt(0, b);
-					minDist2 = coreDist;
-				}
-				else
-					optimal.push_back(b);
+				minDist = coreDist;
+				if (optimal !is null) // put non-optimal blocks as unchecked blocks for future alternative pathing
+					unchecked.push_back(optimal.getNetworkID());
+				@optimal = b; // set closest blob to core as the optimal route
 			}
 		}
-		
-		for (int i = 0; i < optimal.length; i++)
+		if (optimal !is null)
 		{
-			//print((optimal[i].hasTag("mothership") ? "[>] " : "[o] ") + optimal[i].getNetworkID());
-			if (coreLinkedDirectional(optimal[i], checkedIDs, corePos))
+			if (optimal is core)
 			{
-				childsLinked = true;
-				break;
+				// we found the block we were looking for, stop the process
+				return true;
+			}
+			//print(optimal.getNetworkID()+"");
+			// continue best estimated path
+			return coreLinkedPathed(optimal, core, checked, unchecked, colorCheck);
+		}
+		else // dead end on path, find next best route from cached 'unchecked' blocks
+		{
+			if (unchecked.length <= 0)
+				return false;
+			
+			CBlob@ nextBest = getBlobByNetworkID(unchecked[0]);
+			if (nextBest !is null)
+			{
+				// start new path
+				unchecked.erase(0);
+				//print(nextBest.getNetworkID()+" NEW PATH");
+				return coreLinkedPathed(nextBest, core, checked, unchecked, colorCheck);
 			}
 		}
 	}
-		
-	return childsLinked;
+	return false;
 }
