@@ -9,6 +9,7 @@ void onInit(CSprite@ this)
 		CSpriteLayer@ layer = this.addSpriteLayer("side"+i, "CoreSide.png", 8, 3);
 		if (layer !is null)
 		{
+			layer.SetRelativeZ(0.7f);
 			layer.SetOffset(Vec2f(0, -5.5));
 			layer.RotateBy(i*90, Vec2f(0, 5.5));
 			layer.SetFrame(XORRandom(3));
