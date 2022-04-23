@@ -7,9 +7,9 @@
 #include "BlockCosts.as";
 #include "PlankCommon.as";
  
-const f32 BULLET_RANGE = 100.0f;
+const f32 BULLET_RANGE = 60.0f;
 const f32 DECONSTRUCT_RATE = 10.0f; //higher values = higher recover
-const int CONSTRUCT_VALUE = 50;
+const int CONSTRUCT_VALUE = 35;
 
 void onInit(CBlob@ this)
 {
@@ -145,7 +145,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 							{
 								string cName = thisPlayer.getUsername();
 
-								server_addPlayerBooty(cName, getCost(b.getName())*(b.getHealth()/initialHealth));
+								server_addPlayerBooty(cName, (getCost(b.getName())*0.7f)*(b.getHealth()/initialHealth));
 								directionalSoundPlay("/ChaChing.ogg", barrelPos);
 
 								b.Tag("disabled");
