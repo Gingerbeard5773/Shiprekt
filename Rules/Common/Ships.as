@@ -499,7 +499,6 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 		}
 		else //(server) updateShipBlobs and find ship.owner once a second or after GenerateShips()
 		{
-			u8 cores = 0;
 			CBlob@ core = null;
 			bool multiTeams = false;
 			s8 teamComp = -1;	
@@ -524,7 +523,6 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 					} 
 					else if (b.hasTag("mothership"))
 					{
-						cores++;
 						@core = b;
 					}
 				}
@@ -532,20 +530,21 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			
 			string oldestSeatOwner = "";
 			
-			const int seatLength = seatIDs.length;
+			const u8 seatLength = seatIDs.length;
 			if (seatLength > 0)
 			{
 				seatIDs.sortAsc();
-				if (ship.isMothership)
+				
+				if (multiTeams) // ship has multiple owners (e.g two connected motherships)
+					oldestSeatOwner = "*";
+				else if (ship.isMothership)
 				{
-					if (cores > 1 && multiTeams)
-						oldestSeatOwner = "*";
-					else if (core !is null)
+					if (core !is null)
 					{
-						for (int q = 0; q < seatLength; q++)
+						for (u8 q = 0; q < seatLength; q++)
 						{
 							CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
-							u16[] checked; u16[] unchecked;
+							u16[] checked, unchecked;
 							if (oldestSeat !is null && coreLinkedPathed(oldestSeat, core, checked, unchecked))
 							{
 								oldestSeatOwner = oldestSeat.get_string("playerOwner");
@@ -556,18 +555,14 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 				}
 				else
 				{
-					if (multiTeams)
-						oldestSeatOwner = "*";
-					else
+					//find the oldest seat available
+					for (u8 q = 0; q < seatLength; q++)
 					{
-						for (int q = 0; q < seatLength; q++)
+						CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
+						if (oldestSeat !is null)
 						{
-							CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
-							if (oldestSeat !is null)
-							{
-								oldestSeatOwner = oldestSeat.get_string("playerOwner");
-								break;
-							}
+							oldestSeatOwner = oldestSeat.get_string("playerOwner");
+							break;
 						}
 					}
 				}
