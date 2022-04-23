@@ -484,7 +484,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 		else if (ship.isStation)
 		{
 			ship.vel = Vec2f(0, 0);
-			ship.angle_vel = 0.0f;			
+			ship.angle_vel = 0.0f;
 		}
 
 		if (!isServer() || (!forceOwnerSearch && (getGameTime() + ship.id * 33) % 45 > 0))//updateShipBlobs if !isServer OR isServer and not on a 'second tick'
@@ -589,7 +589,8 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 	//calculate carryMass weight
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
-	for (u8 i = 0; i < humans.length; i++)
+	const u8 humansLength = humans.length;
+	for (u8 i = 0; i < humansLength; i++)
 	{
 	    CBlob@[]@ blocks;
 		if (humans[i].get("blocks", @blocks) && blocks.size() > 0)
@@ -598,7 +599,8 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			if (ship !is null)
 			{
 				//player-carried blocks add to the ship mass (with penalty)
-				for (u8 q = 0; q < blocks.length; q++)
+				const u8 blocksLength = blocks.length;
+				for (u8 q = 0; q < blocksLength; q++)
 					ship.carryMass += 2.5f * blocks[q].get_f32("weight");
 			}
 		}

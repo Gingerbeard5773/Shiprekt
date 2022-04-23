@@ -41,7 +41,7 @@ void onTick(CRules@ this)
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
 		
-		const int coresLength = cores.length;
+		const u8 coresLength = cores.length;
 		for (u8 i = 0; i < coresLength; i++)
 		{
 			Ship@ ship = getShip(cores[i].getShape().getVars().customData);

@@ -40,7 +40,7 @@ void checkDocked(CBlob@ this, Ship@ ship)
 		if (ship.isMothership && !ship.isStation)
 		{
 			CBlob@ core = getMothership(this.getTeamNum());
-			u16[] checked; u16[] unchecked;
+			u16[] checked, unchecked;
 			this.set_bool("docked", core !is null ? !coreLinkedPathed(this, core, checked, unchecked) : false);
 		}
 		else

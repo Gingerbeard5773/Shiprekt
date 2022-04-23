@@ -1038,7 +1038,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				CBlob@[] crew;
 				CBlob@[] humans;
 				getBlobsByName("human", @humans);
-				const int humansLength = humans.length;
+				const u8 humansLength = humans.length;
 				for (u8 i = 0; i < humansLength; i++)
 				{
 					if (humans[i].getTeamNum() == teamNum && humans[i] !is this)
@@ -1049,7 +1049,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					}
 				}
 				
-				const int crewLength = crew.length;
+				const u8 crewLength = crew.length;
 				if (crewLength > 0)
 				{
 					print("$ " + pName + " transfers Booty to crew");

@@ -101,7 +101,8 @@ void onDie(CBlob@ this)
 	if (isClient())
 	{
 		directionalSoundPlay("FlakExp"+XORRandom(2), pos, 2.0f);
-		for (u8 i = 0; i < (v_fastrender ? 1 : 3); i++)
+		const u8 particleAmount = v_fastrender ? 1 : 3;
+		for (u8 i = 0; i < particleAmount; i++)
 		{
 			makeSmallExplosionParticle(pos + getRandomVelocity(90, 12, 360));
 		}

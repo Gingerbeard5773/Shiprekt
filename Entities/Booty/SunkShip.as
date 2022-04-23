@@ -66,8 +66,8 @@ void onTick(CBlob@ this)
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
 	u16 minBooty = getRules().get_u16("bootyRefillLimit");
-	const int coresLength = cores.length;
-	const int humansLength = humans.length;
+	const u8 coresLength = cores.length;
+	const u8 humansLength = humans.length;
 	for (u8 i = 0; i < coresLength; i++)
 	{
 		int coreColor = cores[i].getShape().getVars().customData;

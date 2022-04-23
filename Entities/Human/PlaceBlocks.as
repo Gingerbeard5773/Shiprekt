@@ -78,7 +78,6 @@ void onTick(CBlob@ this)
             if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
             {
 				//checks for canPlace
-				u32 gameTime = getGameTime();
 				bool skipCoreCheck = !getRules().isWarmup() || (ship.isMothership && (ship.owner == "" || ship.owner == "*" || ship.owner == player.getUsername()));
 				bool cLinked = false;
 				bool onRock = false;
@@ -105,7 +104,7 @@ void onTick(CBlob@ this)
 						CBlob@ core = getMothership(this.getTeamNum());//could get the core properly based on adjacent blocks
 						if (core !is null)
 						{
-							u16[] checked; u16[] unchecked;
+							u16[] checked, unchecked;
 							cLinked = coreLinkedPathed(block, core, checked, unchecked, false);
 						}
 					}
@@ -126,7 +125,7 @@ void onTick(CBlob@ this)
                 // place
                 if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
                 {
-					if (gameTime - this.get_u32("placedTime") > placement_time)
+					if (getGameTime() - this.get_u32("placedTime") > placement_time)
 					{
 						if (target_angle == blocks_angle && !overlappingShip && !cLinked && !onRock)
 						{

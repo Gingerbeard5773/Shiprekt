@@ -15,7 +15,7 @@ void onTick(CRules@ this)
 	boardBooty.clear();
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
-	const int coresLength = cores.length;
+	const u8 coresLength = cores.length;
 	for (u8 i = 0; i < coresLength; i++)
 	{
 		boardBooty.push_back(this.get_u16("bootyTeam_total" + cores[i].getTeamNum()));
@@ -24,7 +24,7 @@ void onTick(CRules@ this)
 	boardBooty.sortDesc();
 	boardTeams.clear();
 	
-	const int bootyLength = boardBooty.length;
+	const u8 bootyLength = boardBooty.length;
 	for (u8 b = 0; b < bootyLength; b++)
 	{
 		for (u8 i = 0; i < coresLength; i++)
@@ -58,14 +58,14 @@ void onRender(CRules@ this)
 	GUI::GetTextDimensions(header, size);
 	GUI::DrawText(header, panelStart + Vec2f((panelWidth - size.x)/2 - 6, 0), SColor(255, 255, 255, 255));
 	
-	const int teamsLength = boardTeams.length;
+	const u8 teamsLength = boardTeams.length;
 	for (u8 i = 0; i < teamsLength; i++)
 	{
 		GUI::DrawText(teamColors[boardTeams[i]]+" "+Trans::Team, panelStart + Vec2f(0, (i+1)*lineHeight), getTeamColor(boardTeams[i]));
 	}
 		
 	//booty column
-	const int bootyLength = boardBooty.length;
+	const u8 bootyLength = boardBooty.length;
 	for (u8 i = 0; i < bootyLength; i++)
 	{
 		GUI::DrawText("" + Maths::Round(boardBooty[i]/10) * 10, panelStart + Vec2f(103, (i+1)*lineHeight), SColor(255, 255, 255, 255));

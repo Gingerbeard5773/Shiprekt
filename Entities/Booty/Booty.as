@@ -42,7 +42,7 @@ void setStartingBooty(CRules@ this)
 	print("** Setting Starting Player Booty ");
 
 	u16 initBooty = this.get_u16("starting_booty");
-	const int plyCount = getPlayersCount();
+	const u8 plyCount = getPlayersCount();
 	for (u8 p = 0; p < plyCount; ++p)
 	{
 		server_setPlayerBooty(getPlayer(p).getUsername(), sv_test ? 9999 : initBooty);
@@ -68,7 +68,7 @@ void server_updateTotalBooty(u8 teamNum, u16 ammount)
 			CBlob@[] cores;
 			if (getBlobsByTag("mothership", @cores))
 			{
-				const int coresLength = cores.length;
+				const u8 coresLength = cores.length;
 				for (u8 i = 0; i < coresLength; i++)
 					allBooty += rules.get_u16("bootyTeam_total" + cores[i].getTeamNum());
 				

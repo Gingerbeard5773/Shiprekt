@@ -99,7 +99,7 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 		//Max turrets to avoid lag
 		CBlob@[] turrets;
 		getBlobsByTag("flak", @turrets);
-		const int turretsLength = turrets.length;
+		const u16 turretsLength = turrets.length;
 		for (u16 i = 0; i < turretsLength; i++)
 		{
 			if (turrets[i].getTeamNum() == this.getTeamNum())
@@ -449,7 +449,7 @@ void selfDestruct(CBlob@ this)
 	//kill team players
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
-	const int humansLength = humans.length;
+	const u16 humansLength = humans.length;
 	for (u16 i = 0; i < humansLength; i++)
 	{
 		CBlob@ human = humans[i];
@@ -460,7 +460,7 @@ void selfDestruct(CBlob@ this)
 	//turrets go neutral
 	CBlob@[] turrets;
 	getBlobsByTag("weapon", @turrets);
-	const int turretsLength = turrets.length;
+	const u16 turretsLength = turrets.length;
 	for (u16 i = 0; i < turretsLength; i++)
 	{
 		CBlob@ turret = turrets[i];
@@ -471,7 +471,7 @@ void selfDestruct(CBlob@ this)
 	//damage nearby blobs
 	CBlob@[] blastBlobs;
 	getMap().getBlobsInRadius(pos, BLAST_RADIUS, @blastBlobs);
-	const int blastBlobsLength = blastBlobs.length;
+	const u16 blastBlobsLength = blastBlobs.length;
 	for (u16 i = 0; i < blastBlobsLength; i++)
 	{
 		CBlob@ blastBlob = blastBlobs[i];

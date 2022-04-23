@@ -303,7 +303,7 @@ void onTick(CRules@ this)
 		string[] captains;
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
-		const int coresLength = cores.length;
+		const u8 coresLength = cores.length;
 		for (u8 i = 0; i < coresLength; i++)
 		{
 			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
@@ -312,7 +312,7 @@ void onTick(CRules@ this)
 		}
 		
 		//set vars
-		const int plyCount = getPlayersCount();
+		const u8 plyCount = getPlayersCount();
 		for (u8 i = 0; i < plyCount; i++)
 		{
 			CPlayer@ player = getPlayer(i);

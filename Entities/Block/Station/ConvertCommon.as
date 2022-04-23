@@ -117,7 +117,7 @@ void getShipCrew(CBlob@ shipBlock, CBlob@[]@ crew) //Gets all the friendly playe
 	int coreColor = shipBlock.getShape().getVars().customData;
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
-	const int humansLength = humans.length;
+	const u8 humansLength = humans.length;
 	for (u8 i = 0; i < humansLength; i++)
 	{
 		CBlob@ human = humans[i];
