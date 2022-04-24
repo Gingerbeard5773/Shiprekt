@@ -6,13 +6,13 @@
 #include "BlockHooks.as";
 
 const f32 BOMB_RADIUS = 12.0f;
-const f32 BOMB_BASE_DAMAGE = 2.7f;
+const f32 BOMB_BASE_DAMAGE = 2.5f;
 
 void onInit(CBlob@ this)
 {
 	this.Tag("bomb");
 	this.set_u8("gibType", 1);
-    this.getCurrentScript().tickFrequency = 60;
+    //this.getCurrentScript().tickFrequency = 60;
 	
 	this.set_f32("weight", 2.0f);
 	
@@ -97,19 +97,41 @@ void onColored(CBlob@ this) //activate when the block changes color
 	}
 }
 
+u8 findCloseBombs(CBlob@ this)
+{
+	u8 factor = 0;
+	CBlob@[] blobs;
+	getMap().getBlobsInRadius(this.getPosition(), 12.0f, @blobs);
+	const int blobsLength = blobs.length;
+	for (uint i = 0; i < blobsLength; i++)
+	{
+		CBlob@ blob = blobs[i];
+		if (blob.hasTag("bomb"))
+		{
+			factor++;
+		}
+	}
+	
+	return factor;
+}
+
 void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 {
     Vec2f pos = this.getPosition();
+	u8 stackfactor = findCloseBombs(this);
 
-	directionalSoundPlay("Bomb.ogg", pos);
-    makeLargeExplosionParticle(pos);
-    ShakeScreen(4*radius, 45, pos);
+	if (isClient())
+	{
+		directionalSoundPlay("Bomb.ogg", pos);
+		makeLargeExplosionParticle(pos);
+		ShakeScreen(4 * radius + stackfactor, 45, pos);
+	}
 
 	//hit blobs
 	CBlob@[] blobs;
-	getMap().getBlobsInRadius(pos, radius, @blobs);
-
-	for (uint i = 0; i < blobs.length; i++)
+	getMap().getBlobsInRadius(pos, (radius-3)+ (stackfactor*3), @blobs);
+	const int blobsLength = blobs.length;
+	for (uint i = 0; i < blobsLength; i++)
 	{
 		CBlob@ hit_blob = blobs[i];
 		if (hit_blob is this)
@@ -142,12 +164,12 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 				}
 			}
 		
-			//f32 distanceFactor = Maths::Min(1.0f, Maths::Max(0.0f, BOMB_RADIUS - this.getDistanceTo(hit_blob) + 8.0f) / BOMB_RADIUS);
-			f32 distanceFactor = 1.0f;
-			f32 damageFactor = (hit_blob.hasTag("mothership") || hit_blob.hasTag("player")) ? 0.25f : 1.0f;
+			f32 distanceFactor = Maths::Min(1.0f, Maths::Max(0.0f, BOMB_RADIUS - this.getDistanceTo(hit_blob) + 8.0f + (stackfactor/2)) / BOMB_RADIUS);
+			//f32 distanceFactor = 1.0f;
+			f32 damageFactor = (hit_blob.hasTag("mothership")) ? 0.25f : 1.0f;
 
 			//hit the object
-			this.server_Hit(hit_blob, hit_blob_pos, Vec2f_zero, BOMB_BASE_DAMAGE * distanceFactor * damageFactor, Hitters::bomb, true);
+			this.server_Hit(hit_blob, hit_blob_pos, Vec2f_zero, BOMB_BASE_DAMAGE * distanceFactor * damageFactor + (stackfactor/2), Hitters::bomb, true);
 			//print(hit_blob.getNetworkID() + " for: " + BOMB_BASE_DAMAGE * distanceFactor + " dFctr: " + distanceFactor + ", dist: " + this.getDistanceTo(hit_blob));
 		}
 		
@@ -163,7 +185,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-    if (customData == Hitters::bomb)
+    if (isClient() && customData == Hitters::bomb)
     {
         //explosion particle
         makeSmallExplosionParticle(worldPoint);
@@ -223,7 +245,7 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 				if (victim.hasTag("weapon") || victim.hasTag("bomb"))
 					reward += 15;
 				else if (victim.hasTag("mothership"))
-					reward += 15;
+					reward += 20;
 
 				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
 				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32("bootyTeam_median") + 1000)));
