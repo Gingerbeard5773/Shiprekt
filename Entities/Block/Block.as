@@ -53,8 +53,8 @@ void onTick(CBlob@ this)
 				if (getMap().getHitInfosFromRay(this.getPosition(), -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
 				{
 					//HitInfo objects are sorted, first come closest hits
-					const int hitLength = hitInfos.length;
-					for (uint i = 0; i < hitLength; i++)
+					const u8 hitLength = hitInfos.length;
+					for (u8 i = 0; i < hitLength; i++)
 					{
 						CBlob@ blob =  hitInfos[i].blob;	  
 						if (blob is null || blob is this) continue;
@@ -167,8 +167,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		if (ship !is null && !docking && !ramming)
 		{
 			bool shouldCollide = true;
-			const int blocksLength = ship.blocks.length;
-			for (uint i = 0; i < blocksLength; ++i)
+			const u16 blocksLength = ship.blocks.length;
+			for (u16 i = 0; i < blocksLength; ++i)
 			{
 				ShipBlock@ ship_block = ship.blocks[i];
 				if (ship_block is null) continue;
@@ -343,7 +343,7 @@ void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking
 	}
 	
 	//effects
-	int shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
+	u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
 	ShakeScreen(Maths::Min(shake, 100), 12, point1);
 	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 }
@@ -392,7 +392,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	const int color = this.getShape().getVars().customData;
 	if (color < 0) return 0.0f;
 	
-	int teamNum = this.getTeamNum();
+	u8 teamNum = this.getTeamNum();
 	
 	Ship@ ship = getShip(color);
 	if (ship is null)

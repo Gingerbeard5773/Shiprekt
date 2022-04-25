@@ -7,23 +7,23 @@ const f32 PROJECTILE_SPEED = 15.0f;;
 const u16 FIRE_RATE = 170;//max wait between shots
 
 // Max amount of ammunition
-const uint8 MAX_AMMO = 12;
+const u8 MAX_AMMO = 12;
 
 // Amount of ammunition to refill when
 // connected to motherships and stations
-const uint8 REFILL_AMOUNT = 1;
+const u8 REFILL_AMOUNT = 1;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 5;
+const u8 REFILL_SECONDS = 5;
 
 // How often to refill when connected
 // to secondary cores
-const uint8 REFILL_SECONDARY_CORE_SECONDS = 12;
+const u8 REFILL_SECONDARY_CORE_SECONDS = 12;
 
 // Amount of ammunition to refill when
 // connected to secondary cores
-const uint8 REFILL_SECONDARY_CORE_AMOUNT = 1;
+const u8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotrandom(0x15125); //clientside
 
@@ -169,7 +169,6 @@ void Fire(CBlob@ this, CBlob@ shooter)
 	this.getSprite().animation.SetFrameIndex(0);
 
 	shotParticles(pos + aimVector*9, aimVector.Angle());
-
 	directionalSoundPlay("CannonFire.ogg", pos, 7.0f);
 }
 
@@ -180,8 +179,8 @@ bool isClear(CBlob@ this)
 	HitInfo@[] hitInfos;
 	if (getMap().getHitInfosFromRay(this.getPosition(), -aimVector.Angle(), 60.0f, this, @hitInfos))
 	{
-		const int hitLength = hitInfos.length;
-		for (uint i = 0; i < hitLength; i++)
+		const u8 hitLength = hitInfos.length;
+		for (u8 i = 0; i < hitLength; i++)
 		{
 			CBlob@ b =  hitInfos[i].blob;
 			if (b is null || b is this) continue;

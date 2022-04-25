@@ -3,7 +3,7 @@
 #include "ShipsCommon.as";
 #include "ShiprektTranslation.as";
 
-const int slotsSize = 8;
+const u8 slotsSize = 8;
 const SColor tipsColor = SColor(255, 255, 255, 255);
 const f32 MSHIP_DAMAGE_ALERT = 3.0f;
 
@@ -21,10 +21,11 @@ void onTick(CSprite@ this)
 
     CBlob@ blob = this.getBlob();
 	if (blob is null) return;
-	Vec2f tl = getActorHUDStartPosition(blob, slotsSize);	
 	CPlayer@ player = blob.getPlayer();  
 	if (player is null) return;
+	
 	CRules@ rules = getRules();
+	Vec2f tl = getActorHUDStartPosition(blob, slotsSize);	
 	string name = player.getUsername();
 	u16 pBooty = rules.get_u16("booty" + name);
 	CControls@ controls = getControls();
@@ -37,8 +38,8 @@ void onTick(CSprite@ this)
 			u16 seatID = 0;
 			CBlob@[] blobs;
 			getMap().getBlobsInRadius(blob.getPosition(), 8.0f, @blobs);
-			const int blobsLength = blobs.length;
-			for (int i = 0; i < blobsLength; i++)
+			const u8 blobsLength = blobs.length;
+			for (u8 i = 0; i < blobsLength; i++)
 			{
 				if (blobs[i].hasTag("control") && blobs[i].get_string("playerOwner") == name)
 				{
@@ -247,20 +248,17 @@ void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 		GUI::DrawText(Trans::CoreHealth,  tl + Vec2f(-45, -25), tipsColor);
 }
 
-void DrawStationStatus(int teamnum, Vec2f tl, CControls@ controls)
+void DrawStationStatus(u8 teamnum, Vec2f tl, CControls@ controls)
 {
     GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, teamnum);
 		
 	CBlob@[] stations;
 	getBlobsByTag("station", @stations);
 	
-	const int totalStationCount = stations.length;
-	u16 teamStationCount = 0;
+	const u8 totalStationCount = stations.length;
+	u8 teamStationCount = 0;
 	for (u8 u = 0; u < totalStationCount; u++)
 	{
-		CBlob@ station = stations[u];
-		if (station is null)
-			continue;
 		if (stations[u].getTeamNum() == getLocalPlayer().getTeamNum())
 			teamStationCount++;
 	}

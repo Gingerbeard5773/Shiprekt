@@ -74,8 +74,8 @@ void flak(CBlob@ this)
 		HitInfo@[] hitInfos;
 		if (map.getHitInfosFromRay(pos, angle, FLAK_REACH, this, @hitInfos))
 		{
-			const int hitLength = hitInfos.length;
-			for (uint i = 0; i < hitLength; i++)//sharpnel trail
+			const u8 hitLength = hitInfos.length;
+			for (u8 i = 0; i < hitLength; i++)//sharpnel trail
 			{
 				CBlob@ b = hitInfos[i].blob;	  
 				if (b is null || b is this) continue;

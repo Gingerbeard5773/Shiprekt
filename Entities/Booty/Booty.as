@@ -84,7 +84,7 @@ void server_resetTotalBooty(CRules@ this)
 	if (!isServer()) return;
 		
 	u8 teamsNum = this.getTeamsNum();
-	for (int teamNum = 0; teamNum < teamsNum; teamNum++)
+	for (u8 teamNum = 0; teamNum < teamsNum; teamNum++)
 	{
 		this.set_u16("bootyTeam_total" + teamNum, 0);
 		this.Sync("bootyTeam_total" + teamNum, true);

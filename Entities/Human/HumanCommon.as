@@ -29,7 +29,8 @@ namespace Human
 		CBlob@[]@ blocks;
 		if (this.get("blocks", @blocks))                 
 		{
-			for (uint i = 0; i < blocks.length; ++i)
+			const u8 blocksLength = blocks.length;
+			for (u8 i = 0; i < blocksLength; ++i)
 			{
 				blocks[i].Tag("disabled");
 				blocks[i].server_Die();

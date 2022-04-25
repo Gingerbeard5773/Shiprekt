@@ -13,13 +13,13 @@ void onRestart(CRules@ this)
 		Vec2f spawnOffset(4.0f, 4.0f); //align to tilegrid
     	if (getMap().getMarkers("spawn", spawns))
 		{
+			const u8 specTeam = this.getSpectatorTeamNum();
 			u8 pCount = getPlayerCount();
-			
 			for (u8 p = 0; p < pCount; p++)//discard spectators
 			{
 				CPlayer@ player = getPlayer(p);
-				if (player.getTeamNum() == this.getSpectatorTeamNum())
-					pCount --;
+				if (player.getTeamNum() == specTeam)
+					pCount--;
 			}
 			
 			u8 availableCores = Maths::Min(spawns.length, this.getTeamsNum());
@@ -27,7 +27,7 @@ void onRestart(CRules@ this)
 			u8 mShipsToSpawn = Maths::Min(playingCores, availableCores);
 			print("** Spawning " + mShipsToSpawn + " motherships of " + availableCores + " for " + pCount + " players");
 			
-			for (u8 s = 0; s < mShipsToSpawn; s ++)
+			for (u8 s = 0; s < mShipsToSpawn; s++)
 			{
         		SpawnMothership(spawns[s] + spawnOffset, s);
 			}
@@ -35,7 +35,7 @@ void onRestart(CRules@ this)
     }
 }
 
-void SpawnMothership(Vec2f pos, const int team)
+void SpawnMothership(Vec2f pos, const u8 team)
 {
 	// platforms
 	

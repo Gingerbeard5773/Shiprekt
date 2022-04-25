@@ -22,7 +22,7 @@ bool mouseWasPressed2 = false;
 float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 {
 	CTeam@ team = getRules().getTeam(teamNum);
-	const int playersLength = players.length;
+	const u8 playersLength = players.length;
 	if (playersLength <= 0 || team is null)
 		return topleft.y;
 
@@ -64,7 +64,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 	Vec2f mousePos = controls.getMouseScreenPos();
 
 	//draw players
-	for (u32 i = 0; i < playersLength; i++)
+	for (u8 i = 0; i < playersLength; i++)
 	{
 		CPlayer@ p = players[i];
 
@@ -183,11 +183,11 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 
 void onRenderScoreboard(CRules@ this)
 {
-	const int playingTeamsCount = 8; //change this depending on how many teams in the gamemode, this.getTeamsNum() causes errors
+	const u8 playingTeamsCount = 8; //change this depending on how many teams in the gamemode, this.getTeamsNum() causes errors
 	CPlayer@[][] teamsPlayers(playingTeamsCount); //holds all teams and their players
 	CPlayer@[] spectators;
-	const int plyCount = getPlayersCount();
-	for (u32 i = 0; i < plyCount; i++)
+	const u8 plyCount = getPlayersCount();
+	for (u8 i = 0; i < plyCount; i++)
 	{
 		CPlayer@ p = getPlayer(i);
 		if (p.getTeamNum() == this.getSpectatorTeamNum())
@@ -196,7 +196,7 @@ void onRenderScoreboard(CRules@ this)
 			continue;
 		}
 
-		int teamNum = p.getTeamNum();
+		u8 teamNum = p.getTeamNum();
 		if (teamNum < playingTeamsCount)
 		{
 			//todo: push back team sorted by highest bounty OR push back localPlayers team first
@@ -216,8 +216,8 @@ void onRenderScoreboard(CRules@ this)
 
 	//draw the scoreboards
 	
-	const int teamsPlyLength = teamsPlayers.length;
-	for (u32 i = 0; i < teamsPlyLength; i++)
+	const u8 teamsPlyLength = teamsPlayers.length;
+	for (u8 i = 0; i < teamsPlyLength; i++)
 	{
 		if (teamsPlayers[i].length > 0)
 		{
@@ -226,7 +226,7 @@ void onRenderScoreboard(CRules@ this)
 		}
 	}
 
-	const int spectatorsLength = spectators.length;
+	const u8 spectatorsLength = spectators.length;
 	if (spectatorsLength > 0)
 	{
 		//draw spectators
@@ -242,7 +242,7 @@ void onRenderScoreboard(CRules@ this)
 		GUI::DrawText(s, Vec2f(topleft.x + 5, specy), SColor(0xffaaaaaa));
 
 		f32 specx = topleft.x + textdim.x + 15;
-		for (u32 i = 0; i < spectatorsLength; i++)
+		for (u8 i = 0; i < spectatorsLength; i++)
 		{
 			CPlayer@ p = spectators[i];
 			if (specx < bottomright.x - 100)

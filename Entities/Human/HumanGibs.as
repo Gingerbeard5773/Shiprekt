@@ -9,7 +9,7 @@ void onGib(CSprite@ this)
 	 */
 
 	string effectname = "BV: Emit Blood";
-	if(!CustomEmitEffectExists(effectname))
+	if (!CustomEmitEffectExists(effectname))
 	{
 		SetupCustomEmitEffect(effectname, "HumanGibs.as", "EmitBlood", 10, 5, 45);
 	}
@@ -20,8 +20,9 @@ void onGib(CSprite@ this)
     Vec2f vel = blob.getVelocity() * 0.5f;
 
     const u8 team = blob.getTeamNum();
+	const u8 gibAmount = v_fastrender ? 5 : 10;
     
-    for (int i = 0; i < (v_fastrender ? 5 : 10); i++)
+    for (u8 i = 0; i < gibAmount; i++)
     {
     	Vec2f veladd(0,_r.NextFloat() + 0.1f * (i+1));
     	veladd.RotateBy(_r.NextFloat() * 360.0f, Vec2f());
@@ -66,7 +67,6 @@ void EmitBlood(CParticle@ p)
     veladd.RotateBy(_r.NextFloat() * 360.0f, Vec2f());
 
 	CParticle@ pixel = ParticlePixel(p.position, p.velocity*0.1f + veladd, SColor(255, 86+_r.NextRanged(80), 0, 0), true);
-	if (pixel !is null){
+	if (pixel !is null)
 		pixel.Z = p.Z - 0.1f;
-	}
 }

@@ -43,8 +43,8 @@ void Repulse(CBlob@ this)
 	directionalSoundPlay("Repulse3.ogg", pos, 1.5f);
 	CBlob@[] blobs;
 	getMap().getBlobsInRadius(pos, PUSH_RADIUS, @blobs);
-	const int blobsLength = blobs.length;
-	for (uint i = 0; i < blobsLength; i++)
+	const u8 blobsLength = blobs.length;
+	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = blobs[i];
 		int color = b.getShape().getVars().customData;
@@ -122,8 +122,9 @@ void ChainReaction(CBlob@ this, u32 time)
 
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
-	const int overlappingLength = overlapping.length;
-	for (int i = 0; i < overlappingLength; i++)
+	
+	const u8 overlappingLength = overlapping.length;
+	for (u8 i = 0; i < overlappingLength; i++)
 	{
 		CBlob@ b = overlapping[i];
 		if (b.hasTag("repulsor") 

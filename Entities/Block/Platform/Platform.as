@@ -29,12 +29,11 @@ void updateCores(CBlob@ this)
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
 	
-	for (uint i = 0; i < overlapping.length; i++)
+	const u8 overlappingLength = overlapping.length;
+	for (u8 i = 0; i < overlappingLength; i++)
 	{
 		CBlob@ b = overlapping[i];
 		if (b.hasTag("core"))
-		{
 			b.set_bool("updateLayers", true);
-		}
 	}
 }

@@ -4,7 +4,7 @@
 void onInit(CSprite@ this)
 {
 	this.getCurrentScript().tickFrequency = 5;
-	for (int i = 0; i < 4; i++) //4 times for each lateral side
+	for (u8 i = 0; i < 4; i++) //4 times for each lateral side
 	{
 		CSpriteLayer@ layer = this.addSpriteLayer("side"+i, "CoreSide.png", 8, 3);
 		if (layer !is null)
@@ -49,8 +49,8 @@ void checkBlock(CSprite@ this, CMap@ map, Vec2f pos, string layername)
 	
 	CBlob@[] blobs;
 	map.getBlobsAtPosition(pos, @blobs);
-	const int blobsLength = blobs.length;
-	for (int i = 0; i < blobsLength; i++)
+	const u8 blobsLength = blobs.length;
+	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = blobs[i];
 		if (b.hasTag("platform") && b.getShape().getVars().customData > 0)

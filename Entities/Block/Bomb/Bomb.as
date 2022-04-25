@@ -84,8 +84,8 @@ void onColored(CBlob@ this) //activate when the block changes color
 		CBlob@[] overlapping;
 		this.getOverlapping(@overlapping);
 		
-		const int overlappingLength = overlapping.length;
-		for (uint i = 0; i < overlappingLength; i++)
+		const u8 overlappingLength = overlapping.length;
+		for (u8 i = 0; i < overlappingLength; i++)
 		{
 			CBlob@ b = overlapping[i];
 			if (b.getShape().getVars().customData == color && this.getTeamNum() != b.getTeamNum())
@@ -102,8 +102,8 @@ u8 findCloseBombs(CBlob@ this)
 	u8 factor = 0;
 	CBlob@[] blobs;
 	getMap().getBlobsInRadius(this.getPosition(), 12.0f, @blobs);
-	const int blobsLength = blobs.length;
-	for (uint i = 0; i < blobsLength; i++)
+	const u8 blobsLength = blobs.length;
+	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ blob = blobs[i];
 		if (blob.hasTag("bomb"))
@@ -130,8 +130,8 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 	//hit blobs
 	CBlob@[] blobs;
 	getMap().getBlobsInRadius(pos, (radius-3)+ (stackfactor*3), @blobs);
-	const int blobsLength = blobs.length;
-	for (uint i = 0; i < blobsLength; i++)
+	const u8 blobsLength = blobs.length;
+	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ hit_blob = blobs[i];
 		if (hit_blob is this)

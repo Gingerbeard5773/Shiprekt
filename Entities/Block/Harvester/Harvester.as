@@ -92,8 +92,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			
 		if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
 		{
-			const int hitLength = hitInfos.length;
-			for (uint i = 0; i < hitLength; i++)
+			const u8 hitLength = hitInfos.length;
+			for (u8 i = 0; i < hitLength; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;	  

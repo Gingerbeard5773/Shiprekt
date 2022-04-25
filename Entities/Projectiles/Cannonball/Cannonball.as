@@ -46,7 +46,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	if (b.hasTag("plank") && !CollidesWithPlank(b, this.getVelocity()))
 		return;
 	
-	int piercedCount = this.get_u16("pierced count");
+	u16 piercedCount = this.get_u16("pierced count");
     u32[]@ piercedBlobIDs;
     this.get("pierced blob IDs", @piercedBlobIDs);
 	
@@ -113,7 +113,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 
 f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 {
-	int piercedCount = this.get_u16("pierced count");
+	u16 piercedCount = this.get_u16("pierced count");
 	f32 damageFactor = 1.0f;
 	
 	if (piercedCount > 1)
@@ -188,8 +188,8 @@ void onDie(CBlob@ this)
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(pos, SPLASH_RADIUS, @blobsInRadius))
 	{
-		const int blobsLength = blobsInRadius.length;
-		for (uint i = 0; i < blobsLength; i++)
+		const u8 blobsLength = blobsInRadius.length;
+		for (u8 i = 0; i < blobsLength; i++)
 		{
 			CBlob@ b = blobsInRadius[i];
 			if (!b.hasTag("hasSeat") && b.hasTag("block") && b.getShape().getVars().customData > 0)
@@ -199,9 +199,9 @@ void onDie(CBlob@ this)
 }
 
 Random _sprk_r;
-void sparksDirectional(Vec2f pos, Vec2f blobVel, int amount)
+void sparksDirectional(Vec2f pos, Vec2f blobVel, u8 amount)
 {
-	for (int i = 0; i < amount; i++)
+	for (u8 i = 0; i < amount; i++)
     {
         Vec2f vel(_sprk_r.NextFloat() * 5.0f, 0);
         vel.RotateBy((-blobVel.getAngle() + 180.0f) + _sprk_r.NextFloat() * 30.0f - 15.0f);

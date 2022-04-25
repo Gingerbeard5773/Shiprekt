@@ -29,8 +29,8 @@ namespace Destruct
 		CBlob@[] surrounding;
 
 		map.getBlobsInRadius(position, radius, @surrounding);
-		const int surroundingLength = surrounding.length;
-		for (uint16 i = 0; i < surroundingLength; ++ i)
+		const u16 surroundingLength = surrounding.length;
+		for (u16 i = 0; i < surroundingLength; ++ i)
 		{
 			CBlob@ blob = surrounding[i];
 			if (this is blob) continue;
@@ -49,12 +49,12 @@ namespace Destruct
 		Ship@ ship = getShip(color);
 		if (ship is null) return;
 		
-		const int blocksLength = ship.blocks.length;
+		const u16 blocksLength = ship.blocks.length;
 		if (blocksLength < 10) return;
 		
 		if (this.hasTag("secondaryCore") && ship.isMothership) return; //dont kill mothership if this is a secondaryCore
 
-		for (uint i = 0; i < blocksLength; ++ i)
+		for (u16 i = 0; i < blocksLength; ++ i)
 		{
 			ShipBlock@ block = ship.blocks[i];
 			CBlob@ blob = getBlobByNetworkID(block.blobID);

@@ -48,9 +48,9 @@ void setOpen(CBlob@ this, bool open)
 
 bool canClose(CBlob@ this)
 {
-	const uint count = this.getTouchingCount();
-	uint collided = 0;
-	for (uint step = 0; step < count; ++step)
+	const u8 count = this.getTouchingCount();
+	u8 collided = 0;
+	for (u8 step = 0; step < count; ++step)
 	{
 		CBlob@ blob = this.getTouchingByIndex(step);
 		if (blob.hasTag("player"))

@@ -9,7 +9,7 @@ u8[] boardTeams = {0};
 
 void onTick(CRules@ this)
 {
-	if (getGameTime() % 10 != 0)
+	if (getGameTime() % 30 != 0)
 		return;
 		
 	boardBooty.clear();

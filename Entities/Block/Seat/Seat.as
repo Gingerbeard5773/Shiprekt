@@ -144,14 +144,14 @@ void onTick(CBlob@ this)
 					flak.push_back(block);
 			}
 			
-			const int couplingsLength = couplings.length;
-			const int flakLength = flak.length;
+			const u16 couplingsLength = couplings.length;
+			const u16 flakLength = flak.length;
 
 			//Show coupling/flak/repulsor buttons on spacebar down
 			if (occupier.isKeyJustPressed(key_action3))
 			{
 				//couplings on ship
-				for (uint i = 0; i < couplingsLength; ++i)
+				for (u16 i = 0; i < couplingsLength; ++i)
 				{
 					CBlob@ c = couplings[i];
 					if (!c.isOnScreen()) continue;
@@ -189,8 +189,8 @@ void onTick(CBlob@ this)
 				//repulsors on screen
 				CBlob@[] repulsors;	
 				getBlobsByTag("repulsor", @repulsors);
-				const int repulsorLength = repulsors.length;
-				for (uint i = 0; i < repulsorLength; ++i)
+				const u16 repulsorLength = repulsors.length;
+				for (u16 i = 0; i < repulsorLength; ++i)
 				{
 					CBlob@ r = repulsors[i];
 					int color = r.getShape().getVars().customData;
@@ -208,7 +208,7 @@ void onTick(CBlob@ this)
 				//flak on ship: detach player
 				if (isCaptain)
 				{
-					for (uint i = 0; i < flakLength; ++i)
+					for (u16 i = 0; i < flakLength; ++i)
 					{
 						CBlob@ f = flak[i];
 						if (f.hasAttached())
@@ -227,7 +227,7 @@ void onTick(CBlob@ this)
 			//hax: update can't-decouplers
 			if (isCaptain && space)
 			{
-				for (uint i = 0; i < couplingsLength; ++i)
+				for (u16 i = 0; i < couplingsLength; ++i)
 				{
 					CBlob@ c = couplings[i];
 					if (c.get_string("playerOwner") != occupierName && c.getTickSinceCreated() == CREW_COUPLINGS_LEASE)
@@ -247,7 +247,7 @@ void onTick(CBlob@ this)
 			//Release all couplings on spacebar + right click
 			if (space && HUD.hasButtons() && right_click)
 			{
-				for (uint i = 0; i < couplingsLength; ++i)
+				for (u16 i = 0; i < couplingsLength; ++i)
 				{
 					if (couplings[i].get_string("playerOwner") == occupierName)
 					{
@@ -313,23 +313,23 @@ void onTick(CBlob@ this)
 			//propellers
 			bool teamInsensitive = !ship.isMothership || ship.owner != "*";//it's a mini or mship isn't merged with another mship (every side controlls their props)
 			
-			const int upPropLength = up_propellers.length;
-			const int downPropLength = down_propellers.length;
-			const int leftPropLength = left_propellers.length;
-			const int rightPropLength = right_propellers.length;
+			const u16 upPropLength = up_propellers.length;
+			const u16 downPropLength = down_propellers.length;
+			const u16 leftPropLength = left_propellers.length;
+			const u16 rightPropLength = right_propellers.length;
 			
 			//reset			
 			if (this.get_bool("kUD") && !up && !down)
 			{
 				this.set_bool("kUD", false);
 				
-				for (uint i = 0; i < upPropLength; ++i)
+				for (u16 i = 0; i < upPropLength; ++i)
 				{
 					CBlob@ prop = getBlobByNetworkID(up_propellers[i]);
 					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						prop.set_f32("power", 0);
 				}
-				for (uint i = 0; i < downPropLength; ++i)
+				for (u16 i = 0; i < downPropLength; ++i)
 				{
 					CBlob@ prop = getBlobByNetworkID(down_propellers[i]);
 					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
@@ -340,14 +340,13 @@ void onTick(CBlob@ this)
 			{
 				this.set_bool("kLR", false);
 				
-				for (uint i = 0; i < leftPropLength; ++i)
+				for (u16 i = 0; i < leftPropLength; ++i)
 				{
 					CBlob@ prop = getBlobByNetworkID(left_propellers[i]);
 					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						prop.set_f32("power", 0);
 				}
-				
-				for (uint i = 0; i < rightPropLength; ++i)
+				for (u16 i = 0; i < rightPropLength; ++i)
 				{
 					CBlob@ prop = getBlobByNetworkID(right_propellers[i]);
 					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
@@ -373,7 +372,7 @@ void onTick(CBlob@ this)
 			{
 				this.set_bool("kUD", true);
 
-				for (uint i = 0; i < upPropLength; ++i)
+				for (u16 i = 0; i < upPropLength; ++i)
 				{
 					CBlob@ prop = getBlobByNetworkID(up_propellers[i]);
 					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
@@ -382,7 +381,7 @@ void onTick(CBlob@ this)
 						prop.set_f32("power", up ? power * prop.get_f32("powerFactor") : reverse_power * prop.get_f32("powerFactor"));
 					}
 				}
-				for (uint i = 0; i < downPropLength; ++i)
+				for (u16 i = 0; i < downPropLength; ++i)
 				{
 					CBlob@ prop = getBlobByNetworkID(down_propellers[i]);
 					if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
@@ -399,7 +398,7 @@ void onTick(CBlob@ this)
 
 				if (!strafe)
 				{
-					for (uint i = 0; i < leftPropLength; ++i)
+					for (u16 i = 0; i < leftPropLength; ++i)
 					{
 						CBlob@ prop = getBlobByNetworkID(left_propellers[i]);
 						if (prop !is null && seatColor == prop.getShape().getVars().customData &&  (teamInsensitive || occupierTeam == prop.getTeamNum()))
@@ -408,7 +407,7 @@ void onTick(CBlob@ this)
 							prop.set_f32("power", left ? power * prop.get_f32("powerFactor") : reverse_power * prop.get_f32("powerFactor"));
 						}
 					}
-					for (uint i = 0; i < rightPropLength; ++i)
+					for (u16 i = 0; i < rightPropLength; ++i)
 					{
 						CBlob@ prop = getBlobByNetworkID(right_propellers[i]);
 						if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
@@ -421,8 +420,8 @@ void onTick(CBlob@ this)
 				else
 				{
 					u8 maxStrafers = Maths::Round(Maths::FastSqrt(ship.mass)/3.0f);
-					const int strLeftPropLength = strafe_left_propellers.length;
-					for (uint i = 0; i < strLeftPropLength; ++i)
+					const u16 strLeftPropLength = strafe_left_propellers.length;
+					for (u16 i = 0; i < strLeftPropLength; ++i)
 					{
 						CBlob@ prop = getBlobByNetworkID(strafe_left_propellers[i]);
 						f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
@@ -432,8 +431,8 @@ void onTick(CBlob@ this)
 							prop.set_f32("power", left ? oDrive * power * prop.get_f32("powerFactor") : reverse_power * prop.get_f32("powerFactor"));
 						}
 					}
-					const int strRightPropLength = strafe_right_propellers.length;
-					for (uint i = 0; i < strRightPropLength; ++i)
+					const u16 strRightPropLength = strafe_right_propellers.length;
+					for (u16 i = 0; i < strRightPropLength; ++i)
 					{
 						CBlob@ prop = getBlobByNetworkID(strafe_right_propellers[i]);
 						f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
@@ -452,7 +451,8 @@ void onTick(CBlob@ this)
 				if (left_click)
 				{
 					Vec2f aim = occupier.getAimPos() - this.getPosition();//relative to seat
-					for (uint i = 0; i < machineguns.length; ++i)
+					const u16 machinegunsLength = machineguns.length;
+					for (u16 i = 0; i < machinegunsLength; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID(machineguns[i]);
 						if (weap is null)
@@ -468,13 +468,13 @@ void onTick(CBlob@ this)
 					}
 				}
 				//cannons on right click
-				const int cannonsLength = cannons.length;
+				const u16 cannonsLength = cannons.length;
 				if (right_click && cannonsLength > 0 && this.get_u32("lastCannonFire") + CANNON_FIRE_CYCLE < gameTime)
 				{
 					CBlob@[] fireCannons;
 					Vec2f aim = occupier.getAimPos() - this.getPosition();//relative to seat
 					
-					for (uint i = 0; i < cannonsLength; ++i)
+					for (u16 i = 0; i < cannonsLength; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID(cannons[i]);
 						if (weap is null || !weap.get_bool("fire ready"))
@@ -533,8 +533,8 @@ void updateArrays(CBlob@ this, Ship@ ship)
 	this.set_bool("updateArrays", false);
 
 	u16[] left_propellers, strafe_left_propellers, strafe_right_propellers, right_propellers, up_propellers, down_propellers, machineguns, cannons;	
-	const int blocksLength = ship.blocks.length;
-	for (uint i = 0; i < blocksLength; ++i)
+	const u16 blocksLength = ship.blocks.length;
+	for (u16 i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		if (ship_block is null) continue;

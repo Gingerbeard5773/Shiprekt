@@ -54,8 +54,8 @@ Ship@ getShip(CBlob@ this) //reference a ship from a non-block (e.g human)
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius)) 
 	{
-		const int blobsLength = blobsInRadius.length;
-		for (uint i = 0; i < blobsLength; i++)
+		const u8 blobsLength = blobsInRadius.length;
+		for (u8 i = 0; i < blobsLength; i++)
 		{
             const int color = blobsInRadius[i].getShape().getVars().customData;
             if (color > 0)
@@ -72,8 +72,8 @@ CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positio
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius))
 	{
 		f32 mDist = 9999;
-		const int blobsLength = blobsInRadius.length;
-		for (uint i = 0; i < blobsLength; i++)
+		const u8 blobsLength = blobsInRadius.length;
+		for (u8 i = 0; i < blobsLength; i++)
 		{
 			CBlob@ blob = blobsInRadius[i];
 			if (blob.getShape().getVars().customData > 0)
@@ -96,8 +96,8 @@ CBlob@ getMothership(const u8 team) //Gets the mothership core block on determin
     CBlob@[] cores;
     getBlobsByTag("mothership", @cores);
 	
-	const int coresLength = cores.length;
-    for (uint i = 0; i < coresLength; i++)
+	const u8 coresLength = cores.length;
+    for (u8 i = 0; i < coresLength; i++)
     {
         CBlob@ core = cores[i];  
         if (core.getTeamNum() == team)
@@ -141,8 +141,8 @@ bool coreLinkedPathed(CBlob@ this, CBlob@ core, u16[] checked, u16[] unchecked, 
 		
 		f32 minDist = 99999.0f;
 		CBlob@ optimal = null;
-		const int overlappingLength = overlapping.length;
-		for (int i = 0; i < overlappingLength; i++)
+		const u8 overlappingLength = overlapping.length;
+		for (u8 i = 0; i < overlappingLength; i++)
 		{
 			CBlob@ b = overlapping[i];
 			Vec2f bPos = b.getPosition();

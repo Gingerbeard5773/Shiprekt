@@ -243,15 +243,13 @@ class VoteNextmapFunctor : VoteFunctor
 				Vec2f mapCenter = Vec2f(map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
 				server_CreateBlob("whirlpool", 0, mapCenter);
 				
+				//kill all stations
 				CBlob@[] stations;
 				getBlobsByTag("station", @stations);
-				const int stationsLength = stations.length;
-				for (uint i = 0; i < stationsLength; i++)
+				const u8 stationsLength = stations.length;
+				for (u8 i = 0; i < stationsLength; i++)
 				{
-					CBlob@ station = stations[i];
-					
-					if (station !is null)
-						station.server_Die();
+					stations[i].server_Die();
 				}
 			}
 		}
@@ -383,8 +381,8 @@ class VoteSurrenderFunctor : VoteFunctor
 				CBlob@ teamCore;
 				CBlob@[] cores;
 				getBlobsByTag("mothership", @cores);
-				const int coresLength = cores.length;
-				for (uint i = 0; i < coresLength; i++)
+				const u8 coresLength = cores.length;
+				for (u8 i = 0; i < coresLength; i++)
 				{
 					CBlob@ core = cores[i];  
 					if (core.getTeamNum() == team)

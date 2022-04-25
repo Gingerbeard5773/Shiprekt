@@ -10,23 +10,23 @@ const f32 CLONE_RADIUS = 20.0f;
 const f32 AUTO_RADIUS = 380.0f;
 
 // Max amount of ammunition
-const uint8 MAX_AMMO = 15;
+const u8 MAX_AMMO = 15;
 
 // Amount of ammunition to refill when
 // connected to motherships and stations
-const uint8 REFILL_AMOUNT = 1;
+const u8 REFILL_AMOUNT = 1;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 5;
+const u8 REFILL_SECONDS = 5;
 
 // How often to refill when connected
 // to secondary cores
-const uint8 REFILL_SECONDARY_CORE_SECONDS = 8;
+const u8 REFILL_SECONDARY_CORE_SECONDS = 8;
 
 // Amount of ammunition to refill when
 // connected to secondary cores
-const uint8 REFILL_SECONDARY_CORE_AMOUNT = 1;
+const u8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotspreadrandom(0x11598); //clientside
 
@@ -163,8 +163,8 @@ void Auto(CBlob@ this)
 
 	if (getMap().getBlobsInRadius(pos, AUTO_RADIUS, @blobsInRadius))
 	{
-		const int blobsLength = blobsInRadius.length;
-		for (uint i = 0; i < blobsLength; i++)
+		const u16 blobsLength = blobsInRadius.length;
+		for (u16 i = 0; i < blobsLength; i++)
 		{
 			CBlob@ b = blobsInRadius[i];
 			if (b.getTeamNum() != this.getTeamNum()
@@ -274,8 +274,8 @@ CBlob@ findFlakChild(CBlob@ this)
 	CBlob@[] flak;
 	CBlob@[] radBlobs;
 	getMap().getBlobsInRadius(this.getPosition(), CLONE_RADIUS, @radBlobs);
-	const int blobsLength = radBlobs.length;
-	for (uint i = 0; i < blobsLength; i++)
+	const u8 blobsLength = radBlobs.length;
+	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = radBlobs[i];
 		if (b.hasTag("flak") && !b.hasAttached() && b.get_u16("parentID") == 0 && color == b.getShape().getVars().customData)
@@ -312,11 +312,11 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 	map.getHitInfosFromRay(pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
 	map.getHitInfosFromRay(pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
 	
-	const int hitLength = hitInfos.length;
+	const u8 hitLength = hitInfos.length;
 	if (hitLength > 0)
 	{
 		//HitInfo objects are sorted, first come closest hits
-		for (uint i = 0; i < hitLength; i++)
+		for (u8 i = 0; i < hitLength; i++)
 		{
 			HitInfo@ hi = hitInfos[i];
 			CBlob@ b = hi.blob;

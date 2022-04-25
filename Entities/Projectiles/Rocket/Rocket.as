@@ -268,8 +268,8 @@ void onDie(CBlob@ this)
 		CBlob@[] blobsInRadius;
 		if (getMap().getBlobsInRadius(pos, SPLASH_RADIUS, @blobsInRadius))
 		{
-			const int blobsLength = blobsInRadius.length;
-			for (uint i = 0; i < blobsLength; i++)
+			const u8 blobsLength = blobsInRadius.length;
+			for (u8 i = 0; i < blobsLength; i++)
 			{
 				CBlob@ b = blobsInRadius[i];
 				if (!b.hasTag("hasSeat") && !b.hasTag("mothership") && b.hasTag("block") && b.getShape().getVars().customData > 0)
@@ -280,9 +280,9 @@ void onDie(CBlob@ this)
 }
 
 Random _smoke_r(0x10001);
-void smoke(Vec2f pos, int amount)
+void smoke(Vec2f pos, u8 amount)
 {
-	for (int i = 0; i < amount; i++)
+	for (u8 i = 0; i < amount; i++)
     {
         Vec2f vel(2.0f + _smoke_r.NextFloat() * 2.0f, 0);
         vel.RotateBy(_smoke_r.NextFloat() * 360.0f);
@@ -305,9 +305,9 @@ void smoke(Vec2f pos, int amount)
 }
 
 Random _blast_r(0x10002);
-void blast(Vec2f pos, int amount)
+void blast(Vec2f pos, u8 amount)
 {
-	for (int i = 0; i < amount; i++)
+	for (u8 i = 0; i < amount; i++)
     {
         Vec2f vel(_blast_r.NextFloat() * 2.5f, 0);
         vel.RotateBy(_blast_r.NextFloat() * 360.0f);

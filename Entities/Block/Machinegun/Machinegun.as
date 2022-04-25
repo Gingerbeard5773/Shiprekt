@@ -13,23 +13,23 @@ const f32 MAX_FIRE_PAUSE = 8.0f; //max wait between shots
 const f32 FIRE_PAUSE_RATE = 0.08f; //higher values = higher recover
 
 // Max amount of ammunition
-const uint8 MAX_AMMO = 250;
+const u8 MAX_AMMO = 250;
 
 // Amount of ammunition to refill when
 // connected to motherships and stations
-const uint8 REFILL_AMOUNT = 30;
+const u8 REFILL_AMOUNT = 30;
 
 // How often to refill when connected
 // to motherships and stations
-const uint8 REFILL_SECONDS = 6;
+const u8 REFILL_SECONDS = 6;
 
 // How often to refill when connected
 // to secondary cores
-const uint8 REFILL_SECONDARY_CORE_SECONDS = 1;
+const u8 REFILL_SECONDARY_CORE_SECONDS = 1;
 
 // Amount of ammunition to refill when
 // connected to secondary cores
-const uint8 REFILL_SECONDARY_CORE_AMOUNT = 2;
+const u8 REFILL_SECONDARY_CORE_AMOUNT = 2;
 
 Random _shotspreadrandom(0x11598); //clientside
 
@@ -203,8 +203,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 		if (map.getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos))
 		{
-			const int hitLength = hitInfos.length;
-			for (uint i = 0; i < hitLength; i++)
+			const u8 hitLength = hitInfos.length;
+			for (u8 i = 0; i < hitLength; i++)
 			{
 				HitInfo@ hi = hitInfos[i];
 				CBlob@ b = hi.blob;
@@ -296,8 +296,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 		if (!blocked)
 		{
-			shotParticles(barrelPos, aimVector.Angle(), false);
-			directionalSoundPlay("Gunshot" + (XORRandom(2) + 2), barrelPos);
+			if (isClient())
+			{
+				shotParticles(barrelPos, aimVector.Angle(), false);
+				directionalSoundPlay("Gunshot" + (XORRandom(2) + 2), barrelPos);
+			}
 			if (this.get_string("barrel") == "left")
 				sprite.SetAnimation("fire left");
 			else if (this.get_string("barrel") == "right")
@@ -364,7 +367,7 @@ f32 getDamage(CBlob@ hitBlob)
 
 void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
 {
-	if (hitBlob.hasTag("block"))
+	if (hitBlob.hasTag("block") && isClient())
 	{
 		sparks(worldPoint, v_fastrender ? 1 : 4);
 		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", worldPoint, 0.50f);

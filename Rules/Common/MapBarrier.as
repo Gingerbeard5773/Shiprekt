@@ -24,10 +24,10 @@ void onTick(CRules@ this)
 	map.getBlobsInBox(Vec2f(dim.x, 0.0f), Vec2f(), @blobsAtBorder);
 	map.getBlobsInBox(Vec2f(0.0f, dim.y), Vec2f(), @blobsAtBorder);
 	
-	const int borderBlobsLength = blobsAtBorder.length;
+	const u8 borderBlobsLength = blobsAtBorder.length;
 	if (borderBlobsLength > 0)
 	{
-		for (uint i = 0; i < borderBlobsLength; i++)
+		for (u8 i = 0; i < borderBlobsLength; i++)
 		{
 			CBlob@ b = blobsAtBorder[i];
 			Ship@ ship = getShip(b.getShape().getVars().customData);
@@ -39,12 +39,13 @@ void onTick(CRules@ this)
 				f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : ship.vel.x;
 				f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : ship.vel.y;
 				
-				const int blocksLength = ship.blocks.length;
+				const u16 blocksLength = ship.blocks.length;
 				if (blocksLength < 3)
 				{
 					//pinball machine!!!
 					bool bounce = true;
-					for (uint i = 0; i < hitBlobs.length; i++)
+					const u8 blobsLength = hitBlobs.length;
+					for (u8 i = 0; i < blobsLength; i++)
 					{
 						//make sure ships don't bounce again too soon after first bounce
 						if (hitBlobs[i] !is null && hitBlobs[i] is b)
@@ -53,7 +54,7 @@ void onTick(CRules@ this)
 					
 					if (bounce && ship.centerBlock !is null)
 					{
-						for (uint i = 0; i < blocksLength; ++i)
+						for (u16 i = 0; i < blocksLength; ++i)
 						{
 							CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 							if (b !is null)
@@ -87,7 +88,8 @@ void onTick(CRules@ this)
 		}
 	}
 	
-	for (uint i = 0; i < shipTimes.length; i++)
+	const u8 timeLength = shipTimes.length;
+	for (u8 i = 0; i < timeLength; i++)
 	{
 		if (getGameTime() > shipTimes[i]+4) //timer to let ships bounce again
 		{
@@ -101,8 +103,8 @@ void server_turnOffPropellers(Ship@ ship)
 {
 	if (!isServer()) return;
 	
-	const int blocksLength = ship.blocks.length;
-	for (uint i = 0; i < blocksLength; ++i)
+	const u16 blocksLength = ship.blocks.length;
+	for (u16 i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		if (ship_block is null) continue;

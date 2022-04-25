@@ -1,5 +1,5 @@
 #include "EmotesCommon.as"; 
-const int BUTTON_SIZE = 4;
+const u8 BUTTON_SIZE = 4;
 
 void onInit(CRules@ this)
 {

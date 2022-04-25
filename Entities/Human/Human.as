@@ -624,8 +624,8 @@ void Punch(CBlob@ this)
     HitInfo@[] hitInfos;
 	if (this.isMyPlayer() && map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
 	{
-		const int hitLength = hitInfos.length;
-		for (uint i = 0; i < hitLength; i++)
+		const u8 hitLength = hitInfos.length;
+		for (u8 i = 0; i < hitLength; i++)
 		{
 			CBlob@ b = hitInfos[i].blob;
 			if (b is null) continue;
@@ -643,8 +643,8 @@ void Punch(CBlob@ this)
 				HitInfo@[] rayInfos;
 				if (map.getHitInfosFromRay(this.getPosition(), -dir.Angle(), dir.Length(), this, @rayInfos))
 				{
-					const int rayLength = rayInfos.length;
-					for (uint q = 0; q < rayLength; q++)
+					const u8 rayLength = rayInfos.length;
+					for (u8 q = 0; q < rayLength; q++)
 					{
 						CBlob@ block = rayInfos[q].blob;
 						if (block !is null && block.hasTag("solid"))
@@ -1148,7 +1148,8 @@ void onDie(CBlob@ this)
 			{
 				string pName = player.getUsername();
 				u16 returnBooty = 0;
-				for (uint i = 0; i < blocks.length; ++i)
+				const u8 blocksLength = blocks.length;
+				for (u8 i = 0; i < blocksLength; ++i)
 				{
 					CBlob@ block = blocks[i];
 					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)

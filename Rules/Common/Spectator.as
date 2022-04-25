@@ -126,8 +126,8 @@ void Spectator(CRules@ this)
 		SetTargetPlayer(null);
 		getBlobsByTag("player", @players);
 		getBlobsByTag("block", @players);
-		const int playersLength = players.length;
-		for (uint i = 0; i < playersLength; i++)
+		const u16 playersLength = players.length;
+		for (u16 i = 0; i < playersLength; i++)
 		{
 			CBlob@ blob = players[i];
 			Vec2f bpos = blob.getInterpolatedPosition();

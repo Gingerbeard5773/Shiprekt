@@ -41,8 +41,8 @@ void Explode(CBlob@ this)
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
 	
-	const int overlappingLength = overlapping.length;
-	for (uint i = 0; i < overlappingLength; i++)
+	const u8 overlappingLength = overlapping.length;
+	for (u8 i = 0; i < overlappingLength; i++)
 	{
 		CBlob@ blob = overlapping[i];
 		if (blob.hasTag("player"))

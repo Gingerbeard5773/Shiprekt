@@ -42,8 +42,8 @@ void Capture(CBlob@ this, const int attackerTeam)
 	if (!ship.isMothership)
 	{
 		//print ("setting team for " + ship.owner + "'s " + ship.id + " to " + attackerTeam);
-		const int blocksLength = ship.blocks.length;
-		for (uint i = 0; i < blocksLength; ++i)
+		const u16 blocksLength = ship.blocks.length;
+		for (u16 i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 			if (b !is null)

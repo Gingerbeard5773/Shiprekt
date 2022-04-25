@@ -149,12 +149,12 @@ Vec2f getTargetVel(CBlob@ this)
 	CBlob@[] blobsInRadius;
 	Vec2f pos = this.getPosition();
 	Vec2f target = this.getVelocity();
-	int humansInWater = 0;
+	u8 humansInWater = 0;
 	if (getMap().getBlobsInRadius(pos, 150.0f, @blobsInRadius))
 	{
 		f32 maxDistance = 9999999.9f;
-		const int blobsLength = blobsInRadius.length;
-		for (uint i = 0; i < blobsLength; i++)
+		const u16 blobsLength = blobsInRadius.length;
+		for (u16 i = 0; i < blobsLength; i++)
 		{
 			CBlob @b = blobsInRadius[i];
 			if (!b.get_bool("onGround") && b.getName() == "human")

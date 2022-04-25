@@ -121,7 +121,7 @@ void assignTeam(CRules@ this, CPlayer@ player)
     }
 	
     //choose a random team with minimum player count
-    s32 team;
+    u8 team;
     do
         team = XORRandom(teamsNum);
     while (playersperteam[team] > minplayers);
@@ -147,7 +147,7 @@ void onTick(CRules@ this)
 		Respawn[]@ respawns;
 		if (this.get("respawns", @respawns))
 		{
-			for (uint i = 0; i < respawns.length; i++)
+			for (u8 i = 0; i < respawns.length; i++)
 			{
 				Respawn@ r = respawns[i];
 				if (r.timeStarted == 0 || r.timeStarted <= gametime)
@@ -215,8 +215,8 @@ bool isRespawnAdded(CRules@ this, const string username)
 	Respawn[]@ respawns;
 	if (this.get("respawns", @respawns))
 	{
-		const int respawnLength = respawns.length;
-		for (uint i = 0; i < respawnLength; i++)
+		const u8 respawnLength = respawns.length;
+		for (u8 i = 0; i < respawnLength; i++)
 		{
 			Respawn@ r = respawns[i];
 			if (r.username == username)
@@ -226,7 +226,7 @@ bool isRespawnAdded(CRules@ this, const string username)
 	return false;
 }
 
-Vec2f getSpawnPosition(const uint team)
+Vec2f getSpawnPosition(const u8 team)
 {
     Vec2f[] spawns;			 
     if (getMap().getMarkers("spawn", spawns))

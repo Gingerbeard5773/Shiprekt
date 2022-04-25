@@ -102,7 +102,7 @@ void onTick(CBlob@ this)
 			if (!captainOnShip)//go to next core
 				continue;
 				
-			const int crewLength = crew.length;
+			const u8 crewLength = crew.length;
 				
 			u16 mothership_maxReward = Maths::Ceil(ammount * MAX_REWARD_FACTOR);
 			f32 mothership_crewRewardFactor = Maths::Min(MAX_REWARD_FACTOR * 0.5f,  CREW_REWARD_FACTOR_MOTHERSHIP * crewLength);

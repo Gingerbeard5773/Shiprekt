@@ -39,8 +39,8 @@ void onTick(CBlob@ this)
 	getMap().getBlobsInRadius(this.getPosition(), capture_radius, @blobsInRadius);
 	
 	//use players in radius
-	const int blobsLength = blobsInRadius.length;
-	for (uint i = 0; i < blobsLength; i++)
+	const u8 blobsLength = blobsInRadius.length;
+	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = blobsInRadius[i];
 		u8 bTeamNum = b.getTeamNum();
@@ -60,7 +60,7 @@ void onTick(CBlob@ this)
 	{
 		blobsInRadius.clear();
 		getShipCrew(ship.centerBlock, @blobsInRadius);
-		const int blobsLength = blobsInRadius.length;
+		const u8 blobsLength = blobsInRadius.length;
 		if (blobsLength > 0 && ship.centerBlock.getTeamNum() != thisTeamNum)
 		{
 			if (capture.converterTeam == thisTeamNum) //claim attack cycle

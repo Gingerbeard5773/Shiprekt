@@ -3,7 +3,7 @@
 //Produce a block by a player
 void ProduceBlock(CRules@ this, CBlob@ blob, string type, u8 amount = 1)
 {
-	const int blobTeam = blob.getTeamNum();
+	const u8 blobTeam = blob.getTeamNum();
 
 	if (isServer())
 	{
@@ -13,7 +13,7 @@ void ProduceBlock(CRules@ this, CBlob@ blob, string type, u8 amount = 1)
 
 		u16 blobID = blob.getNetworkID();
 
-    	for (uint i = 0; i < amount; i++)
+    	for (u8 i = 0; i < amount; i++)
 		{
 			CBlob@ b = makeBlock(Vec2f(i, 0) * 8, 0.0f, type, blobTeam);
         	blob_blocks.push_back(b);

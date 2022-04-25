@@ -2,9 +2,8 @@
 
 #include "TileCommon.as";
 
-const int SECS_TO_SHARK = 3;
 const f32 SHARK_SPAWN_RADIUS = 126.0f;
-const int MAX_SHARKS_AREA = 5;
+const u8 MAX_SHARKS_AREA = 5;
 
 void onTick(CRules@ this)
 {
@@ -13,14 +12,13 @@ void onTick(CRules@ this)
 
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
-	const int humansLength = humans.length;
-	for (uint i = 0; i < humansLength; i++)
+	
+	const u8 humansLength = humans.length;
+	for (u8 i = 0; i < humansLength; i++)
 	{
 		CBlob@ human = humans[i];
 		if (!human.get_bool("onGround")) //can't use regular isOnGround since server needs to calculate from the player's perspective
-		{
 			SpawnShark(this, human.getPosition());
-		}
 	}
 }
 
@@ -42,14 +40,14 @@ void SpawnShark(CRules@ this, Vec2f pos)
     }
 }
 
-int getSharkCountInArea(CRules@ this, Vec2f pos, const f32 radius = SHARK_SPAWN_RADIUS+5.0f)
+u8 getSharkCountInArea(CRules@ this, Vec2f pos, const f32 radius = SHARK_SPAWN_RADIUS+5.0f)
 {
-	int sharks = 0;
+	u8 sharks = 0;
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(pos, radius, @blobsInRadius))
 	{
-		const int blobsLength = blobsInRadius.length;
-		for (uint i = 0; i < blobsLength; i++)
+		const u16 blobsLength = blobsInRadius.length;
+		for (u16 i = 0; i < blobsLength; i++)
 		{
 			CBlob@ b = blobsInRadius[i];
 			if (b.getName() == "shark")

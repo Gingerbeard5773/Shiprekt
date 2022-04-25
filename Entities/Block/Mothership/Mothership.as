@@ -140,8 +140,8 @@ void ReturnBlocks(CBlob@ this)
 			{
 				string pName = player.getUsername();
 				u16 returnBooty = 0;
-				const int blocksLength = blocks.length;
-				for (uint i = 0; i < blocksLength; ++i)
+				const u16 blocksLength = blocks.length;
+				for (u16 i = 0; i < blocksLength; ++i)
 				{
 					CBlob@ block = blocks[i];
 					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
@@ -333,7 +333,7 @@ void onTick(CBlob@ this)
 				{
 					dir.RotateBy(-45.0f);
 					dir *= -6.0f * healthFactor;
-					for (int i = 0; i < 5; i++)
+					for (u8 i = 0; i < 5; i++)
 					{
 						CParticle@ p = ParticlePixel(pos, dir.RotateBy(15), getTeamColor(this.getTeamNum()), true);
 						if (p !is null)
@@ -409,12 +409,12 @@ void initiateSelfDestruct(CBlob@ this)
 	Ship@ ship = getShip(color); 
 	if (ship is null) return;
 	
-	const int blocksLength = ship.blocks.length;
+	const u16 blocksLength = ship.blocks.length;
 	if (blocksLength < 10) return;
 		
 	this.AddScript("Block_Explode.as");
 	u8 teamNum = this.getTeamNum();
-	for (uint i = 0; i < blocksLength; ++i)
+	for (u16 i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
@@ -449,8 +449,8 @@ void selfDestruct(CBlob@ this)
 	//kill team players
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
-	const u16 humansLength = humans.length;
-	for (u16 i = 0; i < humansLength; i++)
+	const u8 humansLength = humans.length;
+	for (u8 i = 0; i < humansLength; i++)
 	{
 		CBlob@ human = humans[i];
 		if (human.getTeamNum() == teamNum)
@@ -488,10 +488,10 @@ void selfDestruct(CBlob@ this)
 	Ship@ ship = getShip(color);
 	if (ship is null) return;
 	
-	const int blocksLength = ship.blocks.length;
+	const u16 blocksLength = ship.blocks.length;
 	if (blocksLength < 10) return;
 
-	for (uint i = 0; i < blocksLength; ++i)
+	for (u16 i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		CBlob@ b = getBlobByNetworkID(ship_block.blobID);

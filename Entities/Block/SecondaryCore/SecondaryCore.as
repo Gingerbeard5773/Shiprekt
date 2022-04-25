@@ -2,7 +2,7 @@
 #include "TeamColour.as"
 #include "DestructCommon.as";
 
-const uint16 SELF_DESTRUCT_SECONDS = 8;
+const u16 SELF_DESTRUCT_SECONDS = 8;
 const float BLAST_RADIUS = 100.0f;
 const float HEAL_AMOUNT = 0.1f;
 
@@ -28,8 +28,6 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	uint8 team = this.getTeamNum();
-
 	if (isClient() && this.hasTag("critical"))
 	{
 		//Ship@ ship = getShip(this.getShape().getVars().customData);
@@ -37,7 +35,7 @@ void onTick(CBlob@ this)
 
 		if (!v_fastrender)
 		{
-			CParticle@ particle = ParticlePixel(this.getPosition(), getRandomVelocity(90, 4, 360), getTeamColor(team), true);
+			CParticle@ particle = ParticlePixel(this.getPosition(), getRandomVelocity(90, 4, 360), getTeamColor(this.getTeamNum()), true);
 			if (particle !is null)
 			{
 				particle.Z = 670.0f;
@@ -73,10 +71,10 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 		Ship@ ship = getShip(color);
 		if (ship is null || ship.isMothership) return 0.0f;
 		
-		const int blocksLength = ship.blocks.length;
+		const u16 blocksLength = ship.blocks.length;
 		if (blocksLength < 10) return 0.0f;
 
-		for (uint i = 0; i < blocksLength; ++ i)
+		for (u16 i = 0; i < blocksLength; ++ i)
 		{
 			ShipBlock@ block = ship.blocks[i];
 			CBlob@ blob = getBlobByNetworkID(block.blobID);

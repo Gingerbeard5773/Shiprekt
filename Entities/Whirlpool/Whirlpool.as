@@ -54,8 +54,8 @@ void onTick(CBlob@ this)
 	Ship[]@ ships;
 	if (rules.get("ships", @ships))
 	{
-		const int shipsLength = ships.length;
-		for (uint i = 0; i < shipsLength; ++i)
+		const u16 shipsLength = ships.length;
+		for (u16 i = 0; i < shipsLength; ++i)
 		{
 			Ship@ ship = ships[i];	
 			Vec2f attractDir = ship.pos - pos;
@@ -171,8 +171,8 @@ void damageBlobs(CBlob@ this)
 	CBlob@[] nearby;
 	if (getMap().getBlobsInRadius(this.getPosition(), 50.0f, @nearby))
 	{
-		const int blobsLength = nearby.length;
-		for (int i = 0; i < blobsLength; i++)
+		const u8 blobsLength = nearby.length;
+		for (u8 i = 0; i < blobsLength; i++)
 		{
 			CBlob@ blob = nearby[i];
 			if ((blob.hasTag("block") && XORRandom(2) == 0) || (blob.getName() == "human" && !blob.isOnGround()))

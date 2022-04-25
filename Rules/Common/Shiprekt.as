@@ -3,7 +3,7 @@
 #include "ShipsCommon.as";
 #include "MakeBlock.as";
 
-const u16 STATION_BOOTY = 4;
+const u8 STATION_BOOTY = 4;
 
 void onInit(CRules@ this)
 {
@@ -54,10 +54,10 @@ void onTick(CRules@ this)
 					if (player is null) continue;
 					
 					//consider blocks to propellers ratio
-					int propellers = 1;
-					int couplings = 0;
-					const int blocksLength = ship.blocks.length;
-					for (uint q = 0; q < blocksLength; ++q)
+					u16 propellers = 1;
+					u16 couplings = 0;
+					const u16 blocksLength = ship.blocks.length;
+					for (u16 q = 0; q < blocksLength; ++q)
 					{
 						CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
 						if (b !is null)
@@ -80,18 +80,18 @@ void onTick(CRules@ this)
 			}
 		}
 		
-		const int plyCount = getPlayersCount();
-		for (int i = 0; i < plyCount; ++i)
+		const u8 plyCount = getPlayersCount();
+		for (u8 i = 0; i < plyCount; ++i)
 		{
 			CPlayer@ player = getPlayer(i);
 			u8 pteam = player.getTeamNum();
 			if (player is null)	
 				continue;
 			
-			u16 pStationCount = 0;
+			u8 pStationCount = 0;
 			CBlob@[] stations;
 			getBlobsByTag("station", @stations);
-			const int stationsLength = stations.length;
+			const u8 stationsLength = stations.length;
 			for (u8 u = 0; u < stationsLength; u++)
 			{
 				CBlob@ station = stations[u];
@@ -125,7 +125,7 @@ void onTick(CRules@ this)
 		for (u8 t = 0; t < 16; t++)
 			teamPlayers.push_back(0);
 		
-		const int teamPlyLength = teamPlayers.length;
+		const u8 teamPlyLength = teamPlayers.length;
 		for (u8 p = 0; p < players; p++)
 		{
 			u8 team = getPlayer(p).getTeamNum();
@@ -164,7 +164,7 @@ void onTick(CRules@ this)
 		CBlob@[] cores;
         getBlobsByTag("mothership", cores);
 		
-		const int coresLength = cores.length;
+		const u8 coresLength = cores.length;
 		
         bool oneTeamLeft = coresLength <= 1;
 		u8 endCount = this.get_u8("endCount");
@@ -180,9 +180,10 @@ void onTick(CRules@ this)
 				u8 teamWithPlayers = 0;
 				if (!this.isGameOver())
 				{
-					for (uint coreIt = 0; coreIt < coresLength; coreIt++)
+					u8 plyCount = getPlayerCount();
+					for (u8 coreIt = 0; coreIt < coresLength; coreIt++)
 					{
-						for (int i = 0; i < getPlayerCount(); i++)
+						for (u8 i = 0; i < plyCount; i++)
 						{
 							CPlayer@ player = getPlayer(i);
 							if (player.getBlob() !is null)
@@ -191,7 +192,7 @@ void onTick(CRules@ this)
 					}
 				}
 				u8 coresAlive = 0;
-				for (int i = 0; i < coresLength; i++)
+				for (u8 i = 0; i < coresLength; i++)
 				{
 					if (!cores[i].hasTag("critical"))
 					coresAlive++;
@@ -281,7 +282,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 		if (text_in.substr(0,1) == "!")
 		{
 			string[]@ tokens = text_in.split(" ");
-			const int tokensLength = tokens.length;
+			const u8 tokensLength = tokens.length;
 			if (tokensLength > 1)
 			{
 				CBlob@ pBlob = player.getBlob();
@@ -415,9 +416,9 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						warn("!saveship:: No ship found!");
 						return false;
 					}
-					int numBlocks = ship.blocks.length;
+					u16 numBlocks = ship.blocks.length;
 					cfg.add_u16("total blocks", numBlocks);
-					for (uint i = 0; i < numBlocks; ++i)
+					for (u16 i = 0; i < numBlocks; ++i)
 					{
 						ShipBlock@ ship_block = ship.blocks[i];
 						if (ship_block is null) continue;
@@ -446,8 +447,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					Vec2f playerPos = pBlob.getPosition();
 				
-					int numBlocks = cfg.read_u16("total blocks");
-					for (uint i = 0; i < numBlocks; ++i)
+					u16 numBlocks = cfg.read_u16("total blocks");
+					for (u16 i = 0; i < numBlocks; ++i)
 					{	
 						string blockType = cfg.read_string("block" + i + "type");
 						f32 blockPosX = cfg.read_f32("block" + i + "positionX");
@@ -471,8 +472,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					Ship@ ship = getShip(player.getBlob());
 					if (ship !is null)
 					{
-						int numBlocks = ship.blocks.length;
-						for (uint i = 0; i < numBlocks; ++i)
+						u16 numBlocks = ship.blocks.length;
+						for (u16 i = 0; i < numBlocks; ++i)
 						{
 							ShipBlock@ ship_block = ship.blocks[i];
 							if (ship_block is null) continue;
@@ -494,8 +495,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					CBlob@[] blocks;
 					if (getBlobsByTag("block", @blocks))
 					{
-						const int blocksLength = blocks.length;
-						for (uint i = 0; i < blocksLength; ++i)
+						const u16 blocksLength = blocks.length;
+						for (u16 i = 0; i < blocksLength; ++i)
 						{
 							CBlob@ block = blocks[i];
 							if (block is null) continue;
@@ -598,8 +599,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					Ship[]@ ships;
 					if (!this.get("ships", @ships)) return false;
 					
-					const int shipsLength = ships.length;
-					for (uint i = 0; i < shipsLength; ++i)
+					const u16 shipsLength = ships.length;
+					for (u16 i = 0; i < shipsLength; ++i)
 					{
 						//commence pain
 						Ship@ ship = ships[i];
