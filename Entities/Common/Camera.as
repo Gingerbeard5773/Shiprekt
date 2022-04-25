@@ -1,7 +1,7 @@
 #define CLIENT_ONLY
 #include "ShipsCommon.as"
 
-int angle = 0;
+f32 angle = 0;
 f32 zoom = 1.0f;
 const f32 ZOOM_SPEED = 0.1f;
 
