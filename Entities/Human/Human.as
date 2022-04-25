@@ -622,7 +622,7 @@ void Punch(CBlob@ this)
 	Vec2f aimVector = this.getAimPos() - pos;
 	
     HitInfo@[] hitInfos;
-	if (this.isMyPlayer() && map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
+	if (map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
 	{
 		const u8 hitLength = hitInfos.length;
 		for (u8 i = 0; i < hitLength; i++)
@@ -657,9 +657,12 @@ void Punch(CBlob@ this)
 				
 				if (!hitBlock)
 				{
-					CBitStream params;
-					params.write_netid(b.getNetworkID());
-					this.SendCommand(this.getCommandID("punch"), params);
+					if (this.isMyPlayer())
+					{
+						CBitStream params;
+						params.write_netid(b.getNetworkID());
+						this.SendCommand(this.getCommandID("punch"), params);
+					}
 					return;
 				}
 			}
@@ -776,7 +779,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	else if (this.getCommandID("punch") == cmd && canPunch(this))
 	{
 		CBlob@ b = getBlobByNetworkID(params.read_netid());
-		if (b !is null && b.getName() == this.getName() && b.getDistanceTo(this) < 100.0f)
+		if (b !is null && b.hasTag("player") && b.getDistanceTo(this) < 100.0f)
 		{
 			Vec2f pos = b.getPosition();
 			this.set_u32("punch time", getGameTime());
