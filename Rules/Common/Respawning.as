@@ -4,8 +4,8 @@
 const string PLAYER_BLOB = "human";
 const string SPAWN_TAG = "mothership";
 
-const u32 standartRespawnTime = 7.5f*getTicksASecond();
-const u32 specToTeamRespawnTime = 10.0f*getTicksASecond();
+const u32 standardRespawnTime = 7 * getTicksASecond();
+const u32 specToTeamRespawnTime = 10 * getTicksASecond();
 
 shared class Respawn
 {
@@ -28,14 +28,13 @@ void onInit(CRules@ this)
 
 void onReload(CRules@ this)
 {
-    this.clear("respawns"); 
-	const int plyCount = getPlayerCount();
-    for (int i = 0; i < plyCount; i++)
+    this.clear("respawns");
+	const u8 specNum = this.getSpectatorTeamNum();
+	const u8 plyCount = getPlayerCount();
+    for (u8 i = 0; i < plyCount; i++)
     {
         CPlayer@ player = getPlayer(i);
-        if (player.getTeamNum() == this.getSpectatorTeamNum())
-			player.server_setTeamNum(this.getSpectatorTeamNum());
-        else if (player.getBlob() is null)
+        if (player.getBlob() is null && player.getTeamNum() != specNum)
         {
             Respawn r(player.getUsername(), getGameTime());
             this.push("respawns", r);
@@ -49,18 +48,23 @@ void onRestart(CRules@ this)
 	this.clear("respawns");
 	
 	CPlayer@[] players;
-	const int plyCount = getPlayerCount();
-	for (int i = 0; i < plyCount; i++)
+	const u8 specNum = this.getSpectatorTeamNum();
+	const u8 plyCount = getPlayerCount();
+	for (u8 i = 0; i < plyCount; i++)
 	{
-		//assign player teams
 		CPlayer@ player = getPlayer(i);
-		players.push_back(player);
-		
-		//spawn players!
-		Respawn r(player.getUsername(), getGameTime());
-		this.push("respawns", r);
-		syncRespawnTime(this, player, getGameTime());
+		if (player.getTeamNum() != specNum)
+		{
+			players.push_back(player);
+			
+			//spawn players!
+			Respawn r(player.getUsername(), getGameTime());
+			this.push("respawns", r);
+			syncRespawnTime(this, player, getGameTime());
+		}
 	}
+	
+	//assign player teams
 	assignTeams(this, players);
 }
 
@@ -70,22 +74,21 @@ void assignTeams(CRules@ this, CPlayer@[] players)
 	
 	CBlob@[] cores;
     getBlobsByTag(SPAWN_TAG, cores); //get available teams for the map
-	u8 currentTeam = XORRandom(cores.length);
+	const u8 coresLength = cores.length;
+	u8 currentTeam = XORRandom(coresLength);
 	
 	while (!players.isEmpty())
 	{
-		int randPlayer = XORRandom(players.length); //randomize selection
+		u8 randPlayer = XORRandom(players.length); //randomize selection
 		CPlayer@ player = players[randPlayer];
 		
-		if (player.getTeamNum() != this.getSpectatorTeamNum())
-		{
-			//print("assignTeams: assigning " + player.getUsername() +" "+cores[currentTeam].getTeamNum());
-			player.server_setTeamNum(cores[currentTeam].getTeamNum());
-			
-			if (currentTeam + 2 > cores.length)
-				currentTeam = 0;
-			else currentTeam++;
-		}
+		//print("assignTeams: assigning " + player.getUsername() +" "+cores[currentTeam].getTeamNum());
+		player.server_setTeamNum(cores[currentTeam].getTeamNum());
+		
+		if (currentTeam + 2 > coresLength)
+			currentTeam = 0;
+		else currentTeam++;
+		
 		players.removeAt(randPlayer);
 	}
 }
@@ -93,22 +96,24 @@ void assignTeams(CRules@ this, CPlayer@[] players)
 void assignTeam(CRules@ this, CPlayer@ player)
 {
 	//finds the team with the lowest amount of players
+	//TODO: prioritize assignment to teams with less booty over rich teams when teams have equal playercount
 	
-    int[] playersperteam(this.getTeamsNum());
+	const u8 teamsNum = this.getTeamsNum();
+    int[] playersperteam(teamsNum);
 
     //gather the per team player counts
-    for (int i = 0; i < getPlayersCount(); i++)
+	const u8 plyCount = getPlayersCount();
+    for (u8 i = 0; i < plyCount; i++)
     {
         CPlayer@ p = getPlayer(i);
         s32 pteam = p.getTeamNum();
-        if (pteam >= 0 && pteam < playersperteam.length)
+        if (pteam >= 0 && pteam < teamsNum)
             playersperteam[pteam]++;
     }
 	
 	 //calc the minimum player count, dequalify teams
     int minplayers = 1000;
-	const int playerLength = playersperteam.length;
-    for (int i = 0; i < playerLength; i++)
+    for (u8 i = 0; i < teamsNum; i++)
     {
         if (playersperteam[i] < -1 || getMothership(i) is null)
             playersperteam[i] += 500;
@@ -118,7 +123,7 @@ void assignTeam(CRules@ this, CPlayer@ player)
     //choose a random team with minimum player count
     s32 team;
     do
-        team = XORRandom(playersperteam.length);
+        team = XORRandom(teamsNum);
     while (playersperteam[team] > minplayers);
 
 	player.server_setTeamNum(team);
@@ -128,9 +133,9 @@ void onPlayerRequestSpawn(CRules@ this, CPlayer@ player)
 {
 	if (!isRespawnAdded(this, player.getUsername()) && player.getTeamNum() != this.getSpectatorTeamNum())
 	{
-    	Respawn r(player.getUsername(), standartRespawnTime + getGameTime());
+    	Respawn r(player.getUsername(), standardRespawnTime + getGameTime());
     	this.push("respawns", r);
-    	syncRespawnTime(this, player, standartRespawnTime + getGameTime());
+    	syncRespawnTime(this, player, standardRespawnTime + getGameTime());
     }
 }
 
@@ -158,53 +163,51 @@ void onTick(CRules@ this)
 
 CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 {
-    if (player !is null)
-    {
-        // remove previous players blob
-        CBlob@ blob = player.getBlob();		   
-        if (blob !is null)
-        {
-            blob.server_SetPlayer(null);
-            blob.server_Die();
-        }
+    if (player is null)
+		return null;
+	
+	// remove previous players blob
+	CBlob@ blob = player.getBlob();		   
+	if (blob !is null)
+	{
+		blob.server_SetPlayer(null);
+		blob.server_Die();
+	}
+	
+	//player mothership got destroyed or joining player
+	CBlob@ ship = getMothership(player.getTeamNum());
+	if (ship is null)
+	{
+		//reassign to a team with alive core
+		assignTeam(this, player);
+		//print("SpawnPlayer: reassigning " + player.getUsername() +"to team "+player.getTeamNum());
+	}
+	
+	u8 newteam = player.getTeamNum();
+	CBlob@ newship = getMothership(newteam);
 		
-		//player mothership got destroyed or joining player
-        CBlob@ ship = getMothership(player.getTeamNum());
-        if (ship is null)
-        {
-			//reassign to a team with alive core
-        	assignTeam(this, player);
-			//print("SpawnPlayer: reassigning " + player.getUsername() +"to team "+player.getTeamNum());
-        }
-		
-		u8 newteam = player.getTeamNum();
-		CBlob@ newship = getMothership(newteam);
-			
-		// spawn as shark if cant find a ship
-		if (newship is null)
+	// spawn as shark if cant find a ship
+	if (newship is null)
+	{
+		CBlob@ shark = server_CreateBlob("shark", this.getSpectatorTeamNum(), getSpawnPosition(player.getTeamNum()));
+		if (shark !is null)
 		{
-			CBlob@ shark = server_CreateBlob("shark", this.getSpectatorTeamNum(), getSpawnPosition(player.getTeamNum()));
-			if (shark !is null)
-			{
-				shark.server_SetPlayer(player);
-				//player.server_setTeamNum(this.getSpectatorTeamNum());
-			}
-			return shark;
+			shark.server_SetPlayer(player);
+			//player.server_setTeamNum(this.getSpectatorTeamNum());
 		}
+		return shark;
+	}
 
-		CBlob@ newBlob = server_CreateBlobNoInit(PLAYER_BLOB);
-		if (newBlob !is null)
-		{
-			newBlob.server_SetPlayer(player);
-			newBlob.server_setTeamNum(newteam);
-			newBlob.setPosition(newship.getPosition());
-			newBlob.Init();
-		}
-		
-        return newBlob;        
-    }
-
-    return null;
+	CBlob@ newBlob = server_CreateBlobNoInit(PLAYER_BLOB);
+	if (newBlob !is null)
+	{
+		newBlob.server_SetPlayer(player);
+		newBlob.server_setTeamNum(newteam);
+		newBlob.setPosition(newship.getPosition());
+		newBlob.Init();
+	}
+	
+	return newBlob;
 }
 
 bool isRespawnAdded(CRules@ this, const string username)
@@ -241,15 +244,13 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 	if (blob !is null)
         blob.server_Die();
 	
-	if (newteam == 44)//request from Block.as
-		return;
-
+	const u8 specNum = this.getSpectatorTeamNum();
 	u8 old_team = player.getTeamNum();
-
+	
 	player.server_setTeamNum(newteam);
-	if (newteam != this.getSpectatorTeamNum())
+	if (newteam != specNum)
 	{
-		if (old_team == this.getSpectatorTeamNum() && !player.isMod())
+		if (old_team == specNum)
 		{
 			Respawn r(player.getUsername(), specToTeamRespawnTime + getGameTime());
 	    	this.push("respawns", r);

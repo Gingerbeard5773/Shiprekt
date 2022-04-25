@@ -46,13 +46,10 @@ void Spectator(CRules@ this)
 	{
 		if (map !is null)
 		{
-			Vec2f dim = map.getMapDimensions();
-			const bool allowMegaZoom = dim.x > 900; //map must be large enough!
-			
 			if (controls.mouseScrollUp)
 			{
 				timeToScroll = 1;
-				if (zoomTarget <= 0.2f && allowMegaZoom)
+				if (zoomTarget <= 0.2f)
 					zoomTarget = 0.5f;
 				else if (zoomTarget <= 0.5f)
 					zoomTarget = 1.0f;
@@ -61,6 +58,11 @@ void Spectator(CRules@ this)
 			}
 			else if (controls.mouseScrollDown)
 			{
+				Vec2f dim = map.getMapDimensions();
+				CPlayer@ localPlayer = getLocalPlayer();
+				const bool isSpectator = localPlayer !is null ? localPlayer.getTeamNum() == this.getSpectatorTeamNum() : false;
+				const bool allowMegaZoom = isSpectator && dim.x > 900 && camera.getTarget() is null; //map must be large enough, player has to be spectator team
+				
 				timeToScroll = 1;
 				if (zoomTarget >= 2.0f)
 					zoomTarget = 1.0f;
@@ -133,6 +135,9 @@ void Spectator(CRules@ this)
 			if (Maths::Pow(mousePos.x - bpos.x, 2) + Maths::Pow(mousePos.y - bpos.y, 2) <= Maths::Pow(blob.getRadius() * 2, 2) && camera.getTarget() !is blob)
 			{
 				//print("set player to track: " + (blob.getPlayer() is null ? "null" : blob.getPlayer().getUsername()));
+				if (zoomTarget >= 0.2f)
+					zoomTarget = 0.5f;
+				
 				if (blob.hasTag("block"))
 				{
 					//set an ship as the target
