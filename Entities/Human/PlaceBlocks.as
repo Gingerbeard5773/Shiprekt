@@ -247,9 +247,9 @@ bool blocksOverlappingShip(CBlob@[]@ blocks)
 		if (block.getOverlapping(@overlapping))
 		{
 			const u8 overlappingLength = overlapping.length;
-			for (u8 i = 0; i < overlappingLength; i++)
+			for (u8 q = 0; q < overlappingLength; q++)
 			{
-				CBlob@ b = overlapping[i];
+				CBlob@ b = overlapping[q];
 				if (b.getShape().getVars().customData > 0)
 				{
 					if ((b.getPosition() - block.getPosition()).getLength() < block.getRadius()*0.4f)

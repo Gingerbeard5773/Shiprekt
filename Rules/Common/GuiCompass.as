@@ -156,8 +156,8 @@ void onTick(CRules@ this)
     getBlobsByTag("booty", @booty);	
 	f32 closestBootyDist = 999999.9f;
 	s16 closestBootyIndex = -1;
-	const u8 bootyLength = booty.length;
-    for (u8 i = 0; i < bootyLength; i++)
+	const s16 bootyLength = booty.length;
+    for (s16 i = 0; i < bootyLength; i++)
     {
         CBlob@ currBooty = booty[i];
 		Vec2f bootyPos = currBooty.getPosition();
@@ -181,38 +181,6 @@ void onTick(CRules@ this)
 		_vars.booty_angle = bootyOffset.Angle() * -1.0f; 
 		_vars.booty_distance = bootyOffset.Length();
 	}
-	
-	//ships
-	/*Ship[]@ ships;
-	f32 closestShipDist = 999999.9f;
-	s16 closestShipIndex = -1;
-	if (getRules().get("ships", @ships)) //count ships as booty too
-	{
-		for (uint i = 0; i < ships.length; ++i)
-		{								
-			Ship @ship = ships[i];	
-			Vec2f shipPos = ship.pos;
-			f32 distToPlayer = (shipPos - pos).getLength();
-			f32 dist = distToPlayer;	
-			if (dist < closestShipDist && ship.owner == "")
-			{
-				closestShipDist = dist;
-				closestShipIndex = i;
-			}
-			if (closestShipIndex >= 999) 
-			{
-				break;
-			}
-		}
-	}
-	
-	if (closestShipIndex > -1)
-	{
-		Vec2f shipOffset = (ships[closestShipIndex].pos - pos);
-
-		_vars.ship_angle = shipOffset.Angle() * -1.0f; 
-		_vars.ship_distance = shipOffset.Length();
-	}*/
 }
 
 void onInit(CRules@ this)
@@ -308,7 +276,7 @@ void onRender(CRules@ this)
 	
 	//station icons
 	const u8 stationsLength = _vars.station_teams.length;
-    for (uint i = 0; i < stationsLength; i++)
+    for (u8 i = 0; i < stationsLength; i++)
     {
         Vec2f pos(Maths::Min(18.0f, _vars.station_distances[i] / 48.0f), 0.0f);
 
@@ -321,7 +289,7 @@ void onRender(CRules@ this)
 	
 	//human icons
 	const u8 humansLength = _vars.human_teams.length;
-    for (uint i = 0; i < humansLength; i++)
+    for (u8 i = 0; i < humansLength; i++)
     {
         Vec2f pos(Maths::Min(18.0f, _vars.human_distances[i] / 48.0f), 0.0f);
 		
@@ -336,14 +304,14 @@ void onRender(CRules@ this)
 	
 	//core icons
 	const u8 coresLength = _vars.core_teams.length;
-    for (uint i = 0; i < coresLength; i++)
+    for (u8 i = 0; i < coresLength; i++)
     {
     	bool decoyExists = false;
-    	uint decoycore_index = 0;
-		const int decoysLength = _vars.decoycore_teams.length;
+    	u8 decoycore_index = 0;
+		const u8 decoysLength = _vars.decoycore_teams.length;
     	if (decoysLength > 0)
     	{
-	    	for (uint h = 0; h < decoysLength; h++)
+	    	for (u8 h = 0; h < decoysLength; h++)
 	    	{
 	    		if (_vars.core_teams[i] == _vars.decoycore_teams[h])
 	    		{

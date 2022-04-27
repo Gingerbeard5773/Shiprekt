@@ -232,7 +232,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 				else if (pteam == hitterTeamNum)
 					hitterPlayers++;
 			}
-							
+			
 			CBlob@ hitterCore = getMothership(hitterTeamNum);
 			if (hitterPlayers == 0 || hitterCore is null)//in case of suicide against leftover/empty team ship
 				return Maths::Max(0.0f, hp - 1.0f);//no rewards

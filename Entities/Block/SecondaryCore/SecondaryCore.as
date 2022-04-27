@@ -74,11 +74,9 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 		const u16 blocksLength = ship.blocks.length;
 		if (blocksLength < 10) return 0.0f;
 
-		for (u16 i = 0; i < blocksLength; ++ i)
+		for (u16 i = 0; i < blocksLength; ++i)
 		{
-			ShipBlock@ block = ship.blocks[i];
-			CBlob@ blob = getBlobByNetworkID(block.blobID);
-
+			CBlob@ blob = getBlobByNetworkID(ship.blocks[i].blobID);
 			if (blob !is null && this.getTeamNum() == blob.getTeamNum())
 			{
 				if (i % 4 == 0 && !blob.hasTag("coupling"))

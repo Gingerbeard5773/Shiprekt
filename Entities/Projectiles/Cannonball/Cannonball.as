@@ -7,7 +7,7 @@
 #include "PlankCommon.as";
 
 const f32 SPLASH_RADIUS = 8.0f;
-const f32 SPLASH_DAMAGE = 0.0f;
+const f32 SPLASH_DAMAGE = 0.25f;
 const f32 MAX_PIERCED = 2;
 
 void onInit(CBlob@ this)
@@ -183,7 +183,7 @@ void onDie(CBlob@ this)
 	}
 		
 	if (!isServer()) return;
-		
+	
 	//splash damage
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(pos, SPLASH_RADIUS, @blobsInRadius))

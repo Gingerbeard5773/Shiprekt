@@ -156,7 +156,7 @@ Vec2f getTargetVel(CBlob@ this)
 		const u16 blobsLength = blobsInRadius.length;
 		for (u16 i = 0; i < blobsLength; i++)
 		{
-			CBlob @b = blobsInRadius[i];
+			CBlob@ b = blobsInRadius[i];
 			if (!b.get_bool("onGround") && b.getName() == "human")
 			{
 				humansInWater++;

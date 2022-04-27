@@ -83,7 +83,7 @@ void server_resetTotalBooty(CRules@ this)
 {
 	if (!isServer()) return;
 		
-	u8 teamsNum = this.getTeamsNum();
+	const u8 teamsNum = this.getTeamsNum();
 	for (u8 teamNum = 0; teamNum < teamsNum; teamNum++)
 	{
 		this.set_u16("bootyTeam_total" + teamNum, 0);

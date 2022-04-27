@@ -41,9 +41,10 @@ void onTick(CSprite@ this)
 			const u8 blobsLength = blobs.length;
 			for (u8 i = 0; i < blobsLength; i++)
 			{
-				if (blobs[i].hasTag("control") && blobs[i].get_string("playerOwner") == name)
+				CBlob@ seat = blobs[i];
+				if (seat.hasTag("control") && seat.get_string("playerOwner") == name)
 				{
-					seatID = blobs[i].getNetworkID();
+					seatID = seat.getNetworkID();
 					break;
 				}
 			}

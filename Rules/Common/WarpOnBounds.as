@@ -9,7 +9,8 @@ void onTick(CRules@ this)
 	
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
-	for (uint i = 0; i < cores.length; ++i)
+	const u8 coresLength = cores.length;
+	for (u8 i = 0; i < coresLength; ++i)
 	{
 		//keep motherships within bounds
 		CBlob@ core = cores[i];
@@ -35,8 +36,9 @@ void onTick(CRules@ this)
 		
 	CMap@ map = getMap();
 	const f32 mapwidth = map.tilesize*map.tilemapwidth;
-	const f32 mapheight = map.tilesize*map.tilemapheight;	
-	for (uint i = 0; i < ships.length; ++i)
+	const f32 mapheight = map.tilesize*map.tilemapheight;
+	const u16 shipsLength = ships.length;
+	for (u16 i = 0; i < shipsLength; ++i)
 	{
 		Ship @ship = ships[i];
 		if (ship.vel.x > 0.0f && ship.pos.x > mapwidth)

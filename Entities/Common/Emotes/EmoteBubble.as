@@ -17,7 +17,7 @@ void onInit(CBlob@ blob)
         {
             Animation@ anim = emote.addAnimation("default", 0, true);
 
-            for (int i = 0; i < Emotes::emotes_total; i++)
+            for (u16 i = 0; i < Emotes::emotes_total; i++)
 			{
                 anim.AddFrame(i);
             }

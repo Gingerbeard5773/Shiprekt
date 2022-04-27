@@ -13,55 +13,62 @@ shared class HoverMessageShiprekt
 
     HoverMessageShiprekt() {} // required for handles to work
 
-    HoverMessageShiprekt(string _name, int _quantity, SColor _color = color_white, uint _ttl = 75, uint _fade_ratio = 2, bool singularise = true) {
-        if (_quantity >= 0 &&_quantity < 2 && singularise) 
+    HoverMessageShiprekt(string _name, int _quantity, SColor _color = color_white, uint _ttl = 75, uint _fade_ratio = 2, bool singularise = true)
+	{
+        if (_quantity >= 0 && _quantity < 2 && singularise) 
 		{
-            _name = this.singularize(_name);
+            _name = singularize(_name);
         }
 
         name = _name;
         quantity = _quantity;
         ticker = 0;
-        ypos = 0.0;
-        xpos = 0.0;
+        ypos = 0.0f;
+        xpos = 0.0f;
         ttl = _ttl;
         fade_ratio = _fade_ratio;
 		color = _color;
     }
 
     // draw the text
-    void draw(CBlob@ blob) {
-        string m = this.message();
-        Vec2f pos = this.getPos(blob,m);
-        SColor color = this.getColor();
-        GUI::DrawText(m,pos,color);
+    void draw(CBlob@ blob)
+	{
+        string m = message();
+        Vec2f pos = getPos(blob, m);
+        SColor color = getColor();
+        GUI::DrawText(m, pos, color);
     }
 
     // get message into a nice, friendly format
-    string message() {
+    string message()
+	{
         string d = "" + quantity + " " + name;
         return d;
     }
 
     // see if this message is expired, or should be removed from GUI
-    bool isExpired() {
+    bool isExpired()
+	{
         ticker = ticker + 1;
         return ticker > ttl;
     }
 
     // get the active color of the message. decrease proportionally by the fadeout ratio
-    private SColor getColor() {
-        uint alpha = Maths::Max(0, 255-(ticker*fade_ratio));
+    private SColor getColor()
+	{
+        uint alpha = Maths::Max(0, 255-(ticker * fade_ratio));
         SColor color2 = SColor(alpha, color.getRed(), color.getGreen(), color.getBlue());
         return color2;
     }
 
     // get the position of the message. Store it to the object if no pos is already set. This allows us to do the
     // hovering above where it was picked effect. Finally, slowly make it rise by decreasing by a multiple of the ticker
-    private Vec2f getPos(CBlob@ blob,string m) {
-        if (ypos == 0.0) {
+    private Vec2f getPos(CBlob@ blob, string m)
+	{
+        if (ypos == 0.0)
+		{
             Vec2f pos2d = blob.getScreenPos();
-            int top = pos2d.y - 2.5f*blob.getHeight() - 20.0f;
+            int top = pos2d.y - 2.5f * blob.getHeight() - 20.0f;
             int margin = 4;
             Vec2f dim;
             GUI::GetTextDimensions(m , dim);
@@ -79,13 +86,13 @@ shared class HoverMessageShiprekt
     }
 
     // Singularize, or de-pluralize, a string
-    private string singularize(string str) {
+    private string singularize(string str)
+	{
         uint len = str.size();
         string lastChar = str.substr(len-1);
 
-        if (lastChar == "s") {
-            str = str.substr(0,len-1);
-        }
+        if (lastChar == "s")
+            str = str.substr(0, len-1);
 
         return str;
     }
@@ -111,7 +118,7 @@ shared class HoverMessageShiprekt2
 	{
         if (_quantity >= 0 &&_quantity < 2 && singularise) 
 		{
-            _name = this.singularize(_name);
+            _name = singularize(_name);
         }
 
 		prefix = _prefix;
@@ -128,44 +135,49 @@ shared class HoverMessageShiprekt2
     // draw the text
     void draw(Vec2f pos) 
 	{
-        string m = this.message();
-        SColor color = this.getColor();
+        string m = message();
+        SColor color = getColor();
         GUI::DrawText(m, pos, color);
     }
 	
     void drawDeltaBooty(CBlob@ blob) 
 	{
-        string m = this.message();
-        Vec2f pos = Vec2f(158 , 11);
-        SColor color = this.getColor();
+        string m = message();
+        Vec2f pos = Vec2f(158, 11);
+        SColor color = getColor();
         GUI::DrawText(m,pos,color);
     }
 
     // get message into a nice, friendly format
-    string message() {
+    string message()
+	{
         string d = "" + prefix + quantity + " " + name;
         return d;
     }
 
     // see if this message is expired, or should be removed from GUI
-    bool isExpired() {
+    bool isExpired()
+	{
         ticker = ticker + 1;
         return ticker > ttl;
     }
 
     // get the active color of the message. decrease proportionally by the fadeout ratio
-    private SColor getColor() {
-        uint alpha = Maths::Max(0, 255-(ticker*fade_ratio));
+    private SColor getColor()
+	{
+        uint alpha = Maths::Max(0, 255-(ticker * fade_ratio));
         SColor color2 = SColor(alpha, color.getRed(), color.getGreen(), color.getBlue());
         return color2;
     }
 
     // get the position of the message. Store it to the object if no pos is already set. This allows us to do the
     // hovering above where it was picked effect. Finally, slowly make it rise by decreasing by a multiple of the ticker
-    private Vec2f getPos(CBlob@ blob,string m) {
-        if (ypos == 0.0) {
+    private Vec2f getPos(CBlob@ blob, string m)
+	{
+        if (ypos == 0.0)
+		{
             Vec2f pos2d = blob.getScreenPos();
-            int top = pos2d.y - 2.5f*blob.getHeight() - 20.0f;
+            int top = pos2d.y - 2.5f * blob.getHeight() - 20.0f;
             int margin = 4;
             Vec2f dim;
             GUI::GetTextDimensions(m , dim);
@@ -183,13 +195,13 @@ shared class HoverMessageShiprekt2
     }
 
     // Singularize, or de-pluralize, a string
-    private string singularize(string str) {
+    private string singularize(string str)
+	{
         uint len = str.size();
         string lastChar = str.substr(len-1);
 
-        if (lastChar == "s") {
-            str = str.substr(0,len-1);
-        }
+        if (lastChar == "s")
+            str = str.substr(0, len-1);
 
         return str;
     }

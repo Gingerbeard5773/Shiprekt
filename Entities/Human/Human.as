@@ -1044,11 +1044,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				const u8 humansLength = humans.length;
 				for (u8 i = 0; i < humansLength; i++)
 				{
-					if (humans[i].getTeamNum() == teamNum && humans[i] !is this)
+					CBlob@ human = humans[i];
+					if (human.getTeamNum() == teamNum && human !is this)
 					{
-						CBlob@ shipBlob = getShipBlob(humans[i]);
+						CBlob@ shipBlob = getShipBlob(human);
 						if (shipBlob !is null && shipBlob.getShape().getVars().customData == coreColor)
-							crew.push_back(humans[i]);
+							crew.push_back(human);
 					}
 				}
 				

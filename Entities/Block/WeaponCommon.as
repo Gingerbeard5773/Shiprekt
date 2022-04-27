@@ -1,6 +1,6 @@
 #include "ShipsCommon.as";
 
-void refillAmmo(CBlob@ this, Ship@ ship, uint8 refillAmount, uint8 refillSeconds, uint8 refillSecondaryCore, uint8 refillSecondaryCoreSeconds)
+void refillAmmo(CBlob@ this, Ship@ ship, u8 refillAmount, u8 refillSeconds, u8 refillSecondaryCore, u8 refillSecondaryCoreSeconds)
 {
 	if (!isServer()) return;
 	
@@ -11,7 +11,7 @@ void refillAmmo(CBlob@ this, Ship@ ship, uint8 refillAmount, uint8 refillSeconds
 	{
 		if (ship.isMothership || ship.isStation)
 		{
-			u32 dockedFactor = this.get_bool("docked") ? 1 : 2; //miniships refill faster
+			u8 dockedFactor = this.get_bool("docked") ? 1 : 2; //miniships refill faster
 			if (getGameTime() % (30 * refillSeconds * dockedFactor) == 0)
 			{
 				ammo = Maths::Min(maxAmmo, ammo + refillAmount);

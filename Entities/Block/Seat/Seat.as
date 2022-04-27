@@ -59,8 +59,7 @@ void onInit(CBlob@ this)
 void onTick(CBlob@ this)
 {
 	int seatColor = this.getShape().getVars().customData;
-	if (seatColor <= 0)
-		return;	
+	if (seatColor <= 0) return;	
 
 	u32 gameTime = getGameTime();
 	u8 teamNum = this.getTeamNum();
@@ -128,8 +127,8 @@ void onTick(CBlob@ this)
 
 			//gather couplings and flak
 			CBlob@[] couplings, flak;
-			const int blocksLength = ship.blocks.length;
-			for (uint i = 0; i < blocksLength; ++i)
+			const u16 blocksLength = ship.blocks.length;
+			for (u16 i = 0; i < blocksLength; ++i)
 			{
 				ShipBlock@ ship_block = ship.blocks[i];
 				if (ship_block is null) continue;
@@ -249,10 +248,11 @@ void onTick(CBlob@ this)
 			{
 				for (u16 i = 0; i < couplingsLength; ++i)
 				{
-					if (couplings[i].get_string("playerOwner") == occupierName)
+					CBlob@ c = couplings[i];
+					if (c.get_string("playerOwner") == occupierName)
 					{
-						couplings[i].Tag("_coupling_hitspace");
-						couplings[i].SendCommand(couplings[i].getCommandID("decouple"));
+						c.Tag("_coupling_hitspace");
+						c.SendCommand(c.getCommandID("decouple"));
 					}
 				}
 			}

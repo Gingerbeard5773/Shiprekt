@@ -94,10 +94,6 @@ void onTick(CRules@ this)
 			const u8 stationsLength = stations.length;
 			for (u8 u = 0; u < stationsLength; u++)
 			{
-				CBlob@ station = stations[u];
-				if (station is null)
-					continue;
-			
 				if (stations[u].getTeamNum() == pteam)
 					pStationCount++;
 			}
@@ -120,16 +116,15 @@ void onTick(CRules@ this)
 		u16 initBooty = Maths::Round(getRules().get_u16("starting_booty") * 0.75f);
 		u8 players = getPlayersCount();
 		u8 median = teams <= 0 ? 1 : Maths::Round(players/teams);
-		//player per team
-		u8[] teamPlayers;
-		for (u8 t = 0; t < 16; t++)
-			teamPlayers.push_back(0);
 		
-		const u8 teamPlyLength = teamPlayers.length;
+		//player per team
+		const u8 teamsNum = this.getTeamsNum();
+		u8[] teamPlayers(teamsNum);
+		
 		for (u8 p = 0; p < players; p++)
 		{
 			u8 team = getPlayer(p).getTeamNum();
-			if (team < teamPlyLength)
+			if (team < teamsNum)
 				teamPlayers[team]++;
 		}
 		
@@ -139,7 +134,7 @@ void onTick(CRules@ this)
 		{
 			CPlayer@ player = getPlayer(p);
 			u8 team = player.getTeamNum();
-			if (team >= teamPlyLength) continue;
+			if (team >= teamsNum) continue;
 				
 			f32 compensate = median/teamPlayers[team];
 			if (compensate > 1)

@@ -32,14 +32,14 @@ void updateFrame(CBlob@ this)
 	CSprite@ sprite = this.getSprite();
 	if (sprite.animation is null) return; //not required
 
-	uint8 frames = sprite.animation.getFramesCount();
-	uint8 step = frames - ((health / this.getInitialHealth()) * frames);
+	u8 frames = sprite.animation.getFramesCount();
+	u8 step = frames - ((health / this.getInitialHealth()) * frames);
 	
 	if (sprite.animation.frame < step)
 	{
 		if (!v_fastrender)
 		{
-			for (int i = 0; i < 2; ++i) //wood chips on frame change
+			for (u8 i = 0; i < 2; ++i) //wood chips on frame change
 			{
 				CParticle@ p = makeGibParticle("Woodparts", this.getPosition(), getRandomVelocity(0, 0.3f, XORRandom(360)),
 												0, XORRandom(6), Vec2f(8, 8), 0.0f, 0, "");

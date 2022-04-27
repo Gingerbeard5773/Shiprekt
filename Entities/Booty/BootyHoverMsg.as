@@ -19,16 +19,16 @@ void onTick(CSprite@ this)
 	oldBooty = currentBooty;
 
 	if (diff > 0)
-		bootyIncrease(blob, diff); //set message
+		bootyIncrease(blob, diff);
 	else if (diff < 0)
-		bootyDecrease(blob, diff); //set message
+		bootyDecrease(blob, diff);
 	
     HoverMessageShiprekt2[]@ messages;
     if (blob.get("messages", @messages))
 	{
-        for (uint i = 0; i < messages.length; i++)
+        for (u16 i = 0; i < messages.length; i++)
 		{
-            HoverMessageShiprekt2 @message = messages[i];
+            HoverMessageShiprekt2@ message = messages[i];
             message.draw(getActorHUDStartPosition(blob, 6) +  Vec2f(70 , -4));
 
             if (message.isExpired())
@@ -44,44 +44,39 @@ void onRender(CSprite@ this)
 	CBlob@ blob = this.getBlob();
 
 	HoverMessageShiprekt2[]@ messages;	
-	if (blob.get("messages",@messages))
+	if (blob.get("messages", @messages))
 	{
-		for (uint i = 0; i < messages.length; i++)
+		u16 messagesLength = messages.length;
+		for (u16 i = 0; i < messagesLength; i++)
 		{
-			HoverMessageShiprekt2 @message = messages[i];
+			HoverMessageShiprekt2@ message = messages[i];
 			message.draw(getActorHUDStartPosition(blob, 6) +  Vec2f(70 , -4));
 		}
 	}
 }
 
-void bootyIncrease(CBlob@ this, int ammount)
+void bootyIncrease(CBlob@ this, int amount)
 {
-	if (this.isMyPlayer())
+	if (!this.exists("messages"))
 	{
-		if (!this.exists("messages"))
-		{
-			HoverMessageShiprekt2[] messages;
-			this.set("messages", messages);
-		}
-
-		this.clear("messages");
-		HoverMessageShiprekt2 m("", ammount, SColor(255, 0, 255, 0), 50, 3, false, "+");
-		this.push("messages", m);
+		HoverMessageShiprekt2[] messages;
+		this.set("messages", messages);
 	}
+
+	this.clear("messages");
+	HoverMessageShiprekt2 m("", amount, SColor(255, 0, 255, 0), 50, 3, false, "+");
+	this.push("messages", m);
 }
 
-void bootyDecrease(CBlob@ this, int ammount)
+void bootyDecrease(CBlob@ this, int amount)
 {
-	if (this.isMyPlayer())
+	if (!this.exists("messages"))
 	{
-		if (!this.exists("messages"))
-		{
-			HoverMessageShiprekt2[] messages;
-			this.set("messages", messages);
-		}
-
-		this.clear("messages");
-		HoverMessageShiprekt2 m("", ammount, SColor(255,255,0,0), 50, 3);
-		this.push("messages", m);
+		HoverMessageShiprekt2[] messages;
+		this.set("messages", messages);
 	}
+
+	this.clear("messages");
+	HoverMessageShiprekt2 m("", amount, SColor(255,255,0,0), 50, 3);
+	this.push("messages", m);
 }

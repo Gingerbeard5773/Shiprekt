@@ -5,7 +5,7 @@
 
 const f32 VEL_DAMPING = 0.96f; //0.96
 const f32 ANGLE_VEL_DAMPING = 0.96; //0.96
-const uint FORCE_UPDATE_TICKS = 21;
+const u16 FORCE_UPDATE_TICKS = 21;
 f32 UPDATE_DELTA_SMOOTHNESS = 32.0f;//~16-64
 
 uint color;
@@ -46,7 +46,8 @@ void onTick(CRules@ this)
 		{
 			if (!this.get_bool("dirty ships"))
 			{
-				for (u8 i = 0; i < dirtyShips.length; i++)
+				const u8 dirtyLength = dirtyShips.length;
+				for (u8 i = 0; i < dirtyLength; i++)
 				{
 					SeperateShip(this, dirtyShips[i]);
 				}
@@ -61,7 +62,8 @@ void onTick(CRules@ this)
 		{
 			if (!this.get_bool("dirty ships"))
 			{
-				for (u8 i = 0; i < dirtyBlocks.length; i++)
+				const u8 dirtyLength = dirtyBlocks.length;
+				for (u8 i = 0; i < dirtyLength; i++)
 				{
 					if (!AddToShip(dirtyBlocks[i]))
 					{
@@ -168,7 +170,7 @@ void GenerateShips(CRules@ this)
 	Ship[]@ ships;
 	this.get("ships", @ships);
 	
-	u16 shipsLength = ships.length;
+	const u16 shipsLength = ships.length;
 	for (u16 i = 0; i < shipsLength; ++i)
 	{
 		StoreVelocities(ships[i]);
@@ -222,9 +224,9 @@ void SeperateShip(CRules@ this, Ship@ ship)
 	const u16 shipBlocks = ship.blocks.length;
 	for (u16 i = 0; i < shipBlocks; ++i)
 	{
-		CBlob@ block = getBlobByNetworkID(ship.blocks[i].blobID);
-		if (block !is null)
-			blocks.push_back(block);
+		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
+		if (b !is null)
+			blocks.push_back(b);
 	}
 	
 	const u16 blocksLength = blocks.length;
@@ -235,8 +237,9 @@ void SeperateShip(CRules@ this, Ship@ ship)
 	
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
-		if (blocks[i].getShape().getVars().customData > 0)
-			blocks[i].getShape().getVars().customData = 0;
+		CBlob@ b = blocks[i];
+		if (b.getShape().getVars().customData > 0)
+			b.getShape().getVars().customData = 0;
 	}
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
@@ -279,7 +282,8 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	ship_block.blobID = this.getNetworkID();
 	ship.blocks.push_back(ship_block);
 	
-	if (this.get_u16("last color") != this.getShape().getVars().customData)
+	const u16 lastCol = this.get_u16("last color");
+	if (lastCol != newcolor)
 	{
 		//Activate hook onColored for all blobs that have it (server)
 		BlockHooks@ blockHooks;
@@ -287,6 +291,11 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 		if (blockHooks !is null)
 			blockHooks.update("onColored", @this);
 	}
+	
+	const Vec2f pos = this.getPosition();
+	const u32 placeTime = this.get_u32("placedTime");
+	const u32 gameTime = getGameTime();
+	const bool isCoupling = this.hasTag("coupling");
 	
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
@@ -297,10 +306,9 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 		CBlob@ b = overlapping[i];
 		
 		if (b.getShape().getVars().customData == 0 && b.hasTag("block")
-			&& ((b.getPosition() - this.getPosition()).LengthSquared() < 78 || (b.getPosition() - this.getPosition()).LengthSquared() > 230)// avoid "corner" overlaps
-			&& ((b.get_u16("last color") == this.get_u16("last color")) || (b.hasTag("coupling")) || (this.hasTag("coupling")) 
-			|| ((getGameTime() - b.get_u32("placedTime")) < 10) || ((getGameTime() - this.get_u32("placedTime")) < 10) 
-			|| (getMap().getTimeSinceStart() < 100)))
+			&& (b.getPosition() - pos).LengthSquared() < 78 // avoid "corner" overlaps
+			&& ((b.get_u16("last color") == lastCol) || (b.hasTag("coupling")) || (isCoupling) 
+			|| ((gameTime - b.get_u32("placedTime")) < 10) || ((gameTime - placeTime) < 10)))
 		{
 			ColorBlocks(b, ship, newcolor); 
 		}
@@ -419,7 +427,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 	{
 		Ship@ ship = ships[i];
 		const u16 blocksLength = ship.blocks.length;
-		if (blocksLength == 0) continue;
+		if (blocksLength <= 0) continue;
 
 		ship.soundsPlayed = 0;
 		ship.carryMass = 0;
@@ -675,7 +683,7 @@ void StoreVelocities(Ship@ ship)
 	}
 }
 
-void SetUpdateArrays(u16 shipColor)
+void SetUpdateArrays(int shipColor)
 {
 	CBlob@[] blocks;
 	getBlobsByTag("weapon", @blocks);
@@ -684,8 +692,9 @@ void SetUpdateArrays(u16 shipColor)
 	const u16 blocksLength = blocks.length;
 	for (u16 i = 0; i < blocksLength; i++)
 	{
-		if (blocks[i].getShape().getVars().customData == shipColor)
-			blocks[i].set_bool("updateArrays", true);
+		CBlob@ b = blocks[i];
+		if (b.getShape().getVars().customData == shipColor)
+			b.set_bool("updateArrays", true);
 	}
 }
 
@@ -762,7 +771,7 @@ void Synchronize(CRules@ this, bool full_sync, CPlayer@ player = null)
 }
 
 bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
-{
+{	
 	Ship[]@ ships;
 	if (this.get("ships", @ships))
 	{
@@ -817,7 +826,8 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 			else
 			{
 				const f32 thresh = 0.005f;
-				if ((getGameTime()+i) % FORCE_UPDATE_TICKS == 0 || isShipChanged(ship))				
+				const u16 FORCE_UPDATE_TIME = getGameTime()+i;
+				if (FORCE_UPDATE_TIME % FORCE_UPDATE_TICKS == 0 || isShipChanged(ship))				
 				{
 					stream.write_bool(true);
 					CPlayer@ owner = getPlayerByUsername(ship.owner);
@@ -1104,9 +1114,9 @@ void onRender(CRules@ this)
 				}
 				
 				const u16 blocksLength = ship.blocks.length;
-				for (u16 i = 0; i < blocksLength; ++i)
+				for (u16 q = 0; q < blocksLength; ++q)
 				{
-					ShipBlock@ ship_block = ship.blocks[i];
+					ShipBlock@ ship_block = ship.blocks[q];
 					CBlob@ b = getBlobByNetworkID(ship_block.blobID);
 					if (b !is null)
 					{

@@ -1,9 +1,9 @@
 //Various particles 
 
 Random spark;
-void sparks(Vec2f pos, int amount, f32 spread = 1.0f, int16 pTime = 10)
+void sparks(Vec2f pos, u8 amount, f32 spread = 1.0f, int16 pTime = 10)
 {
-	for (int i = 0; i < amount; i++)
+	for (u8 i = 0; i < amount; i++)
     {
         Vec2f vel(spark.NextFloat() * spread, 0); //spread
         vel.RotateBy(spark.NextFloat() * 360.0f);
@@ -55,7 +55,7 @@ void shotParticles(Vec2f pos, float angle, bool smoke = true, f32 smokeVelocity 
 		Vec2f shot_vel = Vec2f(0.5f,0);
 		shot_vel.RotateBy(-angle);
 		
-		for (int i = 0; i < 5; i++)
+		for (u8 i = 0; i < 5; i++)
 		{
 			//random velocity direction
 			Vec2f vel(smokeVelocity + shotrandom.NextFloat()*0.1f, 0);

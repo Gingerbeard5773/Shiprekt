@@ -45,18 +45,18 @@ void onTick(CRules@ this)
 					//pinball machine!!!
 					bool bounce = true;
 					const u8 blobsLength = hitBlobs.length;
-					for (u8 i = 0; i < blobsLength; i++)
+					for (u8 q = 0; q < blobsLength; q++)
 					{
 						//make sure ships don't bounce again too soon after first bounce
-						if (hitBlobs[i] !is null && hitBlobs[i] is b)
+						if (hitBlobs[q] !is null && hitBlobs[q] is b)
 							bounce = false;
 					}
 					
 					if (bounce && ship.centerBlock !is null)
 					{
-						for (u16 i = 0; i < blocksLength; ++i)
+						for (u8 q = 0; q < blocksLength; ++q)
 						{
-							CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
+							CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
 							if (b !is null)
 							{
 								hitBlobs.push_back(b);
@@ -88,8 +88,7 @@ void onTick(CRules@ this)
 		}
 	}
 	
-	const u8 timeLength = shipTimes.length;
-	for (u8 i = 0; i < timeLength; i++)
+	for (u8 i = 0; i < shipTimes.length; i++)
 	{
 		if (getGameTime() > shipTimes[i]+4) //timer to let ships bounce again
 		{

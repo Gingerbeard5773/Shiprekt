@@ -53,8 +53,8 @@ CParticle@ MakeWhirlpoolParticle(Vec2f pos, Vec2f vel, int animtime)
 void makeWaveRing(Vec2f center, f32 speed = 4.0f, u8 animtime = 10)
 {
 	Vec2f pos = Vec2f(0.0f, 1.0f);
-	u8 step = 7;
-	for (u16 i = 0; i < 360; i = i + step)
+	u16 step = 7;
+	for (u16 i = 0; i < 360; i += step)
 	{
 		CParticle@ p = ParticleAnimated("Sprites/water_whirl.png",
 											  center + pos * 8, pos * speed,

@@ -32,8 +32,9 @@ namespace Human
 			const u8 blocksLength = blocks.length;
 			for (u8 i = 0; i < blocksLength; ++i)
 			{
-				blocks[i].Tag("disabled");
-				blocks[i].server_Die();
+				CBlob@ block = blocks[i];
+				block.Tag("disabled");
+				block.server_Die();
 			}
 
 			blocks.clear();

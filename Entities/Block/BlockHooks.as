@@ -21,8 +21,8 @@ class BlockHooks
 		Hook@[]@ Hooks;
         HooksDict.get(key, @Hooks);
 		
-		const int hooksLength = Hooks.length;
-		for (int i = 0; i < hooksLength; i++)
+		const u8 hooksLength = Hooks.length;
+		for (u8 i = 0; i < hooksLength; i++)
 		{
 			if (hook is Hooks[i]) return;
 		}
@@ -35,8 +35,8 @@ class BlockHooks
 		Hook@[]@ Hooks;
         HooksDict.get(key, @Hooks);
 		
-		const int hooksLength = Hooks.length;
-		for (int i = 0; i < hooksLength; i++)
+		const u8 hooksLength = Hooks.length;
+		for (u8 i = 0; i < hooksLength; i++)
 		{
 			Hooks[i](@this); //find hooks and activate them
 		}

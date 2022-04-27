@@ -65,7 +65,8 @@ void onRestart(CRules@ this)
 	}
 	
 	//assign player teams
-	assignTeams(this, players);
+	if (players.length > 0)
+		assignTeams(this, players);
 }
 
 void assignTeams(CRules@ this, CPlayer@[] players)

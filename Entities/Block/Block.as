@@ -56,7 +56,7 @@ void onTick(CBlob@ this)
 					const u8 hitLength = hitInfos.length;
 					for (u8 i = 0; i < hitLength; i++)
 					{
-						CBlob@ blob =  hitInfos[i].blob;	  
+						CBlob@ blob = hitInfos[i].blob;	  
 						if (blob is null || blob is this) continue;
 						
 						const int other_color = blob.getShape().getVars().customData;
@@ -166,6 +166,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			
 		if (ship !is null && !docking && !ramming)
 		{
+			//TODO: change from collision bool into a boolean in the ship object class
+			// this loop won't be necessary with the above change, and probably improves performance
 			bool shouldCollide = true;
 			const u16 blocksLength = ship.blocks.length;
 			for (u16 i = 0; i < blocksLength; ++i)
