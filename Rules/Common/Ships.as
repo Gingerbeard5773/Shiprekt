@@ -431,6 +431,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 
 		ship.soundsPlayed = 0;
 		ship.carryMass = 0;
+		ship.colliding = false;
 		
 		if (!ship.initialized || ship.centerBlock is null)
 		{

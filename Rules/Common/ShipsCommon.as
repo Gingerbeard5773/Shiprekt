@@ -9,6 +9,7 @@ shared class Ship
 	f32 mass, carryMass;      //weight of the entire ship, weight carried by a player
 	CBlob@ centerBlock;       //the block in the center of the entire ship
 	bool initialized;	      //onInit for ships
+	bool colliding;           //used in ship collisions to stop ships from colliding twice in the same tick
 	uint soundsPlayed;        //used in limiting sounds in propellers
 	string owner;             //username of the player who owns the ship
 	bool isMothership;        //is the ship connected to a core?
@@ -22,6 +23,7 @@ shared class Ship
 	{
 		angle = angle_vel = old_angle = mass = carryMass = 0.0f;
 		initialized = false;
+		colliding = false;
 		isMothership = false;
 		isStation = false;
 		isSecondaryCore = false;

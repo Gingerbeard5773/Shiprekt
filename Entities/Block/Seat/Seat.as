@@ -40,6 +40,7 @@ void onInit(CBlob@ this)
 	this.set_u8("seat icon", 7);
 	this.Tag("control");
 	this.Tag("seat");
+	this.Tag("ramming");
 	
 	//anim
 	CSprite@ sprite = this.getSprite();

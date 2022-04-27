@@ -476,10 +476,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 							if (block is null) continue;
 							
 							if (!block.hasTag("mothership") || numBlocks == 1)
-							{
-								block.Tag("noCollide");
 								block.server_Die();
-							}
 						}
 						print(player.getUsername()+" destroyed "+numBlocks+" blocks", color_white);
 					}
@@ -496,10 +493,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 							if (block is null) continue;
 							
 							if (!block.hasTag("mothership"))
-							{
-								block.Tag("noCollide");
 								block.server_Die();
-							}
 						}
 						print("Clearing "+blocksLength+" blocks", color_white);
 					}

@@ -37,20 +37,21 @@ void onTick(CBlob@ this)
 		}
 	}
 	
-	//path predicted collisions
+	//collide even when going super speeds (to avoid clipping)
 	const int color = this.getShape().getVars().customData;
 	if (color > 0)
 	{
 		Ship@ ship = getShip(color);
-		if (ship !is null && !ship.isStation && ship.mass < 3.0f)
+		if (ship !is null && !ship.isStation && ship.mass < 5.0f)
 		{
 			Vec2f velnorm = ship.vel; 
 			const f32 vellen = velnorm.Normalize();		
 			
 			if (vellen > 8.0f) 
 			{
+				Vec2f pos = this.getPosition();
 				HitInfo@[] hitInfos;
-				if (getMap().getHitInfosFromRay(this.getPosition(), -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
+				if (getMap().getHitInfosFromRay(pos, -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
 				{
 					//HitInfo objects are sorted, first come closest hits
 					const u8 hitLength = hitInfos.length;
@@ -69,20 +70,17 @@ void onTick(CBlob@ this)
 							{
 								bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
 													&& ((ship.isMothership || other_ship.isMothership) || (ship.isStation || other_ship.isStation))
-													&& this.getTeamNum() == blob.getTeamNum()
+													//&& this.getTeamNum() == blob.getTeamNum()
 													&& ((!ship.isMothership && ship.owner != "") || (!other_ship.isMothership && other_ship.owner != ""));
 													
-								bool ramming = (this.hasTag("ram")|| blob.hasTag("ram")
-													|| this.hasTag("ramengine") || blob.hasTag("ramengine")
-													|| this.hasTag("seat") || blob.hasTag("seat") 
-													|| this.hasTag("coupling") || blob.hasTag("coupling")
-													|| this.hasTag("bomb") || blob.hasTag("bomb"));
+								bool ramming = this.hasTag("ramming") || blob.hasTag("ramming");
 
 								velnorm.Normalize();
 
-								if ((!docking && !ramming))
+								if (!ship.colliding && !docking && !ramming)
 								{
-									CollisionResponse1(ship, other_ship, this.getPosition()+velnorm, docking);
+									ship.colliding = true; //only collide once per tick
+									CollisionResponse1(ship, other_ship, pos + velnorm, docking);
 								}
 								break;
 							}
@@ -91,20 +89,6 @@ void onTick(CBlob@ this)
 				}
 			}
 		}
-	}
-	
- 	// push merged ships away from each other
-	if (this.get_bool("colliding")) this.set_bool("colliding", false); 
-}
-
-void onChangeTeam(CBlob@ this, const int oldTeam)
-{
-	if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on ships.as)
-	{
-		CSprite@ sprite = this.getSprite();
-		u8 frame = this.get_u8("frame");
-		if (sprite.getFrame() == 0 && frame != 0)
-			sprite.SetFrame(frame);
 	}
 }
 
@@ -128,24 +112,25 @@ bool doesCollideWithPlank(CBlob@ plank, Vec2f blobPos)
 
 void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
-	if (blob is null || this.hasTag("noCollide") || blob.hasTag("noCollide"))
+	if (blob is null || this.hasTag("dead") || blob.hasTag("dead"))
 		return;
 
 	const int color = this.getShape().getVars().customData;
+	if (color <= 0) return;
+	
 	const int other_color = blob.getShape().getVars().customData;
 
-	if (color > 0 && other_color > 0 && color != other_color) // block vs block
+	if (other_color > 0 && color != other_color) // block vs block
 	{
-		Ship@ ship = getShip(color);
-		Ship@ other_ship = getShip(other_color);
-		
 		if (blob.hasTag("plank") ? !doesCollideWithPlank(blob, this.getPosition()) : false)
 			return;
 		if (this.hasTag("plank") ? !doesCollideWithPlank(this, blob.getPosition()) : false)
 			return;
 	
-		bool docking;
-		bool ramming;
+		bool docking = false;
+		
+		Ship@ ship = getShip(color);
+		Ship@ other_ship = getShip(other_color);
 		
 		if (ship !is null && other_ship !is null)
 		{
@@ -157,64 +142,36 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					//&& this.getTeamNum() == blob.getTeamNum()
 					&& ((!ship.isMothership && !ship.isSecondaryCore && ship.owner != "") || (!other_ship.isMothership && !other_ship.isSecondaryCore && other_ship.owner != ""));
 								
-			ramming = (this.hasTag("ram") || blob.hasTag("ram") || 
-					   this.hasTag("ramengine") || blob.hasTag("ramengine") || 
-					   this.hasTag("seat") || blob.hasTag("seat") || 
-					   this.hasTag("coupling") || blob.hasTag("coupling"));
-		}
-		else docking = false;
+			bool ramming = this.hasTag("ramming") || blob.hasTag("ramming");
 			
-		if (ship !is null && !docking && !ramming)
-		{
-			//TODO: change from collision bool into a boolean in the ship object class
-			// this loop won't be necessary with the above change, and probably improves performance
-			bool shouldCollide = true;
-			const u16 blocksLength = ship.blocks.length;
-			for (u16 i = 0; i < blocksLength; ++i)
+			if (!ship.colliding && !docking && !ramming)
 			{
-				ShipBlock@ ship_block = ship.blocks[i];
-				if (ship_block is null) continue;
-
-				CBlob@ block = getBlobByNetworkID(ship_block.blobID);
-				if (block is null) continue;
-				
-				if (block.get_bool("colliding"))
-					shouldCollide = false;
-			}
-			
-			if (shouldCollide)
-				this.set_bool("colliding", true);		
-			
-			if (this.get_bool("colliding"))
-			{
+				ship.colliding = true; //only collide once per tick
 				CollisionResponse1(ship, other_ship, point1, docking);
 			}
-		}		
+		}
 		
-		if (!(this.hasTag("station") || blob.hasTag("station"))) // how to clean this up
+		//TODO: isolate collision code in each blob's script rather than here
+		if (!(this.hasTag("station") || blob.hasTag("station")))
 		{
-			if (docking)//force ship merge
-			{	
+			if (docking) //force ship merge
+			{
 				getRules().set_bool("dirty ships", true);
 				directionalSoundPlay("mechanical_click", blob.getPosition());
 			}
 			else if (isServer())
 			{
 				// these are checked separately so that seats/ram engines don't break from coups/repulsors
-				if (this.hasTag("coupling") || blob.hasTag("coupling")) // how to clean this up
-				{
-					if (this.hasTag("coupling")) Die(this);
-					if (blob.hasTag("coupling")) Die(blob);
-				}
-				else if (this.hasTag("repulsor") || blob.hasTag("repulsor")) // how to clean this up
-				{
-					if (this.hasTag("repulsor")) Die(this);
-					if (blob.hasTag("repulsor")) Die(blob);
-				}
+				if (this.hasTag("coupling") || this.hasTag("repulsor"))
+					Die(this);
+				else if (blob.hasTag("coupling") || blob.hasTag("repulsor"))
+					Die(blob);
 				else
 				{ 
 					if (this.hasTag("seat"))
 						Die(this);
+					if (blob.hasTag("seat"))
+						Die(blob);
 
 					if (this.hasTag("ramengine"))
 					{
@@ -260,7 +217,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 							}
 							else blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
 						}
-						else if (!blob.hasTag("solid") && other_ship !is null)
+						else if (!blob.hasTag("solid"))
 						{
 							this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
 							Die(blob);
@@ -274,15 +231,10 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 						Die(this);
 					}
 				}
-				
-				if (blob.hasTag("seat"))
-				{
-					Die(blob);
-				}
 			}
 		}
 	}
-	else if (other_color == 0 && color > 0)
+	else if (other_color == 0)
 	{
 		// solid block vs player
 		if ((this.hasTag("solid") || (this.hasTag("door") && this.getShape().getConsts().collidable)) && blob.getName() == "human")
@@ -314,10 +266,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 }
 
 void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking = false)
-{
-	if (ship is null || other_ship is null)
-		return;
-		
+{		
 	if (ship.mass <= 0 || other_ship.mass <= 0)
 		return;
 	
@@ -344,10 +293,13 @@ void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking
 		other_ship.vel = ClampSpeed(other_ship.vel + colvec2 * -vellen * massratio2 * 2 - colvec2*0.2f, 20);
 	}
 	
-	//effects
-	u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
-	ShakeScreen(Maths::Min(shake, 100), 12, point1);
-	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
+	if (isClient())
+	{
+		//effects
+		u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
+		ShakeScreen(Maths::Min(shake, 100), 12, point1);
+		directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
+	}
 }
 
 Vec2f ClampSpeed(Vec2f vel, f32 cap)
@@ -384,7 +336,7 @@ void Die(CBlob@ this)
 {
 	if (!isServer()) return;
 	
-	this.Tag("noCollide");
+	this.Tag("dead");
 	this.server_Die();
 }
 
@@ -392,13 +344,12 @@ void Die(CBlob@ this)
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	const int color = this.getShape().getVars().customData;
-	if (color < 0) return 0.0f;
+	if (color < 0) return 0.0f; // unplaced blocks are invincible
 	
 	u8 teamNum = this.getTeamNum();
 	
 	Ship@ ship = getShip(color);
-	if (ship is null)
-		return damage;
+	if (ship is null) return damage;
 
 	if (teamNum != hitterBlob.getTeamNum() && ship.isMothership)
 	{
@@ -443,6 +394,18 @@ void onGib(CSprite@ this)
 	Vec2f pos = this.getBlob().getPosition();
 	directionalSoundPlay("destroy_wood", pos);
 }
+
+void onChangeTeam(CBlob@ this, const int oldTeam)
+{
+	if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on ships.as)
+	{
+		CSprite@ sprite = this.getSprite();
+		u8 frame = this.get_u8("frame");
+		if (sprite.getFrame() == 0 && frame != 0)
+			sprite.SetFrame(frame);
+	}
+}
+
 // network
 
 void onSendCreateData(CBlob@ this, CBitStream@ stream)

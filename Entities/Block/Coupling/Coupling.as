@@ -3,6 +3,7 @@ void onInit(CBlob@ this)
 {
     this.addCommandID("decouple");
     this.Tag("coupling");
+	this.Tag("ramming");
 	this.Tag("removable");//for corelinked checks
 	
 	this.set_f32("weight", 0.1f);

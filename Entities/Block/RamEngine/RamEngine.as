@@ -13,6 +13,7 @@ void onInit(CBlob@ this)
 	this.addCommandID("stall");
 	this.Tag("engine");
 	this.Tag("ramengine");
+	this.Tag("ramming");
 	this.Tag("solid");
 	
 	this.set_f32("weight", 1.25f);

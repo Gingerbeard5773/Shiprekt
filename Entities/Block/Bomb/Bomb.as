@@ -11,6 +11,7 @@ const f32 BOMB_BASE_DAMAGE = 2.5f;
 void onInit(CBlob@ this)
 {
 	this.Tag("bomb");
+	//this.Tag("ramming");
 	this.set_u8("gibType", 1);
     //this.getCurrentScript().tickFrequency = 60;
 	
@@ -134,8 +135,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ hit_blob = blobs[i];
-		if (hit_blob is this)
-			continue;
+		if (hit_blob is this) continue;
 
 		if (isServer())
 		{
@@ -143,12 +143,12 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 			if (hit_blob.hasTag("block"))
 			{
-				if (hit_blob.getShape().getVars().customData <= 0)
-					continue;
+				int hitCol = hit_blob.getShape().getVars().customData;
+				if (hitCol <= 0) continue;
 
 				// move the ship
 
-				Ship@ ship = getShip(hit_blob.getShape().getVars().customData);
+				Ship@ ship = getShip(hitCol);
 				if (ship !is null && ship.mass > 0.0f)
 				{
 					Vec2f impact = (hit_blob_pos - pos) * 0.15f / ship.mass;
