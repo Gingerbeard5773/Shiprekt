@@ -42,7 +42,7 @@ void onTick(CBlob@ this)
 	if (color > 0)
 	{
 		Ship@ ship = getShip(color);
-		if (ship !is null && !ship.isStation && ship.mass < 5.0f)
+		if (ship !is null && !ship.isStation && ship.mass < 3.0f)
 		{
 			Vec2f velnorm = ship.vel; 
 			const f32 vellen = velnorm.Normalize();		
