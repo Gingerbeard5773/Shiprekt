@@ -29,8 +29,6 @@ f32 getDamage(CBlob@ hitBlob)
 		return 0.75f;
 	if (hitBlob.hasTag("ramengine"))
 		return 1.5f;
-	if (hitBlob.hasTag("antiram"))
-		return 0.5f;
 	if (hitBlob.hasTag("door"))
 		return 0.7f;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("decoyCore") || hitBlob.hasTag("plank"))

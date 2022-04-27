@@ -17,8 +17,8 @@ const f32 MOTHERSHIP_HEAL = 0.1f;
 const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
-const Vec2f BUILD_MENU_SIZE = Vec2f(6, 4);
-const Vec2f BUILD_MENU_TEST = Vec2f(6, 4); //for testing, only activates when sv_test is on
+const Vec2f BUILD_MENU_SIZE = Vec2f(7, 3);
+const Vec2f BUILD_MENU_TEST = Vec2f(7, 3); //for testing, only activates when sv_test is on
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 
 //global is fine since only used with isMyPlayer
@@ -507,10 +507,6 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 		{ //Patcher
 			description = Trans::PatcherDesc;
 			AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, description, core, 3.0f);
-		}
-		{ //Anti Ram Hull
-			description = Trans::AntiRamDesc;
-			AddBlock(this, menu, "antiram", "$ANTIRAM$", Trans::AntiRam, description, core, 0.75f);
 		}
 		{ //Repulsor
 			description = Trans::RepulsorDesc;

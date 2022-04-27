@@ -121,8 +121,6 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 	if (piercedCount > 2)
 		damageFactor *= 0.5f;
 	
-	if (hitBlob.hasTag("antiram"))
-		return 10.0f * damageFactor;
 	if (hitBlob.hasTag("ramengine"))
 		return 4.3f * damageFactor;
 	if (hitBlob.hasTag("propeller"))
