@@ -426,15 +426,14 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						cfg.add_f32("block" + i + "positionY", (block.getPosition().y - playerPos.y));
 						cfg.add_f32("block" + i + "angle", block.getAngleDegrees());
 					}
-					
-					cfg.saveFile("SHIP_" + tokens[1] + ".cfg");
+					cfg.saveFile("Shiprekt/SHIP_" + tokens[1] + ".cfg");
 					print("Saved ship as: "+tokens[1], color_white);
 				}
 				else if (tokens[0] == "!loadship")
 				{
 					ConfigFile cfg;
 					
-					if (!cfg.loadFile("../Cache/SHIP_" + tokens[1] + ".cfg"))
+					if (!cfg.loadFile("../Cache/Shiprekt/SHIP_" + tokens[1] + ".cfg"))
 					{
 						warn("Failed to load ship "+tokens[1]);
 						return false;
@@ -503,20 +502,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 							}
 						}
 						print("Clearing "+blocksLength+" blocks", color_white);
-					}
-					return false;
-				}				
-				else if (tokens[0] == "!ships")
-				{
-					CFileMatcher@ files = CFileMatcher("../KAG/player");
-					while (files.iterating())
-					{
-						const string filename = files.getCurrent();
-						//string[]@ toks = filename.split("_");
-						if (isClient())
-						{
-							client_AddToChat(filename, SColor(255, 255, 0, 0));
-						}
 					}
 					return false;
 				}
