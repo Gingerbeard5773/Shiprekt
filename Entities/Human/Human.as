@@ -9,6 +9,7 @@
 #include "ParticleHeal.as";
 #include "BlockCosts.as";
 #include "ShiprektTranslation.as";
+#include "PlankCommon.as";
 
 const int CONSTRUCT_VALUE = 5;
 const int CONSTRUCT_RANGE = 48;
@@ -649,6 +650,9 @@ void Punch(CBlob@ this)
 						CBlob@ block = rayInfos[q].blob;
 						if (block !is null && block.hasTag("solid"))
 						{
+							if (block.hasTag("plank") && !CollidesWithPlank(block, dir))
+								continue;
+							
 							hitBlock = true;
 							break;
 						}
@@ -784,10 +788,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			Vec2f pos = b.getPosition();
 			this.set_u32("punch time", getGameTime());
 			if (isClient())
-			{
 				directionalSoundPlay("Kick.ogg", pos);
-				ParticleBloodSplat(pos, false);
-			}
 
 			if (isServer())
 				this.server_Hit(b, pos, Vec2f_zero, 0.25f, Hitters::muscles, false);
@@ -1062,11 +1063,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					for (u8 i = 0; i < crewLength; i++)
 					{
 						CPlayer@ crewPlayer = crew[i].getPlayer();						
-						if (player is null) continue;
-						
-						string cName = crewPlayer.getUsername();
-
-						server_addPlayerBooty(cName, shareBooty);
+						server_addPlayerBooty(crewPlayer.getUsername(), shareBooty);
 					}
 				}
 			}
