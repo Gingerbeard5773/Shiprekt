@@ -1231,7 +1231,12 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	if (isClient())
 	{
 		if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
-		ParticleBloodSplat(worldPoint, false);
+		{
+			//blood particle
+			CParticle@ p = ParticleAnimated("BloodSplat", pos, velocity, velocity.Angle(), 1.0f, 2, 0.0f, false);
+			if (p !is null)
+				p.Z = 650.0f;
+		}
 		
 		if (damage > 1.45f) //sound for anything 2 heart+
 			directionalSoundPlay("ArgLong", pos, 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
