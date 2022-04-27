@@ -127,17 +127,16 @@ void onRender(CRules@ this)
 		if (page1)
 		{
 			//PAGE 1
-			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.50\n";
+			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51\n";
 			string lastChangesInfo = Trans::LastChanges+":\n"
-			+ "- 4-14-2022 - By Gingerbeard & GoldenGuy\n"
-			+ "  * Added a new block, the plank.\n"
-			+ "  * Removed the piston block.\n"
-			+ "  * Shiprekt now supports KAG Staging.\n"
-			+ "  * Ram will damage cores.\n"
-			+ "  * Tweaked rockets to be weaker.\n"
-			+ "  * Fixed a problem where players would be in 'no gravity' through water.\n"
-			+ "  * Flak will no longer kill team-mates.\n"
-			+ "  * Fixed a problem where a 1v0 vote wouldn't pass.\n";
+			+ "- 4-27-2022 - By Gingerbeard\n"
+			+ "  * Weapons only refill ammunition if they aren't being fired.\n"
+			+ "  * Tweaked the harvester to be weaker.\n"
+			+ "  * Disabled anti-ram.\n"
+			+ "  * Bombs' power stacks with nearby bombs! Boom!\n"
+			+ "  * Enemy miniships can dock on your mothership! Watch out.\n"
+			+ "  * Refill is faster for miniships, but slower for your mothership.\n"
+			+ "  * Fixed a problem where players couldn't direct where they were swimming.\n";
 			
 			GUI::SetFont("menu");
 			Vec2f lastChangesSize;

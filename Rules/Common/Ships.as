@@ -102,29 +102,31 @@ bool AddToShip(CBlob@[] blocks)
 		CBlob@ block = blocks[i];
 		
 		CBlob@[] overlapping;
-		block.getOverlapping(@overlapping);
-		
-		const u8 overlappingLength = overlapping.length;
-		for (u8 q = 0; q < overlappingLength; q++)
+		if (getMap().getBlobsInRadius(block.getPosition(), 8.0f, @overlapping))
+		//block.getOverlapping(@overlapping); //getOverlapping works, but sometimes it doesn't, so we use ^ radius instead
 		{
-			CBlob@ b = overlapping[q];
-			Ship@ ship = getShip(b.getShape().getVars().customData);
-			if (ship is null || (b.getPosition() - block.getPosition()).LengthSquared() > 78)
-				continue;
-				
-			//shitty algorithm to make sure there is no duplicates
-			bool pushShip = true;
-			const u8 touchingShipsLength = touchingShips.length;
-			for (u8 p = 0; p < touchingShipsLength; p++)
+			const u8 overlappingLength = overlapping.length;
+			for (u8 q = 0; q < overlappingLength; q++)
 			{
-				if (ship.id == touchingShips[p].id)
+				CBlob@ b = overlapping[q];
+				Ship@ ship = getShip(b.getShape().getVars().customData);
+				if (ship is null || (b.getPosition() - block.getPosition()).LengthSquared() > 78)
+					continue;
+					
+				//shitty algorithm to make sure there is no duplicates
+				bool pushShip = true;
+				const u8 touchingShipsLength = touchingShips.length;
+				for (u8 p = 0; p < touchingShipsLength; p++)
 				{
-					pushShip = false;
-					break;
+					if (ship.id == touchingShips[p].id)
+					{
+						pushShip = false;
+						break;
+					}
 				}
+				if (pushShip)
+					touchingShips.push_back(ship);
 			}
-			if (pushShip)
-				touchingShips.push_back(ship);
 		}
 	}
 	

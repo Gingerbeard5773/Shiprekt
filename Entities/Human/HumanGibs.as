@@ -20,8 +20,8 @@ void onGib(CSprite@ this)
     Vec2f vel = blob.getVelocity() * 0.5f;
 
     const u8 team = blob.getTeamNum();
+	
 	const u8 gibAmount = v_fastrender ? 5 : 10;
-    
     for (u8 i = 0; i < gibAmount; i++)
     {
     	Vec2f veladd(0,_r.NextFloat() + 0.1f * (i+1));
@@ -50,7 +50,7 @@ void onGib(CSprite@ this)
 
 	    	gib.emiteffect = emiteffect;
 
-	    	gib.Z = 500.0f;
+	    	gib.Z = 640.0f;
 	    	gib.AddDieFunction("HumanGibs.as", "CreateWaterSplash");
 	    }
 	}

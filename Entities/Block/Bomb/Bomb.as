@@ -5,8 +5,8 @@
 #include "AccurateSoundPlay.as";
 #include "BlockHooks.as";
 
-const f32 BOMB_RADIUS = 12.0f;
-const f32 BOMB_BASE_DAMAGE = 2.5f;
+const f32 BOMB_RADIUS = 15.0f;
+const f32 BOMB_BASE_DAMAGE = 2.7f;
 
 void onInit(CBlob@ this)
 {
@@ -169,7 +169,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 			f32 damageFactor = (hit_blob.hasTag("mothership")) ? 0.25f : 1.0f;
 
 			//hit the object
-			this.server_Hit(hit_blob, hit_blob_pos, Vec2f_zero, BOMB_BASE_DAMAGE * distanceFactor * damageFactor + (stackfactor/2), Hitters::bomb, true);
+			this.server_Hit(hit_blob, hit_blob_pos, Vec2f_zero, BOMB_BASE_DAMAGE * distanceFactor * damageFactor + (stackfactor/3), Hitters::bomb, true);
 			//print(hit_blob.getNetworkID() + " for: " + BOMB_BASE_DAMAGE * distanceFactor + " dFctr: " + distanceFactor + ", dist: " + this.getDistanceTo(hit_blob));
 		}
 		
