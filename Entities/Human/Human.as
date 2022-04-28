@@ -201,7 +201,7 @@ void Move(CBlob@ this)
 				{
 					moveVel *= 1.35f; //speedup on own mothership
 					
-					if (isServer() && getGameTime() % 60 == 0) //heal on own mothership
+					if (isServer() && getGameTime() % 60 == 0 && !thisCore.hasTag("critical")) //heal on own mothership
 					{
 						this.server_Heal(MOTHERSHIP_HEAL);
 					}
