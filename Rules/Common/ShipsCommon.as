@@ -95,17 +95,13 @@ CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positio
 
 CBlob@ getMothership(const u8 team) //Gets the mothership core block on determined team 
 {
-    CBlob@[] cores;
-    getBlobsByTag("mothership", @cores);
-	
-	const u8 coresLength = cores.length;
-    for (u8 i = 0; i < coresLength; i++)
-    {
-        CBlob@ core = cores[i];  
-        if (core.getTeamNum() == team)
-            return core;
-    }
-    return null;
+	if (team < 8)
+	{
+		CBlob@[]@ cores;
+		if (getRules().get("motherships", @cores))
+			return cores[team];
+	}
+	return null;
 }
 
 string getCaptainName(u8 team) //Gets the name of the mothership's captain

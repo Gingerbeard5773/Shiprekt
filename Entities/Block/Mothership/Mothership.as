@@ -28,6 +28,8 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 12.0f);
 	
+	getRules().setAt("motherships", this.getTeamNum(), @this);
+	
 	if (isClient())
 	{
 		//add an additional frame to the damage frames animation
@@ -298,6 +300,24 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 void onDie(CBlob@ this)
 {
 	selfDestruct(this);
+	
+	//if there is another mothership on our team, set the index to that mothership (only used in testing)
+	CBlob@[] cores;
+    getBlobsByTag("mothership", @cores);
+	const u8 teamNum = this.getTeamNum();
+	const u8 coresLength = cores.length;
+    for (u8 i = 0; i < coresLength; i++)
+    {
+        CBlob@ core = cores[i];  
+        if (core !is this && core.getTeamNum() == teamNum)
+		{
+            getRules().setAt("motherships", teamNum, @core);
+			return; //stop from setting to null
+		}
+    }
+	
+	//set to null, otherwise a crash will occur
+	getRules().setAt("motherships", teamNum, null);
 }
 
 //healing, repelling, dmgmanaging, selfDestruct, damagesprite

@@ -12,15 +12,17 @@ uint color;
 void onInit(CRules@ this)
 {
 	Ship[] ships;
-	this.set("ships", ships);
 	Ship[] dirtyShips;
-	this.set("dirtyShips", dirtyShips);
 	CBlob@[][] dirtyBlocks;
-	this.set("dirtyBlocks", dirtyBlocks);
-	this.addCommandID("ships sync");
-	this.addCommandID("ships update");
+	this.set("ships", ships);             //all ships
+	this.set("dirtyShips", dirtyShips);   //ships to be seperated into two or more ships
+	this.set("dirtyBlocks", dirtyBlocks); //placed blocks that need to be put onto a ship
+	
 	this.set_s32("ships id", 0);
 	this.set_bool("dirty ships", true);
+	
+	this.addCommandID("ships sync");
+	this.addCommandID("ships update");
 }
 
 void onRestart(CRules@ this)

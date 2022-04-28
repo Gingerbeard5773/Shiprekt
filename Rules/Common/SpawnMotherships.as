@@ -2,6 +2,9 @@
 
 void onInit(CRules@ this)
 {
+	CBlob@[] motherships(8); // length is the amount of teams on the gamemode (8)
+	this.set("motherships", motherships);
+	
 	onRestart(this);
 }
 
