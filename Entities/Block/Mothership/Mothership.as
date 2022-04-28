@@ -499,7 +499,7 @@ void selfDestruct(CBlob@ this)
 		{
 			f32 maxHealth = blastBlob.getInitialHealth();
 			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlob))/BLAST_RADIUS;
-			this.server_Hit(blastBlob, pos, Vec2f_zero, damage, Hitters::bomb, true);
+			this.server_Hit(blastBlob, pos, Vec2f_zero, Maths::Max(0.1f, damage), Hitters::bomb, true);
 		}
 	}
 

@@ -39,7 +39,7 @@ namespace Destruct
 			float distance = this.getDistanceTo(blob);
 			float damage = 1.5f * initial * (radius - distance) / radius;
 
-			this.server_Hit(blob, position, Vec2f_zero, damage, Hitters::bomb, true);
+			this.server_Hit(blob, position, Vec2f_zero, Maths::Max(0.1f, damage), Hitters::bomb, true);
 		}
 
 		// Kill ship
