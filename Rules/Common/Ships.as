@@ -42,7 +42,7 @@ void onTick(CRules@ this)
 			
 		//dirtyShips & dirtyBlocks is not required! both are done for performance improvement!
 			
-		// seperate a ship into two or more ships
+		//seperate a ship into two or more ships
 		Ship[]@ dirtyShips;
 		if (this.get("dirtyShips", @dirtyShips) && dirtyShips.length > 0)
 		{
@@ -58,7 +58,7 @@ void onTick(CRules@ this)
 			this.clear("dirtyShips");
 		}
 		
-		// add placed blocks onto an existing ship, does dirty ships if there is no ship to copy onto
+		//add placed blocks onto an existing ship, does dirty ships if there is no ship to copy onto
 		CBlob@[][]@ dirtyBlocks;
 		if (this.get("dirtyBlocks", @dirtyBlocks) && dirtyBlocks.length > 0)
 		{
@@ -78,7 +78,7 @@ void onTick(CRules@ this)
 			this.clear("dirtyBlocks");
 		}
 		
-		// remove existing ships and create new ones in their place, this is a full reset
+		//remove existing ships and create new ones in their place, this is a full reset
 		if (this.get_bool("dirty ships"))
 		{
 			GenerateShips(this);
@@ -153,7 +153,7 @@ bool AddToShip(CBlob@[] blocks)
 		block.getShape().getVars().customData = shipColor;	
 		block.set_u16("last color", shipColor);
 	
-		//Activate hook onColored for all blobs that have it (server)
+		//activate hook onColored for all blobs that have it (server)
 		BlockHooks@ blockHooks;
 		block.get("BlockHooks", @blockHooks);
 		if (blockHooks !is null)
@@ -308,84 +308,93 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	for (u8 i = 0; i < overlappingLength; i++)
 	{
 		CBlob@ b = overlapping[i];
-		
-		if (b.getShape().getVars().customData == 0 && b.hasTag("block")
-			&& (b.getPosition() - pos).LengthSquared() < 78 // avoid "corner" overlaps
+		if (b.getShape().getVars().customData == 0 && b.hasTag("block") // is uncolored block
+			&& (b.getPosition() - pos).LengthSquared() < 78 //avoid corner overlaps
 			&& ((b.get_u16("last color") == lastCol) || (b.hasTag("coupling")) || (isCoupling) 
 			|| ((gameTime - b.get_u32("placedTime")) < 10) || ((gameTime - placeTime) < 10)))
 		{
-			ColorBlocks(b, ship, newcolor); 
+			ColorBlocks(b, ship, newcolor); //continue the cycle
 		}
 	}
 }
 
-void InitShip(Ship @ship)//called for all ships after a block is placed or collides
+void InitShip(Ship @ship)
 {
 	Vec2f center, vel;
 	f32 angle_vel = 0.0f;
 	const u16 blocksLength = ship.blocks.length;
-	if (ship.centerBlock is null)//when clients InitShip(), they should have key values pre-synced. no need to calculate
+	if (ship.centerBlock is null) //when clients InitShip(), they should have key values pre-synced. no need to calculate
 	{
-		//get ship vels (stored previously on all blobs), center
+		u16 shipBlocksLength = 0;
+		f32 totalMass = 0.0f;
+		
 		for (u16 i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-			if (b !is null)
+			if (b is null) continue;
+			
+			//centerblock calculation
+			center += b.getPosition();
+			
+			//mass calculation
+			totalMass += b.get_f32("weight");
+			
+			//determine the ship type
+			if (b.hasTag("mothership"))     ship.isMothership = true;
+			if (b.hasTag("station"))        ship.isStation = true;
+			if (b.hasTag("secondaryCore"))  ship.isSecondaryCore = true;
+			
+			//get ship vel (stored previously on ship blocks)
+			if (b.get_u16("blockCount") > shipBlocksLength) //bigger ships take priority (for docking scenarios) (change to mass?)
 			{
-				center += b.getPosition();
-				if (b.getVelocity().LengthSquared() > 0.0f)
+				Vec2f blockVel = b.getVelocity();
+				if (blockVel.Length() > 0.0f)
 				{
-					vel = b.getVelocity();
-					angle_vel = b.getAngularVelocity();			
+					shipBlocksLength = b.get_u16("blockCount");
+					vel = blockVel;
+					angle_vel = b.getAngularVelocity();
 				}
 			}
 		}
 		center /= float(blocksLength);
 
-		//find center block and mass and if it's mothership
-		f32 totalMass = 0.0f;
-		f32 maxDistance = 999999.9f;
+		//determine center block
 		bool choseCenterBlock = false;
-		if (blocksLength == 2) //choose engine as centerblock for 2 block torpedos
+		if (blocksLength == 2)
 		{
-			for (u16 i = 0; i < blocksLength; ++i) //shitty fix for torpedo bouncing
+			for (u16 i = 0; i < blocksLength; ++i)
 			{
 				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-				if (b !is null && b.hasTag("engine"))
-				{
-					choseCenterBlock = true;
-					@ship.centerBlock = b;
-					break;
-				}
+				if (b is null || !b.hasTag("engine")) continue;
+				
+				//use an engine as centerblock for 2 block ships (this is used for torpedo border bounce)
+				choseCenterBlock = true;
+				@ship.centerBlock = b;
+				break;
 			}
 		}
-		for (u16 i = 0; i < blocksLength; ++i)
+		if (!choseCenterBlock)
 		{
-			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-			if (b !is null)
+			//find the center of ship and label it as the centerBlock
+			f32 maxDistance = 999999.9f;
+			for (u16 i = 0; i < blocksLength; ++i)
 			{
+				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
+				if (b is null) continue;
+				
 				Vec2f vec = b.getPosition() - center;
 				f32 dist = vec.LengthSquared();
-				if (dist < maxDistance && !choseCenterBlock)
+				if (dist < maxDistance)
 				{
 					maxDistance = dist;
 					@ship.centerBlock = b;
 				}
-				//mass calculation
-				totalMass += b.get_f32("weight");
-				
-				if (b.hasTag("mothership"))
-					ship.isMothership = true;
-					
-				if (b.hasTag("station"))
-					ship.isStation = true;
-
-				if (b.hasTag("secondaryCore"))
-					ship.isSecondaryCore = true;
 			}
 		}
 		
-		ship.mass = totalMass;//linear mass growth
+		//print(ship.id + " mass: " + totalMass + "; effective: " + ship.mass);
+		
+		ship.mass = totalMass; //linear mass growth
 		ship.vel = vel;
 		ship.angle_vel = angle_vel;
 		if (ship.centerBlock !is null)
@@ -403,19 +412,17 @@ void InitShip(Ship @ship)//called for all ships after a block is placed or colli
 	}
 
 	center = ship.centerBlock.getPosition();
-	//print(ship.id + " mass: " + totalMass + "; effective: " + ship.mass);
 	
 	//update block positions/angle array
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
 		ShipBlock@ ship_block = ship.blocks[i];
 		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
-		if (b !is null)
-		{
-			ship_block.offset = b.getPosition() - center;
-			ship_block.offset.RotateBy(-ship.angle);
-			ship_block.angle_offset = loopAngle(b.getAngleDegrees() - ship.angle);
-		}
+		if (b is null) continue;
+		
+		ship_block.offset = b.getPosition() - center;
+		ship_block.offset.RotateBy(-ship.angle);
+		ship_block.angle_offset = loopAngle(b.getAngleDegrees() - ship.angle);
 	}
 }
 
@@ -437,7 +444,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 		ship.carryMass = 0;
 		ship.colliding = false;
 		
-		if (!ship.initialized || ship.centerBlock is null)
+		if (!ship.initialized || ship.centerBlock is null) //reset ship
 		{
 			//if (!isServer()) print ("client: initializing ship: " + blocksLength);
 			InitShip(ship);
@@ -460,24 +467,22 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			
 			for (u16 q = 0; q < blocksLength; ++q)
 			{
-				ShipBlock@ ship_block = ship.blocks[q];
-				CBlob@ b = getBlobByNetworkID(ship_block.blobID);
-				if (b !is null)
+				CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
+				if (b is null) continue;
+				
+				Vec2f bPos = b.getPosition();	
+				Tile bTile = map.getTile(bPos);
+				
+				if (map.isTileSolid(bTile) && bPos.Length() > 15.0f) //are we on rock
 				{
-					Vec2f bPos = b.getPosition();	
-					Tile bTile = map.getTile(bPos);
-					
-					if (map.isTileSolid(bTile) && bPos.Length() > 15.0f) //are we on rock
-					{
-						TileCollision(ship, bPos);
-						if (!b.hasTag("mothership") || this.get_bool("whirlpool"))
-							b.server_Hit(b, bPos, Vec2f_zero, 1.0f, 0, true);
-					}
-					else if (isTouchingLand(bPos))
-						beachedBlocks++;
-					else if (isTouchingShoal(bPos))
-						slowedBlocks++;
+					TileCollision(ship, bPos);
+					if (!b.hasTag("mothership") || this.get_bool("whirlpool"))
+						b.server_Hit(b, bPos, Vec2f_zero, 1.0f, 0, true);
 				}
+				else if (isTouchingLand(bPos))
+					beachedBlocks++;
+				else if (isTouchingShoal(bPos))
+					slowedBlocks++;
 			}
 			
 			if (beachedBlocks > 0)
@@ -497,6 +502,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 		}
 		else if (ship.isStation)
 		{
+			//stations don't move
 			ship.vel = Vec2f(0, 0);
 			ship.angle_vel = 0.0f;
 		}
@@ -522,23 +528,22 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			{
 				ShipBlock@ ship_block = ship.blocks[q];
 				CBlob@ b = getBlobByNetworkID(ship_block.blobID);
-				if (b !is null)
+				if (b is null) continue;
+				
+				UpdateShipBlob(b, ship, ship_block);
+				
+				if (b.hasTag("control") && b.get_string("playerOwner") != "")
 				{
-					UpdateShipBlob(b, ship, ship_block);
+					seatIDs.push_back(ship_block.blobID);
 					
-					if (b.hasTag("control") && b.get_string("playerOwner") != "")
-					{
-						seatIDs.push_back(ship_block.blobID);
-						
-						if (teamComp == -1)
-							teamComp = b.getTeamNum();
-						else if (b.getTeamNum() != teamComp)
-							multiTeams = true;
-					} 
-					else if (b.hasTag("mothership"))
-					{
-						@core = b;
-					}
+					if (teamComp == -1)
+						teamComp = b.getTeamNum();
+					else if (b.getTeamNum() != teamComp)
+						multiTeams = true;
+				} 
+				else if (b.hasTag("mothership"))
+				{
+					@core = b;
 				}
 			}
 			
@@ -623,20 +628,13 @@ void UpdateShipBlob(CBlob@ blob, Ship@ ship, ShipBlock@ ship_block)
 		
 	blob.setPosition(ship.pos + offset);
 	blob.setAngleDegrees(ship.angle + ship_block.angle_offset);
-
-	//don't collide with borders
+	
 	blob.setVelocity(Vec2f_zero);
 	blob.setAngularVelocity(0.0f);
 }
 
 void TileCollision(Ship@ ship, Vec2f tilePos)
 {
-	if (ship is null)
-		return;
-		
-	if (ship.mass <= 0)
-		return;
-	
 	Vec2f velnorm = ship.vel; 
 	const f32 vellen = velnorm.Normalize();
 	
@@ -646,9 +644,12 @@ void TileCollision(Ship@ ship, Vec2f tilePos)
 	ship.vel = -colvec1*1.0f;
 	
 	//effects
-	u8 shake = vellen * ship.mass;
-	ShakeScreen(Maths::Min(shake, 120), 12, tilePos);
-	directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", tilePos);
+	if (isClient())
+	{
+		u8 shake = vellen * ship.mass;
+		ShakeScreen(Maths::Min(shake, 120), 12, tilePos);
+		directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", tilePos);
+	}
 }
 
 void SetNextId(CRules@ this, Ship@ ship)
@@ -665,9 +666,7 @@ void SetShipTeam(Ship@ ship, u8 teamNum = 255)
 	{
 		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 		if (b !is null)
-		{
 			b.server_setTeamNum(teamNum);
-		}
 	}
 }
 
@@ -679,11 +678,11 @@ void StoreVelocities(Ship@ ship)
 		for (u16 i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-			if (b !is null)
-			{
-				b.setVelocity(ship.vel);
-				b.setAngularVelocity(ship.angle_vel);	
-			}
+			if (b is null) continue;
+			
+			b.set_u16("blockCount", blocksLength);
+			b.setVelocity(ship.vel);
+			b.setAngularVelocity(ship.angle_vel);	
 		}
 	}
 }
@@ -937,32 +936,33 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 					CBlob@ b = getBlobByNetworkID(netid);
 					Vec2f pos = params.read_Vec2f();
 					f32 angle = params.read_f32();
-					if (b !is null)
+					if (b is null)
 					{
-						ShipBlock ship_block;
-						ship_block.blobID = netid;
-						ship_block.offset = pos;
-						ship_block.angle_offset = angle;
-						ship.blocks.push_back(ship_block);	
-	    				b.getShape().getVars().customData = i+1; // color
-						
-						if (b.get_u16("last color") != b.getShape().getVars().customData)
-						{
-							//Activate hook onColored for all blobs that have it (client)
-							BlockHooks@ blockHooks;
-							b.get("BlockHooks", @blockHooks);
-							if (blockHooks !is null)
-								blockHooks.update("onColored", @b);
-						}
-
-						// safety on desync
-						b.SetVisible(true);
-						CSprite@ sprite = b.getSprite();
-						sprite.asLayer().SetColor(color_white);
-						sprite.asLayer().setRenderStyle(RenderStyle::normal);
-					}
-					else
 						warn("Blob not found when creating ship, id = " + netid);
+						continue;
+					}
+					
+					ShipBlock ship_block;
+					ship_block.blobID = netid;
+					ship_block.offset = pos;
+					ship_block.angle_offset = angle;
+					ship.blocks.push_back(ship_block);	
+					b.getShape().getVars().customData = i+1; // color
+					
+					if (b.get_u16("last color") != b.getShape().getVars().customData)
+					{
+						//Activate hook onColored for all blobs that have it (client)
+						BlockHooks@ blockHooks;
+						b.get("BlockHooks", @blockHooks);
+						if (blockHooks !is null)
+							blockHooks.update("onColored", @b);
+					}
+
+					// safety on desync
+					b.SetVisible(true);
+					CSprite@ sprite = b.getSprite();
+					sprite.asLayer().SetColor(color_white);
+					sprite.asLayer().setRenderStyle(RenderStyle::normal);
 				}
 				ships.push_back(ship);
 			}
@@ -1123,14 +1123,13 @@ void onRender(CRules@ this)
 				{
 					ShipBlock@ ship_block = ship.blocks[q];
 					CBlob@ b = getBlobByNetworkID(ship_block.blobID);
-					if (b !is null)
-					{
-						int c = b.getShape().getVars().customData;
-						GUI::DrawRectangle(getDriver().getScreenPosFromWorldPos(b.getPosition() - Vec2f(4, 4).RotateBy(camRotation)), 
-										   getDriver().getScreenPosFromWorldPos(b.getPosition() + Vec2f(4, 4).RotateBy(camRotation)), SColor(100, c*50, -c*90, 93*c));
-						if (camera.targetDistance > 1.0f)
-							GUI::DrawText("" + ship_block.blobID, getDriver().getScreenPosFromWorldPos(b.getPosition()), SColor(255,255,255,255));
-					}
+					if (b is null) continue;
+					
+					int c = b.getShape().getVars().customData;
+					GUI::DrawRectangle(getDriver().getScreenPosFromWorldPos(b.getPosition() - Vec2f(4, 4).RotateBy(camRotation)), 
+									   getDriver().getScreenPosFromWorldPos(b.getPosition() + Vec2f(4, 4).RotateBy(camRotation)), SColor(100, c*50, -c*90, 93*c));
+					if (camera.targetDistance > 1.0f)
+						GUI::DrawText("" + ship_block.blobID, getDriver().getScreenPosFromWorldPos(b.getPosition()), SColor(255,255,255,255));
 				}
 			}
 		}

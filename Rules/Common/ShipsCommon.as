@@ -110,7 +110,7 @@ string getCaptainName(u8 team) //Gets the name of the mothership's captain
 	if (core !is null)
 	{
 		Ship@ ship = getShip(core.getShape().getVars().customData);
-		if (ship !is null && ship.owner != "")
+		if (ship !is null)
 			return ship.owner;
 	}
 	return "";
@@ -124,7 +124,7 @@ bool coreLinkedPathed(CBlob@ this, CBlob@ core, u16[] checked, u16[] unchecked, 
 	checked.push_back(networkID);
 	
 	// remove from unchecked blocks if this was marked as unchecked
-	u32 uncheckedIndex = unchecked.find(networkID);
+	s16 uncheckedIndex = unchecked.find(networkID);
 	if (uncheckedIndex > -1)
 	{
 		unchecked.erase(uncheckedIndex);

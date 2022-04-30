@@ -76,7 +76,7 @@ string getRandomMap(CRules@ this)
 	//remove current map
 	if (maps.length > 1)
 	{
-		int mIndex = maps.find(currentMap);
+		s8 mIndex = maps.find(currentMap);
 		if (mIndex > -1)
 			maps.removeAt(mIndex);
 	}
