@@ -97,6 +97,8 @@ void onTick(CBlob@ this)
 
 void Move(CBlob@ this)
 {
+	CRules@ rules = getRules();
+	const u32 gameTime = getGameTime();
 	const bool blobInitialized = this.getTickSinceCreated() > 30; //solves some strange problems, 1 full second
 	const bool myPlayer = this.isMyPlayer();
 	const bool isBot = isServer() && this.getPlayer() !is null && this.getPlayer().isBot();
@@ -108,13 +110,13 @@ void Move(CBlob@ this)
 	
 	if (!this.isAttached())
 	{
-		if (myPlayer && blobInitialized)
+		if (myPlayer && blobInitialized && !rules.isGameOver()) //isGameOver check is to stop bad-deltas at next-map
 		{
 			const f32 camRotation = getCamera().getRotation();
-			if (this.get_f32("camera rotation") != camRotation && this.exists("camera rotation"))
+			if (Maths::Roundf(this.get_f32("camera rotation")) != Maths::Roundf(camRotation))
 			{
 				this.set_f32("camera rotation", camRotation);
-				this.Sync("camera rotation", false); //1732223106 !! has a history of causing bad deltas !!
+				this.Sync("camera rotation", false); //-930854664 !! has a history of causing bad deltas !!
 			}
 		}
 		
@@ -126,6 +128,7 @@ void Move(CBlob@ this)
 		const bool right = this.isKeyPressed(key_right);	
 		const bool punch = this.isKeyPressed(key_action1);
 		const bool shoot = this.isKeyPressed(key_action2);
+		
 		Ship@ ship = getShip(this);
 		shape.getVars().onground = ship !is null || isTouchingLand(pos);
 		
@@ -161,19 +164,11 @@ void Move(CBlob@ this)
 
 		if (!this.get_bool("onGround"))
 		{
-			if (isTouchingShoal(pos))
-			{
-				moveVel *= 0.8f;
-			}
-			else
-			{
-				moveVel *= Human::swimSlow;
-			}
-
+			moveVel *= isTouchingShoal(pos) ? 0.8f : Human::swimSlow;
+			
 			if (isClient())
 			{
-				const u32 gameTime = getGameTime();
-				u8 tickStep = v_fastrender ? 15 : 5;
+				const u8 tickStep = v_fastrender ? 15 : 5;
 
 				if ((gameTime + this.getNetworkID()) % tickStep == 0)
 					MakeWaterParticle(pos, Vec2f()); 
@@ -201,7 +196,7 @@ void Move(CBlob@ this)
 				{
 					moveVel *= 1.35f; //speedup on own mothership
 					
-					if (isServer() && getGameTime() % 60 == 0 && !thisCore.hasTag("critical")) //heal on own mothership
+					if (isServer() && gameTime % 60 == 0 && !thisCore.hasTag("critical")) //heal on own mothership
 					{
 						this.server_Heal(MOTHERSHIP_HEAL);
 					}
@@ -226,7 +221,7 @@ void Move(CBlob@ this)
 		}		
 
 		//canmove check
-		if (this.get_bool("onGround") || !getRules().get_bool("whirlpool"))
+		if (this.get_bool("onGround") || !rules.get_bool("whirlpool"))
 		{
 			moveVel.RotateBy(camRotation);
 			this.setVelocity(moveVel);
