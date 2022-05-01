@@ -239,7 +239,7 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 		//print("*** Restarting the map to be fair to the new player ***");
 		getNet().server_SendMsg("*** 1 player on map. Setting freebuild mode until more players join. ***");
 		this.set_bool("freebuild", true);
-		this.Sync("freebuild", true);
+		this.Sync("freebuild", true); //1861922193 HASH
 	}
 }
 

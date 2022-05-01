@@ -101,14 +101,14 @@ void onTick(CBlob@ this)
 	{
 		//sync converterTeam for use in onRender
 		this.set_u8("convertTeam", capture.converterTeam);
-		this.Sync("convertTeam", true);
+		this.Sync("convertTeam", true); //-1380000415 HASH
 	}
 	
 	if (capture.currentTime != this.get_u8("convertTime"))
 	{
 		//sync currentTime for use in onRender
 		this.set_u8("convertTime", capture.currentTime);
-		this.Sync("convertTime", true);
+		this.Sync("convertTime", true); //-1321747407 HASH
 	}
 }
 

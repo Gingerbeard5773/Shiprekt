@@ -61,7 +61,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		if (caller.isMyPlayer())
 		{
 			caller.set_bool("getting block", false);
-			caller.Sync("getting block", false);
+			caller.Sync("getting block", false); //379080002 HASH
 		}
 		caller.set_string("last buy", block);
 
@@ -123,7 +123,7 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 	else if (teamFlaks >= MAX_TEAM_FLAKS && player !is null)
 	{
 		rules.set_bool("display_flak_team_max", false);
-		rules.SyncToPlayer("display_flak_team_max", player);
+		rules.SyncToPlayer("display_flak_team_max", player); //-296461567 HASH
 		rules.set_bool("display_flak_team_max", true);
 		rules.SyncToPlayer("display_flak_team_max", player);
 	}

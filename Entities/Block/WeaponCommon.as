@@ -46,7 +46,7 @@ void checkDocked(CBlob@ this, Ship@ ship)
 		else
 			this.set_bool("docked", false);
 
-		this.Sync("docked", true);
+		this.Sync("docked", true); //-169657557 HASH
 		this.set_bool("updateArrays", false);
 	}
 }

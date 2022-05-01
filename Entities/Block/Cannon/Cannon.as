@@ -42,8 +42,8 @@ void onInit(CBlob@ this)
 	{
 		this.set_u16("ammo", MAX_AMMO);
 		this.set_u16("maxAmmo", MAX_AMMO);
-		this.Sync("ammo", true);
-		this.Sync("maxAmmo", true);
+		this.Sync("ammo", true); //1536888239 HASH
+		this.Sync("maxAmmo", true); //2002479429 HASH
 	}
 
 	CSprite@ sprite = this.getSprite();

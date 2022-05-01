@@ -279,7 +279,7 @@ void onTick(CBlob@ this)
 		this.get("couplingCooldown", couplingCooldown);
 		bool canProduceCoupling = gameTime > couplingCooldown;
 		this.set_bool("canProduceCoupling", canProduceCoupling);
-		this.Sync("canProduceCoupling", true);
+		this.Sync("canProduceCoupling", true); //-1891382656 HASH
 		
 		if (inv && canProduceCoupling && !Human::wasHoldingBlocks(occupier))
 		{

@@ -374,7 +374,7 @@ void getMapName(CRules@ this)
 		mapName = getFilenameWithoutExtension(mapName);  // Remove extension from the filename if it exists
 
 		this.set_string("map_name", mapName);
-		this.Sync("map_name",true);
+		this.Sync("map_name", true); //734528625 HASH
 	}
 }
 

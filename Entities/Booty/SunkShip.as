@@ -171,7 +171,7 @@ void server_updateX(CBlob@ this, u16 reward, bool instaPickup = true)
 	else
 		this.set_u16("ammount", Maths::Max(0, ammount - reward));
 
-	this.Sync("ammount", true);	//522519900
+	this.Sync("ammount", true);	//522519900 HASH
 }
 
 void server_giveBooty(string name, u16 ammount)

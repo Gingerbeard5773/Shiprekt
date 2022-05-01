@@ -81,7 +81,7 @@ void onTick(CBlob@ this)
 		propeller.animation.time = on ? 1 : 0;
 
 	if (isServer())
-		this.Sync("power", true);
+		this.Sync("power", true); //-179363002 HASH
 
 	if (stalled)
 	{

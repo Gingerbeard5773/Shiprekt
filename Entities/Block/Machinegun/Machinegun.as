@@ -51,7 +51,7 @@ void onInit(CBlob@ this)
 		this.set_u16("maxAmmo", MAX_AMMO);
 		this.set_f32("fire pause",MIN_FIRE_PAUSE);
 
-		this.Sync("fire pause", true);
+		this.Sync("fire pause", true); //-1042743405 HASH
 		this.Sync("ammo", true);
 		this.Sync("maxAmmo", true);
 	}

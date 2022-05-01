@@ -32,7 +32,7 @@ void onTick(CBlob@ this)
 			if (owner !is null)
 			{
 				this.set_string("playerOwner", owner.getPlayer().getUsername());
-				this.Sync("playerOwner", true); //2040865191 PROPERTY
+				this.Sync("playerOwner", true); //2040865191 HASH
 			}
 		}
 	}

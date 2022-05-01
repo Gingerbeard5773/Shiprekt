@@ -61,7 +61,7 @@ void server_updateTotalBooty(u8 teamNum, u16 ammount)
 		rules.set_u16("bootyTeam_total" + teamNum, totalBooty + ammount);
 		if (roundedBooty != newRoundedBooty)
 		{
-			rules.Sync("bootyTeam_total" + teamNum, true);
+			rules.Sync("bootyTeam_total" + teamNum, true); //-115817888 HASH
 				
 			//set booty median
 			u32 allBooty = 0;
@@ -73,7 +73,7 @@ void server_updateTotalBooty(u8 teamNum, u16 ammount)
 					allBooty += rules.get_u16("bootyTeam_total" + cores[i].getTeamNum());
 				
 				rules.set_u32("bootyTeam_median", allBooty/coresLength + 1);
-				rules.Sync("bootyTeam_median", true);
+				rules.Sync("bootyTeam_median", true); //-402874816 HASH
 			}
 		}
 	}

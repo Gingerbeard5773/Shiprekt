@@ -107,7 +107,7 @@ void onTick(CBlob@ this)
 			/*this.set_f32("shortAngle", shortAngle);
 			if (ownerBlob.isMyPlayer()) 
 			{
-				this.Sync("shortAngle", false); //324847272
+				this.Sync("shortAngle", false); //324847272 HASH
 			}
 			else
 			{

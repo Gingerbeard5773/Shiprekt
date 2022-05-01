@@ -134,7 +134,7 @@ void Move(CBlob@ this)
 			if (this.get_bool("onGround") != this.isOnGround() && blobInitialized)
 			{
 				this.set_bool("onGround", this.isOnGround());
-				this.Sync("onGround", false); //1954602763
+				this.Sync("onGround", false); //1954602763 HASH
 			}
 		}
 
@@ -1001,7 +1001,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			print("$ " + owner + " released seat: ID " + seat.getNetworkID());
 
 			seat.set_string("playerOwner", "");
-			seat.Sync("playerOwner", true); //2040865191
+			seat.Sync("playerOwner", true); //2040865191 HASH
 		}
 	}
 	else if (isServer() && this.getCommandID("giveBooty") == cmd)//transfer booty
