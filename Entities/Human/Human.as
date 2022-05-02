@@ -1164,7 +1164,7 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
-	if (this.getTickSinceCreated() < 60) //invincible for a few seconds after spawning
+	if (this.getTickSinceCreated() < 60 && customData != 44) //invincible for a few seconds after spawning
 		return 0.0f;
 		
 	Vec2f pos = this.getPosition();

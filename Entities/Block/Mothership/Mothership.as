@@ -474,7 +474,8 @@ void selfDestruct(CBlob@ this)
 	{
 		CBlob@ human = humans[i];
 		if (human.getTeamNum() == teamNum)
-			this.server_Hit(human, human.getPosition(), Vec2f_zero, human.getInitialHealth(), Hitters::bomb, true);
+			this.server_Hit(human, human.getPosition(), Vec2f_zero, human.getInitialHealth(), 44, true);
+			//hitter set to 44 so human dies no matter what
 	}
 	
 	//turrets go neutral
@@ -504,8 +505,7 @@ void selfDestruct(CBlob@ this)
 	}
 
 	//kill ship
-	const int color = this.getShape().getVars().customData;
-	Ship@ ship = getShip(color);
+	Ship@ ship = getShip(this.getShape().getVars().customData);
 	if (ship is null) return;
 	
 	const u16 blocksLength = ship.blocks.length;

@@ -100,7 +100,7 @@ void assignTeam(CRules@ this, CPlayer@ player)
 	//TODO: prioritize assignment to teams with less booty over rich teams when teams have equal playercount
 	
 	const u8 teamsNum = this.getTeamsNum();
-    int[] playersperteam(teamsNum);
+    u8[] playersperteam(teamsNum);
 
     //gather the per team player counts
 	const u8 plyCount = getPlayersCount();
@@ -113,18 +113,19 @@ void assignTeam(CRules@ this, CPlayer@ player)
     }
 	
 	 //calc the minimum player count, dequalify teams
-    int minplayers = 1000;
+    u8 minplayers = 255; //set as the max of u8
     for (u8 i = 0; i < teamsNum; i++)
     {
-        if (playersperteam[i] < -1 || getMothership(i) is null)
-            playersperteam[i] += 500;
-        minplayers = Maths::Min(playersperteam[i], minplayers);
+        if (getMothership(i) is null)
+            playersperteam[i] = 255; //disqualify since team is dead
+			
+        minplayers = Maths::Min(playersperteam[i], minplayers); //set minimum
     }
 	
     //choose a random team with minimum player count
     u8 team;
     do
-        team = XORRandom(teamsNum);
+		team = XORRandom(teamsNum); //this could technically go forever?
     while (playersperteam[team] > minplayers);
 
 	player.server_setTeamNum(team);
@@ -134,9 +135,10 @@ void onPlayerRequestSpawn(CRules@ this, CPlayer@ player)
 {
 	if (!isRespawnAdded(this, player.getUsername()) && player.getTeamNum() != this.getSpectatorTeamNum())
 	{
-    	Respawn r(player.getUsername(), standardRespawnTime + getGameTime());
+		const u32 gametime = getGameTime();
+    	Respawn r(player.getUsername(), standardRespawnTime + gametime);
     	this.push("respawns", r);
-    	syncRespawnTime(this, player, standardRespawnTime + getGameTime());
+    	syncRespawnTime(this, player, standardRespawnTime + gametime);
     }
 }
 
@@ -176,8 +178,7 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 	}
 	
 	//player mothership got destroyed or joining player
-	CBlob@ ship = getMothership(player.getTeamNum());
-	if (ship is null)
+	if (getMothership(player.getTeamNum()) is null)
 	{
 		//reassign to a team with alive core
 		assignTeam(this, player);
