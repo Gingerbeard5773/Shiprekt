@@ -42,10 +42,10 @@ shared class ShipBlock
 
 Ship@ getShip(const int colorIndex)
 {
-	Ship[]@ ships;
-	if (getRules().get("ships", @ships))
+	if (colorIndex > 0)
 	{
-		if (colorIndex > 0 && colorIndex <= ships.length)
+		Ship[]@ ships;
+		if (getRules().get("ships", @ships) && colorIndex <= ships.length)
 			return ships[colorIndex-1];
 	}
 	return null;
