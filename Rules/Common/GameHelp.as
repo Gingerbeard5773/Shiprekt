@@ -5,7 +5,7 @@
 bool showHelp = true;
 bool justJoined = true;
 bool page1 = true;
-f32 boxMargin = 50.0f;
+const f32 boxMargin = 50.0f;
 //key names
 const string party_key = getControls().getActionKeyKeyName(AK_PARTY);
 const string inv_key = getControls().getActionKeyKeyName(AK_INVENTORY);
@@ -99,9 +99,9 @@ void onRender(CRules@ this)
 		//draw box
 		GUI::DrawButtonPressed(tlBox, brBox);
 		
-		//welcome
 		if (justJoined)
 		{
+			//welcome text
 			string intro = Trans::Welcome+" Gingerbeard."; //last editor
 			
 			Vec2f introSize;
@@ -110,9 +110,9 @@ void onRender(CRules@ this)
 			GUI::DrawTextCentered(intro, Vec2f(sWidth/2, tlBox.y + 20), tipsColor);
 		} 
 		
-		//helptoggle, image && textInfo
 		if (!justJoined || gameTime % 90 > 30)
 		{
+			//helptoggle
 			string helpToggle = ">> "+Trans::ChangePage+" <<";
 			
 			Vec2f toggleSize;
@@ -127,7 +127,7 @@ void onRender(CRules@ this)
 		if (page1)
 		{
 			//PAGE 1
-			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51\n";
+			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51.1\n";
 			string lastChangesInfo = Trans::LastChanges+":\n"
 			+ "- 4-27-2022 - By Gingerbeard\n"
 			+ "  * Weapons only refill ammunition if they aren't being fired.\n"
@@ -136,7 +136,8 @@ void onRender(CRules@ this)
 			+ "  * Bombs' power stacks with nearby bombs! Boom!\n"
 			+ "  * Enemy miniships can dock on your mothership! Watch out.\n"
 			+ "  * Refill is faster for miniships, but slower for your mothership.\n"
-			+ "  * Fixed a problem where players couldn't direct where they were swimming.\n";
+			+ "  * Fixed a problem where players couldn't direct where they were swimming.\n"
+			+ "  * Docking won't push the other ship if your ship is smaller (easier miniship docking).\n";
 			
 			GUI::SetFont("menu");
 			Vec2f lastChangesSize;
@@ -150,6 +151,8 @@ void onRender(CRules@ this)
 			
 			GUI::SetFont("menu");
 			GUI::DrawText(lastChangesInfo, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
+			
+			//image
 			GUI::DrawIconByName("$HELP$", Vec2f(sWidth/2 - imageSize.x, tlBox.y + boxMargin + 10));
 			
 			//captions

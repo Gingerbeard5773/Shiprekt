@@ -83,6 +83,10 @@ void onInit(CRules@ this)
 void onRestart(CRules@ this)
 {
 	this.set_bool("whirlpool", false);
+	
+	CCamera@ camera = getCamera();
+    if (camera !is null)
+    	camera.setRotation(0.0f);
 }
 
 void ShowTeamMenu(CRules@ this)

@@ -40,6 +40,7 @@ shared class ShipBlock
 	f32 angle_offset;
 };
 
+// Grab a ship object from the index
 Ship@ getShip(const int colorIndex)
 {
 	if (colorIndex > 0)
@@ -51,7 +52,8 @@ Ship@ getShip(const int colorIndex)
 	return null;
 }
 
-Ship@ getShip(CBlob@ this) //reference a ship from a non-block (e.g human)
+// Reference a ship from a non-block (e.g human)
+Ship@ getShip(CBlob@ this)
 {
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(this.getPosition(), 1.0f, @blobsInRadius)) 
@@ -67,7 +69,8 @@ Ship@ getShip(CBlob@ this) //reference a ship from a non-block (e.g human)
     return null;
 }
 
-CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positioned
+// Gets the block blob wherever 'this' is positioned
+CBlob@ getShipBlob(CBlob@ this)
 {
 	CBlob@ b = null;
 	CBlob@[] blobsInRadius;
@@ -93,7 +96,8 @@ CBlob@ getShipBlob(CBlob@ this) //Gets the block blob wherever 'this' is positio
 	return b;
 }
 
-CBlob@ getMothership(const u8 team) //Gets the mothership core block on determined team 
+// Gets the mothership core block on determined team 
+CBlob@ getMothership(const u8 team)
 {
 	if (team < 8)
 	{
@@ -104,7 +108,8 @@ CBlob@ getMothership(const u8 team) //Gets the mothership core block on determin
 	return null;
 }
 
-string getCaptainName(u8 team) //Gets the name of the mothership's captain
+// Gets the name of the mothership's captain
+string getCaptainName(u8 team)
 {
 	CBlob@ core = getMothership(team);
 	if (core !is null)
@@ -116,8 +121,8 @@ string getCaptainName(u8 team) //Gets the name of the mothership's captain
 	return "";
 }
 
-//paths to specified block from start, returns true if it is connected
-//doesn't path through couplings and repulsors
+// Paths to specified block from start, returns true if it is connected
+// Doesn't path through couplings and repulsors
 bool coreLinkedPathed(CBlob@ this, CBlob@ core, u16[] checked, u16[] unchecked, bool colorCheck = true)
 {
 	u16 networkID = this.getNetworkID();

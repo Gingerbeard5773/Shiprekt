@@ -208,7 +208,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 							if (blob.getHealth() >= this.getHealth())
 							{
 								Die(this);
-								this.server_Hit(blob, point1, Vec2f_zero, this.hasTag("solid") ? this.getHealth() : this.getHealth()/2.0f, 0, true);
+								this.server_Hit(blob, point1, Vec2f_zero, this.getHealth(), 0, true);
 							}
 							else blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
 						}
@@ -329,10 +329,9 @@ void onDie(CBlob@ this)
 
 void Die(CBlob@ this)
 {
-	if (!isServer()) return;
-	
 	this.Tag("dead");
-	this.server_Die();
+	if (isServer())
+		this.server_Die();
 }
 
 //mothership damage alerts

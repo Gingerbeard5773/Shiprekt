@@ -93,7 +93,7 @@ void onTick(CRules@ this)
 		UpdateShips(this); //client-side integrate
 }
 
-// reference from nearby ship and add more blocks onto that ship
+// Reference from nearby ship and add more blocks onto that ship
 bool AddToShip(CBlob@[] blocks)
 {
 	Ship@[] touchingShips;
@@ -166,8 +166,8 @@ bool AddToShip(CBlob@[] blocks)
 	return true;
 }
 
-// re-calibrate all existing ships
-// can create a new ship, or combine existing ships
+// Re-calibrate all existing ships
+// Can create a new ship, or combine existing ships
 void GenerateShips(CRules@ this)
 {
 	Ship[]@ ships;
@@ -178,6 +178,7 @@ void GenerateShips(CRules@ this)
 	{
 		StoreVelocities(ships[i]);
 	}
+	SetUpdateArrays(0);
 	
 	CBlob@[] blocks;
 	this.clear("ships");
@@ -205,7 +206,7 @@ void GenerateShips(CRules@ this)
 				this.getLast("ships", @p_ship);
 				
 				ColorBlocks(b, p_ship, color);
-				SetUpdateArrays(color);
+				//SetUpdateArrays(color);
 			}
 		}	
 		for (u16 i = 0; i < blocksLength; ++i)
@@ -218,7 +219,7 @@ void GenerateShips(CRules@ this)
 	//print("Generated " + color + " ships");
 }
 
-// seperate one ship into two or more ships
+// Seperate one ship into two or more ships
 void SeperateShip(CRules@ this, Ship@ ship)
 {
 	StoreVelocities(ship);
@@ -278,9 +279,12 @@ void SeperateShip(CRules@ this, Ship@ ship)
 	}
 }
 
+// Goes through the entirety of connected blobs to determine ship blocks
 void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 {
-	this.getShape().getVars().customData = newcolor;
+	this.getShape().getVars().customData = newcolor; //set color as ship's index
+	
+	//add to ship blocks
 	ShipBlock ship_block;
 	ship_block.blobID = this.getNetworkID();
 	ship.blocks.push_back(ship_block);
@@ -288,7 +292,7 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	const u16 lastCol = this.get_u16("last color");
 	if (lastCol != newcolor)
 	{
-		//Activate hook onColored for all blobs that have it (server)
+		//activate hook onColored for all blobs that have it (server)
 		BlockHooks@ blockHooks;
 		this.get("BlockHooks", @blockHooks);
 		if (blockHooks !is null)
@@ -317,6 +321,7 @@ void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
 	}
 }
 
+// Sets information that doesn't need to be set every tick (centerblock, mass etc)
 void InitShip(Ship @ship)
 {
 	Vec2f center, vel;
@@ -363,8 +368,7 @@ void InitShip(Ship @ship)
 		{
 			for (u16 i = 0; i < blocksLength; ++i)
 			{
-				CBlob@ b = null;
-				//CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
+				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 				if (b is null || !b.hasTag("engine")) continue;
 				
 				//use an engine as centerblock for 2 block ships (this is used for torpedo border bounce)
@@ -426,6 +430,7 @@ void InitShip(Ship @ship)
 	}
 }
 
+// Called every tick, this is what makes the ships move and function
 void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwnerSearch = false)
 {
 	CMap@ map = getMap();
@@ -622,6 +627,7 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 	}
 }
 
+// Relay the ship's information to the block so all blobs move in unison
 void UpdateShipBlob(CBlob@ blob, Ship@ ship, ShipBlock@ ship_block)
 {
 	Vec2f offset = ship_block.offset;
@@ -634,6 +640,7 @@ void UpdateShipBlob(CBlob@ blob, Ship@ ship, ShipBlock@ ship_block)
 	blob.setAngularVelocity(0.0f);
 }
 
+// For collision with tiles (rock)
 void TileCollision(Ship@ ship, Vec2f tilePos)
 {
 	Vec2f velnorm = ship.vel; 
@@ -653,12 +660,7 @@ void TileCollision(Ship@ ship, Vec2f tilePos)
 	}
 }
 
-void SetNextId(CRules@ this, Ship@ ship)
-{
-	this.add_u32("ships id", 1);
-	ship.id = this.get_u32("ships id");
-}
-
+// Sets the team num of the whole ship
 void SetShipTeam(Ship@ ship, u8 teamNum)
 {
 	//print ("setting team for " + ship.owner + "'s " + ship.id + " to " + teamNum);
@@ -671,47 +673,50 @@ void SetShipTeam(Ship@ ship, u8 teamNum)
 	}
 }
 
+// Used to make sure blocks keep the same velocity through dirty ships
 void StoreVelocities(Ship@ ship)
 {	
-	if (!ship.isStation)
+	if (ship.isStation) return;
+	
+	const u16 blocksLength = ship.blocks.length;
+	for (u16 i = 0; i < blocksLength; ++i)
 	{
-		const u16 blocksLength = ship.blocks.length;
-		for (u16 i = 0; i < blocksLength; ++i)
-		{
-			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-			if (b is null) continue;
-			
-			b.set_u16("blockCount", blocksLength);
-			b.setVelocity(ship.vel);
-			b.setAngularVelocity(ship.angle_vel);	
-		}
+		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
+		if (b is null) continue;
+		
+		b.set_u16("blockCount", blocksLength);
+		b.setVelocity(ship.vel);
+		b.setAngularVelocity(ship.angle_vel);	
 	}
 }
 
+// Update certain blocks
 void SetUpdateArrays(int shipColor)
 {
 	CBlob@[] blocks;
-	getBlobsByTag("weapon", @blocks);
-	getBlobsByTag("seat", @blocks);
+	getBlobsByTag("weapon", @blocks); //updates docking info
+	getBlobsByTag("seat", @blocks);   //updates controls
 	
 	const u16 blocksLength = blocks.length;
 	for (u16 i = 0; i < blocksLength; i++)
 	{
 		CBlob@ b = blocks[i];
-		if (b.getShape().getVars().customData == shipColor)
+		if (b.getShape().getVars().customData == shipColor || shipColor == 0)
 			b.set_bool("updateArrays", true);
 	}
 }
 
-void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)//awkward fix for blob team changes wiping up the frame state (rest on Block.as)
+// Awkward fix for blob team changes wiping up the frame state (rest on Block.as)
+void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)
 {
 	if (!isServer() && blob.hasTag("block") && blob.getSprite().getFrame() > 0)
 		blob.set_u8("frame", blob.getSprite().getFrame());
 }
 
+// Remove blocks from ships when they die
 void onBlobDie(CRules@ this, CBlob@ blob)
 {
-	// this will leave holes until next full sync
+	//this can leave empty ships until next full sync
 	int blobColor = blob.getShape().getVars().customData;
 	if (blobColor > 0)
 	{
@@ -757,9 +762,38 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 	}
 }
 
-// network
+// Sets the ships ID
+void SetNextId(CRules@ this, Ship@ ship)
+{
+	this.add_u32("ships id", 1);
+	ship.id = this.get_u32("ships id");
+}
 
-void Synchronize(CRules@ this, bool full_sync, CPlayer@ player = null)
+// Keeps an angle within the engine's boundaries (-740 to 740)
+f32 loopAngle(f32 angle)
+{
+	while (angle < 0.0f)	angle += 360.0f;
+	while (angle > 360.0f)	angle -= 360.0f;
+	return angle;
+}
+
+// Checks if the ship has moved from its previous position/angle
+bool isShipChanged(Ship@ ship)
+{
+	const f32 thresh = 0.01f;
+	return ((ship.pos - ship.old_pos).LengthSquared() > thresh || Maths::Abs(ship.angle - ship.old_angle) > thresh);
+}
+
+/// Networking
+
+void onNewPlayerJoin(CRules@ this, CPlayer@ player)
+{
+	if (!player.isMyPlayer())
+		Synchronize(this, true, player); // will set old values
+}
+
+// Sends a command to synchronize clients to the server
+void Synchronize(CRules@ this, const bool full_sync, CPlayer@ player = null)
 {
     CBitStream bs;
     if (Serialize(this, bs, full_sync))
@@ -775,6 +809,7 @@ void Synchronize(CRules@ this, bool full_sync, CPlayer@ player = null)
     }
 }
 
+// Writes ship information into bitstream for client cmd
 bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 {	
 	Ship[]@ ships;
@@ -790,6 +825,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 			Ship@ ship = ships[i];
 			if (full_sync)
 			{
+				//send all of a ship's info- ships sync
 				u16 blocksLength = ship.blocks.length;
 				CPlayer@ owner = getPlayerByUsername(ship.owner);
 				
@@ -830,15 +866,16 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 			}
 			else
 			{
+				//send ship's movement info only- ships update
 				const u32 FORCE_UPDATE_TIME = getGameTime()+i;
-				if (FORCE_UPDATE_TIME % FORCE_UPDATE_TICKS == 0 || isShipChanged(ship))				
+				if (FORCE_UPDATE_TIME % FORCE_UPDATE_TICKS == 0 || isShipChanged(ship))	
 				{
 					const f32 thresh = 0.005f;
 					
 					stream.write_bool(true);
 					CPlayer@ owner = getPlayerByUsername(ship.owner);
 					stream.write_netid(owner !is null ? owner.getNetworkID() : 0);			
-					if ((ship.net_pos - ship.pos).LengthSquared() > thresh)
+					if ((ship.net_pos - ship.pos).LengthSquared() > thresh) //position
 					{
 						stream.write_bool(true);
 						stream.write_Vec2f(ship.pos);
@@ -846,7 +883,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 					}
 					else stream.write_bool(false);
 
-					if ((ship.net_vel - ship.vel).LengthSquared() > thresh)
+					if ((ship.net_vel - ship.vel).LengthSquared() > thresh) //velocity
 					{
 						stream.write_bool(true);
 						stream.write_Vec2f(ship.vel);
@@ -854,7 +891,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 					}
 					else stream.write_bool(false);
 					
-					if (Maths::Abs(ship.net_angle - ship.angle) > thresh)
+					if (Maths::Abs(ship.net_angle - ship.angle) > thresh) //angle
 					{
 						stream.write_bool(true);
 						stream.write_f32(ship.angle);
@@ -862,7 +899,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 					}
 					else stream.write_bool(false);
 
-					if (Maths::Abs(ship.net_angle_vel - ship.angle_vel) > thresh)
+					if (Maths::Abs(ship.net_angle_vel - ship.angle_vel) > thresh) //angular velocity
 					{
 						stream.write_bool(true);
 						stream.write_f32(ship.angle_vel);
@@ -885,7 +922,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-	if (isServer()) return;
+	if (isServer()) return; //ONLY CLIENT
 
 	if (cmd == this.getCommandID("ships sync"))
 	{
@@ -917,7 +954,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 				if (ship.centerBlock !is null)
 				{
 					ship.initialized = true;
-					if (ship.vel.LengthSquared() > 0.01f)//try to use local values to smoother sync
+					if (ship.vel.LengthSquared() > 0.01f) //try to use local values to smoother sync
 					{
 						ship.pos = ship.centerBlock.getPosition();
 						ship.angle = ship.centerBlock.getAngleDegrees();
@@ -949,18 +986,18 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 					ship_block.offset = pos;
 					ship_block.angle_offset = angle;
 					ship.blocks.push_back(ship_block);	
-					b.getShape().getVars().customData = i+1; // color
+					b.getShape().getVars().customData = i+1; //color
 					
 					if (b.get_u16("last color") != b.getShape().getVars().customData)
 					{
-						//Activate hook onColored for all blobs that have it (client)
+						//activate hook onColored for all blobs that have it (client)
 						BlockHooks@ blockHooks;
 						b.get("BlockHooks", @blockHooks);
 						if (blockHooks !is null)
 							blockHooks.update("onColored", @b);
 					}
 
-					// safety on desync
+					//safety on desync
 					b.SetVisible(true);
 					CSprite@ sprite = b.getSprite();
 					sprite.asLayer().SetColor(color_white);
@@ -1006,7 +1043,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 					if (params.read_bool()) //passed position thresh
 					{
 						Vec2f dDelta = params.read_Vec2f() - ship.pos;
-						if (dDelta.LengthSquared() < 512)//8 blocks threshold
+						if (dDelta.LengthSquared() < 512) //8 blocks threshold
 							ship.pos = ship.pos + dDelta/UPDATE_DELTA_SMOOTHNESS;
 						else
 							ship.pos += dDelta; 
@@ -1038,24 +1075,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	}
 }
 
-f32 loopAngle(f32 angle)
-{
-	while (angle < 0.0f)	angle += 360.0f;
-	while (angle > 360.0f)	angle -= 360.0f;
-	return angle;
-}
-
-void onNewPlayerJoin(CRules@ this, CPlayer@ player)
-{
-	if (!player.isMyPlayer())
-		Synchronize(this, true, player); // will set old values
-}
-
-bool isShipChanged(Ship@ ship)
-{
-	const f32 thresh = 0.01f;
-	return ((ship.pos - ship.old_pos).LengthSquared() > thresh || Maths::Abs(ship.angle - ship.old_angle) > thresh);
-}
+/// Debug Rendering
 
 bool candy = false;
 bool onClientProcessChat(CRules@ this, const string &in textIn, string &out textOut, CPlayer@ player)
@@ -1063,7 +1083,7 @@ bool onClientProcessChat(CRules@ this, const string &in textIn, string &out text
 	if (player !is null)
 	{
 		bool myPlayer = player.isMyPlayer();
-		if (myPlayer && textIn == "!candy")
+		if (myPlayer && textIn == "!candy") //switch on ship debug mode
 		{
 			candy = !candy;
 			return false;

@@ -22,10 +22,6 @@ void Reset(CRules@ this)
 	setStartingBooty(this);
 	server_resetTotalBooty(this);
 	
-	CCamera@ camera = getCamera();
-    if (camera !is null)
-    	camera.setRotation(0.0f);
-	
 	this.SetGlobalMessage("");
 	this.SetCurrentState(WARMUP);
 }
@@ -80,14 +76,14 @@ void onTick(CRules@ this)
 			}
 		}
 		
+		//give booty to teams with captured stations
 		const u8 plyCount = getPlayersCount();
 		for (u8 i = 0; i < plyCount; ++i)
 		{
 			CPlayer@ player = getPlayer(i);
-			u8 pteam = player.getTeamNum();
-			if (player is null)	
-				continue;
+			if (player is null)	continue;
 			
+			const u8 pteam = player.getTeamNum();
 			u8 pStationCount = 0;
 			CBlob@[] stations;
 			getBlobsByTag("station", @stations);
@@ -256,15 +252,8 @@ void onPlayerLeave(CRules@ this, CPlayer@ player)
 bool isDev(CPlayer@ player)
 {
 	//case sensitive
-	const string[] devNames = 
-	{
-		"Mr" + "Ho" + "bo"
-	};
-	
-	if (devNames.find(player.getUsername()) >= 0)
-		return true;
-	
-	return false;
+	const string[] devNames = {"Mr"+"Ho"+"bo"};
+	return devNames.find(player.getUsername()) >= 0;
 }
 
 bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
@@ -306,7 +295,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					return true;
 				}
-				else if (tokens[0] == "!team")
+				else if (tokens[0] == "!team") //change your team or another player's team
 				{
 					if (tokensLength > 2)
 					{
@@ -374,6 +363,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					}
 					return false;
 				}
+				else if (tokens[0] == "!booty") //give or take defined amount of booty
+				{
+					error(player.getUsername()+" cheating for "+parseInt(tokens[1])+" booty, bad!");
+					server_addPlayerBooty(player.getUsername(), parseInt(tokens[1]));
+					return false;
+				}
 				else if (tokens[0] == "!teamchange") //change your player blobs team without dying
 				{
 					player.server_setTeamNum(parseInt(tokens[1]));
@@ -394,7 +389,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					Sound::Play(tokens[1]);
 					return false;
 				}
-				else if (tokens[0] == "!g_debug")
+				else if (tokens[0] == "!g_debug") //change the debug settings
 				{
 					g_debug = parseInt(tokens[1]);
 					print("Setting g_debug to "+tokens[1], color_white);
@@ -429,7 +424,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					cfg.saveFile("Shiprekt/SHIP_" + tokens[1] + ".cfg");
 					print("Saved ship as: "+tokens[1], color_white);
 				}
-				else if (tokens[0] == "!loadship")
+				else if (tokens[0] == "!loadship") //load in a ship from a cfg name
 				{
 					ConfigFile cfg;
 					
@@ -456,7 +451,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 			}
 			else
 			{
-				if (tokens[0] == "!deleteship")
+				if (tokens[0] == "!deleteship") //kill a ship
 				{
 					CBlob@ pBlob = player.getBlob();
 					if (pBlob is null)
@@ -481,7 +476,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						print(player.getUsername()+" destroyed "+numBlocks+" blocks", color_white);
 					}
 				}
-				else if (tokens[0] == "!clearmap")
+				else if (tokens[0] == "!clearmap") //destroys all the blocks on the server except cores
 				{
 					CBlob@[] blocks;
 					if (getBlobsByTag("block", @blocks))
@@ -539,13 +534,13 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					this.set_bool("dirty ships", true);
 					return false;
 				}
-				else if (tokens[0] == "!sv_test")
+				else if (tokens[0] == "!sv_test") //sets the test mode on or off
 				{
 					sv_test = !sv_test;
 					print("Setting sv_test "+ (sv_test ? "on" : "off"), color_white);
 					return false;
 				}
-				else if (tokens[0] == "!performance")
+				else if (tokens[0] == "!performance") //toggles performance testing with '/rcon /performance'
 				{
 					g_measureperformance = !g_measureperformance;
 					print("Setting g_measureperformance to "+g_measureperformance, color_white);
@@ -555,12 +550,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					getNet().server_SendMsg("*** Setting freebuild mode "+ (this.get_bool("freebuild") ? "off" : "on") +" ***");
 					this.set_bool("freebuild", !this.get_bool("freebuild"));
 					this.Sync("freebuild", true);
-				}
-				else if (tokens[0] == "!booty")
-				{
-					error(player.getUsername()+" cheating for 800 booty, bad!");
-					server_addPlayerBooty(player.getUsername(), 800);
-					return false;
 				}
 				else if (tokens[0] == "!sd") //spawn a whirlpool
 				{
