@@ -19,18 +19,15 @@ shared class WalkInfo
 void onInit(CBlob@ this)
 {
 	//this.getCurrentScript().runFlags |= Script::tick_myplayer;
-	if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
-	{
-		WalkInfo walk;
-		this.set("WalkInfo", @walk);
-	}
+	WalkInfo walk;
+	this.set("WalkInfo", @walk);
 }
 
 void onTick(CBlob@ this)
 {
 	if (!this.get_bool("onGround")) return;
 	
-	if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
+	//if (isClient() || (this.getPlayer() !is null && this.getPlayer().isBot()))
 	{
 		WalkInfo@ walk;
 		if (!this.get("WalkInfo", @walk)) return;
