@@ -31,8 +31,8 @@ void onInit(CBlob@ this)
     	ramEngine.SetRelativeZ(2);
     	ramEngine.SetLighting(false);
         Animation@ animcharge = ramEngine.addAnimation("go", 1, true);
-        animcharge.AddFrame(1);
-        animcharge.AddFrame(2);
+        animcharge.AddFrame(3);
+        animcharge.AddFrame(4);
         ramEngine.SetAnimation("go");
     }
 

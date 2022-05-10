@@ -60,25 +60,39 @@ void SpawnMothership(Vec2f pos, const u8 team)
 	makeBlock(pos + Vec2f(-8*2, -8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(-8*1, -8*2), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(0, -8*2), 0.0f, "platform", team).getSprite().SetFrame(1);
+	makeOuterPlatform(pos + Vec2f(0, -8*2), team);
 
 	makeBlock(pos + Vec2f(8*1, -8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*2, -8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*2, -8*1), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(8*2, 0), 0.0f, "platform", team).getSprite().SetFrame(1);
+	makeOuterPlatform(pos + Vec2f(8*2, 0), team);
 
 	makeBlock(pos + Vec2f(8*2, 8*1), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*2, 8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(8*1, 8*2), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(0, 8*2), 0.0f, "platform", team).getSprite().SetFrame(1);
+	makeOuterPlatform(pos + Vec2f(0, 8*2), team);
 
 	makeBlock(pos + Vec2f(-8*1, 8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(-8*2, 8*2), 0.0f, "solid", team);
 	makeBlock(pos + Vec2f(-8*2, 8*1), 0.0f, "solid", team);
 
-	makeBlock(pos + Vec2f(-8*2, 0), 0.0f, "platform", team).getSprite().SetFrame(1);
+	makeOuterPlatform(pos + Vec2f(-8*2, 0), team);
+}
+
+void makeOuterPlatform(Vec2f pos, const u8 team)
+{
+	CBlob@ platform = makeBlock(pos, 0.0f, "platform", team);
+	CSprite@ sprite = platform.getSprite();
+	sprite.SetFrame(3);
+	platform.Tag("noDamageAnim");
+	if (isClient())
+	{
+		Animation@ anim = sprite.getAnimation("default");
+		anim.AddFrame(3);
+		anim.SetFrameIndex(3);
+	}
 }
 
 bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
