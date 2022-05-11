@@ -46,10 +46,10 @@ string Translate(string words)
 		return tokens[1];
 	if (g_locale == "br") //porteguese
 		return tokens[2];
-	if (g_locale == "fr") //french
-		return tokens[4];
 	if (g_locale == "pl") //polish
 		return tokens[3];
+	if (g_locale == "fr") //french
+		return tokens[4];
 	
 	return tokens[0];
 }
@@ -112,6 +112,12 @@ namespace Trans
 	Enable        = Translate("Enable\\Включить\\Habilitar\\Włączać\\Activer"),
 	Disable       = Translate("Disable\\Выключить\\Desabilitar\\Wyłączyć\\Désactiver"),
 	Failed        = Translate("Failed\\Неудача\\Falhou\\Przegrany\\Échoué"),
+	MothershipDie = "Your mothership is blowing up!", ///needs translation
+	DestructFail  = "Mothership self-destruction vote failed!", ///needs translation
+	EnableBoom    = "Enable self-destruction", ///needs translation
+	SelfDestruct  = "Self-Destruct Mothership", ///needs translation
+	VoteDestruct  = "Vote to blow up your mothership", ///needs translation
+	BlowUp        = "Blow up!", ///needs translation
 	
 	//Help menu
 	Welcome       = Translate("Welcome to Shiprekt! Made by Strathos, Chrispin, and various other community members.\nLast changes and fixes by\\Добро пожаловать в Shiprekt! Мод создан Strathos, Chrispin и другими членами сообщества.\n Последние изменения и исправления:\\Bem-vindo ao Shiprekt! Feito por Strathos, Chrispin e diversos membros da comunidade.\nÚltimas mudanças e correções por\\Witamy w Shiprekt! Wykonane przez Strathosa, Chrispina i różnych innych członków społeczności.\nOstatnie zmiany i poprawki autorstwa\\Bienvenue dans Shiprekt! Créé pas Strathos, Chrispin et divers autres membres de la communauté.\nDernièrs changements et corrections par"),
@@ -130,8 +136,10 @@ namespace Trans
 	HowToPlay     = Translate("How to Play\\Как играть\\Como Jogar\\Jak grać\\Comment jouer"),
 	GatherX       = Translate("Gather Xs for Booty. Xs have more Booty the closer they spawn to the map center.\\Стойте на Х-ах для Добычи. Х-ы ближе к центру карты дают больше Добычи.\\Colha Xs por Saque. Quanto mais perto do centro do mapa os Xs nascem, mais Saque eles têm.\\Zbierz Xs dla Booty. Xs mają więcej Łupów, im bliżej odradzają się do centrum mapy.\\Aller aux Xs pour gagner du Trésor. Plus les Xs sont proches du centre de la carte, plus ils auront de Trésor."),
 	EngineWeak    = Translate("Engines are very weak! Use wood hull blocks as armor or Miniships will eat through them!\\Двигатели очень слабые! Используй деревянные каркасные блоки для защиты корабля!\\Motores estão muito fracos! Use blocos de casco de madeira como armadura ou Mini-navios irão devorar tudo!\\Silniki są bardzo słabe! Użyj drewnianych bloków kadłuba jako zbroi lub ministatki zjedzą przez nie!\\Les moteurs sont très faibles! Placer des blocs de bois pour les protéger ou les bateaux ennemis les détruiront facilement."),
+	MotherRefill  = "Weapons refill very slowly.", ///needs translation
 	YieldX        = Translate("Xs yield little Booty, but weapons reward a lot per hit to enemy ships!\\Х-ы дают мало Добычи, но стрельба по вражеским кораблям гораздо больше!\\Xs rendem pouco Saque, mas as armas recompensam muito por acerto aos navios inimigos!\\Xs dają mały łup, ale broń nagradza dużo za trafienie wrogich statków!\\Les Xs donnent peu de Trésor, mais tirer sur les bateaux ennemis donne plus de Trésor!"),
 	Docking       = Translate("Couplings stick to your Mothership on collision. Use them to dock with it.\\Соединения прилипают к Главному кораблю при соприкосновении с ним. Используй их для стыковки.\\Os acoplamentos aderem ao seu Navio-mãe em caso de colisão. Use-os para atracar.\\Sprzęgła przyklejają się do twojego statku-matki podczas kolizji. Użyj ich, aby zadokować z nim.\\Les Raccords s'attachent à votre Navire-mère en cas de collision. Utilisez-les pour vous y ancrer."),
+	RefillDock    = "Dock on a mothership to refill spent ammunition.", ///needs translation
 	OtherTips     = Translate("Other Tips\\Прочие подсказки\\Outras Dicas\\Inne wskazówki\\Autres conseils"),
 	Leaderboard   = Translate("The higher a team is on the leaderboard, the more Booty you get for attacking them.\\Чем выше комманда в таблице, тем больше Добычи получишь за атаку на них.\\Quanto mais alto um time está na tabela de classificação, mais Saque você ganhará ao atacá-los.\\Im wyżej drużyna znajduje się w tabeli liderów, tym więcej łupów dostajesz za atakowanie jej.\\Plus une équipe est élevée dans le classement, plus vous obtiendrez de Trésor en les attaquant."),
 	BlockWeight   = Translate("Each block has a different weight. The heavier, the more they slow your ship down.\\Каждый блок имеет разный вес. Чем тяжелее твой корабль, тем медленнее он будет.\\Cada bloco tem um peso diferente. Quanto mais pesado for, mais devagar seu navio ficará.\\Każdy blok ma inną wagę. Im cięższy,  tym bardziej spowalniają twój statek.\\Chaque bloc a un poids différent. Plus ils sont lourds, plus ils ralentissent votre navire."),
@@ -161,6 +169,8 @@ namespace Trans
 	Hull          = Translate("Wooden Hull\\Каркас\\Casco de madeira\\Kadłub\\Coque"),
 	Platform      = Translate("Wooden Platform\\Платформа\\Plataforma de madeira\\Podest\\Plate-forme"),
 	Door          = Translate("Wooden Door\\Дверь\\Porta de madeira\\Drzwi\\Porte"),
+	Plank         = "Wooden Plank", ///needs translation
+	WheelJoint    = "Wheel Joint", ///needs translation
 	//Piston        = Translate("Wooden Piston\\Поршень\\Pistão de madeira\\Tłok\\Piston"),
 	Harpoon       = Translate("Harpoon\\Гарпун\\Harpão\\Harpun\\Harpon"),
 	Harvester     = Translate("Harvester\\Ломатель\\Colheitadeira\\Żniwiarka\\Recycleur"),
@@ -184,6 +194,8 @@ namespace Trans
 	WoodHullDesc  = Translate("A very tough block for protecting delicate components.\\Очень прочный блок для защиты хрупких блоков.\\Um bloco bem duro para proteger componentes delicados.\\Bardzo wytrzymały blok do ochrony delikatnych elementów.\\Un bloc très résistant pour protéger les composants plus délicats."),
 	PlatformDesc  = Translate("A good quality wooden floor panel. Get that deck shining.\\Качественная деревянная панель для пола.\\Um painel de piso de madeira de boa qualidade. Deixe o convés brilhando.\\Dobrej jakości drewniany panel podłogowy. Spraw, aby ta talia lśniła.\\Un plancher en bois de bonne qualité. Décaliss moi la marde qu'ya sur ce criss de pont là!"),
 	DoorDesc      = Translate("A wooden door. Useful for ship security.\\Деревянная дверь. Полезно для охраны корабля.\\Útil para a segurança do navio.\\Drewniane drzwi. Przydatny do ochrony statku.\\Une porte en bois. Utile pour la sécurité du navire."),
+	PlankDesc     = "Acts as a one way exit. Collides with projectiles and blocks only on the front side.", ///needs translation
+	WheelDesc     = "A wheel joint, it can rotate connected parts of a ship to face different directions", ///needs translation
 	//PistonDesc    = Translate("A piston. Can be used to push and pull segments of a ship.\\Поршень. Используется, чтобы толкать и тянуть сегменты корабля.\\Um pistão. Pode ser utilizado para empurrar e puxar segmentos de um navio.\\Tłok. Może być używany do pchania i ciągnięcia segmentów statku.\\Un piston. Peut être utilisé pour pousser et tirer des segments d'un navire."),
 	HarpoonDesc   = Translate("A manual-fire harpoon launcher. Can be used for grabbing, towing, or water skiing!\\Гарпунная пусковая установка с ручным огнем. Может использоваться для захвата, буксировки или катания на водных лыжах!\\Um lançador de harpão de fogo manual. Pode ser utilizado para agarrar, rebocar ou esqui-aquático!\\Wyrzutnia harpunów ręcznego ognia. Może być używany do chwytania, holowania lub jazdy na nartach wodnych!\\Un tireur de harpon manuel. Peut être utilisé pour saisir, tracter ou faire du ski nautique!"),
 	HarvesterDesc = Translate("An industrial-sized deconstructor that allows you to quickly mine resources from ship debris.\\Деконструктор промышленных размеров, позволяющий быстро добывать ресурсы из корабельных обломков.\\Um desconstrutor de tamanho industrial que permite extrair rapidamente recursos de detritos de navios.\\Dekonstruktor wielkości przemysłowej, który pozwala szybko wydobywać zasoby z gruzu statku.\\Un déconstructeur industriel qui vous permet d'extraire rapidement des ressources à partir de débris."),
@@ -212,7 +224,8 @@ namespace Trans
 	//Events
 	SettingFree   = Translate("{playercount} player(s) in map. Setting freebuild mode until more players join.\\игроков на карте. Включён режим свободного строительства, пока не присоединятся другие игроки.\\{playercount} jogadores no mapa. Configurando o modo freebuild até que mais jogadores se juntem.\\{playercount} graczy na mapie. Ustawiam tryb swobodnej budowy, dopóki nie dołączy więcej graczy.\\{playercount} joueurs sur la carte. Mode de Construction-Libre jusqu'à ce que plus de joueurs rejoignent."),
 	CoreKill      = Translate("Congratulations! A Core Kill was added to your Scoreboard.\\Поздравляем! Убийство Сердца было добавлено в вашу таблицу результатов.\\Parabéns! Um Núcleo Kill foi adicionado ao seu placar.\\Gratulacje! Do tablicy wyników dodano główne zabójstwo.\\Bien joué! Un point de Kill de Noyau a été ajouté a votre Score!"),
-	TeamBounty    = Translate("{winnerteam} gets {reward} Booty for destroying {killedteam}\\{winnerteam} получает {reward} Добычи за уничтожение {killedteam}\\{winnerteam} recebe {reward} saques por destruir {killedteam}\\{winnerteam} dostaje {reward} łup za zniszczenie {killedteam}\\{winnerteam} obtient {reward} de Trésor pour le meurtre sanglant de {killedteam}");
+	TeamBounty    = Translate("{winnerteam} gets {reward} Booty for destroying {killedteam}\\{winnerteam} получает {reward} Добычи за уничтожение {killedteam}\\{winnerteam} recebe {reward} saques por destruir {killedteam}\\{winnerteam} dostaje {reward} łup za zniszczenie {killedteam}\\{winnerteam} obtient {reward} de Trésor pour le meurtre sanglant de {killedteam}"),
+	Winner        = "Wins!"; ///needs translation
 }
 
 //arrays for indexing purposes
@@ -262,10 +275,10 @@ const string[] shiprektTips =
 	Translate("Keep an eye on your torpedoes, they can change direction if they bounce off the border!\\следите за своими торпедами, они могут изменить направление, если отскочат от границы карты!\\fique de olho em seus torpedos, eles podem mudar de direção se baterem no limite do mapa!\\miej oko na swoje torpedy, mogą zmienić kierunek, jeśli odbiją się od granicy!\\gardez un œil sur vos torpilles, elles peuvent changer de direction si elles rebondissent sur la bordure!"),
 	Translate("Killing players while you're onboard their mothership gives you 3x the Booty reward!\\убивая игроков, пока вы находитесь на борту их материнского корабля, вы получаете в 3 раза больше добычи!\\matar jogadores enquanto você estiver no Navio-mãe deles fornecerá 3x a recompensa de Saque!\\Zabijanie graczy, gdy jesteś na pokładzie ich statku-matki, daje ci 3x nagrodę Booty!\\tuer des joueurs alors que vous êtes à bord de leur navire-mère vous donne 3x la récompense de Trésor!"),
 	Translate("Auxilliary cores can be improvised into high-end explosives.\\вспомогательные сердца могут быть импровизированы в высококлассные взрывчатые вещества.\\núcleos auxiliares podem ser improvisados em explosivos de alta qualidade.\\rdzenie pomocnicze można improwizować w wysokiej klasy materiały wybuchowe.\\les noyaux auxiliaires peuvent être des explosifs improvisés haut de gamme."),
-	"Weapons on a miniship refill faster than weapons on a mothership.",
-	"Watch your shooting! Weapons can only refill if they aren't being fired!",
-	"A direct bomb hit to a Core can deal significant damage!",
-	"Refill a weapon's ammunition by docking with your mothership or station.",
-	"Miniships can dock not just with their own mothership, but enemy motherships as well!",
-	"Bombs stack with power when placed together."
+	"Weapons on a miniship refill faster than weapons on a mothership.", ///needs translation
+	"Watch your shooting! Weapons can only refill if they aren't being fired!", ///needs translation
+	"A direct bomb hit to a Core can deal significant damage!", ///needs translation
+	"Refill a weapon's ammunition by docking with your mothership or station.", ///needs translation
+	"Miniships can dock not just with their own mothership, but enemy motherships as well!", ///needs translation
+	"Bombs stack with power when placed together." ///needs translation
 };

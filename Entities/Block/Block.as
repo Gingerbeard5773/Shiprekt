@@ -101,7 +101,7 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 	return (this.getShape().getVars().customData > 0 && this.getTickSinceCreated() > 0);
 }
 
-bool doesCollideWithPlank(CBlob@ plank, Vec2f blobPos)
+bool doesCollideWithPlank(CBlob@ plank, const Vec2f blobPos)
 {
 	//done by position rather than velocity since blocks are never actually given a velocity (ship.as)
 	Vec2f direction = Vec2f(0.0f, -1.0f).RotateBy(plank.getAngleDegrees());
@@ -291,13 +291,13 @@ void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking
 	if (isClient())
 	{
 		//effects
-		u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
+		const u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
 		ShakeScreen(Maths::Min(shake, 100), 12, point1);
 		directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 	}
 }
 
-Vec2f ClampSpeed(Vec2f vel, f32 cap)
+Vec2f ClampSpeed(const Vec2f vel, const f32 cap)
 {
 	return Vec2f(Maths::Clamp(vel.x, -cap, cap), Maths::Clamp(vel.y, -cap, cap));
 }
@@ -340,7 +340,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	const int color = this.getShape().getVars().customData;
 	if (color < 0) return 0.0f; // unplaced blocks are invincible
 	
-	u8 teamNum = this.getTeamNum();
+	const u8 teamNum = this.getTeamNum();
 	
 	Ship@ ship = getShip(color);
 	if (ship is null) return damage;
@@ -349,7 +349,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	{
 		CRules@ rules = getRules();
 		
-		f32 msDMG = rules.get_f32("msDMG" + teamNum);
+		const f32 msDMG = rules.get_f32("msDMG" + teamNum);
 		if (msDMG < 8.0f)
 			getRules().set_f32("msDMG" + teamNum, msDMG + (this.hasTag("mothership") ? 5.0f : 1.0f) * damage);
 	}
@@ -394,7 +394,7 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 	if (!isServer()) //awkward fix for blob team changes wiping up the frame state (rest on ships.as)
 	{
 		CSprite@ sprite = this.getSprite();
-		u8 frame = this.get_u8("frame");
+		const u8 frame = this.get_u8("frame");
 		if (sprite.getFrame() == 0 && frame != 0)
 			sprite.SetFrame(frame);
 	}

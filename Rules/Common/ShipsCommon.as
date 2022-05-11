@@ -109,7 +109,7 @@ CBlob@ getMothership(const u8 team)
 }
 
 // Gets the name of the mothership's captain
-string getCaptainName(u8 team)
+string getCaptainName(const u8 team)
 {
 	CBlob@ core = getMothership(team);
 	if (core !is null)
@@ -123,7 +123,7 @@ string getCaptainName(u8 team)
 
 // Paths to specified block from start, returns true if it is connected
 // Doesn't path through couplings and repulsors
-bool coreLinkedPathed(CBlob@ this, CBlob@ core, u16[] checked, u16[] unchecked, bool colorCheck = true)
+bool coreLinkedPathed(CBlob@ this, CBlob@ core, u16[] checked, u16[] unchecked, const bool colorCheck = true)
 {
 	u16 networkID = this.getNetworkID();
 	checked.push_back(networkID);

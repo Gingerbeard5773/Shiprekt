@@ -138,7 +138,7 @@ bool AddToShip(CBlob@[] blocks)
 	if (ship.centerBlock is null)
 		return false;
 		
-	int shipColor = ship.centerBlock.getShape().getVars().customData;
+	const int shipColor = ship.centerBlock.getShape().getVars().customData;
 	
 	//set block information
 	for (u8 i = 0; i < blocksLength; i++)
@@ -237,7 +237,7 @@ void SeperateShip(CRules@ this, Ship@ ship)
 	if (blocksLength == 0) return;
 	
 	CBlob@ refBlock = blocks[0];
-	int referenceCol = refBlock.getShape().getVars().customData;
+	const int referenceCol = refBlock.getShape().getVars().customData;
 	
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
@@ -280,7 +280,7 @@ void SeperateShip(CRules@ this, Ship@ ship)
 }
 
 // Goes through the entirety of connected blobs to determine ship blocks
-void ColorBlocks(CBlob@ this, Ship@ ship, uint newcolor)
+void ColorBlocks(CBlob@ this, Ship@ ship, const uint newcolor)
 {
 	this.getShape().getVars().customData = newcolor; //set color as ship's index
 	
@@ -434,7 +434,7 @@ void InitShip(Ship @ship)
 void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwnerSearch = false)
 {
 	CMap@ map = getMap();
-	u32 gameTime = getGameTime();
+	const u32 gameTime = getGameTime();
 	
 	Ship[]@ ships;
 	this.get("ships", @ships);
@@ -493,13 +493,13 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			
 			if (beachedBlocks > 0)
 			{
-				f32 velocity = Maths::Clamp(beachedBlocks / ship.mass, 0.0f, 0.4f);
+				const f32 velocity = Maths::Clamp(beachedBlocks / ship.mass, 0.0f, 0.4f);
 				ship.vel *= 1.0f - velocity;
 				ship.angle_vel *= 1.0f - velocity;
 			}
 			else if (slowedBlocks > 0)
 			{
-				f32 velocity = Maths::Clamp(slowedBlocks / (ship.mass * 2), 0.0f, 0.08f);
+				const f32 velocity = Maths::Clamp(slowedBlocks / (ship.mass * 2), 0.0f, 0.08f);
 				ship.vel *= 1.0f - velocity;
 				ship.angle_vel *= 1.0f - velocity;
 			}
@@ -654,14 +654,14 @@ void TileCollision(Ship@ ship, Vec2f tilePos)
 	//effects
 	if (isClient())
 	{
-		u8 shake = vellen * ship.mass;
+		const u8 shake = vellen * ship.mass;
 		ShakeScreen(Maths::Min(shake, 120), 12, tilePos);
 		directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", tilePos);
 	}
 }
 
 // Sets the team num of the whole ship
-void SetShipTeam(Ship@ ship, u8 teamNum)
+void SetShipTeam(Ship@ ship, const u8 teamNum)
 {
 	//print ("setting team for " + ship.owner + "'s " + ship.id + " to " + teamNum);
 	const u16 blocksLength = ship.blocks.length;
@@ -691,7 +691,7 @@ void StoreVelocities(Ship@ ship)
 }
 
 // Update certain blocks
-void SetUpdateArrays(int shipColor)
+void SetUpdateArrays(const int shipColor)
 {
 	CBlob@[] blocks;
 	getBlobsByTag("weapon", @blocks); //updates docking info
@@ -717,7 +717,7 @@ void onBlobChangeTeam(CRules@ this, CBlob@ blob, const int oldTeam)
 void onBlobDie(CRules@ this, CBlob@ blob)
 {
 	//this can leave empty ships until next full sync
-	int blobColor = blob.getShape().getVars().customData;
+	const int blobColor = blob.getShape().getVars().customData;
 	if (blobColor > 0)
 	{
 		Ship@ ship = getShip(blobColor);
@@ -815,7 +815,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 	Ship[]@ ships;
 	if (this.get("ships", @ships))
 	{
-		u16 shipsLength = ships.length;
+		const u16 shipsLength = ships.length;
 		stream.write_u16(shipsLength);
 		
 		bool atLeastOne = false;
@@ -826,7 +826,7 @@ bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
 			if (full_sync)
 			{
 				//send all of a ship's info- ships sync
-				u16 blocksLength = ship.blocks.length;
+				const u16 blocksLength = ship.blocks.length;
 				CPlayer@ owner = getPlayerByUsername(ship.owner);
 				
 				stream.write_Vec2f(ship.pos);
@@ -939,10 +939,10 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 					warn("ships sync: ship.pos not found");
 					return;
 				}
-				u16 ownerID = params.read_netid();
+				const u16 ownerID = params.read_netid();
 				CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
 				ship.owner = owner !is null ? owner.getUsername() : "";
-				u16 centerBlockID = params.read_netid();
+				const u16 centerBlockID = params.read_netid();
 				@ship.centerBlock = centerBlockID != 0 ? getBlobByNetworkID(centerBlockID) : null;
 				ship.vel = params.read_Vec2f();
 				ship.angle = params.read_f32();
@@ -973,8 +973,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 						return;
 					}
 					CBlob@ b = getBlobByNetworkID(netid);
-					Vec2f pos = params.read_Vec2f();
-					f32 angle = params.read_f32();
+					const Vec2f pos = params.read_Vec2f();
+					const f32 angle = params.read_f32();
 					if (b is null)
 					{
 						warn("Blob not found when creating ship, id = " + netid);
@@ -1037,7 +1037,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 				if (params.read_bool()) //do we update?
 				{
 					Ship@ ship = ships[i];
-					u16 ownerID = params.read_netid();
+					const u16 ownerID = params.read_netid();
 					CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
 					ship.owner = owner !is null ? owner.getUsername() : "";
 					if (params.read_bool()) //passed position thresh
@@ -1082,7 +1082,7 @@ bool onClientProcessChat(CRules@ this, const string &in textIn, string &out text
 {	
 	if (player !is null)
 	{
-		bool myPlayer = player.isMyPlayer();
+		const bool myPlayer = player.isMyPlayer();
 		if (myPlayer && textIn == "!candy") //switch on ship debug mode
 		{
 			candy = !candy;
@@ -1121,7 +1121,7 @@ void onRender(CRules@ this)
 	{
 		CCamera@ camera = getCamera();
 		if (camera is null) return;
-		f32 camRotation = camera.getRotation();
+		const f32 camRotation = camera.getRotation();
 		Ship[]@ ships;
 		if (this.get("ships", @ships))
 		{
@@ -1147,7 +1147,7 @@ void onRender(CRules@ this)
 					CBlob@ b = getBlobByNetworkID(ship_block.blobID);
 					if (b is null) continue;
 					
-					int c = b.getShape().getVars().customData;
+					const int c = b.getShape().getVars().customData;
 					GUI::DrawRectangle(getDriver().getScreenPosFromWorldPos(b.getPosition() - Vec2f(4, 4).RotateBy(camRotation)), 
 									   getDriver().getScreenPosFromWorldPos(b.getPosition() + Vec2f(4, 4).RotateBy(camRotation)), SColor(100, c*50, -c*90, 93*c));
 					if (camera.targetDistance > 1.0f)

@@ -29,18 +29,18 @@ void onTick(CBlob@ this)
 	{
 		// bot
 		Vec2f pos = this.getPosition();	
+		
 		CMap@ map = getMap();
 		Tile tile = map.getTile(pos);
-		bool onLand = map.isTileBackgroundNonEmpty(tile) || map.isTileSolid(tile);
-	
-		if (onLand)
-		this.set_bool("retreating", true);
+		if (map.isTileBackgroundNonEmpty(tile) || map.isTileSolid(tile)) //on land
+			this.set_bool("retreating", true);
 		
-		u32 ticktime = (getGameTime() + this.getNetworkID());
+		const u32 gameTime = getGameTime();
+		const u32 ticktime = (gameTime + this.getNetworkID());
 
 		if (ticktime % 5 == 0 && //check each 5 ticks
 			this.hasTag("vanish") && //read tag
-			getGameTime() > this.get_u32("vanishtime")) //compare time
+			gameTime > this.get_u32("vanishtime")) //compare time
 		{
 			this.Tag("no gib");
 			this.server_Die();

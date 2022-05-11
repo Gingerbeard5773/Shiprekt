@@ -40,9 +40,8 @@ CBlob@ getReferenceBlock(CBlob@ this, Ship@ ship) //find specific origin blocks 
 				ref.getShape().getVars().customData == getShipBlob(this).getShape().getVars().customData)
 				return ref;
 		}
-
-		if (ship.centerBlock !is null) 
-			return ship.centerBlock;
+		
+		return ship.centerBlock;
 	}
 	return null;
 }
@@ -78,7 +77,7 @@ void onTick(CBlob@ this)
             if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
             {
 				//checks for canPlace
-				bool skipCoreCheck = !getRules().isWarmup() || (ship.isMothership && (ship.owner == "" || ship.owner == "*" || ship.owner == player.getUsername()));
+				const bool skipCoreCheck = !getRules().isWarmup() || (ship.isMothership && (ship.owner == "" || ship.owner == "*" || ship.owner == player.getUsername()));
 				bool cLinked = false;
 				bool onRock = false;
                 const bool overlappingShip = blocksOverlappingShip(@blocks);
@@ -114,7 +113,7 @@ void onTick(CBlob@ this)
 				}
 				
 				//can't Place heltips
-				bool crewCantPlace = !overlappingShip && cLinked;
+				const bool crewCantPlace = !overlappingShip && cLinked;
 				if (crewCantPlace)
 					crewCantPlaceCounter++;
 				else
@@ -187,7 +186,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
     }
 	
 	Vec2f ship_pos = centerBlock.getPosition();
-    f32 angle = centerBlock.getAngleDegrees();
+    const f32 angle = centerBlock.getAngleDegrees();
 	f32 refBAngle = refBlock.getAngleDegrees();//reference block angle
 	//current ship angle as point of reference
 	while (refBAngle > angle + 45) refBAngle -= 90.0f;
@@ -292,8 +291,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		}
 		
 		Vec2f shipPos = centerBlock.getPosition();
-		f32 shipAngle = ship.centerBlock.getAngleDegrees();
-		f32 angleDelta = centerBlock.getAngleDegrees() - ship_angle;//to account for ship angle lag
+		const f32 shipAngle = ship.centerBlock.getAngleDegrees();
+		const f32 angleDelta = centerBlock.getAngleDegrees() - ship_angle;//to account for ship angle lag
 		
         CBlob@[]@ blocks;
         if (this.get("blocks", @blocks) && blocks.size() > 0)                 
@@ -304,7 +303,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				PositionBlocks(@blocks, shipPos + pos_offset.RotateBy(angleDelta), shipPos + aimPos_offset.RotateBy(angleDelta), target_angle, centerBlock, refBlock);
 			}
 
-			int iColor = centerBlock.getShape().getVars().customData;
+			const int iColor = centerBlock.getShape().getVars().customData;
 			const u8 blocksLength = blocks.length;
 			for (u8 i = 0; i < blocksLength; ++i)
 			{
@@ -359,10 +358,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			if (core !is null && !core.hasTag("critical"))
 			{
 				Ship@ pShip = getShip(this);
-				bool canShop = pShip !is null && pShip.centerBlock !is null 
-								&& ((pShip.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
-								|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum()));
-				if (canShop)
+				if (pShip !is null && pShip.centerBlock !is null && ((pShip.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
+					|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum())))
 				{
 					this.set_bool("getting block", true);
 					this.Sync("getting block", false);

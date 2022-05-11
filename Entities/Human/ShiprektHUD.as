@@ -26,8 +26,8 @@ void onTick(CSprite@ this)
 	
 	CRules@ rules = getRules();
 	Vec2f tl = getActorHUDStartPosition(blob, slotsSize);	
-	string name = player.getUsername();
-	u16 pBooty = rules.get_u16("booty" + name);
+	const string name = player.getUsername();
+	const u16 pBooty = rules.get_u16("booty" + name);
 	CControls@ controls = getControls();
 	
 	// seat relinquish
@@ -63,9 +63,9 @@ void onTick(CSprite@ this)
 	if ((controls.getMouseScreenPos() - tl - Vec2f(146, 20)).Length() < 15.0f)
 	{
 		CRules@ rules = getRules();
-		u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
-		f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
-		u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
+		const u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
+		const f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
+		const u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
 		if (!rules.isWarmup())
 		{
 			if (pBooty >= BOOTY_TRANSFER + fee)
@@ -92,15 +92,15 @@ void onRender(CSprite@ this)
 	
 	CRules@ rules = getRules();
 	Vec2f tl = getActorHUDStartPosition(blob, slotsSize);								
-	u8 teamNum = player.getTeamNum();
-	string name = player.getUsername();
-	string captainName = getCaptainName(teamNum);
-	u16 pBooty = rules.get_u16("booty" + name);
+	const u8 teamNum = player.getTeamNum();
+	const string name = player.getUsername();
+	const string captainName = getCaptainName(teamNum);
+	const u16 pBooty = rules.get_u16("booty" + name);
 	CBlob@ teamCore = getMothership(teamNum);
 	CControls@ controls = getControls();
-	f32 screenHeight = getScreenHeight();
-	f32 screenWidth = getScreenWidth();
-	u32 gameTime = getGameTime();
+	const f32 screenHeight = getScreenHeight();
+	const f32 screenWidth = getScreenWidth();
+	const u32 gameTime = getGameTime();
 	
 	GUI::SetFont("none"); //shite fix but works
 	
@@ -133,11 +133,11 @@ void onRender(CSprite@ this)
 		GUI::DrawText(Trans::FreebuildMode, Vec2f(screenWidth/2 - 75, 15), tipsColor);
 	else if (rules.isWarmup())
 	{
-		int WARMUP_TIME = rules.get_u16("warmup_time") - gameTime;
+		const int WARMUP_TIME = rules.get_u16("warmup_time") - gameTime;
 		if (WARMUP_TIME > 0)
 		{
-			u8 seconds = Maths::Round(WARMUP_TIME/30 % 60);
-			string warmupText = getTranslatedString("WARMUP")+" "+ Maths::Round(WARMUP_TIME/30/60) + ":" + (seconds > 9 ? "" : "0") + seconds;
+			const u8 seconds = Maths::Round(WARMUP_TIME/30 % 60);
+			const string warmupText = getTranslatedString("WARMUP")+" "+ Maths::Round(WARMUP_TIME/30/60) + ":" + (seconds > 9 ? "" : "0") + seconds;
 			GUI::DrawText(warmupText, Vec2f(screenWidth/2 - 75, 15), tipsColor);
 			if (getGridMenuByName(Trans::Components) !is null) //has to be translated otherwise it wont work
 				GUI::DrawText(Trans::ReducedCosts, Vec2f(screenWidth/2 - 75, 35 + Maths::Sin(gameTime/6.5f) * 3.5f), tipsColor);
@@ -150,9 +150,9 @@ void onRender(CSprite@ this)
 	//mothership alerts
 	if (teamCore !is null)
 	{
-		bool mShipNear = blob.getDistanceTo(teamCore) < 900.0f;
-		bool mShipOnScreen = teamCore.isOnScreen();
-		f32 mShipDMG = rules.get_f32("msDMG" + teamNum);
+		const bool mShipNear = blob.getDistanceTo(teamCore) < 900.0f;
+		const bool mShipOnScreen = teamCore.isOnScreen();
+		const f32 mShipDMG = rules.get_f32("msDMG" + teamNum);
 		
 		if (name == captainName && !mShipOnScreen)//is Captain and abandoned mothership?
 			GUI::DrawText(Trans::Abandon, Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
@@ -191,8 +191,8 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 		//Owner name text (top left)
 		if (ship.owner != "" && ship.owner != "*")
 		{
-			string lastChar = ship.owner.substr(ship.owner.size() -1);
-			string ownership = ship.owner + (lastChar == "s" ? "'" : "'s") +" "+Trans::Ship;
+			const string lastChar = ship.owner.substr(ship.owner.size() -1);
+			const string ownership = ship.owner + (lastChar == "s" ? "'" : "'s") +" "+Trans::Ship;
 			Vec2f size;
 			GUI::GetTextDimensions(ownership, size);
 			GUI::DrawText(ownership, Vec2f(Maths::Max(4.0f, 69.0f - size.x/2.0f), 3.0f), SColor(255, 255, 255, 255));
@@ -212,7 +212,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 			GUI::DrawIconByName("$ASSAIL$", tl + Vec2f(67, -11));		
 		
 		//Speed
-		u16 speed = ship.vel.Length() * 30;
+		const u16 speed = ship.vel.Length() * 30;
 		GUI::DrawText(Trans::Speed+" : " + speed + " kilorekts/h", Vec2f(24, getScreenHeight() - 24), tipsColor);
 	}
 	else	
@@ -232,7 +232,7 @@ void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 	
     GUI::DrawIcon("InteractionIconsBig.png", 30, Vec2f(32,32), tl + Vec2f(-12, -12), 1.0f, core.getTeamNum());
 
-	u8 health = core.hasTag("critical") ? 0 : Maths::Min(100, Maths::Round(core.getHealth()/core.getInitialHealth() * 100));
+	const u8 health = core.hasTag("critical") ? 0 : Maths::Min(100, Maths::Round(core.getHealth()/core.getInitialHealth() * 100));
 	
 	SColor col;
 	if (health <= 10)
@@ -258,9 +258,9 @@ void DrawStationStatus(u8 teamnum, Vec2f tl, CControls@ controls)
 	
 	const u8 totalStationCount = stations.length;
 	u8 teamStationCount = 0;
-	for (u8 u = 0; u < totalStationCount; u++)
+	for (u8 i = 0; i < totalStationCount; i++)
 	{
-		if (stations[u].getTeamNum() == getLocalPlayer().getTeamNum())
+		if (stations[i].getTeamNum() == getLocalPlayer().getTeamNum())
 			teamStationCount++;
 	}
 
@@ -288,9 +288,9 @@ void DrawResources(u16 pBooty, string name, string captainName, Vec2f tl, CContr
 	if ((controls.getMouseScreenPos() - tl - Vec2f(146, 20)).Length() < 15.0f)
 	{
 		CRules@ rules = getRules();
-		u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
-		f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
-		u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
+		const u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
+		const f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
+		const u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
 		if (!rules.isWarmup())
 		{
 			if (pBooty >= BOOTY_TRANSFER + fee)

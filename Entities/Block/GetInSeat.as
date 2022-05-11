@@ -12,7 +12,7 @@ void onInit(CBlob@ this)
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
 {
-	string seatOwner = this.get_string("playerOwner");
+	//string seatOwner = this.get_string("playerOwner");
 	if (this.getDistanceTo(caller) > 6
 		|| this.getShape().getVars().customData <= 0
 		|| (this.hasTag("noEnemyEntry") && this.getTeamNum() != caller.getTeamNum()))

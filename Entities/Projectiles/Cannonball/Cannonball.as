@@ -50,7 +50,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
     u32[]@ piercedBlobIDs;
     this.get("pierced blob IDs", @piercedBlobIDs);
 	
-	u32 bID = b.getNetworkID();
+	const u32 bID = b.getNetworkID();
 	if (piercedBlobIDs.find(bID) >= 0) return;
 
 	bool killed = false;
@@ -113,7 +113,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 
 f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 {
-	u16 piercedCount = this.get_u16("pierced count");
+	const u16 piercedCount = this.get_u16("pierced count");
 	f32 damageFactor = 1.0f;
 	
 	if (piercedCount > 1)

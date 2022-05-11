@@ -8,18 +8,17 @@
 #include "ShipsCommon.as";
 #include "ShiprektTranslation.as";
 
+const f32 scoreboardMargin = 52.0f;
+const f32 scrollSpeed = 4.0f;
+const f32 maxMenuWidth = 430;
+const f32 screenMidX = getScreenWidth()/2;
+
+f32 scrollOffset = 0.0f;
+bool mouseWasPressed2 = false;
 CPlayer@ hoveredPlayer;
 
-float scoreboardMargin = 52.0f;
-float scrollOffset = 0.0f;
-float scrollSpeed = 4.0f;
-float maxMenuWidth = 430;
-float screenMidX = getScreenWidth()/2;
-
-bool mouseWasPressed2 = false;
-
 //returns the bottom
-float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
+float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8 teamNum)
 {
 	CTeam@ team = getRules().getTeam(teamNum);
 	const u8 playersLength = players.length;
@@ -27,11 +26,10 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 		return topleft.y;
 
 	CRules@ rules = getRules();
-	Vec2f orig = topleft; //save for later
 
-	f32 lineheight = 16;
-	f32 padheight = 2;
-	f32 stepheight = lineheight + padheight;
+	const f32 lineheight = 16;
+	const f32 padheight = 2;
+	const f32 stepheight = lineheight + padheight;
 	Vec2f bottomright(Maths::Min(getScreenWidth() - 100, screenMidX+maxMenuWidth), topleft.y + (playersLength + 5.5) * stepheight);
 	GUI::DrawPane(topleft, bottomright, team.color);
 
@@ -71,8 +69,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 		topleft.y += stepheight;
 		bottomright.y = topleft.y + lineheight;
 
-		bool playerHover = mousePos.y > topleft.y && mousePos.y < topleft.y + 15;
-
+		const bool playerHover = mousePos.y > topleft.y && mousePos.y < topleft.y + 15;
 		if (playerHover)
 		{
 			if (controls.mousePressed1)
@@ -96,7 +93,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 
 		Vec2f lineoffset = Vec2f(0, -2);
 
-		u32 underlinecolor = 0xff404040;
+		const u32 underlinecolor = 0xff404040;
 		u32 playercolour = (p.getBlob() is null || p.getBlob().hasTag("dead")) ? 0xff505050 : 0xff808080;
 		if (playerHover)
 		{
@@ -107,15 +104,15 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 		GUI::DrawLine2D(Vec2f(topleft.x, bottomright.y + 1) + lineoffset, Vec2f(bottomright.x, bottomright.y + 1) + lineoffset, SColor(underlinecolor));
 		GUI::DrawLine2D(Vec2f(topleft.x, bottomright.y) + lineoffset, bottomright + lineoffset, SColor(playercolour));
 
-		string tex = p.getScoreboardTexture();
+		const string tex = p.getScoreboardTexture();
 
 		if (p.isMyPlayer() && tex == "")
 			GUI::DrawIcon("ScoreboardIcons", 2, Vec2f(16,16), topleft, 0.5f, p.getTeamNum());
 		else if (tex != "")
 			GUI::DrawIcon(tex, p.getScoreboardFrame(), p.getScoreboardFrameSize(), topleft, 0.5f, p.getTeamNum());
 
-		string username = p.getUsername();
-
+		const string username = p.getUsername();
+		
 		string playername = p.getCharacterName();
 		string clantag = p.getClantag();
 
@@ -135,14 +132,14 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 		}
 
 		//have to calc this from ticks
-		s32 ping_in_ms = s32(p.getPing() * 1000.0f / 30.0f);
+		const s32 ping_in_ms = s32(p.getPing() * 1000.0f / 30.0f);
 
 		//how much room to leave for names and clantags
-		float name_buffer = 26.0f;
-		Vec2f clantag_actualsize(0, 0);
+		const float name_buffer = 26.0f;
+		const Vec2f clantag_actualsize(0, 0);
 
 		//render the player + stats
-		SColor namecolour = getNameColour(p);
+		const SColor namecolour = getNameColour(p);
 
 		//right align clantag
 		if (clantag != "")
@@ -158,8 +155,8 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 			GUI::DrawText(playername, topleft + Vec2f(name_buffer, 0), namecolour);
 		}
 		
-		int coreKills = p.getAssists();
-		SColor coreKillsCol = SColor(255, 255, 255- Maths::Min(255, coreKills * 30), 255- Maths::Min(255, coreKills * 80));
+		const int coreKills = p.getAssists();
+		const SColor coreKillsCol = SColor(255, 255, 255- Maths::Min(255, coreKills * 30), 255- Maths::Min(255, coreKills * 80));
 
 		GUI::DrawText("" + username, Vec2f(bottomright.x - 570, topleft.y), namecolour);
 		GUI::DrawText("" + ping_in_ms, Vec2f(bottomright.x - 400, topleft.y), SColor(0xffffffff));
@@ -170,7 +167,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, u8 teamNum)
 	}
 
 	// username copied text, goes at bottom to overlay above everything else
-	uint durationLeft = rules.get_u16("client_copy_time");
+	u32 durationLeft = rules.get_u16("client_copy_time");
 
 	if ((durationLeft + 64) > getGameTime())
 	{
@@ -196,7 +193,7 @@ void onRenderScoreboard(CRules@ this)
 			continue;
 		}
 
-		u8 teamNum = p.getTeamNum();
+		const u8 teamNum = p.getTeamNum();
 		if (teamNum < playingTeamsCount)
 		{
 			//todo: push back team sorted by highest bounty OR push back localPlayers team first
@@ -230,13 +227,13 @@ void onRenderScoreboard(CRules@ this)
 	if (spectatorsLength > 0)
 	{
 		//draw spectators
-		f32 stepheight = 16;
+		const f32 stepheight = 16;
 		Vec2f bottomright(Maths::Min(getScreenWidth() - 100, screenMidX+maxMenuWidth), topleft.y + stepheight * 2);
-		f32 specy = topleft.y + stepheight * 0.5;
+		const f32 specy = topleft.y + stepheight * 0.5;
 		GUI::DrawPane(topleft, bottomright, SColor(0xffc0c0c0));
 
 		Vec2f textdim;
-		string s = getTranslatedString("Spectators:");
+		const string s = getTranslatedString("Spectators:");
 		GUI::GetTextDimensions(s, textdim);
 
 		GUI::DrawText(s, Vec2f(topleft.x + 5, specy), SColor(0xffaaaaaa));
@@ -265,8 +262,8 @@ void onRenderScoreboard(CRules@ this)
 		topleft.y += 52;
 	}
 
-	float scoreboardHeight = topleft.y + scrollOffset;
-	float screenHeight = getScreenHeight();
+	const float scoreboardHeight = topleft.y + scrollOffset;
+	const float screenHeight = getScreenHeight();
 	CControls@ controls = getControls();
 
 	if (scoreboardHeight > screenHeight)
@@ -380,9 +377,9 @@ void getMapName(CRules@ this)
 
 void DrawFancyCopiedText(string username, Vec2f mousePos, uint duration)
 {
-	string text = "Username copied: " + username;
-	Vec2f pos = mousePos - Vec2f(0, duration);
-	int col = (255 - duration * 3);
+	const string text = "Username copied: " + username;
+	const Vec2f pos = mousePos - Vec2f(0, duration);
+	const int col = (255 - duration * 3);
 
 	GUI::DrawTextCentered(text, pos, SColor((255 - duration * 4), col, col, col));
 }

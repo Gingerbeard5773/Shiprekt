@@ -11,14 +11,14 @@ void onTick(CRules@ this)
 	if (getGameTime() % FREQUENCY > 0 || getRules().get_bool("whirlpool")) return;	
 	
 	CMap@ map = getMap();
-	f32 mWidth = map.tilemapwidth * map.tilesize;
-	f32 mHeight = map.tilemapheight * map.tilesize;
+	const f32 mWidth = map.tilemapwidth * map.tilesize;
+	const f32 mHeight = map.tilemapheight * map.tilesize;
 	Vec2f center = Vec2f(mWidth/2, mHeight/2);
-	u16 totalB = totalBooty();
-	f32 timePenalty = Maths::Max(0.0f, 1.0f - getGameTime()/MAX_PENALTY_TIME);
-	u16 MAX_AMMOUNT = this.get_u16("booty_x_max");
-	u16 MIN_AMMOUNT = this.get_u16("booty_x_min");
-	f32 PER_PLAYER_AMMONT = 2.5f * MAX_AMMOUNT;
+	const u16 totalB = totalBooty();
+	const f32 timePenalty = Maths::Max(0.0f, 1.0f - getGameTime()/MAX_PENALTY_TIME);
+	const u16 MAX_AMOUNT = this.get_u16("booty_x_max");
+	const u16 MIN_AMOUNT = this.get_u16("booty_x_min");
+	const f32 PER_PLAYER_AMMONT = 2.5f * MAX_AMOUNT;
 	//print("<> " + getGameTime()/30/60 + " minutes penalty%: " + timePenalty);
 
 	if (totalB < getPlayersCount() * PER_PLAYER_AMMONT)
@@ -30,8 +30,8 @@ void onTick(CRules@ this)
 			if (zoneClear(map, spot, timePenalty < 0.2f))
 			{
 				f32 centerDist = (center - spot).Length();
-				u16 ammount = Maths::Max(MIN_AMMOUNT, (1.0f - centerDist/Maths::Min(mWidth, mHeight)) * MAX_AMMOUNT);
-				createBooty(spot, ammount);
+				u16 amount = Maths::Max(MIN_AMOUNT, (1.0f - centerDist/Maths::Min(mWidth, mHeight)) * MAX_AMOUNT);
+				createBooty(spot, amount);
 				return;
 			}
 		}
@@ -45,8 +45,8 @@ void onTick(CRules@ this)
 				if (zoneClear(map, spot))
 				{
 					f32 centerDist = (center - spot).Length();
-					u16 ammount = Maths::Max(MIN_AMMOUNT, (1.0f - centerDist/Maths::Min(mWidth, mHeight)) * MAX_AMMOUNT);
-					createBooty(spot, ammount);
+					u16 amount = Maths::Max(MIN_AMOUNT, (1.0f - centerDist/Maths::Min(mWidth, mHeight)) * MAX_AMOUNT);
+					createBooty(spot, amount);
 					break;
 				}
 			}
@@ -54,14 +54,14 @@ void onTick(CRules@ this)
 	}
 }
 
-void createBooty(Vec2f pos, u16 ammount)
+void createBooty(Vec2f pos, u16 amount)
 {
     CBlob@ booty = server_CreateBlobNoInit("booty");
     if (booty !is null)
 	{
 		booty.Tag("booty");
-	    booty.set_u16("ammount", ammount);
-	    booty.set_u16("prevAmmount", ammount);
+	    booty.set_u16("amount", amount);
+	    booty.set_u16("prevAmount", amount);
 		booty.server_setTeamNum(-1);
 		booty.setPosition(pos);
 		booty.Init();
@@ -76,17 +76,16 @@ int totalBooty()
 
 	const u8 bootyLength = booty.length;
 	for (u8 b = 0; b < bootyLength; b++)
-		totalBooty += booty[b].get_u16("ammount");
+		totalBooty += booty[b].get_u16("amount");
 
 	return totalBooty;
 }
 
 bool zoneClear(CMap@ map, Vec2f spot, bool onlyBooty = false)
 {
-	f32 clearRadius = Maths::Min(Maths::Sqrt(map.tilemapwidth * map.tilemapheight) * CLEAR_RADIUS_FACTOR, MAX_CLEAR_RADIUS);
-	
-	bool mothership = map.isBlobWithTagInRadius("mothership", spot, clearRadius * 0.5f);
-	bool booty = map.isBlobWithTagInRadius("booty", spot, clearRadius);
+	const f32 clearRadius = Maths::Min(Maths::Sqrt(map.tilemapwidth * map.tilemapheight) * CLEAR_RADIUS_FACTOR, MAX_CLEAR_RADIUS);
+	const bool mothership = map.isBlobWithTagInRadius("mothership", spot, clearRadius * 0.5f);
+	const bool booty = map.isBlobWithTagInRadius("booty", spot, clearRadius);
 
 	return !booty && (onlyBooty || !mothership);
 }

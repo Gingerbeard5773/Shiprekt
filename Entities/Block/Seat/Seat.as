@@ -62,9 +62,9 @@ void onTick(CBlob@ this)
 	int seatColor = this.getShape().getVars().customData;
 	if (seatColor <= 0) return;	
 
-	u32 gameTime = getGameTime();
-	u8 teamNum = this.getTeamNum();
-	string seatOwner = this.get_string("playerOwner");
+	const u32 gameTime = getGameTime();
+	const u8 teamNum = this.getTeamNum();
+	const string seatOwner = this.get_string("playerOwner");
 	
 	if (isServer())
 	{
@@ -102,8 +102,8 @@ void onTick(CBlob@ this)
 
 		CRules@ rules = getRules();
 		CHUD@ HUD = getHUD();
-		string occupierName = player.getUsername();
-		u8 occupierTeam = occupier.getTeamNum();
+		const string occupierName = player.getUsername();
+		const u8 occupierTeam = occupier.getTeamNum();
 		const bool isCaptain = ship.owner == occupierName || ship.owner == "*" || ship.owner == "";
 		const bool canHijack = seatOwner == ship.owner && occupierTeam != teamNum;
 			
@@ -277,7 +277,7 @@ void onTick(CBlob@ this)
 		//Produce coupling
 		u32 couplingCooldown;
 		this.get("couplingCooldown", couplingCooldown);
-		bool canProduceCoupling = gameTime > couplingCooldown;
+		const bool canProduceCoupling = gameTime > couplingCooldown;
 		this.set_bool("canProduceCoupling", canProduceCoupling);
 		this.Sync("canProduceCoupling", true); //-1891382656 HASH
 		

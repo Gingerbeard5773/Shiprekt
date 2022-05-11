@@ -84,7 +84,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	   
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 		   		
-		Vec2f barrelPos = this.getPosition();
+		const Vec2f barrelPos = this.getPosition();
 
 		//hit stuff		
 		HitInfo@[] hitInfos;
@@ -117,16 +117,16 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					return;		
 				
 				Ship@ otherShip = getShip(color);
-				bool isMyShip = otherShip !is null && otherShip is ship;
+				const bool isMyShip = otherShip !is null && otherShip is ship;
 
 				f32 reconstructAmount = 0;
 				u16 reconstructCost = 0;
-				string cName = thisPlayer.getUsername();
-				u16 cBooty = server_getPlayerBooty(cName);
-				f32 mBlobHealth = b.getHealth();
+				const string cName = thisPlayer.getUsername();
+				const u16 cBooty = server_getPlayerBooty(cName);
+				const f32 mBlobHealth = b.getHealth();
 				const f32 mBlobCost = getCost(b.getName());
 				const f32 initialReclaim = b.getInitialHealth();
-				f32 currentReclaim = b.get_f32("current reclaim");
+				const f32 currentReclaim = b.get_f32("current reclaim");
 
 				f32 fullConstructAmount;
 				if (!b.hasTag("mothership"))

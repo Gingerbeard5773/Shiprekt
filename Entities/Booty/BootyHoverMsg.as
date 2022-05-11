@@ -13,9 +13,9 @@ void onTick(CSprite@ this)
 		return;
 	
 	CRules@ rules = getRules();
-	string userName = player.getUsername();
-	u16 currentBooty = rules.get_u16("booty" + userName);
-	int diff = currentBooty - oldBooty;
+	const string userName = player.getUsername();
+	const u16 currentBooty = rules.get_u16("booty" + userName);
+	const int diff = currentBooty - oldBooty;
 	oldBooty = currentBooty;
 
 	if (diff > 0)

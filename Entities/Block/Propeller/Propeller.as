@@ -68,11 +68,11 @@ void onTick(CBlob@ this)
 	if (this.getShape().getVars().customData <= 0)
 		return;
 	
-	u32 gameTime = getGameTime();
+	const u32 gameTime = getGameTime();
 	CSprite@ sprite = this.getSprite();
-	f32 power = this.get_f32("power");
+	const f32 power = this.get_f32("power");
 	Vec2f pos = this.getPosition();
-	u8 stallTime = this.get_u8("stallTime");
+	const u8 stallTime = this.get_u8("stallTime");
 	const bool stalled = stallTime > 0;
 	const bool on = power != 0 && !stalled;	
 	
@@ -123,10 +123,10 @@ void onTick(CBlob@ this)
 			if (isServer() && (gameTime + this.getNetworkID()) % 15 == 0)
 			{
 				//low health stall failure
-				f32 healthPct = this.getHealth()/this.getInitialHealth();
+				const f32 healthPct = this.getHealth()/this.getInitialHealth();
 				if (healthPct < 0.25f && !stalled && XORRandom(25) == 0)
 				{
-					u8 stallTime = 30 + XORRandom(50);
+					const u8 stallTime = 30 + XORRandom(50);
 					this.set_u8("stallTime", stallTime);
 					CBitStream params;
 					params.write_u8(stallTime);
@@ -141,7 +141,7 @@ void onTick(CBlob@ this)
 					victim.getShape().getVars().customData > 0 &&
 					!victim.hasTag("player"))
 				{
-					f32 hitPower = Maths::Max(0.5f, Maths::Abs(this.get_f32("power")));
+					const f32 hitPower = Maths::Max(0.5f, Maths::Abs(this.get_f32("power")));
 					if (!victim.hasTag("mothership"))
 						this.server_Hit(victim, pos, Vec2f_zero, hitPower, 9, true);
 					else
@@ -152,10 +152,10 @@ void onTick(CBlob@ this)
 			// effects
 			if (isClient())
 			{
-				u8 tickStep = v_fastrender ? 20 : 4;
+				const u8 tickStep = v_fastrender ? 20 : 4;
 				if ((gameTime + this.getNetworkID()) % tickStep == 0 && Maths::Abs(power) >= 1 && !isTouchingLand(pos))
 				{
-					Vec2f rpos = Vec2f(_r.NextFloat() * -4 + 4, _r.NextFloat() * -4 + 4);
+					const Vec2f rpos = Vec2f(_r.NextFloat() * -4 + 4, _r.NextFloat() * -4 + 4);
 					MakeWaterParticle(pos + moveNorm * -6 + rpos, moveNorm * (-0.8f + _r.NextFloat() * -0.3f));
 				}
 				
@@ -185,13 +185,13 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	if (!isServer() || this.get_u8("stallTime") > 0)
 		return damage;
 		
-	f32 healthPct = this.getHealth()/this.getInitialHealth();
+	const f32 healthPct = this.getHealth()/this.getInitialHealth();
 	if (healthPct > 0.0f && healthPct < 0.75f)
 	{
-		f32 stallFactor = 1.0f/healthPct + Maths::FastSqrt(damage);
+		const f32 stallFactor = 1.0f/healthPct + Maths::FastSqrt(damage);
 		if (stallFactor * XORRandom(9) > 15)//chance based on health and damage to stall
 		{
-			u8 stallTime = stallFactor * 30;
+			const u8 stallTime = stallFactor * 30;
 			this.set_u8("stallTime", stallTime);
 			CBitStream params;
 			params.write_u8(stallTime);

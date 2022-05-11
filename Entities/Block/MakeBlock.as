@@ -1,5 +1,5 @@
 
-CBlob@ makeBlock(Vec2f pos, f32 angle, string blockName, const int team = -1)
+CBlob@ makeBlock(const Vec2f pos, const f32 angle, const string blockName, const u8 team)
 {
 	CBlob@ block = server_CreateBlob(blockName, team, pos);
 	if (block !is null) 

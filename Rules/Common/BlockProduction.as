@@ -1,7 +1,7 @@
 #include "MakeBlock.as"
 
 //Produce a block by a player
-void ProduceBlock(CRules@ this, CBlob@ blob, string type, u8 amount = 1)
+void ProduceBlock(CRules@ this, CBlob@ blob, const string type, const u8 amount = 1)
 {
 	const u8 blobTeam = blob.getTeamNum();
 
@@ -11,7 +11,7 @@ void ProduceBlock(CRules@ this, CBlob@ blob, string type, u8 amount = 1)
 	    blob.get("blocks", @blob_blocks);
     	blob_blocks.clear();
 
-		u16 blobID = blob.getNetworkID();
+		const u16 blobID = blob.getNetworkID();
 
     	for (u8 i = 0; i < amount; i++)
 		{

@@ -41,7 +41,7 @@ void setStartingBooty(CRules@ this)
 
 	print("** Setting Starting Player Booty ");
 
-	u16 initBooty = this.get_u16("starting_booty");
+	const u16 initBooty = this.get_u16("starting_booty");
 	const u8 plyCount = getPlayersCount();
 	for (u8 p = 0; p < plyCount; ++p)
 	{
@@ -49,16 +49,16 @@ void setStartingBooty(CRules@ this)
 	}
 }
 
-void server_updateTotalBooty(u8 teamNum, u16 ammount)
+void server_updateTotalBooty(const u8 teamNum, const u16 amount)
 {
 	if (isServer())
 	{
 		CRules@ rules = getRules();
-		u16 totalBooty = rules.get_u16("bootyTeam_total" + teamNum);
-		u16 roundedBooty = Maths::Round(totalBooty/10) * 10;
-		u16 newBooty = totalBooty + ammount;
-		u16 newRoundedBooty = Maths::Round(newBooty/10) * 10;
-		rules.set_u16("bootyTeam_total" + teamNum, totalBooty + ammount);
+		const u16 totalBooty = rules.get_u16("bootyTeam_total" + teamNum);
+		const u16 roundedBooty = Maths::Round(totalBooty/10) * 10;
+		const u16 newBooty = totalBooty + amount;
+		const u16 newRoundedBooty = Maths::Round(newBooty/10) * 10;
+		rules.set_u16("bootyTeam_total" + teamNum, totalBooty + amount);
 		if (roundedBooty != newRoundedBooty)
 		{
 			rules.Sync("bootyTeam_total" + teamNum, true); //-115817888 HASH
@@ -93,7 +93,7 @@ void server_resetTotalBooty(CRules@ this)
 }
 
 //player
-u16 server_getPlayerBooty(string name)
+u16 server_getPlayerBooty(const string name)
 {
 	if (isServer())
 	{
@@ -104,7 +104,7 @@ u16 server_getPlayerBooty(string name)
 	return 0;
 }
  
-void server_setPlayerBooty(string name, u16 booty)
+void server_setPlayerBooty(const string name, const u16 booty)
 {
 	if (isServer())
 	{
@@ -119,7 +119,7 @@ void server_setPlayerBooty(string name, u16 booty)
 	}
 }
 
-void server_addPlayerBooty(string name, u16 booty) //give or take booty
+void server_addPlayerBooty(const string name, const u16 booty) //give or take booty
 {
 	server_setPlayerBooty(name, server_getPlayerBooty(name) + booty);
 }
@@ -127,11 +127,10 @@ void server_addPlayerBooty(string name, u16 booty) //give or take booty
 #include "ShipsCommon.as";
 
 //rewards for damaging enemy ships
-void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rewardBlocks = false, u16 reward = 4, string sound = "Pinball_0", bool randomSound = false)
+void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, const bool rewardBlocks = false, u16 reward = 4, const string sound = "Pinball_0", const bool randomSound = false)
 {
 	if (victim.hasTag("block"))
 	{
-		string attackerName = attacker.getUsername();
 		Ship@ victimShip = getShip(victim.getShape().getVars().customData);
 
 		if (victimShip !is null && victimShip.blocks.length > 3 //minimum size requirement
@@ -142,9 +141,7 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 			)
 		{
 			if (attacker.isMyPlayer())
-			{
 				Sound::Play(sound + (randomSound ? XORRandom(4)+"" : ""), attackerBlob.getPosition(), 0.8f);
-			}
 
 			if (isServer())
 			{
@@ -157,11 +154,11 @@ void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, bool rew
 				else if (victim.hasTag("mothership"))
 					reward *= 2.0f;
 
-				f32 bFactor = (getRules().get_bool("whirlpool") ? 3.0f : 1.0f);
+				const f32 bFactor = (getRules().get_bool("whirlpool") ? 3.0f : 1.0f);
 				
 				reward = Maths::Round(reward * bFactor);
-								
-				server_addPlayerBooty(attackerName, reward);
+				
+				server_addPlayerBooty(attacker.getUsername(), reward);
 				server_updateTotalBooty(attacker.getTeamNum(), reward);
 			}
 		}

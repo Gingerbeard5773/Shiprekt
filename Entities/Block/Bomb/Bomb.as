@@ -72,7 +72,7 @@ void onInit(CBlob@ this)
 
 void onColored(CBlob@ this) //activate when the block changes color
 {
-	int color = this.getShape().getVars().customData;
+	const int color = this.getShape().getVars().customData;
 	if (color == 0) return;
 	
 	CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
@@ -118,8 +118,8 @@ u8 findCloseBombs(CBlob@ this)
 
 void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 {
-    Vec2f pos = this.getPosition();
-	u8 stackfactor = findCloseBombs(this);
+    const Vec2f pos = this.getPosition();
+	const u8 stackfactor = findCloseBombs(this);
 
 	if (isClient())
 	{
@@ -143,7 +143,7 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 			if (hit_blob.hasTag("block"))
 			{
-				int hitCol = hit_blob.getShape().getVars().customData;
+				const int hitCol = hit_blob.getShape().getVars().customData;
 				if (hitCol <= 0) continue;
 
 				// move the ship
@@ -164,9 +164,9 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 				}
 			}
 		
-			f32 distanceFactor = Maths::Min(1.0f, Maths::Max(0.0f, BOMB_RADIUS - this.getDistanceTo(hit_blob) + 8.0f + (stackfactor/2)) / BOMB_RADIUS);
+			const f32 distanceFactor = Maths::Min(1.0f, Maths::Max(0.0f, BOMB_RADIUS - this.getDistanceTo(hit_blob) + 8.0f + (stackfactor/2)) / BOMB_RADIUS);
 			//f32 distanceFactor = 1.0f;
-			f32 damageFactor = (hit_blob.hasTag("mothership")) ? 0.25f : 1.0f;
+			const f32 damageFactor = (hit_blob.hasTag("mothership")) ? 0.25f : 1.0f;
 
 			//hit the object
 			this.server_Hit(hit_blob, hit_blob_pos, Vec2f_zero, BOMB_BASE_DAMAGE * distanceFactor * damageFactor + (stackfactor/3), Hitters::bomb, true);
@@ -224,11 +224,10 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 {
 	if (victim.hasTag("block"))
 	{
-		u8 teamNum = attacker.getTeamNum();
-		u8 victimTeamNum = victim.getTeamNum();
-		string attackerName = attacker.getUsername();
+		const u8 teamNum = attacker.getTeamNum();
+		const u8 victimTeamNum = victim.getTeamNum();
+		
 		Ship@ victimShip = getShip(victim.getShape().getVars().customData);
-
 		if (victimShip !is null && victimShip.blocks.length > 3
 			&& (victimShip.owner != "" || victimShip.isMothership) //only inhabited ships
 			&& victimTeamNum != teamNum //cant be own ships
@@ -247,12 +246,12 @@ void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
 				else if (victim.hasTag("mothership"))
 					reward += 20;
 
-				f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
+				const f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
 				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32("bootyTeam_median") + 1000)));
 				
 				reward = Maths::Round(reward * bFactor);
 				
-				server_addPlayerBooty(attackerName, reward);
+				server_addPlayerBooty(attacker.getUsername(), reward);
 				server_updateTotalBooty(teamNum, reward);
 			}
 		}

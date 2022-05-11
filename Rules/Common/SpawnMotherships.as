@@ -13,7 +13,7 @@ void onRestart(CRules@ this)
 	if (isServer())
 	{
 		Vec2f[] spawns;
-		Vec2f spawnOffset(4.0f, 4.0f); //align to tilegrid
+		const Vec2f spawnOffset(4.0f, 4.0f); //align to tilegrid
     	if (getMap().getMarkers("spawn", spawns))
 		{
 			const u8 specTeam = this.getSpectatorTeamNum();
@@ -25,9 +25,9 @@ void onRestart(CRules@ this)
 					pCount--;
 			}
 			
-			u8 availableCores = Maths::Min(spawns.length, this.getTeamsNum());
-			u8 playingCores = pCount == 3 ? 3 : Maths::Max(2, int(Maths::Floor(pCount/2)));//special case for 3 players
-			u8 mShipsToSpawn = Maths::Min(playingCores, availableCores);
+			const u8 availableCores = Maths::Min(spawns.length, this.getTeamsNum());
+			const u8 playingCores = pCount == 3 ? 3 : Maths::Max(2, int(Maths::Floor(pCount/2)));//special case for 3 players
+			const u8 mShipsToSpawn = Maths::Min(playingCores, availableCores);
 			print("** Spawning " + mShipsToSpawn + " motherships of " + availableCores + " for " + pCount + " players");
 			
 			for (u8 s = 0; s < mShipsToSpawn; s++)

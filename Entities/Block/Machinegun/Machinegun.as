@@ -77,11 +77,11 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	int col = this.getShape().getVars().customData;
+	const int col = this.getShape().getVars().customData;
 	if (col <= 0) return; //not placed yet
 
-	u32 gameTime = getGameTime();
-	f32 currentFirePause = this.get_f32("fire pause");
+	const u32 gameTime = getGameTime();
+	const f32 currentFirePause = this.get_f32("fire pause");
 	if (currentFirePause > MIN_FIRE_PAUSE)
 		this.set_f32("fire pause", currentFirePause - FIRE_PAUSE_RATE * this.getCurrentScript().tickFrequency);
 
@@ -190,7 +190,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		Vec2f barrelPos = this.getPosition() + aimVector*9 + barrelOffset;
 
 		//hit stuff
-		u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
+		const u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
 		HitInfo@[] hitInfos;
 		CMap@ map = getMap();
 		bool killed = false;
@@ -199,7 +199,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		f32 offsetAngle = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 2.0f;
 		aimVector.RotateBy(offsetAngle);
 
-		f32 rangeOffset = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 8.0f;
+		const f32 rangeOffset = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 8.0f;
 
 		if (map.getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos))
 		{
@@ -213,8 +213,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				if (b is null || b is this) continue;
 
 				const int thisColor = this.getShape().getVars().customData;
-				int bColor = b.getShape().getVars().customData;
-				bool sameShip = bColor != 0 && thisColor == bColor;
+				const int bColor = b.getShape().getVars().customData;
+				const bool sameShip = bColor != 0 && thisColor == bColor;
 				const bool isBlock = b.hasTag("block");
 				
 				if (b.hasTag("plank") && !CollidesWithPlank(b, aimVector))
@@ -283,10 +283,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 					if (isServer())
 					{
-						f32 damage = getDamage(b);
 						if (b.hasTag("engine") && b.getTeamNum() != teamNum && XORRandom(3) == 0)
 							b.SendCommand(b.getCommandID("off"));
-						this.server_Hit(b, hi.hitpos, Vec2f_zero, damage, Hitters::arrow, true);
+						this.server_Hit(b, hi.hitpos, Vec2f_zero, getDamage(b), Hitters::arrow, true);
 					}
 
 					if (killed) break;

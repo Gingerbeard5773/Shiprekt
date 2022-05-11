@@ -53,7 +53,7 @@ void onRender(CRules@ this)
 	GUI::DrawButtonPressed(panelStart - Vec2f(10, 10), panelStart + Vec2f(panelWidth, 10 + lineHeight * (boardTeams.length + 1)));
 	
 	//teams column
-	string header = Trans::Total+" "+Trans::Booty;
+	const string header = Trans::Total+" "+Trans::Booty;
 	Vec2f size;
 	GUI::GetTextDimensions(header, size);
 	GUI::DrawText(header, panelStart + Vec2f((panelWidth - size.x)/2 - 6, 0), SColor(255, 255, 255, 255));

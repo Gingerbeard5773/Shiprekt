@@ -11,7 +11,6 @@
 #include "ShiprektTranslation.as";
 
 const u16 BASE_KILL_REWARD = 275;
-const f32 HEAL_AMMOUNT = 0.1f;
 const f32 HEAL_RADIUS = 16.0f;
 const u16 SELF_DESTRUCT_TIME = 8 * 30;
 const f32 BLAST_RADIUS = 25 * 8.0f;
@@ -37,7 +36,7 @@ void onInit(CBlob@ this)
 		Animation@ animation = sprite.getAnimation("default");
 		if (animation !is null)
 		{
-			array<int> frames = {3};
+			int[] frames = {3};
 			animation.AddFrames(frames);
 		}
 	}
@@ -48,9 +47,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     if (cmd == this.getCommandID("buyBlock"))
     {
 		CBlob@ caller = getBlobByNetworkID(params.read_netid());
-		string block = params.read_string();
-		u16 cost = params.read_u16();
-		bool autoBlock = params.read_bool();
+		const string block = params.read_string();
+		const u16 cost = params.read_u16();
+		const bool autoBlock = params.read_bool();
 		
 		if (caller is null)
 			return;
@@ -86,8 +85,8 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 	CRules@ rules = getRules();
 
 	CPlayer@ player = caller.getPlayer();
-	string pName = player !is null ? player.getUsername() : "";
-	u16 pBooty = server_getPlayerBooty(pName);
+	const string pName = player !is null ? player.getUsername() : "";
+	const u16 pBooty = server_getPlayerBooty(pName);
 
 	u8 amount = 1;
 	u8 teamFlaks = 0;
@@ -140,7 +139,6 @@ void ReturnBlocks(CBlob@ this)
 			CPlayer@ player = this.getPlayer();
 			if (player !is null)
 			{
-				string pName = player.getUsername();
 				u16 returnBooty = 0;
 				const u16 blocksLength = blocks.length;
 				for (u16 i = 0; i < blocksLength; ++i)
@@ -151,7 +149,7 @@ void ReturnBlocks(CBlob@ this)
 				}
 				
 				if (returnBooty > 0 && !rules.get_bool("freebuild"))
-					server_addPlayerBooty(pName, returnBooty);
+					server_addPlayerBooty(player.getUsername(), returnBooty);
 			}
 		}
 		
@@ -172,7 +170,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 {
 	if (hitterBlob is null) return damage;
 	
-	u8 thisTeamNum = this.getTeamNum();
+	const u8 thisTeamNum = this.getTeamNum();
 	u8 hitterTeamNum = hitterBlob.getTeamNum();
 	
 	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900)
@@ -187,7 +185,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		damage /= 2;
 	}
 	
-	f32 hp = this.getHealth();
+	const f32 hp = this.getHealth();
 	if (!this.hasTag("critical") && hp - damage > 0.0f)//assign last team hitter
 	{
 		if (thisTeamNum != hitterTeamNum && hitterBlob.getName() != "whirlpool")
@@ -225,10 +223,10 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			//got a possible winner team
 			u8 thisPlayers = 0;
 			u8 hitterPlayers = 0;
-			u8 plyCount = getPlayersCount();
+			const u8 plyCount = getPlayersCount();
 			for (u8 i = 0; i < plyCount; i++)
 			{
-				u8 pteam = getPlayer(i).getTeamNum();
+				const u8 pteam = getPlayer(i).getTeamNum();
 				if (pteam == thisTeamNum)
 					thisPlayers++;
 				else if (pteam == hitterTeamNum)
@@ -256,32 +254,31 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 					client_AddToChat(Trans::CoreKill, SColor(0xfffa5a00));
 			}
 			
-			f32 ratio = Maths::Max(0.25f, Maths::Min(1.75f,
+			const f32 ratio = Maths::Max(0.25f, Maths::Min(1.75f,
 							float(rules.get_u16("bootyTeam_total" + thisTeamNum))/float(rules.get_u32("bootyTeam_median") + 1.0f))); //I added 1.0f as a safety measure against dividing by 0
 			
-			u16 totalReward = (thisPlayers + 1) * BASE_KILL_REWARD * ratio;
-			string bountyreward = Trans::TeamBounty.replace("{winnerteam}", teamColors[hitterTeamNum]+" "+
+			const u16 totalReward = (thisPlayers + 1) * BASE_KILL_REWARD * ratio;
+			const string bountyreward = Trans::TeamBounty.replace("{winnerteam}", teamColors[hitterTeamNum]+" "+
 								  Trans::Team).replace("{reward}", (totalReward + BASE_KILL_REWARD)+"").replace("{killedteam}", teamColors[thisTeamNum]+" "+Trans::Team);
 			client_AddToChat("*** "+ bountyreward +"! ***");
 			
 			//give rewards
 			if (isServer())
 			{
-				u16 reward = Maths::Round(totalReward/hitterPlayers);
+				const u16 reward = Maths::Round(totalReward/hitterPlayers);
 				for (u8 i = 0; i < plyCount; i++)
 				{
 					CPlayer@ player = getPlayer(i);
-					u8 teamNum = player.getTeamNum();
+					const u8 teamNum = player.getTeamNum();
+					const string name = player.getUsername();
 					if (teamNum == hitterTeamNum)//winning tam
 					{
-						string name = player.getUsername();
 						server_addPlayerBooty(name, (name == getCaptainName(hitterTeamNum) ? 2 * reward : reward));
 					}
 					else if (teamNum == thisTeamNum)//losing team consolation money
 					{
-						string name = player.getUsername();
-						u16 booty = server_getPlayerBooty(name);
-						u16 rewardHalved = Maths::Round(BASE_KILL_REWARD/2);
+						const u16 booty = server_getPlayerBooty(name);
+						const u16 rewardHalved = Maths::Round(BASE_KILL_REWARD/2);
 						if (booty < rewardHalved)
 							server_addPlayerBooty(name, rewardHalved);
 					}
@@ -323,8 +320,9 @@ void onDie(CBlob@ this)
 //healing, repelling, dmgmanaging, selfDestruct, damagesprite
 void onTick(CBlob@ this)
 {
-	Vec2f pos = this.getPosition();
-	int color = this.getShape().getVars().customData;
+	const Vec2f pos = this.getPosition();
+	const int color = this.getShape().getVars().customData;
+	const u32 gameTime = getGameTime();
 	CRules@ rules = getRules();
 	
 	//repel
@@ -367,12 +365,12 @@ void onTick(CBlob@ this)
 		}
 	}*/
 
-	if (getGameTime() % 60 == 0)
+	if (gameTime % 60 == 0)
 	{
-		u8 coreTeam = this.getTeamNum();
+		const u8 coreTeam = this.getTeamNum();
 
 		//dmgmanaging
-		f32 msDMG = rules.get_f32("msDMG" + coreTeam);
+		const f32 msDMG = rules.get_f32("msDMG" + coreTeam);
 		if (msDMG > 0)
 			rules.set_f32("msDMG" + coreTeam, Maths::Max(msDMG - 0.75f, 0.0f));
 	}
@@ -382,7 +380,7 @@ void onTick(CBlob@ this)
 	{
 		//ship.vel *= 0.8f;
 
-		if (isServer() && getGameTime() > this.get_u32("dieTime"))
+		if (isServer() && gameTime > this.get_u32("dieTime"))
 			this.server_Die();
 		
 		//particles
@@ -412,7 +410,7 @@ void onTick(CBlob@ this)
 //make shipblocks start exploding
 void initiateSelfDestruct(CBlob@ this)
 {
-	Vec2f pos = this.getPosition();
+	const Vec2f pos = this.getPosition();
 	//set timer for selfDestruct sequence
 	this.Tag("critical");
 	this.set_u32("dieTime", getGameTime() + SELF_DESTRUCT_TIME);
@@ -433,11 +431,10 @@ void initiateSelfDestruct(CBlob@ this)
 	if (blocksLength < 10) return;
 		
 	this.AddScript("Block_Explode.as");
-	u8 teamNum = this.getTeamNum();
+	const u8 teamNum = this.getTeamNum();
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
-		ShipBlock@ ship_block = ship.blocks[i];
-		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
+		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 		if (b !is null && teamNum == b.getTeamNum())
 		{
 			if (i % 4 == 0 && !b.hasTag("mothership") && !b.hasTag("coupling"))
@@ -449,7 +446,7 @@ void initiateSelfDestruct(CBlob@ this)
 //kill players, turrets and ship
 void selfDestruct(CBlob@ this)
 {
-	Vec2f pos = this.getPosition();
+	const Vec2f pos = this.getPosition();
 	
 	//effects
 	if (isClient())
@@ -464,7 +461,7 @@ void selfDestruct(CBlob@ this)
 	
 	if (!isServer()) return;
 	
-	u8 teamNum = this.getTeamNum();
+	const u8 teamNum = this.getTeamNum();
 	
 	//kill team players
 	CBlob@[] humans;
@@ -498,8 +495,8 @@ void selfDestruct(CBlob@ this)
 		CBlob@ blastBlob = blastBlobs[i];
 		if (blastBlob !is this)
 		{
-			f32 maxHealth = blastBlob.getInitialHealth();
-			f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlob))/BLAST_RADIUS;
+			const f32 maxHealth = blastBlob.getInitialHealth();
+			const f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlob))/BLAST_RADIUS;
 			this.server_Hit(blastBlob, pos, Vec2f_zero, Maths::Max(0.1f, damage), Hitters::bomb, true);
 		}
 	}
@@ -513,8 +510,7 @@ void selfDestruct(CBlob@ this)
 
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
-		ShipBlock@ ship_block = ship.blocks[i];
-		CBlob@ b = getBlobByNetworkID(ship_block.blobID);
+		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 		if (b !is null && b !is this && teamNum == b.getTeamNum())
 			b.server_Die();
 	}

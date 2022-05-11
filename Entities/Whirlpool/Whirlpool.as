@@ -30,11 +30,12 @@ void onTick(CBlob@ this)
 		return;
 	
 	Vec2f pos = this.getPosition();
+	const u32 gameTime = getGameTime();
 	f32 force = this.get_f32("force");
 	f32 forceAngle = this.get_f32("force angle");
 	
 	//particles
-	if (getGameTime() % 5 == 0)
+	if (gameTime % 5 == 0)
 		makeParticle(pos);
 		
 	//suck in player
@@ -83,7 +84,7 @@ void onTick(CBlob@ this)
 	}
 	
 	//increase factor, damage blobs
-	if (this.getTickSinceCreated() > 300 && getGameTime() % 30 == 0)
+	if (this.getTickSinceCreated() > 300 && gameTime % 30 == 0)
 	{
 		force += FORCE_INCREASE;
 		this.set_f32("force", force);
@@ -108,7 +109,7 @@ void updateWhirlpoolParticle(CParticle@ p)
 	CMap@ map = getMap();
 	Vec2f pos = whirlpool.getPosition();
 	Vec2f attractDir = p.position - pos;
-	f32 distance = attractDir.Length() + 0.1f;
+	const f32 distance = attractDir.Length() + 0.1f;
 	attractDir.Normalize();
 	Vec2f perpDir = attractDir;
 	perpDir.RotateBy(whirlpool.get_f32("force angle"));
@@ -149,9 +150,9 @@ void updateWhirlpoolParticle(CParticle@ p)
 
 void makeParticle(Vec2f pos)
 {
-	u32 step = getGameTime()/6;
-	u8 aliveT = 20;
-	f32 radius = 225.0f;
+	const u32 step = getGameTime()/6;
+	const u8 aliveT = 20;
+	const f32 radius = 225.0f;
 	u8 emiteffect = GetCustomEmitEffectID("whirlpoolEmit");
 	
 	{

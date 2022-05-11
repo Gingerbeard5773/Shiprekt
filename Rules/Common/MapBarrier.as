@@ -14,7 +14,7 @@ void onTick(CRules@ this)
 	CMap@ map = getMap();
 	if (map is null) return;
 
-	Vec2f dim = map.getMapDimensions();
+	const Vec2f dim = map.getMapDimensions();
 
 	CBlob@[] blobsAtBorder;
 
@@ -33,11 +33,11 @@ void onTick(CRules@ this)
 			Ship@ ship = getShip(b.getShape().getVars().customData);
 			if (ship !is null && ship.vel.LengthSquared() > 0)
 			{
-				Vec2f pos = b.getPosition();
+				const Vec2f pos = b.getPosition();
 
 				//determine bounce direction
-				f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : ship.vel.x;
-				f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : ship.vel.y;
+				const f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : ship.vel.x;
+				const f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : ship.vel.y;
 				
 				const u16 blocksLength = ship.blocks.length;
 				if (blocksLength < 3)
@@ -66,7 +66,7 @@ void onTick(CRules@ this)
 						
 						if (isServer())
 						{
-							f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
+							const f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
 							f32 bounceAngle = Vec2f(-ship.vel.y * bounceFactor, ship.vel.x * bounceFactor).Angle();
 							while (bounceAngle < 0.0f)	 bounceAngle += 360.0f;
 							while (bounceAngle > 360.0f) bounceAngle -= 360.0f;

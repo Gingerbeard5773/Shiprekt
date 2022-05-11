@@ -8,11 +8,10 @@ void onInit(CBlob@ this)
 	if (isClient())
 	{
 		//add an additional frame to the damage frames animation
-		CSprite@ sprite = this.getSprite();
-		Animation@ animation = sprite.getAnimation("default");
+		Animation@ animation = this.getSprite().getAnimation("default");
 		if (animation !is null)
 		{
-			array<int> frames = {3};
+			int[] frames = {3};
 			animation.AddFrames(frames);
 		}
 	}

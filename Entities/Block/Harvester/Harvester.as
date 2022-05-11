@@ -99,9 +99,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
 				
-				Ship@ ship = getShip(b.getShape().getVars().customData);
+				Ship@ bship = getShip(b.getShape().getVars().customData);
 				
-				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector) && (ship !is null && ship.owner != ""))) 
+				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector) && (bship !is null && bship.owner != ""))) 
 					continue;
 
 				if (b.hasTag("block") && b.getShape().getVars().customData > 0)
@@ -119,18 +119,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 					const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
 					const f32 initialHealth = b.getInitialHealth();
-					f32 currentReclaim = b.get_f32("current reclaim");
+					const f32 currentReclaim = b.get_f32("current reclaim");
 
-					if (ship !is null && bCost > 0)
+					if (bship !is null && bCost > 0)
 					{
-						f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
-						string shipOwnerName = ship.owner;
+						const f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
+						const string shipOwnerName = bship.owner;
 						
 						if (!b.hasTag("mothership"))
 						{
 							f32 deconstructAmount = 0;
-							if ((shipOwnerName == "" && !ship.isMothership) //true if no owner for ship and ship is not a mothership
-								|| (b.get_string("playerOwner") == "" && !ship.isMothership) //true if no owner for the block and is not on a mothership
+							if ((shipOwnerName == "" && !bship.isMothership) //true if no owner for ship and ship is not a mothership
+								|| (b.get_string("playerOwner") == "" && !bship.isMothership) //true if no owner for the block and is not on a mothership
 								|| (shipOwnerName == thisPlayer.getUsername()) //true if we own the ship
 								|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
 							{

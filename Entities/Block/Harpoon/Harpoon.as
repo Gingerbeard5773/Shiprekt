@@ -92,7 +92,7 @@ void onTick(CBlob@ this)
 	HarpoonInfo@ harpoon;
 	if (!this.get("harpoonInfo", @harpoon)) return;
 	
-	Vec2f pos = this.getPosition();
+	const Vec2f pos = this.getPosition();
 	
 	CSprite@ sprite = this.getSprite();
 	doRopeUpdate(sprite, this, harpoon);
@@ -106,7 +106,7 @@ void onTick(CBlob@ this)
 		{
 			// more intuitive aiming (compensates for gravity and cursor position)
 			Vec2f direction = occupier.getAimPos() - pos;
-			f32 distance = direction.Normalize();
+			const f32 distance = direction.Normalize();
 				
 			if (!harpoon.grappling && !harpoon.reeling && distance > 1.0f) //otherwise grapple PROBLEM BLOCK
 			{
@@ -121,11 +121,10 @@ void onTick(CBlob@ this)
 	{
 		//update grapple
 		//TODO move to its own script?
-		bool ropeTooLong = (harpoon.grapple_pos - pos).getLength() > harpoon_grapple_length;	
 		
 		CMap@ map = getMap();
-		Vec2f dim = map.getMapDimensions();
 		
+		const bool ropeTooLong = (harpoon.grapple_pos - pos).getLength() > harpoon_grapple_length;	
 		const f32 harpoon_grapple_range = harpoon_grapple_length * harpoon.grapple_ratio;
 		
 		//reel in
@@ -133,12 +132,13 @@ void onTick(CBlob@ this)
 				harpoon.grapple_ratio -= 1.0f / getTicksASecond();
 				
 		Vec2f force = harpoon.grapple_pos - pos;
-		f32 dist = force.Normalize();
-		f32 offdist = dist - harpoon_grapple_range;
+		const f32 dist = force.Normalize();
+		const f32 offdist = dist - harpoon_grapple_range;
 		Vec2f offset;
 		
 		if (isServer() && !harpoon.reeling)
 		{
+			const Vec2f dim = map.getMapDimensions();
 			//when to start reeling back
 			bool ropeOutOfBounds = dim.x <= harpoon.grapple_pos.x || harpoon.grapple_pos.x <= 0.0f || dim.y <= harpoon.grapple_pos.y || harpoon.grapple_pos.y <= 0.0f;
 			Tile bTile = map.getTile(harpoon.grapple_pos);
@@ -169,7 +169,7 @@ void onTick(CBlob@ this)
 			
 			Vec2f retractBaseMin = (harpoon.grapple_pos - pos);
 			retractBaseMin.Normalize();
-			Vec2f retract = retractBaseMin*7.0f;
+			const Vec2f retract = retractBaseMin*7.0f;
 			Vec2f next = harpoon.grapple_pos + harpoon.grapple_vel - retract;
 			next -= offset;
 
@@ -255,7 +255,7 @@ void onTick(CBlob@ this)
 					Ship@ hitShip = getShip(b.getShape().getVars().customData);
 					if (hitShip !is null && thisShip !is null)
 					{
-						bool isMyShip = hitShip.id == thisShip.id;
+						const bool isMyShip = hitShip.id == thisShip.id;
 						if (!isMyShip && ropeTooLong)
 						{
 							//TODO: fix angular velocity support & find a better solution for super-sonic speeds
@@ -294,7 +294,7 @@ void Manual(CBlob@ this, CBlob@ occupier, HarpoonInfo@ harpoon)
 	Vec2f aimpos = occupier.getAimPos();
 	Vec2f aimvector = aimpos - this.getPosition();
 	Vec2f off = harpoon.grapple_pos - this.getPosition();
-	f32 aimAngle = harpoon.grappling ? -off.Angle() : -aimvector.Angle();
+	const f32 aimAngle = harpoon.grappling ? -off.Angle() : -aimvector.Angle();
 
 	// rotate muzzle
 	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("harpoon");

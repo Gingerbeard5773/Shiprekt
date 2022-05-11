@@ -43,10 +43,10 @@ void onTick(CBlob@ this)
 				walk.shipOldPos = ship.centerBlock.getPosition();
 			}
 			
-			f32 shipAngle = ship.centerBlock.getAngleDegrees();
+			const f32 shipAngle = ship.centerBlock.getAngleDegrees();
 			Vec2f shipPos = ship.centerBlock.getPosition();
-			Vec2f shipDisplacement = shipPos - walk.shipOldPos;
-			f32 shipAngleDelta = shipAngle - walk.shipOldAngle;
+			const Vec2f shipDisplacement = shipPos - walk.shipOldPos;
+			const f32 shipAngleDelta = shipAngle - walk.shipOldAngle;
 			Vec2f shipToBlob = this.getPosition() - shipPos + shipDisplacement;
 			shipToBlob.RotateBy(shipAngleDelta);
 			

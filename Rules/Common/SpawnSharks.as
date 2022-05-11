@@ -32,7 +32,7 @@ void SpawnShark(CRules@ this, Vec2f pos)
         radius.RotateBy(XORRandom(360));
         
 		//only spawn if position is in water and visible to human
-        Vec2f spawnPos = pos + radius;
+        const Vec2f spawnPos = pos + radius;
         if (isInWater(spawnPos) && !isTouchingShoal(spawnPos) && !getMap().rayCastSolid(spawnPos, pos))
         {
             CBlob@ shark = server_CreateBlob("shark", -1, spawnPos);
@@ -40,7 +40,7 @@ void SpawnShark(CRules@ this, Vec2f pos)
     }
 }
 
-u8 getSharkCountInArea(CRules@ this, Vec2f pos, const f32 radius = SHARK_SPAWN_RADIUS+5.0f)
+u8 getSharkCountInArea(CRules@ this, const Vec2f pos, const f32 radius = SHARK_SPAWN_RADIUS+5.0f)
 {
 	u8 sharks = 0;
 	CBlob@[] blobsInRadius;

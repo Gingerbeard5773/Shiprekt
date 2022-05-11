@@ -52,7 +52,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	int col = this.getShape().getVars().customData;
+	const int col = this.getShape().getVars().customData;
 	if (col <= 0) return; //not placed yet
 
 	if (isServer())
@@ -136,7 +136,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		this.set_u16("ammo", ammo);
 
 		Vec2f aimvector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-		Vec2f barrelPos = this.getPosition() + aimvector*9;
+		const Vec2f barrelPos = this.getPosition() + aimvector*9;
 		Vec2f velocity = aimvector*BULLET_SPEED;
 
 		if (isServer())

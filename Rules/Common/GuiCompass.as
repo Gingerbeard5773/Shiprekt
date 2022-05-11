@@ -30,9 +30,6 @@ class CompassVars
 	f32 booty_angle;
 	f32 booty_distance;
 	
-	//f32 ship_angle;
-	//f32 ship_distance;
-
     CompassVars()
 	{
         Reset();
@@ -74,8 +71,8 @@ void onTick(CRules@ this)
 	CCamera@ camera = getCamera();
     if (b is null && camera is null) return;
 
-    Vec2f pos = b !is null ? b.getPosition() : camera.getPosition();
-	u8 localTeamNum = p.getTeamNum();
+    const Vec2f pos = b !is null ? b.getPosition() : camera.getPosition();
+	const u8 localTeamNum = p.getTeamNum();
 	
 	//center
 	CMap@ map = getMap();
@@ -140,8 +137,8 @@ void onTick(CRules@ this)
         CBlob@ human = humans[i];		
         Vec2f offset = (human.getPosition() - pos);
 
-		f32 distance = offset.Length();
-		u8 teamNum = human.getTeamNum();
+		const f32 distance = offset.Length();
+		const u8 teamNum = human.getTeamNum();
 		
 		if (distance < 208 || (distance > 864 && localTeamNum != teamNum))//don't include if too close or too far
 			continue;
@@ -161,9 +158,9 @@ void onTick(CRules@ this)
     {
         CBlob@ currBooty = booty[i];
 		Vec2f bootyPos = currBooty.getPosition();
-		f32 distToPlayer = (bootyPos - pos).getLength();
+		const f32 distToPlayer = (bootyPos - pos).getLength();
 		f32 dist = distToPlayer;	
-		if (currBooty.get_u16("ammount") > 0 && dist < closestBootyDist)
+		if (currBooty.get_u16("amount") > 0 && dist < closestBootyDist)
 		{
 			closestBootyDist = dist;
 			closestBootyIndex = i;
@@ -201,15 +198,15 @@ void onRender(CRules@ this)
     const string gui_image_fname = "GUI/compass.png";
 
     CCamera@ c = getCamera();
-    f32 camangle = c.getRotation();
+    const f32 camangle = c.getRotation();
 	CControls@ controls = getControls();
-	bool mapKey = controls.ActionKeyPressed(AK_MAP);
+	const bool mapKey = controls.ActionKeyPressed(AK_MAP);
 	
 	CPlayer@ p = getLocalPlayer();
-	u8 localTeamNum = p !is null ? p.getTeamNum() : -1;
+	const u8 localTeamNum = p !is null ? p.getTeamNum() : -1;
 	
     Vec2f topLeft = Vec2f(8,8);
-    Vec2f framesize = Vec2f(64,64);
+    const Vec2f framesize = Vec2f(64,64);
     Vec2f center = Vec2f(32,32);
 
 	if (mapKey)
@@ -225,7 +222,7 @@ void onRender(CRules@ this)
 		mKeyWasPressed = false;
 		mKeyTap = mKeyTap ? false : getGameTime() - mKeyPressTime < 10;
 	}
-		
+	
 	f32 scale = 1.0f;
 	//GUI set scale
 	if (mKeyTap || (controls.getMouseScreenPos() - topLeft - center).Length() < 64.0f 
@@ -240,7 +237,7 @@ void onRender(CRules@ this)
     {
         Vec2f pos(Maths::Min(8.0f, _vars.center_distance / 48.0f), 0.0f);
 
-        Vec2f thisframesize = Vec2f(16,16);
+        const Vec2f thisframesize = Vec2f(16,16);
 
         pos.RotateBy(_vars.center_angle - camangle);
 		
@@ -255,24 +252,12 @@ void onRender(CRules@ this)
 	{
         Vec2f pos(Maths::Min(18.0f, _vars.booty_distance / 48.0f), 0.0f);
 
-        Vec2f thisframesize = Vec2f(16,16);
+        const Vec2f thisframesize = Vec2f(16,16);
 
         pos.RotateBy(_vars.booty_angle - camangle);
 
         GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
     }
-	
-	//closest ship
-	/*if (_vars.ship_distance > 0.0f && _vars.ship_distance < _vars.booty_distance)
-	{
-        Vec2f pos(Maths::Min(18.0f, _vars.ship_distance / 48.0f), 0.0f);
-
-        Vec2f thisframesize = Vec2f(16,16);
-
-        pos.RotateBy(_vars.ship_angle - camangle);
-
-        GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
-    }*/
 	
 	//station icons
 	const u8 stationsLength = _vars.station_teams.length;
@@ -280,7 +265,7 @@ void onRender(CRules@ this)
     {
         Vec2f pos(Maths::Min(18.0f, _vars.station_distances[i] / 48.0f), 0.0f);
 
-        Vec2f thisframesize = Vec2f(8,8);
+       const Vec2f thisframesize = Vec2f(8,8);
 
         pos.RotateBy(_vars.station_angles[i] - camangle);
 
@@ -293,9 +278,9 @@ void onRender(CRules@ this)
     {
         Vec2f pos(Maths::Min(18.0f, _vars.human_distances[i] / 48.0f), 0.0f);
 		
-        Vec2f thisframesize = Vec2f(8,8);
+        const Vec2f thisframesize = Vec2f(8,8);
 
-		bool borderZoom = localTeamNum != _vars.human_teams[i] && pos.x > 16.5f;
+		const bool borderZoom = localTeamNum != _vars.human_teams[i] && pos.x > 16.5f;
         
 		pos.RotateBy(_vars.human_angles[i] - camangle);
         
@@ -326,7 +311,7 @@ void onRender(CRules@ this)
     		// draw decoy core as mother core
     		Vec2f pos(Maths::Min(18.0f, _vars.decoycore_distances[decoycore_index] / 48.0f), 0.0f);
 
-	        Vec2f thisframesize = Vec2f(8,8);
+	        const Vec2f thisframesize = Vec2f(8,8);
 
 	        pos.RotateBy(_vars.decoycore_angles[decoycore_index] - camangle);
 
@@ -343,7 +328,7 @@ void onRender(CRules@ this)
     	{
 	        Vec2f pos(Maths::Min(18.0f, _vars.core_distances[i] / 48.0f), 0.0f);
 
-	        Vec2f thisframesize = Vec2f(8,8);
+	        const Vec2f thisframesize = Vec2f(8,8);
 
 	        pos.RotateBy(_vars.core_angles[i] - camangle);
 

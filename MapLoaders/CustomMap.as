@@ -6,12 +6,12 @@ Random map_random(1569815698);
 namespace CMap
 {
 	// tiles
-	const SColor color_water(255, 77, 133, 188);
-	// custom land tiles
-	const SColor color_sand(255, 236, 213, 144);
-	const SColor color_grass(255, 100, 155, 13);
-	const SColor color_rock(255, 161, 161, 161);
-	const SColor color_shoal(255, 100, 170, 180);
+	const SColor 
+	color_water(255, 77, 133, 188),
+	color_sand(255, 236, 213, 144),
+	color_grass(255, 100, 155, 13),
+	color_rock(255, 161, 161, 161),
+	color_shoal(255, 100, 170, 180);
 	
 	// objects
 	enum color
@@ -32,24 +32,21 @@ namespace CMap
 		map.topBorder = map.bottomBorder = map.rightBorder = map.leftBorder = true;
 	}
 	
-	SColor pixel_R = color_water;
-	SColor pixel_RU = color_water;
-	SColor pixel_U = color_water;
-	SColor pixel_LU = color_water;
-	SColor pixel_L = color_water;
-	SColor pixel_LD = color_water;
-	SColor pixel_D = color_water;
-	SColor pixel_RD = color_water;
+	SColor
+	pixel_R = color_water,
+	pixel_RU = color_water,
+	pixel_U = color_water,
+	pixel_LU = color_water,
+	pixel_L = color_water,
+	pixel_LD = color_water,
+	pixel_D = color_water,
+	pixel_RD = color_water;
 
 	//
-	void handlePixel(CMap@ map, CFileImage@ image, SColor pixel, int offset, Vec2f pixelPos)
+	void handlePixel(CMap@ map, CFileImage@ image, SColor pixel, const int offset, Vec2f pixelPos)
 	{	
 		if (pixel == color_water)
-		{
-			//map.AddTileFlag(offset, Tile::BACKGROUND);
-			//map.AddTileFlag(offset, Tile::LIGHT_PASSES);
 			return;
-		}
 		
 		// ** NON-TILES **
 		

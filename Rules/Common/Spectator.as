@@ -29,7 +29,7 @@ void Spectator(CRules@ this)
 
     if (this.get_bool("set new target"))
     {
-        string newTarget = this.get_string("new target");
+        const string newTarget = this.get_string("new target");
         _targetPlayer = newTarget;
         if (targetPlayer() !is null)
         {
@@ -58,7 +58,7 @@ void Spectator(CRules@ this)
 			}
 			else if (controls.mouseScrollDown)
 			{
-				Vec2f dim = map.getMapDimensions();
+				const Vec2f dim = map.getMapDimensions();
 				CPlayer@ localPlayer = getLocalPlayer();
 				const bool isSpectator = localPlayer !is null ? localPlayer.getTeamNum() == this.getSpectatorTeamNum() : false;
 				const bool allowMegaZoom = isSpectator && dim.x > 900 && camera.getTarget() is null; //map must be large enough, player has to be spectator team
@@ -188,8 +188,8 @@ void Spectator(CRules@ this)
 	//Don't go to far off the map boundaries
 	if (map !is null)
 	{
-		f32 borderMarginX = map.tilesize * (zoomTarget == 0.2f ? 15 : 2) / zoomTarget;
-		f32 borderMarginY = map.tilesize * (zoomTarget == 0.2f ? 5 : 2) / zoomTarget;
+		const f32 borderMarginX = map.tilesize * (zoomTarget == 0.2f ? 15 : 2) / zoomTarget;
+		const f32 borderMarginY = map.tilesize * (zoomTarget == 0.2f ? 5 : 2) / zoomTarget;
 
 		if (pos.x < borderMarginX)
 		{

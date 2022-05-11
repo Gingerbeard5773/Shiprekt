@@ -55,16 +55,16 @@ void onRender(CRules@ this)
 	
 	if (showHelp)
 	{	
-		SColor tipsColor = SColor(255, 255, 255, 255);
-		f32 sWidth = getScreenWidth();
-		f32 sHeight = getScreenHeight();
-		u32 gameTime = getGameTime();
+		const SColor tipsColor = SColor(255, 255, 255, 255);
+		const f32 sWidth = getScreenWidth();
+		const f32 sHeight = getScreenHeight();
+		const u32 gameTime = getGameTime();
 
 		Vec2f imageSize;
 		GUI::GetIconDimensions("$HELP$", imageSize);
 
-		string infoTitle = Trans::HowToPlay;
-		string textInfo = "- "+ Trans::Mothership+":\n" +
+		const string infoTitle = Trans::HowToPlay;
+		const string textInfo = "- "+ Trans::Mothership+":\n" +
 		" * "+ Trans::GatherX    +"\n"+
 		" * "+ Trans::EngineWeak +"\n\n"+
 		"- " + Trans::Miniship   +":\n" +
@@ -75,8 +75,8 @@ void onRender(CRules@ this)
 		" * "+ Trans::BlockWeight;
 		
 		//Controls
-		string controlsTitle = Trans::Controls;
-		string controlsInfo = " [ " + inv_key + " ] "+ Trans::GetBlocks+"\n"+
+		const string controlsTitle = Trans::Controls;
+		const string controlsInfo = " [ " + inv_key + " ] "+ Trans::GetBlocks+"\n"+
 		" [ " + action3_key + " ] "+ Trans::RotateBlocks+"\n"+
 		" [ " + action1_key + " ] "+ Trans::Punch+"\n"+
 		" [ " + action2_key + " ] "+Trans::Hold+" "+ Trans::FireGun+"\n"+
@@ -93,8 +93,8 @@ void onRender(CRules@ this)
 		Vec2f controlsSize;
 		GUI::GetTextDimensions(controlsTitle + controlsInfo, controlsSize);
 
-		Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin, Maths::Max(10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - controlsSize.y/2 - boxMargin));
-		Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2 + controlsSize.y/2);
+		const Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin, Maths::Max(10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - controlsSize.y/2 - boxMargin));
+		const Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2 + controlsSize.y/2);
 		
 		//draw box
 		GUI::DrawButtonPressed(tlBox, brBox);
@@ -102,7 +102,7 @@ void onRender(CRules@ this)
 		if (justJoined)
 		{
 			//welcome text
-			string intro = Trans::Welcome+" Gingerbeard."; //last editor
+			const string intro = Trans::Welcome+" Gingerbeard."; //last editor
 			
 			Vec2f introSize;
 			GUI::GetTextDimensions(intro, introSize);
@@ -113,7 +113,7 @@ void onRender(CRules@ this)
 		if (!justJoined || gameTime % 90 > 30)
 		{
 			//helptoggle
-			string helpToggle = ">> "+Trans::ChangePage+" <<";
+			const string helpToggle = ">> "+Trans::ChangePage+" <<";
 			
 			Vec2f toggleSize;
 			GUI::GetTextDimensions(helpToggle, toggleSize);
@@ -127,8 +127,8 @@ void onRender(CRules@ this)
 		if (page1)
 		{
 			//PAGE 1
-			string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51.1\n";
-			string lastChangesInfo = Trans::LastChanges+":\n"
+			const string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51.1\n";
+			const string lastChangesInfo = Trans::LastChanges+":\n"
 			+ "- 4-27-2022 - By Gingerbeard\n"
 			+ "  * Weapons only refill ammunition if they aren't being fired.\n"
 			+ "  * Tweaked the harvester to be weaker.\n"
@@ -143,8 +143,8 @@ void onRender(CRules@ this)
 			Vec2f lastChangesSize;
 			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
 		
-			Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
-			Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
+			const Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
+			//Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
 			
 			GUI::SetFont("thick font");
 			GUI::DrawText(shiprektVersion, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
@@ -181,7 +181,7 @@ void onRender(CRules@ this)
 			
 			if (!v_fastrender)
 			{
-				string lagTip = "<> "+Trans::FastGraphics+" <>";
+				const string lagTip = "<> "+Trans::FastGraphics+" <>";
 				GUI::DrawTextCentered(lagTip, Vec2f(sWidth/2, tlBox.y + boxMargin *10), tipsColor);
 			}
 		}
@@ -191,10 +191,9 @@ void onRender(CRules@ this)
 	
 		if (getLocalPlayerBlob() !is null && (getControls().getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
 		{
-			SColor arrowColor = SColor(150, 255, 255, 255);
 			GUI::SetFont("menu");
 			GUI::DrawTextCentered("[ "+Trans::ClickIcons+" ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), tipsColor);
-			//GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), arrowColor);
+			//GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), tipsColor);
 		}
 		
 		//Add social links
@@ -205,22 +204,22 @@ void onRender(CRules@ this)
 
 void makeWebsiteLink(Vec2f pos, string text, string website)
 {
-	f32 height = 40;
+	const f32 height = 40;
 
 	GUI::SetFont("menu");
 	
 	Vec2f dim;
 	GUI::GetTextDimensions(text, dim);
 
-	f32 width = dim.x + 20;
+	const f32 width = dim.x + 20;
 
-	Vec2f tl = Vec2f(getScreenWidth() - 10 - width - pos.x, pos.y);
-	Vec2f br = Vec2f(getScreenWidth() - 10 - pos.x, tl.y + height);
+	const Vec2f tl = Vec2f(getScreenWidth() - 10 - width - pos.x, pos.y);
+	const Vec2f br = Vec2f(getScreenWidth() - 10 - pos.x, tl.y + height);
 
 	CControls@ controls = getControls();
-	Vec2f mousePos = controls.getMouseScreenPos();
+	const Vec2f mousePos = controls.getMouseScreenPos();
 
-	bool hover = (mousePos.x > tl.x && mousePos.x < br.x && mousePos.y > tl.y && mousePos.y < br.y);
+	const bool hover = (mousePos.x > tl.x && mousePos.x < br.x && mousePos.y > tl.y && mousePos.y < br.y);
 
 	if (hover)
 	{

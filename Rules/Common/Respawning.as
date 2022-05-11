@@ -107,7 +107,7 @@ void assignTeam(CRules@ this, CPlayer@ player)
     for (u8 i = 0; i < plyCount; i++)
     {
         CPlayer@ p = getPlayer(i);
-        s32 pteam = p.getTeamNum();
+        u8 pteam = p.getTeamNum();
         if (pteam >= 0 && pteam < teamsNum)
             playersperteam[pteam]++;
     }
@@ -185,7 +185,7 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 		//print("SpawnPlayer: reassigning " + player.getUsername() +"to team "+player.getTeamNum());
 	}
 	
-	u8 newteam = player.getTeamNum();
+	const u8 newteam = player.getTeamNum();
 	CBlob@ newship = getMothership(newteam);
 		
 	// spawn as shark if cant find a ship
@@ -247,7 +247,7 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
         blob.server_Die();
 	
 	const u8 specNum = this.getSpectatorTeamNum();
-	u8 old_team = player.getTeamNum();
+	const u8 old_team = player.getTeamNum();
 	
 	player.server_setTeamNum(newteam);
 	if (newteam != specNum)

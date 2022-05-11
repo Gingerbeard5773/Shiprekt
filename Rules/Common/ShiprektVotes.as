@@ -373,7 +373,7 @@ class VoteSurrenderFunctor : VoteFunctor
 	s32 team;
 	void Pass(bool outcome)
 	{
-		bool isMyTeam = getLocalPlayer() !is null && getLocalPlayer().getTeamNum() == team;
+		const bool isMyTeam = getLocalPlayer() !is null && getLocalPlayer().getTeamNum() == team;
 		if (outcome)
 		{
 			if (isServer())
@@ -398,11 +398,11 @@ class VoteSurrenderFunctor : VoteFunctor
 				}
 			}
 			if (isMyTeam)
-				client_AddToChat("*** Your mothership is blowing up! ***", vote_message_colour());
+				client_AddToChat("*** "+Trans::MothershipDie+" ***", vote_message_colour());
 		}
 		else if (isMyTeam)
 		{
-			client_AddToChat("*** Mothership self-destruction vote failed! ***", vote_message_colour());
+			client_AddToChat("*** "+Trans::DestructFail+" ***", vote_message_colour());
 		}
 	}
 };
@@ -433,7 +433,7 @@ VoteObject@ Create_VoteSurrender(CPlayer@ byplayer)
 	@vote.onvotepassed = VoteSurrenderFunctor(byplayer);
 	@vote.canvote = VoteSurrenderCheckFunctor(byplayer.getTeamNum());
 
-	vote.title = "Enable self-destruction?               ";
+	vote.title = Trans::EnableBoom+"?               ";
 	vote.reason = "";
 	vote.byuser = byplayer.getUsername();
 	vote.forcePassFeature = "surrender";
@@ -601,13 +601,13 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 		CMap@ map = getMap();
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
-		f32 coresTime = 2.5f * (cores.length - 2) * 30 * 60;
-		f32 mapFactor = Maths::Min(1.0f, Maths::Sqrt(map.tilemapwidth * map.tilemapheight) / 300.0f);
-		u32 minTime = Maths::Max(0, Maths::Round(BaseEnableTimeSuddenDeath * mapFactor + coresTime) - getGameTime());
-		u32 coolDown = Maths::Max(0, suddenDeathVoteCooldown - (getGameTime() - lastSDVote));
+		const f32 coresTime = 2.5f * (cores.length - 2) * 30 * 60;
+		const f32 mapFactor = Maths::Min(1.0f, Maths::Sqrt(map.tilemapwidth * map.tilemapheight) / 300.0f);
+		const u32 minTime = Maths::Max(0, Maths::Round(BaseEnableTimeSuddenDeath * mapFactor + coresTime) - getGameTime());
+		const u32 coolDown = Maths::Max(0, suddenDeathVoteCooldown - (getGameTime() - lastSDVote));
 		
-		u32 timeToEnable = minTime + coolDown;
-		bool whirlpool = this.get_bool("whirlpool");
+		const u32 timeToEnable = minTime + coolDown;
+		const bool whirlpool = this.get_bool("whirlpool");
 		
 		string desc = Trans::TooLong+" "+Trans::Vote+" "+Trans::SuddenDeath+"!\n";
 		if (whirlpool)
@@ -644,7 +644,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	//Freebuild menu
 	//vote free building mode
 	{
-		u32 coolDownFb = Maths::Max(0, freeBuildCooldown - (getGameTime() - lastFBVote));
+		const u32 coolDownFb = Maths::Max(0, freeBuildCooldown - (getGameTime() - lastFBVote));
 		
 		string nameFb = Trans::Enable+" "+Trans::FreebuildMode+"\n";
 		if (this.get_bool("freebuild")) nameFb = Trans::Disable+" "+Trans::FreebuildMode+"\n";
@@ -669,10 +669,10 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	//Self-Destruction menu
 	//vote to blow up your mothership
 	{
-		u32 coolDownSR = Maths::Max(0, surrenderCooldown - (getGameTime() - lastSRVote));
+		const u32 coolDownSR = Maths::Max(0, surrenderCooldown - (getGameTime() - lastSRVote));
 		
-		string nameSurrender = "Self-Destruct Mothership\n";
-		string descSurrender = "Vote to blow up your mothership.";
+		const string nameSurrender = Trans::SelfDestruct+"\n";
+		string descSurrender = Trans::VoteDestruct+".";
 		if (coolDownSR > 0)
 			descSurrender = getTranslatedString("Can't Start Vote")+" : "+ (coolDownSR/30) + getTranslatedString(" seconds")+".";
 		
@@ -683,7 +683,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 			Menu::addSeparator(surrendermenu);
 			CBitStream params;
 			params.write_u8(1);
-			Menu::addContextItemWithParams(surrendermenu, "Blow up!", "ShiprektVotes.as", "Callback_Surrender", params);
+			Menu::addContextItemWithParams(surrendermenu, Trans::BlowUp, "ShiprektVotes.as", "Callback_Surrender", params);
 		}
 	}
 	Menu::addSeparator(surrendermenu);
@@ -749,7 +749,7 @@ void Callback_NextMap(CBitStream@ params)
 	u8 id;
 	if (!params.saferead_u8(id)) return;
 
-	string reason = Trans::SpeedThings;
+	const string reason = Trans::SpeedThings;
 
 	CBitStream params2;
 	params2.write_u16(me.getNetworkID());

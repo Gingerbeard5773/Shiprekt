@@ -1,7 +1,7 @@
 #include "TileCommon.as";
 Random _waterparticlerandom(0x1a73a);
 
-CParticle@ MakeWaterParticle(Vec2f pos, Vec2f vel)
+CParticle@ MakeWaterParticle(const Vec2f pos, const Vec2f vel)
 {
 	if (isInWater(pos))
 	{
@@ -20,7 +20,7 @@ CParticle@ MakeWaterParticle(Vec2f pos, Vec2f vel)
 	return null;
 }
 
-CParticle@ MakeWaterWave(Vec2f pos, Vec2f vel, float angle)
+CParticle@ MakeWaterWave(const Vec2f pos, const Vec2f vel, const float angle)
 {
 	CParticle@ p = ParticleAnimated("Sprites/water_wave.png",
 											  pos, vel,
@@ -35,7 +35,7 @@ CParticle@ MakeWaterWave(Vec2f pos, Vec2f vel, float angle)
 	return p;
 }
 
-CParticle@ MakeWhirlpoolParticle(Vec2f pos, Vec2f vel, int animtime)
+CParticle@ MakeWhirlpoolParticle(const Vec2f pos, const Vec2f vel, const int animtime)
 {
 	CParticle@ p = ParticleAnimated("Sprites/water_whirl.png",
 											  pos, vel,

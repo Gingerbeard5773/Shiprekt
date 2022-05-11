@@ -28,12 +28,12 @@ void Reset(CRules@ this)
 
 void onTick(CRules@ this)
 {
-	u32 gameTime = getGameTime();
+	const u32 gameTime = getGameTime();
 	
 	//check for minimum resources on captains
 	if (gameTime % 150 == 0 && !this.get_bool("whirlpool"))
 	{
-		u16 minBooty = this.get_u16("bootyRefillLimit");
+		const u16 minBooty = this.get_u16("bootyRefillLimit");
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
 		
@@ -43,7 +43,7 @@ void onTick(CRules@ this)
 			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
 			if (ship !is null && ship.owner != "" && ship.owner  != "*")
 			{
-				u16 captainBooty = server_getPlayerBooty(ship.owner);
+				const u16 captainBooty = server_getPlayerBooty(ship.owner);
 				if (captainBooty < minBooty)
 				{
 					CPlayer@ player = getPlayerByUsername(ship.owner);
@@ -108,10 +108,10 @@ void onTick(CRules@ this)
 	{
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
-		u8 teams = cores.length;
-		u16 initBooty = Maths::Round(getRules().get_u16("starting_booty") * 0.75f);
-		u8 players = getPlayersCount();
-		u8 median = teams <= 0 ? 1 : Maths::Round(players/teams);
+		const u8 teams = cores.length;
+		const u16 initBooty = Maths::Round(getRules().get_u16("starting_booty") * 0.75f);
+		const u8 players = getPlayersCount();
+		const u8 median = teams <= 0 ? 1 : Maths::Round(players/teams);
 		
 		//player per team
 		const u8 teamsNum = this.getTeamsNum();
@@ -129,13 +129,13 @@ void onTick(CRules@ this)
 		for (u8 p = 0; p < players; p++)
 		{
 			CPlayer@ player = getPlayer(p);
-			u8 team = player.getTeamNum();
+			const u8 team = player.getTeamNum();
 			if (team >= teamsNum) continue;
 				
-			f32 compensate = median/teamPlayers[team];
+			const f32 compensate = median/teamPlayers[team];
 			if (compensate > 1)
 			{
-				u16 balance = Maths::Round(initBooty * compensate/teamPlayers[team] - initBooty);
+				const u16 balance = Maths::Round(initBooty * compensate/teamPlayers[team] - initBooty);
 				string name = player.getUsername();
 				server_setPlayerBooty(name, balance);
 			}
@@ -157,8 +157,8 @@ void onTick(CRules@ this)
 		
 		const u8 coresLength = cores.length;
 		
-        bool oneTeamLeft = coresLength <= 1;
-		u8 endCount = this.get_u8("endCount");
+        const bool oneTeamLeft = coresLength <= 1;
+		const u8 endCount = this.get_u8("endCount");
 		
 		if (oneTeamLeft && endCount == 0)//start endmatch countdown
 			this.set_u8("endCount", 15);
@@ -171,7 +171,7 @@ void onTick(CRules@ this)
 				u8 teamWithPlayers = 0;
 				if (!this.isGameOver())
 				{
-					u8 plyCount = getPlayerCount();
+					const u8 plyCount = getPlayerCount();
 					for (u8 coreIt = 0; coreIt < coresLength; coreIt++)
 					{
 						for (u8 i = 0; i < plyCount; i++)
@@ -205,7 +205,7 @@ void onTick(CRules@ this)
 					}
 				}
 				else
-					this.SetGlobalMessage("Game Over! It's a tie!");
+					this.SetGlobalMessage("Game Over! "+ getTranslatedString("It's a tie!"));
 				
 				this.SetCurrentState(GAME_OVER);
 			}
@@ -215,10 +215,10 @@ void onTick(CRules@ this)
 
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
-	string pName = player.getUsername();
-
-	u16 pBooty = server_getPlayerBooty(pName);
-	u16 minBooty = Maths::Round(this.get_u16("bootyRefillLimit") / 2);
+	const string pName = player.getUsername();
+	const u16 pBooty = server_getPlayerBooty(pName);
+	const u16 minBooty = Maths::Round(this.get_u16("bootyRefillLimit") / 2);
+	
 	if (sv_test)
 		server_setPlayerBooty(pName, 9999);
 	else if (pBooty > minBooty)
@@ -318,7 +318,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!hash") //gives encoded hash for the word you input
 				{
-					string word = text_in.replace("!hash ", "");
+					const string word = text_in.replace("!hash ", "");
 					print(word.getHash() + " : "+ word, color_white);
 					
 					return false;
@@ -326,7 +326,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!tp") //teleport to player, uses playername or playerID
 				{
 					//this command also has support to teleport other players to our player. E.g "!tp (player) here"
-					string word = text_in.replace("!tp ", "").replace(" here", "");
+					const string word = text_in.replace("!tp ", "").replace(" here", "");
 					CPlayer@ ply = getPlayerByUsername(word);
 					if (ply is null)
 						@ply = getPlayerByNetworkId(parseInt(tokens[1]));
@@ -406,7 +406,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						warn("!saveship:: No ship found!");
 						return false;
 					}
-					u16 numBlocks = ship.blocks.length;
+					const u16 numBlocks = ship.blocks.length;
 					cfg.add_u16("total blocks", numBlocks);
 					for (u16 i = 0; i < numBlocks; ++i)
 					{
@@ -436,7 +436,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					Vec2f playerPos = pBlob.getPosition();
 				
-					u16 numBlocks = cfg.read_u16("total blocks");
+					const u16 numBlocks = cfg.read_u16("total blocks");
 					for (u16 i = 0; i < numBlocks; ++i)
 					{	
 						string blockType = cfg.read_string("block" + i + "type");
@@ -457,11 +457,10 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					if (pBlob is null)
 						return false;
 					
-					Vec2f playerPos = pBlob.getPosition();
 					Ship@ ship = getShip(player.getBlob());
 					if (ship !is null)
 					{
-						u16 numBlocks = ship.blocks.length;
+						const u16 numBlocks = ship.blocks.length;
 						for (u16 i = 0; i < numBlocks; ++i)
 						{
 							ShipBlock@ ship_block = ship.blocks[i];
@@ -554,7 +553,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!sd") //spawn a whirlpool
 				{
 					CMap@ map = getMap();
-					Vec2f mapCenter = Vec2f(map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
+					const Vec2f mapCenter = Vec2f(map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
 					server_CreateBlob("whirlpool", 0, mapCenter);
 				}
 				else if (tokens[0] == "!pinball") //pinball machine

@@ -20,7 +20,7 @@ void onInit(CRules@ this)
 	this.set_u16("warmup_time", 1 * 150 * 30);//no weapons warmup time
 	this.set_u16("booty_x_max", 200);
 	this.set_u16("booty_x_min", 100);
-	this.set_u16("booty_transfer", 50);//min transfer ammount
+	this.set_u16("booty_transfer", 50);//min transfer amount
 	this.set_f32("booty_transfer_fee", 0.0f);
 	this.set_u16("bootyRefillLimit", 50);
 
@@ -92,13 +92,9 @@ void onRestart(CRules@ this)
 void ShowTeamMenu(CRules@ this)
 {
 	CPlayer@ local = getLocalPlayer();
-    if (local is null) 
-	{
-        return;
-    }
+    if (local is null) return;
 
     CGridMenu@ menu = CreateGridMenu(getDriver().getScreenCenterPos(), null, Vec2f(BUTTON_SIZE, BUTTON_SIZE), "Change team");
-
     if (menu !is null)
     {
 		CBitStream exitParams;

@@ -41,7 +41,7 @@ void onInit(CBlob@ this)
 void onTick(CBlob@ this)
 {	
 	Vec2f pos = this.getPosition();
-	f32 angle = this.getAngleDegrees();
+	const f32 angle = this.getAngleDegrees();
 	Vec2f aimvector = Vec2f(1,0).RotateBy(angle - 90.0f);
 	
 	if (this.getTickSinceCreated() > ROCKET_DELAY)
@@ -61,8 +61,8 @@ void onTick(CBlob@ this)
 			
 			const u32 gametime = getGameTime();
 			u32 lastSmokeTime = this.get_u32("last smoke puff");
-			int ticksTillSmoke = v_fastrender ? 5 : 2;
-			int diff = gametime - (lastSmokeTime + ticksTillSmoke);
+			const int ticksTillSmoke = v_fastrender ? 5 : 2;
+			const int diff = gametime - (lastSmokeTime + ticksTillSmoke);
 			if (diff > 0)
 			{
 				CParticle@ p = ParticleAnimated(CFileMatcher("RocketFire2.png").getFirst(), 
@@ -91,17 +91,17 @@ void onTick(CBlob@ this)
 			Vec2f aimPos = ownerBlob.getAimPos();
 			Vec2f ownerPos = ownerBlob.getPosition();
 			
-			f32 targetDistance = (aimPos - ownerPos).getLength();
-			f32 rocketDistance = (pos - ownerPos).getLength();
+			const f32 targetDistance = (aimPos - ownerPos).getLength();
+			//f32 rocketDistance = (pos - ownerPos).getLength();
 			
 			if (targetDistance > GUIDANCE_RANGE) //must be done to preven desync issues
 			{	
 				aimPos = ownerPos + Vec2f(GUIDANCE_RANGE, 0).RotateBy(-(aimPos - ownerPos).getAngleDegrees());
 			}
 		
-			f32 angleOffset = 270.0f;		
-			f32 targetAngle = (aimPos - pos).getAngle();
-			f32 thisAngle = this.getAngleDegrees();
+			const f32 angleOffset = 270.0f;		
+			const f32 targetAngle = (aimPos - pos).getAngle();
+			const f32 thisAngle = this.getAngleDegrees();
 			f32 shortAngle = (thisAngle + targetAngle + angleOffset) % 360;				
 			
 			/*this.set_f32("shortAngle", shortAngle);
@@ -245,7 +245,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
-	f32 spinFactor = this.getInitialHealth() - this.getHealth();
+	const f32 spinFactor = this.getInitialHealth() - this.getHealth();
 	this.setAngularVelocity((float(XORRandom(30) - 15))*spinFactor);
 
 	return damage;
@@ -280,7 +280,7 @@ void onDie(CBlob@ this)
 }
 
 Random _smoke_r(0x10001);
-void smoke(Vec2f pos, u8 amount)
+void smoke(const Vec2f pos, const u8 amount)
 {
 	for (u8 i = 0; i < amount; i++)
     {
@@ -305,7 +305,7 @@ void smoke(Vec2f pos, u8 amount)
 }
 
 Random _blast_r(0x10002);
-void blast(Vec2f pos, u8 amount)
+void blast(const Vec2f pos, const u8 amount)
 {
 	for (u8 i = 0; i < amount; i++)
     {

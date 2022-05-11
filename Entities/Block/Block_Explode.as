@@ -23,7 +23,7 @@ void onTick(CBlob@ this)
 
 void Explode(CBlob@ this)
 {
-	Vec2f pos = this.getPosition();
+	const Vec2f pos = this.getPosition();
 	if (isClient())
 	{
 		//explosion effect

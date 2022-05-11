@@ -63,7 +63,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	int col = this.getShape().getVars().customData;
+	const int col = this.getShape().getVars().customData;
 	if (col <= 0) return; //not placed yet
 
 	CSprite@ sprite = this.getSprite();
@@ -88,8 +88,8 @@ void Auto(CBlob@ this)
 		return;
 
 	CBlob@[] blobsInRadius;
-	Vec2f pos = this.getPosition();
-	int thisColor = this.getShape().getVars().customData;
+	const Vec2f pos = this.getPosition();
+	const int thisColor = this.getShape().getVars().customData;
 	f32 minDistance = 9999999.9f;
 	bool shoot = false;
 	Vec2f shootVec = Vec2f(0, 0);
@@ -182,11 +182,10 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 			CBlob@ b = hi.blob;
 			if (b is null || b is this) continue;
 
-			int thisColor = this.getShape().getVars().customData;
-			int bColor = b.getShape().getVars().customData;
-			bool sameShip = bColor != 0 && thisColor == bColor;
-
-			bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
+			const int thisColor = this.getShape().getVars().customData;
+			const int bColor = b.getShape().getVars().customData;
+			const bool sameShip = bColor != 0 && thisColor == bColor;
+			const bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
 
 			//if (sameShip || targetMerged) print ("" + (sameShip ? "sameship; " : "") + (targetMerged ? "targetMerged; " : ""));
 
@@ -254,13 +253,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				this.server_Hit(hitBlob, bPos, Vec2f_zero, damage, 0, true);
 			}
 
-			Rotate(this, aimVector);
-			shotParticles(pos + aimVector*9, aimVector.Angle(), false);
-			directionalSoundPlay("Laser1.ogg", pos, 1.0f);
-
-			Vec2f barrelPos = pos + Vec2f(1,0).RotateBy(aimVector.Angle())*8;
 			if (isClient())//effects
 			{
+				Rotate(this, aimVector);
+				shotParticles(pos + aimVector*9, aimVector.Angle(), false);
+				directionalSoundPlay("Laser1.ogg", pos, 1.0f);
+
+				const Vec2f barrelPos = pos + Vec2f(1,0).RotateBy(aimVector.Angle())*8;
 				CSprite@ sprite = this.getSprite();
 				sprite.RemoveSpriteLayer("laser");
 				CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam2.png", 16, 16);

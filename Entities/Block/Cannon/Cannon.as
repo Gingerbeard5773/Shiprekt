@@ -60,13 +60,13 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	int col = this.getShape().getVars().customData;
+	const int col = this.getShape().getVars().customData;
 	if (col <= 0) return; //not placed yet
 
-	u32 gameTime = getGameTime();
+	const u32 gameTime = getGameTime();
 
 	//fire ready
-	u32 fireTime = this.get_u32("fire time");
+	const u32 fireTime = this.get_u32("fire time");
 	this.set_bool("fire ready", (gameTime > fireTime + FIRE_RATE));
 	
 	if (isClient())
@@ -97,7 +97,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	{
 		if (!this.get_bool("fire ready") || this.get_bool("docked")) return;
 
-		Vec2f pos = this.getPosition();
+		const Vec2f pos = this.getPosition();
 
 		this.set_u32("fire time", getGameTime());
 
@@ -166,10 +166,12 @@ void Fire(CBlob@ this, CBlob@ shooter)
 		}
 	}
 
-	this.getSprite().animation.SetFrameIndex(0);
-
-	shotParticles(pos + aimVector*9, aimVector.Angle());
-	directionalSoundPlay("CannonFire.ogg", pos, 7.0f);
+	if (isClient())
+	{
+		this.getSprite().animation.SetFrameIndex(0);
+		shotParticles(pos + aimVector*9, aimVector.Angle());
+		directionalSoundPlay("CannonFire.ogg", pos, 7.0f);
+	}
 }
 
 bool isClear(CBlob@ this)

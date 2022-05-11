@@ -38,16 +38,19 @@ void onInit(CBlob@ this)
 
 void Repulse(CBlob@ this)
 {
-    Vec2f pos = this.getPosition();
-	directionalSoundPlay("Repulse2.ogg", pos, 2.5f);
-	directionalSoundPlay("Repulse3.ogg", pos, 1.5f);
+    const Vec2f pos = this.getPosition();
+	if (isClient())
+	{
+		directionalSoundPlay("Repulse2.ogg", pos, 2.5f);
+		directionalSoundPlay("Repulse3.ogg", pos, 1.5f);
+	}
 	CBlob@[] blobs;
 	getMap().getBlobsInRadius(pos, PUSH_RADIUS, @blobs);
 	const u8 blobsLength = blobs.length;
 	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = blobs[i];
-		int color = b.getShape().getVars().customData;
+		const int color = b.getShape().getVars().customData;
 		if (b is this || !b.hasTag("block") || color <= 0)
 			continue;
 		
@@ -59,7 +62,7 @@ void Repulse(CBlob@ this)
 			if (b.hasTag("engine"))
 				pushMultiplier = 1.5f;			
 			
-			f32 pushDistance = (b.getPosition() - pos).getLength();
+			const f32 pushDistance = (b.getPosition() - pos).getLength();
 			
 			Vec2f pushVel = (b.getPosition() - pos) * (1 - (pushDistance/(PUSH_RADIUS*1.5f))) * PUSH_FACTOR*pushMultiplier/ship.mass; //use ship.centerBlock.getPosition() instead of  b.getPosition()?
 			ship.vel += pushVel;
@@ -92,7 +95,7 @@ void onTick(CBlob@ this)
 {
 	if (this.hasTag("activated"))
 	{
-		u32 gameTime = getGameTime();
+		const u32 gameTime = getGameTime();
 		if (isServer() && gameTime == this.get_u32("detonationTime") - 1)
 		{
 			Ship@ ship = getShip(this.getShape().getVars().customData);

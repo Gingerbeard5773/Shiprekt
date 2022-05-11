@@ -71,16 +71,15 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	int col = this.getShape().getVars().customData;
+	const int col = this.getShape().getVars().customData;
 	if (col <= 0) return; //not placed yet
 
-	u32 gameTime = getGameTime();
+	const u32 gameTime = getGameTime();
 	AttachmentPoint@ seat = this.getAttachmentPoint(0);
 	CBlob@ occupier = seat.getOccupied();
-	u16 thisID = this.getNetworkID();
+	const u16 thisID = this.getNetworkID();
 	if (occupier !is null)
 	{
-		u32 gameTime = getGameTime();
 		this.set_u16("parentID", 0);
 		Manual(this, occupier);
 
@@ -155,8 +154,8 @@ void Auto(CBlob@ this)
 		return;
 
 	CBlob@[] blobsInRadius;
-	Vec2f pos = this.getPosition();
-	int thisColor = this.getShape().getVars().customData;
+	const Vec2f pos = this.getPosition();
+	const int thisColor = this.getShape().getVars().customData;
 	f32 minDistance = 9999999.9f;
 	bool shoot = false;
 	Vec2f shootVec = Vec2f(0, 0);
@@ -206,7 +205,7 @@ void Auto(CBlob@ this)
 					distance = aimVec.Length();//account for compensation
 				}
 
-				bool merged = bColor != 0 && thisColor == bColor;
+				const bool merged = bColor != 0 && thisColor == bColor;
 
 				if (b.getName() == "human")
 					distance += 80.0f;//humans have lower priority
@@ -270,7 +269,7 @@ void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
 
 CBlob@ findFlakChild(CBlob@ this)
 {
-	int color = this.getShape().getVars().customData;
+	const int color = this.getShape().getVars().customData;
 	CBlob@[] flak;
 	CBlob@[] radBlobs;
 	getMap().getBlobsInRadius(this.getPosition(), CLONE_RADIUS, @radBlobs);
@@ -359,9 +358,8 @@ void Fire(CBlob@ this, Vec2f aimVector, const u16 netid)
 	Vec2f offset(_shotspreadrandom.NextFloat() * PROJECTILE_SPREAD,0);
 	offset.RotateBy(_shotspreadrandom.NextFloat() * 360.0f, Vec2f());
 
-	Vec2f _vel = (aimVector * PROJECTILE_SPEED) + offset;
-
-	f32 _lifetime = Maths::Max(0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
+	const Vec2f _vel = (aimVector * PROJECTILE_SPEED) + offset;
+	const f32 _lifetime = Maths::Max(0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
 
 	CBitStream params;
 	params.write_netid(netid);
