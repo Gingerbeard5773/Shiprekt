@@ -12,7 +12,7 @@ Random _effectsrandom(0x15125); //clientside
 void onInit(CBlob@ this)
 {
 	this.Tag("repulsor");
-	this.Tag("removable");//for corelinked checks
+	this.Tag("removable"); //for corelinked checks
 	
 	this.set_f32("weight", 0.25f);
 	
@@ -43,41 +43,8 @@ void Repulse(CBlob@ this)
 	{
 		directionalSoundPlay("Repulse2.ogg", pos, 2.5f);
 		directionalSoundPlay("Repulse3.ogg", pos, 1.5f);
-	}
-	CBlob@[] blobs;
-	getMap().getBlobsInRadius(pos, PUSH_RADIUS, @blobs);
-	const u8 blobsLength = blobs.length;
-	for (u8 i = 0; i < blobsLength; i++)
-	{
-		CBlob@ b = blobs[i];
-		const int color = b.getShape().getVars().customData;
-		if (b is this || !b.hasTag("block") || color <= 0)
-			continue;
 		
-		//push ship
-		Ship@ ship = getShip(color);
-		if (ship !is null && ship.mass > 0.0f)
-		{
-			f32 pushMultiplier = 1.0f;
-			if (b.hasTag("engine"))
-				pushMultiplier = 1.5f;			
-			
-			const f32 pushDistance = (b.getPosition() - pos).getLength();
-			
-			Vec2f pushVel = (b.getPosition() - pos) * (1 - (pushDistance/(PUSH_RADIUS*1.5f))) * PUSH_FACTOR*pushMultiplier/ship.mass; //use ship.centerBlock.getPosition() instead of  b.getPosition()?
-			ship.vel += pushVel;
-			//if (ship.blocks.length == 1)	b.setAngularVelocity(300.0f);
-		}
-		
-		//turn on props
-		if (isServer() && b.hasTag("engine") && ship.owner == "")
-		{
-			b.set_u32("onTime", getGameTime());
-			b.set_f32("power", -1.0f);
-		}
-	}
-	
-	CParticle@ p = ParticleAnimated("Shockwave2.png",
+		CParticle@ p = ParticleAnimated("Shockwave2.png",
 										  pos, //position
 										  Vec2f(0, 0), //velocity
 										  _effectsrandom.NextFloat()*360, //angle
@@ -85,8 +52,39 @@ void Repulse(CBlob@ this)
 										  2, //animtime
 										  0.0f, //gravity
 										  true); //selflit
-	if (p !is null)
-		p.Z = 4.0f;
+		if (p !is null)
+			p.Z = 4.0f;
+	}
+	
+	CBlob@[] blobs;
+	getMap().getBlobsInRadius(pos, PUSH_RADIUS, @blobs);
+	const u8 blobsLength = blobs.length;
+	for (u8 i = 0; i < blobsLength; i++)
+	{
+		CBlob@ b = blobs[i];
+		const int color = b.getShape().getVars().customData;
+		if (b is this || color <= 0) continue;
+		
+		//push ship
+		Ship@ ship = getShip(color);
+		if (ship !is null && ship.mass > 0.0f)
+		{
+			const f32 pushMultiplier = b.hasTag("engine") ? 1.5f : 1.0f; //engines get pushed more
+			const f32 pushDistance = (b.getPosition() - pos).getLength();
+			const Vec2f pushVel = (b.getPosition() - pos) * (1 - (pushDistance/(PUSH_RADIUS*1.5f))) * PUSH_FACTOR*pushMultiplier/ship.mass;
+			//use ship.centerBlock.getPosition() instead of  b.getPosition()?
+			
+			ship.vel += pushVel;
+			//if (ship.blocks.length == 1) b.setAngularVelocity(300.0f);
+		}
+		
+		//turn on propellers
+		if (isServer() && b.hasTag("engine") && ship.owner == "")
+		{
+			b.set_u32("onTime", getGameTime());
+			b.set_f32("power", -1.0f);
+		}
+	}
 	
 	this.server_Die();
 }
@@ -96,13 +94,32 @@ void onTick(CBlob@ this)
 	if (this.hasTag("activated"))
 	{
 		const u32 gameTime = getGameTime();
-		if (isServer() && gameTime == this.get_u32("detonationTime") - 1)
+		if (isServer() && gameTime == this.get_u32("detonationTime") - 1) //one tick before repulsion
 		{
 			Ship@ ship = getShip(this.getShape().getVars().customData);
 			if (ship !is null)
-				getRules().push("dirtyShips", ship);
-			
-			this.getShape().getVars().customData = -1;
+			{
+				this.getShape().getVars().customData = -1; //remove this block from all ships
+				
+				CRules@ rules = getRules();
+				bool pushShip = true;
+				
+				Ship[]@ dirtyShips;
+				rules.get("dirtyShips", @dirtyShips);
+				
+				const u8 dirtyLength = dirtyShips.length;
+				for (u8 i = 0; i < dirtyLength; i++) //dont push duplicates
+				{
+					if (ship.id == dirtyShips[i].id)
+					{
+						pushShip = false;
+						break;
+					}
+				}
+				
+				if (ship.blocks.length > 1 && pushShip)
+					rules.push("dirtyShips", ship); //seperate a ship
+			}
 		}
 		else if (gameTime == this.get_u32("detonationTime"))
 			Repulse(this);
@@ -113,8 +130,11 @@ void Activate(CBlob@ this, u32 time)
 {
     this.Tag("activated");
 	this.set_u32("detonationTime", time);
-	this.getSprite().SetAnimation("activated");
-	directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
+	if (isClient())
+	{
+		this.getSprite().SetAnimation("activated");
+		directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
+	}
 }
 
 void ChainReaction(CBlob@ this, u32 time)
@@ -130,13 +150,9 @@ void ChainReaction(CBlob@ this, u32 time)
 	for (u8 i = 0; i < overlappingLength; i++)
 	{
 		CBlob@ b = overlapping[i];
-		if (b.hasTag("repulsor") 
-			&& !b.hasTag("activated") 
-			&& b.getShape().getVars().customData > 0
-            && b.getDistanceTo(this) < 8.8f
-			)
+		if (b.hasTag("repulsor") && !b.hasTag("activated") && b.getShape().getVars().customData > 0 && b.getDistanceTo(this) < 8.8f)
 		{
-			ChainReaction(b, time);
+			ChainReaction(b, time); //repeat until all connected repulsors are activated
 		}
 	}
 }

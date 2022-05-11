@@ -229,7 +229,7 @@ void SeperateShip(CRules@ this, Ship@ ship)
 	for (u16 i = 0; i < shipBlocks; ++i)
 	{
 		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-		if (b !is null)
+		if (b !is null && b.getShape().getVars().customData > 0)
 			blocks.push_back(b);
 	}
 	
@@ -242,8 +242,7 @@ void SeperateShip(CRules@ this, Ship@ ship)
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ b = blocks[i];
-		if (b.getShape().getVars().customData > 0)
-			b.getShape().getVars().customData = 0;
+		b.getShape().getVars().customData = 0;
 	}
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
@@ -267,7 +266,6 @@ void SeperateShip(CRules@ this, Ship@ ship)
 				this.push("ships", newShip);
 				this.getLast("ships", @p_ship);
 			}
-			
 			ColorBlocks(b, p_ship, newCol);
 			SetUpdateArrays(newCol);
 		}
@@ -366,12 +364,12 @@ void InitShip(Ship @ship)
 		bool choseCenterBlock = false;
 		if (blocksLength == 2)
 		{
+			//use an engine as centerblock for 2 block ships (this is used for torpedo border bounce)
 			for (u16 i = 0; i < blocksLength; ++i)
 			{
 				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 				if (b is null || !b.hasTag("engine")) continue;
 				
-				//use an engine as centerblock for 2 block ships (this is used for torpedo border bounce)
 				choseCenterBlock = true;
 				@ship.centerBlock = b;
 				break;
@@ -387,7 +385,7 @@ void InitShip(Ship @ship)
 				if (b is null) continue;
 				
 				Vec2f vec = b.getPosition() - center;
-				f32 dist = vec.LengthSquared();
+				const f32 dist = vec.LengthSquared();
 				if (dist < maxDistance)
 				{
 					maxDistance = dist;
@@ -756,7 +754,7 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 				}
 				
 				if (ship.blocks.length > 1 && pushShip)
-					this.push("dirtyShips", ship); //seperate an island
+					this.push("dirtyShips", ship); //seperate a ship
 			}
 		}
 	}
