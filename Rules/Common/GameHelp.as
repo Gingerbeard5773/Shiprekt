@@ -6,6 +6,7 @@ bool showHelp = true;
 bool justJoined = true;
 bool page1 = true;
 const f32 boxMargin = 50.0f;
+const SColor tipsColor = SColor(255, 255, 255, 255);
 //key names
 const string party_key = getControls().getActionKeyKeyName(AK_PARTY);
 const string inv_key = getControls().getActionKeyKeyName(AK_INVENTORY);
@@ -54,8 +55,7 @@ void onRender(CRules@ this)
 	if (player is null) return;
 	
 	if (showHelp)
-	{	
-		const SColor tipsColor = SColor(255, 255, 255, 255);
+	{
 		const f32 sWidth = getScreenWidth();
 		const f32 sHeight = getScreenHeight();
 		const u32 gameTime = getGameTime();
@@ -127,9 +127,9 @@ void onRender(CRules@ this)
 		if (page1)
 		{
 			//PAGE 1
-			const string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51.1\n";
+			const string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51.2\n";
 			const string lastChangesInfo = Trans::LastChanges+":\n"
-			+ "- 4-27-2022 - By Gingerbeard\n"
+			+ "- 5-12-2022 - By Gingerbeard\n"
 			+ "  * Weapons only refill ammunition if they aren't being fired.\n"
 			+ "  * Tweaked the harvester to be weaker.\n"
 			+ "  * Disabled anti-ram.\n"
@@ -137,6 +137,7 @@ void onRender(CRules@ this)
 			+ "  * Enemy miniships can dock on your mothership! Watch out.\n"
 			+ "  * Refill is faster for miniships, but slower for your mothership.\n"
 			+ "  * Fixed a problem where players couldn't direct where they were swimming.\n"
+			+ "  * Changed some textures of damaged blocks.\n"
 			+ "  * Docking won't push the other ship if your ship is smaller (easier miniship docking).\n";
 			
 			GUI::SetFont("menu");
@@ -220,7 +221,6 @@ void makeWebsiteLink(Vec2f pos, string text, string website)
 	const Vec2f mousePos = controls.getMouseScreenPos();
 
 	const bool hover = (mousePos.x > tl.x && mousePos.x < br.x && mousePos.y > tl.y && mousePos.y < br.y);
-
 	if (hover)
 	{
 		GUI::DrawButton(tl, br);

@@ -455,7 +455,13 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			ship.initialized = true;
 		}
 
-		if (integrate && !ship.isStation)
+		if (ship.isStation)
+		{
+			//stations don't move
+			ship.vel = Vec2f(0, 0);
+			ship.angle_vel = 0.0f;
+		}
+		else if (integrate)
 		{
 			ship.old_pos = ship.pos;
 			ship.old_angle = ship.angle;
@@ -503,12 +509,6 @@ void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwne
 			}
 
 			ship.angle = loopAngle(ship.angle);
-		}
-		else if (ship.isStation)
-		{
-			//stations don't move
-			ship.vel = Vec2f(0, 0);
-			ship.angle_vel = 0.0f;
 		}
 
 		if (!isServer() || (!forceOwnerSearch && (gameTime + ship.id * 33) % 45 > 0))//updateShipBlobs if !isServer OR isServer and not on a 'second tick'
