@@ -119,22 +119,22 @@ f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 	if (piercedCount > 1)
 		damageFactor *= 0.7f;
 	if (piercedCount > 2)
-		damageFactor *= 0.5f;
+		damageFactor *= 0.4f;
 	
 	if (hitBlob.hasTag("ramengine"))
-		return 4.3f * damageFactor;
+		return 3.9f * damageFactor;
 	if (hitBlob.hasTag("propeller"))
 		return 2.15f * damageFactor;
 	if (hitBlob.hasTag("door"))
 		return 2.0f * damageFactor;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("plank"))
 		return 1.5f * damageFactor;
-	if (hitBlob.hasTag("decoyCore"))
-		return 1.75f * damageFactor;
 	if (hitBlob.hasTag("weapon"))
 		return 1.75f * damageFactor;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 1.0f * damageFactor;
+	if (hitBlob.hasTag("mothership"))
+		return 0.4f * damageFactor;
 
 	return 0.7f *damageFactor;
 }
