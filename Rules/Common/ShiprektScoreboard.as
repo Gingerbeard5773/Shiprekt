@@ -136,7 +136,6 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8 teamNum)
 
 		//how much room to leave for names and clantags
 		const float name_buffer = 26.0f;
-		const Vec2f clantag_actualsize(0, 0);
 
 		//render the player + stats
 		const SColor namecolour = getNameColour(p);
@@ -144,7 +143,9 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8 teamNum)
 		//right align clantag
 		if (clantag != "")
 		{
+			Vec2f clantag_actualsize(0, 0);
 			GUI::GetTextDimensions(clantag, clantag_actualsize);
+			
 			GUI::DrawText(clantag, topleft + Vec2f(name_buffer, 0), SColor(0xff888888));
 			//draw name alongside
 			GUI::DrawText(playername, topleft + Vec2f(name_buffer + clantag_actualsize.x + 8, 0), namecolour);
