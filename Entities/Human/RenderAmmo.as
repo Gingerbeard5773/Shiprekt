@@ -1,5 +1,7 @@
 #define CLIENT_ONLY
-//ammo renderer
+
+//ammo rendering
+
 void onInit(CSprite@ this)
 {
 	this.getCurrentScript().runFlags |= Script::tick_myplayer;
@@ -13,7 +15,7 @@ void onRender(CSprite@ this)
 	CBlob@ mBlob = getMap().getBlobAtPosition(blob.getAimPos());
 	if (mBlob !is null && mBlob.hasTag("usesAmmo") && mBlob.getShape().getVars().customData > 0 && mBlob.getTeamNum() == blob.getTeamNum())
 	{
-		Vec2f screenPos = getDriver().getScreenPosFromWorldPos(mBlob.getInterpolatedPosition());	
+		Vec2f screenPos = mBlob.getInterpolatedScreenPos();	
 		//GUI::DrawProgressBar(screenPos + Vec2f(-20, 10), screenPos + Vec2f(20, 25), float(mBlob.get_u16("ammo"))/maxAmmo);
 
 		Vec2f textSize;
