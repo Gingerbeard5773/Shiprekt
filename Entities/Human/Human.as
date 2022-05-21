@@ -832,6 +832,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
                 	bullet.SetDamageOwnerPlayer(this.getPlayer());
                 }
                 bullet.setVelocity(velocity);
+				bullet.setAngleDegrees(-velocity.Angle());
                 bullet.server_SetTimeToDie(lifetime); 
             }
     	}
