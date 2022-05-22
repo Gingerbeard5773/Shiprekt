@@ -515,6 +515,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					print("Type: "+shipType, SColor(255, 255, 165, 0));
 					print("Owner: "+ship.owner, SColor(255, 235, 235, 0));
 					print("Speed: "+ship.vel.LengthSquared(), SColor(255, 30, 220, 30));
+					print("Angle Vel: "+ship.angle_vel, SColor(255, 173, 216, 200));
 					print("Angle: "+ship.angle, SColor(255, 173, 216, 200));
 					print("Mass: "+ship.mass, SColor(255, 77, 100, 195));
 					print("Blocks: "+ship.blocks.length, SColor(255, 168, 50, 168));
@@ -531,6 +532,21 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				else if (tokens[0] == "!dirty") //activate dirty ships 
 				{
 					this.set_bool("dirty ships", true);
+					return false;
+				}
+				else if (tokens[0] == "!props") //activate all propellers
+				{
+					CBlob@[] blocks;
+					getBlobsByTag("engine", @blocks);
+					const u32 gameTime = getGameTime();
+					const u16 blocksLength = blocks.length;
+					print("Turning on "+blocksLength+" propellers", color_white);
+					for (u16 i = 0; i < blocksLength; ++i)
+					{
+						CBlob@ prop = blocks[i];
+						prop.set_f32("power", -1.0f);
+						prop.set_u32("onTime", gameTime);
+					}
 					return false;
 				}
 				else if (tokens[0] == "!sv_test") //sets the test mode on or off
