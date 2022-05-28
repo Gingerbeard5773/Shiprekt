@@ -1,4 +1,4 @@
-// Next Map after ~X seconds of count down
+// Go next map after ~X seconds of count down (countdown in Shiprekt.as)
 
 #define SERVER_ONLY
 
@@ -8,7 +8,7 @@ void onTick(CRules@ this)
         return;
 		
 	//remove these comments to activate playercount dependent map loading
-	/*string nextMap = getRandomMap(this);
+	/*const string nextMap = getRandomMap(this);
 	if (nextMap != "")
 	{
 		LoadMap(nextMap);
@@ -19,13 +19,13 @@ void onTick(CRules@ this)
 	}
 }
 
-string getRandomMap(CRules@ this)
+const string getRandomMap(CRules@ this)
 {
-	//DYNAMIC MAPS- DEPENDENT ON SERVER PLAYER AMOUNT
+	//DYNAMIC MAPS- DEPENDENT ON SERVER PLAYER COUNT
 	//needs configuration for player counts
 	string[] maps;
-	string currentMap = getMap().getMapName().replace("Maps/", "");
-	u8 pCount = getPlayerCount();
+	const string currentMap = getMap().getMapName().replace("Maps/", "");
+	const u8 pCount = getPlayerCount();
 	
 	if (pCount <= 8) //add maps to the cycle if less than nine players
 	{
@@ -58,31 +58,30 @@ string getRandomMap(CRules@ this)
 	//add these maps to the cycle if less than eleven players, but more than four players
 	/*if (pCount > 4 && pCount <= 10)
 	{
-		maps.push_back("TestMap.png");
+		maps.push_back("CursedSea.png");
 	}*/
 
 	//add these maps to the cycle if more than eight players
 	/*if (pCount > 8)
 	{
-		maps.push_back("TestMap2.png");
+		maps.push_back("CursedSea.png");
 	}*/
 	
 	if (maps.length <= 0)
 	{
-		warn("SRRestartAfterShortPostGame.as: could not load random map");
+		warn("LoadShiprektMap.as: could not load random map");
 		return "";
 	}
 	
 	//remove current map
 	if (maps.length > 1)
 	{
-		s8 mIndex = maps.find(currentMap);
+		const u8 mIndex = maps.find(currentMap);
 		if (mIndex > -1)
 			maps.removeAt(mIndex);
 	}
 	
 	//choose random map from list
-	string map = maps[XORRandom(maps.length)];
-	
+	const string map = maps[XORRandom(maps.length)];
 	return map;
 }

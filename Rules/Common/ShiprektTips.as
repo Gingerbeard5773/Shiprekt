@@ -33,15 +33,17 @@ void onRender(CRules@ this)
 {
 	if (g_videorecording || !showTip || this.isGameOver()) return;
 	
-	s16 scrw = getScreenWidth();
-	s16 scrh = getScreenHeight();
+	GUI::SetFont("menu");
 	
-	string tip = getTranslatedString("Tip: {TIP}").replace("{TIP}", shiprektTips[tipIndex]);
+	const s16 scrw = getScreenWidth();
+	const s16 scrh = getScreenHeight();
 	
-	s16 w = Maths::Min(800, scrw - 40);
-	s16 h = (tip.length > (g_locale == "ru" ? 183 : 108) ? 50 : 40);
+	const string tip = getTranslatedString("Tip: {TIP}").replace("{TIP}", shiprektTips[tipIndex]);
+	
+	const s16 w = Maths::Min(800, scrw - 40);
+	const s16 h = (tip.length > (g_locale == "ru" ? 183 : 108) ? 50 : 40);
 
-	s16 offset = 160;
+	const s16 offset = 160;
 
 	Vec2f tl(scrw / 2 - w / 2, scrh - h - offset);
 	Vec2f br(scrw / 2 + w / 2, scrh - offset);
