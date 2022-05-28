@@ -1,7 +1,7 @@
 #include "MakeBlock.as"
 
 //Produce a block by a player
-void ProduceBlock(CRules@ this, CBlob@ blob, const string type, const u8 amount = 1)
+shared void ProduceBlock(CRules@ this, CBlob@ blob, const string type, const u8 amount = 1)
 {
 	const u8 blobTeam = blob.getTeamNum();
 

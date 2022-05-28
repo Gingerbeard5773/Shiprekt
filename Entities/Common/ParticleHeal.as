@@ -1,6 +1,6 @@
 //Heal particles
 
-void makeHealParticle(CBlob@ this, const string particleName = "HealParticle"+(XORRandom(2)+1))
+shared void makeHealParticle(CBlob@ this, const string particleName = "HealParticle"+(XORRandom(2)+1))
 {
 	const Vec2f pos = this.getPosition() + getRandomVelocity(0, this.getRadius(), XORRandom(360));
 

@@ -1,6 +1,6 @@
 //Booty related functions. mostly server-side that sync to clients
 
-void SetupBooty(CRules@ this)
+shared void SetupBooty(CRules@ this)
 {
 	if (isServer())
 	{
@@ -14,28 +14,18 @@ void SetupBooty(CRules@ this)
 	}
 }
  
-dictionary@ getBootySet()
+shared dictionary@ getBootySet(CRules@ rules = getRules())
 {
 	dictionary@ bSet;
-	getRules().get("BootySet", @bSet);
+	rules.get("BootySet", @bSet);
 	
 	return bSet;
 }
 
-void setStartingBooty(CRules@ this)
+shared void setStartingBooty(CRules@ this)
 {
 	//reset properties
-	//print("** SetStartingBooty routine");
-	dictionary@ bootySet = getBootySet();
-	/*//causes seg faults
-	string[]@ bKeys = bootySet.getKeys();
-	for (u8 i = 0; i < bKeys.length; i++)
-	{
-		print(bKeys[i]);
-		this.set_u16(bKeys[i], 0);
-	}*/
-	
-	//bootySet.deleteAll();//clear booty
+
 	dictionary bSet;
 	this.set("BootySet", bSet);
 
@@ -49,37 +39,36 @@ void setStartingBooty(CRules@ this)
 	}
 }
 
-void server_updateTotalBooty(const u8 teamNum, const u16 amount)
+shared void server_updateTotalBooty(const u8 teamNum, const u16 amount)
 {
-	if (isServer())
+	if (!isServer()) return;
+	
+	CRules@ rules = getRules();
+	const u16 totalBooty = rules.get_u16("bootyTeam_total" + teamNum);
+	const u16 roundedBooty = Maths::Round(totalBooty/10) * 10;
+	const u16 newBooty = totalBooty + amount;
+	const u16 newRoundedBooty = Maths::Round(newBooty/10) * 10;
+	rules.set_u16("bootyTeam_total" + teamNum, totalBooty + amount);
+	if (roundedBooty != newRoundedBooty)
 	{
-		CRules@ rules = getRules();
-		const u16 totalBooty = rules.get_u16("bootyTeam_total" + teamNum);
-		const u16 roundedBooty = Maths::Round(totalBooty/10) * 10;
-		const u16 newBooty = totalBooty + amount;
-		const u16 newRoundedBooty = Maths::Round(newBooty/10) * 10;
-		rules.set_u16("bootyTeam_total" + teamNum, totalBooty + amount);
-		if (roundedBooty != newRoundedBooty)
+		rules.Sync("bootyTeam_total" + teamNum, true); //-115817888 HASH
+			
+		//set booty median
+		u32 allBooty = 0;
+		CBlob@[] cores;
+		if (getBlobsByTag("mothership", @cores))
 		{
-			rules.Sync("bootyTeam_total" + teamNum, true); //-115817888 HASH
-				
-			//set booty median
-			u32 allBooty = 0;
-			CBlob@[] cores;
-			if (getBlobsByTag("mothership", @cores))
-			{
-				const u8 coresLength = cores.length;
-				for (u8 i = 0; i < coresLength; i++)
-					allBooty += rules.get_u16("bootyTeam_total" + cores[i].getTeamNum());
-				
-				rules.set_u32("bootyTeam_median", allBooty/coresLength + 1);
-				rules.Sync("bootyTeam_median", true); //-402874816 HASH
-			}
+			const u8 coresLength = cores.length;
+			for (u8 i = 0; i < coresLength; i++)
+				allBooty += rules.get_u16("bootyTeam_total" + cores[i].getTeamNum());
+			
+			rules.set_u32("bootyTeam_median", allBooty/coresLength + 1);
+			rules.Sync("bootyTeam_median", true); //-402874816 HASH
 		}
 	}
 }
 
-void server_resetTotalBooty(CRules@ this)
+shared void server_resetTotalBooty(CRules@ this)
 {
 	if (!isServer()) return;
 		
@@ -93,7 +82,7 @@ void server_resetTotalBooty(CRules@ this)
 }
 
 //player
-u16 server_getPlayerBooty(const string name)
+shared u16 server_getPlayerBooty(const string name)
 {
 	if (isServer())
 	{
@@ -104,22 +93,21 @@ u16 server_getPlayerBooty(const string name)
 	return 0;
 }
  
-void server_setPlayerBooty(const string name, const u16 booty)
+shared void server_setPlayerBooty(const string name, const u16 booty)
 {
-	if (isServer())
-	{
-		getBootySet().set("booty" + name, booty);
-		//sync to clients
-		CRules@ rules = getRules();
-		rules.set_u16("booty" + name, booty);
-		rules.Sync("booty" + name, true);
-		CPlayer@ player = getPlayerByUsername(name);
-		if (player !is null)
-			player.setScore(booty);
-	}
+	if (!isServer()) return;
+	
+	getBootySet().set("booty" + name, booty);
+	//sync to clients
+	CRules@ rules = getRules();
+	rules.set_u16("booty" + name, booty);
+	rules.Sync("booty" + name, true);
+	CPlayer@ player = getPlayerByUsername(name);
+	if (player !is null)
+		player.setScore(booty);
 }
 
-void server_addPlayerBooty(const string name, const u16 booty) //give or take booty
+shared void server_addPlayerBooty(const string name, const u16 booty) //give or take booty
 {
 	server_setPlayerBooty(name, server_getPlayerBooty(name) + booty);
 }
@@ -127,11 +115,11 @@ void server_addPlayerBooty(const string name, const u16 booty) //give or take bo
 #include "ShipsCommon.as";
 
 //rewards for damaging enemy ships
-void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, const bool rewardBlocks = false, u16 reward = 4, const string sound = "Pinball_0", const bool randomSound = false)
+shared void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, const bool rewardBlocks = false, u16 reward = 4, const string sound = "Pinball_0", const bool randomSound = false)
 {
 	if (victim.hasTag("block"))
 	{
-		Ship@ victimShip = getShip(victim.getShape().getVars().customData);
+		Ship@ victimShip = getShipSet().getShip(victim.getShape().getVars().customData);
 
 		if (victimShip !is null && victimShip.blocks.length > 3 //minimum size requirement
 			&& (victimShip.owner != "" || victimShip.isMothership) //verified ship

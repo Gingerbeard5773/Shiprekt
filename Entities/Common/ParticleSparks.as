@@ -19,18 +19,6 @@ void sparks(const Vec2f pos, const u8 amount, const f32 spread = 1.0f, const int
     }
 }
 
-void ShrapnelParticle(const Vec2f pos, const Vec2f vel)
-{
-	CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + XORRandom(128), 100), true);
-	if (p !is null)
-	{
-		p.timeout = 10 + XORRandom(6);
-		p.scale = 1.5f;
-		p.Z = 650.0f;
-		p.damping = 0.85f;
-	}
-}
-
 Random shotrandom(0x15125);
 void shotParticles(const Vec2f pos, const float angle, const bool smoke = true, const f32 smokeVelocity = 0.1f, const f32 scale = 1.0f)
 {
@@ -77,7 +65,19 @@ void shotParticles(const Vec2f pos, const float angle, const bool smoke = true, 
 	}
 }
 
-void AngledDirtParticle(const Vec2f pos, const f32 angle = 0.0f, const string fileName = "DustSmall")
+shared void ShrapnelParticle(const Vec2f pos, const Vec2f vel)
+{
+	CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + XORRandom(128), 100), true);
+	if (p !is null)
+	{
+		p.timeout = 10 + XORRandom(6);
+		p.scale = 1.5f;
+		p.Z = 650.0f;
+		p.damping = 0.85f;
+	}
+}
+
+shared void AngledDirtParticle(const Vec2f pos, const f32 angle = 0.0f, const string fileName = "DustSmall")
 {
 	CParticle@ p = ParticleAnimated(fileName, pos, Vec2f(0, 0), angle, 1.0f, 3, 0.0f, false);
 	if (p !is null)

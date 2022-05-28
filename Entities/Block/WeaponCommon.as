@@ -1,7 +1,7 @@
 #include "ShipsCommon.as";
 
 // Refill ammunition for weapons
-void refillAmmo(CBlob@ this, Ship@ ship, u8 refillAmount, u8 refillSeconds, u8 refillSecondaryCore, u8 refillSecondaryCoreSeconds)
+shared void refillAmmo(CBlob@ this, Ship@ ship, u8 refillAmount, u8 refillSeconds, u8 refillSecondaryCore, u8 refillSecondaryCoreSeconds)
 {
 	if (!isServer()) return;
 	
@@ -32,7 +32,7 @@ void refillAmmo(CBlob@ this, Ship@ ship, u8 refillAmount, u8 refillSeconds, u8 r
 }
 
 // Check if the weapon is connected to a mothership through couplings (docked miniship)
-void checkDocked(CBlob@ this, Ship@ ship)
+shared void checkDocked(CBlob@ this, Ship@ ship)
 {
 	if (!isServer() || !this.get_bool("updateArrays")) return;
 	

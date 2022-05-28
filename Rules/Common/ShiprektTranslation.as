@@ -37,7 +37,7 @@
 /// Miniships can dock not just with their own mothership, but enemy motherships as well!
 /// Bombs stack with power when placed together.
 
-string Translate(string words)
+shared const string Translate(const string words)
 {
 	string[]@ tokens = words.split("\\");
 	if (g_locale == "en") //english
@@ -122,7 +122,7 @@ namespace Trans
 	BlowUp        = "Blow up!", ///needs translation /* ¡Explotó! */
 	
 	//Help menu
-	Welcome       = Translate("Welcome to Shiprekt!\nLast changes and fixes by\\Добро пожаловать в Shiprekt!\n Последние изменения и исправления:\\Bem-vindo ao Shiprekt!\nÚltimas mudanças e correções por\\Witamy w Shiprekt!\nOstatnie zmiany i poprawki autorstwa\\Bienvenue dans Shiprekt!\nDernièrs changements et corrections par\\¡Bienvenido a Shiprekt!\nÚltimos cambios y correcciones por"),
+	Welcome       = Translate("Welcome to Shiprekt! Last changes and fixes by\\Добро пожаловать в Shiprekt! Последние изменения и исправления:\\Bem-vindo ao Shiprekt! Últimas mudanças e correções por\\Witamy w Shiprekt! Ostatnie zmiany i poprawki autorstwa\\Bienvenue dans Shiprekt! Dernièrs changements et corrections par\\¡Bienvenido a Shiprekt! Últimos cambios y correcciones por"),
 	Version       = Translate("Version\\Версия\\Versão\\Wersja\\Version\\Versión"),
 	LastChanges   = Translate("Last Changes\\Последние изменения\\Últimas mudanças\\Ostatnie zmiany\\Derniers changements\\Últimos cambios"),
 	Go_to_the     = Translate("Go to the\\Перейти\\Vá para o\\Przejdź do\\Allez à l\\Ir a"),
