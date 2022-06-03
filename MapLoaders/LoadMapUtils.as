@@ -22,16 +22,4 @@ CBlob@ spawnBlob(CMap@ map, const string& in name, int offset, int team, bool at
 void AddMarker(CMap@ map, int offset, const string& in name)
 {
 	map.AddMarker(map.getTileWorldPosition(offset), name);
-	PlaceMostLikelyTile(map, offset);
 }
-
-void PlaceMostLikelyTile(CMap@ map, int offset)
-{
-	TileType down = map.getTile(offset + map.tilemapwidth).type;
-
-	map.SetTile(offset, down);
-	map.AddTileFlag(offset, Tile::BACKGROUND);
-	map.AddTileFlag(offset, Tile::LIGHT_PASSES);
-}
-
-
