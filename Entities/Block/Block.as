@@ -14,87 +14,73 @@ void onInit(CBlob@ this)
 	
 	ShapeConsts@ consts = this.getShape().getConsts();
 	consts.net_threshold_multiplier = -1.0f;
-    consts.mapCollisions = false; //ships.as gives own collision
+    consts.mapCollisions = false; //ships.as gives own tile collision
 	
-	//this.SetMapEdgeFlags(u8(CBlob::map_collide_none) | u8(CBlob::map_collide_nodeath));
+	this.SetMapEdgeFlags(u8(CBlob::map_collide_none | CBlob::map_collide_nodeath));
 	
 	this.set_f32("current reclaim", this.getInitialHealth());
 }
 
 void onTick(CBlob@ this)
 {
+	if (!isServer()) return; //only server
+	
 	if (this.getTickSinceCreated() < 1) //accounts for time after block production
 	{
 		//Set Owner
-		if (isServer())
+		CBlob@ owner = getBlobByNetworkID(this.get_netid("ownerID"));    
+		if (owner !is null)
 		{
-			CBlob@ owner = getBlobByNetworkID(this.get_netid("ownerID"));    
-			if (owner !is null)
-			{
-				this.set_string("playerOwner", owner.getPlayer().getUsername());
-				this.Sync("playerOwner", true); //2040865191 HASH
-			}
+			this.set_string("playerOwner", owner.getPlayer().getUsername());
+			this.Sync("playerOwner", true); //2040865191 HASH
 		}
 	}
 	
 	//collide even when going super speeds (to avoid clipping)
 	const int color = this.getShape().getVars().customData;
-	if (color > 0)
+	if (color <= 0) return;
+	
+	CRules@ rules = getRules();
+	ShipDictionary@ ShipSet = getShipSet(rules);
+	Ship@ ship = ShipSet.getShip(color);
+	if (ship !is null && !ship.isStation && ship.mass < 3.0f)
 	{
-		Ship@ ship = getShip(color);
-		if (ship !is null && !ship.isStation && ship.mass < 3.0f)
+		Vec2f velnorm = ship.vel; 
+		const f32 vellen = velnorm.Normalize();		
+		
+		if (vellen > 8.0f) 
 		{
-			Vec2f velnorm = ship.vel; 
-			const f32 vellen = velnorm.Normalize();		
-			
-			if (vellen > 8.0f) 
+			Vec2f pos = this.getPosition();
+			HitInfo@[] hitInfos;
+			if (getMap().getHitInfosFromRay(pos, -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
 			{
-				Vec2f pos = this.getPosition();
-				HitInfo@[] hitInfos;
-				if (getMap().getHitInfosFromRay(pos, -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
+				//HitInfo objects are sorted, first come closest hits
+				const u8 hitLength = hitInfos.length;
+				for (u8 i = 0; i < hitLength; i++)
 				{
-					//HitInfo objects are sorted, first come closest hits
-					const u8 hitLength = hitInfos.length;
-					for (u8 i = 0; i < hitLength; i++)
+					CBlob@ blob = hitInfos[i].blob;	  
+					if (blob is null || blob is this) continue;
+					
+					const int other_color = blob.getShape().getVars().customData;
+					if (color == other_color || other_color <= 0) continue;
+					
+					Ship@ other_ship = ShipSet.getShip(other_color);
+					if (other_ship is null) continue;
+
+					velnorm.Normalize();
+
+					const bool ramming = this.hasTag("ramming") || blob.hasTag("ramming") || blob.hasTag("bomb");
+					if (!ship.colliding && !ramming)
 					{
-						CBlob@ blob = hitInfos[i].blob;	  
-						if (blob is null || blob is this) continue;
-						
-						const int other_color = blob.getShape().getVars().customData;
-						if (color == other_color) break;
-						
-						if (other_color > 0)
-						{
-							Ship@ other_ship = getShip(other_color);
-							if (other_ship !is null)
-							{
-								bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
-													&& ((ship.isMothership || other_ship.isMothership) || (ship.isStation || other_ship.isStation))
-													//&& this.getTeamNum() == blob.getTeamNum()
-													&& ((!ship.isMothership && ship.owner != "") || (!other_ship.isMothership && other_ship.owner != ""));
-													
-								bool ramming = this.hasTag("ramming") || blob.hasTag("ramming");
-
-								velnorm.Normalize();
-
-								if (!ship.colliding && !docking && !ramming)
-								{
-									ship.colliding = true; //only collide once per tick
-									CollisionResponse1(ship, other_ship, pos + velnorm, docking);
-								}
-								break;
-							}
-						}
+						ship.colliding = true; //only collide once per tick
+						CollisionResponse(rules, ship, other_ship, pos + velnorm);
 					}
+					break;
 				}
 			}
 		}
 	}
 }
-
-// onCollision: called once from the engine when a collision happens; 
-// blob is null when it is a tilemap collision
-// needs to be redone!!
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
@@ -103,9 +89,9 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 
 bool doesCollideWithPlank(CBlob@ plank, const Vec2f blobPos)
 {
-	//done by position rather than velocity since blocks are never actually given a velocity (ship.as)
+	//done by position rather than velocity since blocks dont have velocity
 	Vec2f direction = Vec2f(0.0f, -1.0f).RotateBy(plank.getAngleDegrees());
-	f32 hitAngle = direction.AngleWith(plank.getPosition() - blobPos);
+	const f32 hitAngle = direction.AngleWith(plank.getPosition() - blobPos);
 
 	return !(hitAngle > -90.0f && hitAngle < 90.0f);
 }
@@ -120,124 +106,117 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	
 	const int other_color = blob.getShape().getVars().customData;
 
-	if (other_color > 0 && color != other_color) // block vs block
+	if (isServer() && other_color > 0 && color != other_color) // block vs block
 	{
+		if (this.hasTag("station") || blob.hasTag("station"))
+			return;
 		if (blob.hasTag("plank") ? !doesCollideWithPlank(blob, this.getPosition()) : false)
 			return;
 		if (this.hasTag("plank") ? !doesCollideWithPlank(this, blob.getPosition()) : false)
 			return;
-	
-		bool docking = false;
 		
-		Ship@ ship = getShip(color);
-		Ship@ other_ship = getShip(other_color);
+		CRules@ rules = getRules();
+		ShipDictionary@ ShipSet = getShipSet(rules);
 		
-		if (ship !is null && other_ship !is null)
-		{
-			if (ship.vel.Length() < 0.01f && other_ship.vel.Length() < 0.01f)
-				return;
+		Ship@ ship = ShipSet.getShip(color);
+		Ship@ other_ship = ShipSet.getShip(other_color);
+		if (ship is null || other_ship is null) return;
 				
-			docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
-					&& ((ship.isMothership || other_ship.isMothership) || (ship.isSecondaryCore || other_ship.isSecondaryCore) || (ship.isStation || other_ship.isStation))
-					//&& this.getTeamNum() == blob.getTeamNum()
-					&& ((!ship.isMothership && !ship.isSecondaryCore && ship.owner != "") || (!other_ship.isMothership && !other_ship.isSecondaryCore && other_ship.owner != ""));
-								
-			bool ramming = this.hasTag("ramming") || blob.hasTag("ramming");
-			
-			if (!ship.colliding && !docking && !ramming)
-			{
-				ship.colliding = true; //only collide once per tick
-				CollisionResponse1(ship, other_ship, point1, docking);
-			}
+		const bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
+				&& ((ship.isMothership || other_ship.isMothership) || (ship.isSecondaryCore || other_ship.isSecondaryCore) || (ship.isStation || other_ship.isStation))
+				//&& this.getTeamNum() == blob.getTeamNum()
+				&& ((!ship.isMothership && !ship.isSecondaryCore && !ship.owner.isEmpty()) || (!other_ship.isMothership && !other_ship.isSecondaryCore && !other_ship.owner.isEmpty()));
+							
+		const bool ramming = this.hasTag("ramming") || blob.hasTag("ramming");
+		
+		if (!ship.colliding && !docking && !ramming)
+		{
+			ship.colliding = true; //only collide once per tick
+			CollisionResponse(rules, ship, other_ship, point1);
 		}
 		
 		//TODO: isolate collision code in each blob's script rather than here
-		if (!(this.hasTag("station") || blob.hasTag("station")))
+		if (docking) //force ship merge
 		{
-			if (docking) //force ship merge
+			if (this.hasTag("coupling"))
+				this.SendCommand(this.getCommandID("couple"));
+			else if (blob.hasTag("coupling"))
+				blob.SendCommand(blob.getCommandID("couple"));
+		}
+		else
+		{
+			// these are checked separately so that seats/ram engines don't break from coups/repulsors
+			if (this.hasTag("removable")) Die(this);
+			if (blob.hasTag("removable")) Die(blob);
+			else if (!this.hasTag("removable"))
 			{
-				getRules().set_bool("dirty ships", true);
-				directionalSoundPlay("mechanical_click", blob.getPosition());
-			}
-			else if (isServer())
-			{
-				// these are checked separately so that seats/ram engines don't break from coups/repulsors
-				if (this.hasTag("coupling") || this.hasTag("repulsor"))
-					Die(this);
-				else if (blob.hasTag("coupling") || blob.hasTag("repulsor"))
-					Die(blob);
-				else
-				{ 
-					if (this.hasTag("seat"))
-						Die(this);
-					if (blob.hasTag("seat"))
+				if (this.hasTag("seat")) Die(this);
+				if (blob.hasTag("seat")) Die(blob);
+					
+				if (this.hasTag("ramengine"))
+				{
+					if (blob.hasTag("core"))
+						this.server_Hit(blob, point1, ship.vel, 0.5f, 0, true);
+					else if (blob.hasTag("propeller"))
+						this.server_Hit(blob, point1, ship.vel, 2.1f, 0, true);
+					else if (blob.hasTag("platform") || blob.hasTag("ramengine"))
 						Die(blob);
-
-					if (this.hasTag("ramengine"))
+					else
+						this.server_Hit(blob, point1, ship.vel, 1.0f, 0, true);
+						
+					Die(this);
+				}
+				else if (this.hasTag("ram"))
+				{
+					if (blob.hasTag("propeller"))
 					{
-						if (blob.hasTag("core"))
-							this.server_Hit(blob, point1, Vec2f_zero, 0.6f, 0, true);
-						else if (blob.hasTag("propeller"))
-							this.server_Hit(blob, point1, Vec2f_zero, 2.1f, 0, true);
-						else if (blob.hasTag("platform") || blob.hasTag("ramengine"))
-							Die(blob);
-						else
-							this.server_Hit(blob, point1, Vec2f_zero, 1.0f, 0, true);
-							
+						this.server_Hit(this, point1, ship.vel, 2.2f, 0, true);
+						Die(blob);
+					}
+					else if (blob.hasTag("hull") || blob.hasTag("ram") || blob.hasTag("plank"))
+					{
+						Die(this);
+						Die(blob);
+					}
+					else if (blob.hasTag("core"))
+					{
+						this.server_Hit(blob, point1, ship.vel, 1.0f, 0, true);
 						Die(this);
 					}
-					else if (this.hasTag("ram"))
+					else if (blob.hasTag("weapon"))
 					{
-						if (blob.hasTag("propeller"))
-						{
-							this.server_Hit(this, point1, Vec2f_zero, 2.2f, 0, true);
-							Die(blob);
-						}
-						else if (blob.hasTag("hull") || blob.hasTag("ram") || blob.hasTag("plank"))
+						if (blob.getHealth() >= this.getHealth())
 						{
 							Die(this);
-							Die(blob);
+							this.server_Hit(blob, point1, ship.vel, this.getHealth(), 0, true);
 						}
-						else if (blob.hasTag("core"))
-						{
-							this.server_Hit(blob, point1, Vec2f_zero, 1.0f, 0, true);
-							Die(this);
-						}
-						else if (blob.hasTag("weapon"))
-						{
-							if (blob.getHealth() >= this.getHealth())
-							{
-								Die(this);
-								this.server_Hit(blob, point1, Vec2f_zero, this.getHealth(), 0, true);
-							}
-							else blob.server_Hit(this, point1, Vec2f_zero, 2.0f, 0, true);
-						}
-						else if (!blob.hasTag("solid"))
-						{
-							this.server_Hit(this, point1, Vec2f_zero, 1.1f, 0, true);
-							Die(blob);
-						}
+						else blob.server_Hit(this, point1, other_ship.vel, 2.0f, 0, true);
 					}
-					else if (this.hasTag("bomb")) //bombs annihilate all
+					else if (!blob.hasTag("solid"))
 					{
-						if (blob.hasTag("mothership"))
-							this.server_Hit(blob, point1, Vec2f_zero, 2.7f, 0, true);
-						else Die(blob);
-						Die(this);
+						this.server_Hit(this, point1, ship.vel, 1.1f, 0, true);
+						Die(blob);
 					}
+				}
+				else if (this.hasTag("bomb")) //bombs annihilate all
+				{
+					if (blob.hasTag("mothership"))
+						this.server_Hit(blob, point1, ship.vel, 2.7f, 0, true);
+					else Die(blob);
+					Die(this);
 				}
 			}
 		}
 	}
-	else if (other_color == 0)
+	else if (isClient() && blob.getName() == "human")
 	{
 		// solid block vs player
-		if ((this.hasTag("solid") || (this.hasTag("door") && this.getShape().getConsts().collidable)) && blob.getName() == "human")
+		if ((this.hasTag("solid") || (this.hasTag("door") && this.getShape().getConsts().collidable)))
 		{
-			if (isClient() && !blob.isAttached() && blob.getAirTime() > 4) //air time is time spent on water
+			if (blob.getAirTime() > 4) //air time is time spent on water
 			{
 				//kill player by impact
-				Ship@ ship = getShip(color);
+				Ship@ ship = getShipSet().getShip(color);
 				if (ship !is null && (ship.vel.LengthSquared() > 5.0f || Maths::Abs(ship.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
 				{
 					Vec2f blockSide(5.0f, 0.0f);
@@ -260,11 +239,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	}
 }
 
-void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking = false)
-{		
-	if (ship.mass <= 0 || other_ship.mass <= 0)
-		return;
-	
+void CollisionResponse(CRules@ rules, Ship@ ship, Ship@ other_ship, Vec2f point1)
+{
 	Vec2f velnorm = ship.vel; 
 	const f32 vellen = velnorm.Normalize();
 	Vec2f other_velnorm = other_ship.vel; 
@@ -275,26 +251,22 @@ void CollisionResponse1(Ship@ ship, Ship@ other_ship, Vec2f point1, bool docking
 	colvec1.Normalize();
 	colvec2.Normalize();
 	
-	const f32 massratio1 = other_ship.mass/(ship.mass+other_ship.mass);
-	const f32 massratio2 = ship.mass/(ship.mass+other_ship.mass);
+	const f32 massratio1 = other_ship.mass / (ship.mass + other_ship.mass + 0.01f);
+	const f32 massratio2 = ship.mass / (ship.mass + other_ship.mass + 0.01f);
 	
-	if (other_ship.isStation)
-	{
-		ship.vel += colvec1 * -vellen - colvec1*0.7f;
-	}
-	else
-	{
-		ship.vel = ClampSpeed(ship.vel + colvec1 * -other_vellen * massratio1 * 2 - colvec1*0.2f, 20);
-		other_ship.vel = ClampSpeed(other_ship.vel + colvec2 * -vellen * massratio2 * 2 - colvec2*0.2f, 20);
-	}
+	const Vec2f shipvel = ClampSpeed(ship.vel + colvec1 * -other_vellen * massratio1 * 2 - colvec1*0.2f, 20);
+	const Vec2f other_shipvel = ClampSpeed(other_ship.vel + colvec2 * -vellen * massratio2 * 2 - colvec2*0.2f, 20);
 	
-	if (isClient())
-	{
-		//effects
-		const u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
-		ShakeScreen(Maths::Min(shake, 100), 12, point1);
-		directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
-	}
+	const u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
+	
+	CBitStream bs;
+	bs.write_s32(ship.id);
+	bs.write_s32(other_ship.id);
+	bs.write_Vec2f(shipvel);
+	bs.write_Vec2f(other_shipvel);
+	bs.write_Vec2f(point1);
+	bs.write_u8(shake);
+	rules.SendCommand(rules.getCommandID("ship collision"), bs); //sent to Ships.as
 }
 
 Vec2f ClampSpeed(const Vec2f vel, const f32 cap)
@@ -304,24 +276,23 @@ Vec2f ClampSpeed(const Vec2f vel, const f32 cap)
 
 void onDie(CBlob@ this)
 {
+	if (!isClient()) return;
+	
 	//gib the sprite
 	if (this.getShape().getVars().customData > 0)
 		this.getSprite().Gib();
-
-	if (isClient())
+	
+	//kill humans standing on top. done locally because lag makes server unable to catch the overlapping playerblobs
+	if (!this.hasTag("removable") && !this.hasTag("disabled"))
 	{
-		//kill humans standing on top. done locally because lag makes server unable to catch the overlapping playerblobs
-		if (!this.hasTag("coupling") && !this.hasTag("repulsor") && !this.hasTag("disabled"))
+		CBlob@ localBlob = getLocalPlayerBlob();
+		if (localBlob !is null && localBlob.get_u16("shipBlobID") == this.getNetworkID())
 		{
-			CBlob@ localBlob = getLocalPlayerBlob();
-			if (localBlob !is null && localBlob.get_u16("shipID") == this.getNetworkID())
+			if (localBlob.isMyPlayer() && localBlob.getDistanceTo(this) < 6.5f)
 			{
-				if (localBlob.isMyPlayer() && localBlob.getDistanceTo(this) < 6.5f)
-				{
-					CBitStream params;
-					params.write_netid(localBlob.getNetworkID());
-					localBlob.SendCommand(localBlob.getCommandID("run over"), params);
-				}
+				CBitStream params;
+				params.write_netid(localBlob.getNetworkID());
+				localBlob.SendCommand(localBlob.getCommandID("run over"), params);
 			}
 		}
 	}
@@ -330,28 +301,26 @@ void onDie(CBlob@ this)
 void Die(CBlob@ this)
 {
 	this.Tag("dead");
-	if (isServer())
-		this.server_Die();
+	this.server_Die();
 }
 
 //mothership damage alerts
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	const int color = this.getShape().getVars().customData;
-	if (color < 0) return 0.0f; // unplaced blocks are invincible
+	if (color <= 0) return 0.0f; // unplaced blocks are invincible
 	
+	CRules@ rules = getRules();
 	const u8 teamNum = this.getTeamNum();
 	
-	Ship@ ship = getShip(color);
+	Ship@ ship = getShipSet(rules).getShip(color);
 	if (ship is null) return damage;
 
 	if (teamNum != hitterBlob.getTeamNum() && ship.isMothership)
-	{
-		CRules@ rules = getRules();
-		
+	{	
 		const f32 msDMG = rules.get_f32("msDMG" + teamNum);
 		if (msDMG < 8.0f)
-			getRules().set_f32("msDMG" + teamNum, msDMG + (this.hasTag("mothership") ? 5.0f : 1.0f) * damage);
+			rules.set_f32("msDMG" + teamNum, msDMG + (this.hasTag("mothership") ? 5.0f : 1.0f) * damage);
 	}
 	
 	return damage;
@@ -385,7 +354,7 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 
 void onGib(CSprite@ this)
 {
-	Vec2f pos = this.getBlob().getPosition();
+	const Vec2f pos = this.getBlob().getPosition();
 	directionalSoundPlay("destroy_wood", pos);
 }
 

@@ -3,28 +3,36 @@ const u8 BUTTON_SIZE = 4;
 
 void onInit(CRules@ this)
 {
-	if (isClient())
-		this.minimap = false;
+	this.set_string("version", "1.51.2"); //version of shiprekt this is running
 	
+	sv_contact_info = "github.com/Gingerbeard5773/shiprekt"; //if red circles appear, this link will show
 	particles_gravity.y = 0.0f;
 	sv_gravity = 0;
 	sv_visiblity_scale = 2.0f;
 	s_effects = false;
+	
+	SColor shiprektCol(255,120,240,103);
+	print("\n      ------- INITIALIZING SHIPREKT ------- "+
+		  "\n" +
+		  "\n  Version: " + this.get_string("version") +
+		  "\n  Mod Page: "+ sv_contact_info + 
+		  "\n" +
+		  "\n      ------------------------------------- \n", shiprektCol);
+	
+	this.minimap = !isClient();
 
 	Driver@ driver = getDriver();
 	driver.AddShader("hq2x", 1.0f);
 	driver.SetShader("hq2x", v_postprocess);
 	
-	//gameplay settings (could be a cfg file)
+	//gameplay settings
 	this.set_u16("starting_booty", 325);
-	this.set_u16("warmup_time", 1 * 150 * 30);//no weapons warmup time
+	this.set_u16("warmup_time", 1 * 150 * 30); //no weapons warmup time
 	this.set_u16("booty_x_max", 200);
 	this.set_u16("booty_x_min", 100);
-	this.set_u16("booty_transfer", 50);//min transfer amount
+	this.set_u16("booty_transfer", 50); //min transfer amount
 	this.set_f32("booty_transfer_fee", 0.0f);
 	this.set_u16("bootyRefillLimit", 50);
-
-	//
 	
 	//Icons
 	AddIconToken("$BOOTY$", "InteractionIconsBig.png", Vec2f(32,32), 26);
@@ -70,14 +78,6 @@ void onInit(CRules@ this)
 	//sandbox notice
 	if (getPlayersCount() == 0)
 		client_AddToChat("> Free building mode set until more players join! <");
-	//warn for black water glitch
-	/*if (v_postprocess)
-	{
-		client_AddToChat(">", SColor(255, 255, 75, 75));
-		client_AddToChat(">>", SColor(255, 255, 75, 75));
-		client_AddToChat(">>>", SColor(255, 255, 75, 75));
-		client_AddToChat("NOTICE: the \"smooth shader\" setting causes the water to turn black when zooming in.\nYou can disable the smooth shader at the Video Options tab.", SColor(255, 255, 75, 75));
-	}*/
 }
 
 void onRestart(CRules@ this)
@@ -141,7 +141,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 }
 
 //bubble while in chat
-//located in a strange place
 void onEnterChat(CRules@ this)
 {
 	if (getChatChannel() != 0) return; //no dots for team chat

@@ -111,12 +111,12 @@ void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
 	if (teamFlaks < MAX_TEAM_FLAKS)
 	{
 		if (rules.get_bool("freebuild"))
-			ProduceBlock(getRules(), caller, bType, amount);
+			ProduceBlock(rules, caller, bType, amount);
 		else if (pBooty >= cost)
 		{
 			server_addPlayerBooty(pName, -cost);
 		
-			ProduceBlock(getRules(), caller, bType, amount);
+			ProduceBlock(rules, caller, bType, amount);
 		}
 	}
 	else if (teamFlaks >= MAX_TEAM_FLAKS && player !is null)
@@ -170,12 +170,13 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 {
 	if (hitterBlob is null) return damage;
 	
+	CRules@ rules = getRules();
 	const u8 thisTeamNum = this.getTeamNum();
 	u8 hitterTeamNum = hitterBlob.getTeamNum();
 	
 	if (thisTeamNum == hitterTeamNum && hitterBlob.getTickSinceCreated() < 900)
 	{
-		if (!getRules().isGameOver())
+		if (!rules.isGameOver())
 		{
 			CPlayer@ owner = hitterBlob.getDamageOwnerPlayer();
 			if (owner !is null)
@@ -213,7 +214,6 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 			*/
 			
 			//rewards if they apply
-			CRules@ rules = getRules();
 			if (thisTeamNum == hitterTeamNum || hitterBlob.getName() == "whirlpool" || hitterBlob.hasTag("mothership"))//suicide. try with last good hitterTeam
 				if (getGameTime() - this.get_u32("lastHitterTime") < 450)//15 seconds lease
 					hitterTeamNum = this.get_u8("lastHitterTeam");
@@ -299,6 +299,7 @@ void onDie(CBlob@ this)
 	selfDestruct(this);
 	
 	//if there is another mothership on our team, set the index to that mothership (only used in testing)
+	CRules@ rules = getRules();
 	CBlob@[] cores;
     getBlobsByTag("mothership", @cores);
 	const u8 teamNum = this.getTeamNum();
@@ -308,26 +309,26 @@ void onDie(CBlob@ this)
         CBlob@ core = cores[i];  
         if (core !is this && core.getTeamNum() == teamNum)
 		{
-            getRules().setAt("motherships", teamNum, @core);
+            rules.setAt("motherships", teamNum, @core);
 			return; //stop from setting to null
 		}
     }
 	
 	//set to null, otherwise a crash will occur
-	getRules().setAt("motherships", teamNum, null);
+	rules.setAt("motherships", teamNum, null);
 }
 
 //healing, repelling, dmgmanaging, selfDestruct, damagesprite
 void onTick(CBlob@ this)
 {
 	const Vec2f pos = this.getPosition();
-	const int color = this.getShape().getVars().customData;
 	const u32 gameTime = getGameTime();
 	CRules@ rules = getRules();
+	//const int color = this.getShape().getVars().customData;
 	
 	//repel
 	/*f32 hp = this.getHealth();
-	Ship@ ship = getShip(color1);
+	Ship@ ship = getShipSet(rules).getShip(color);
 	if (ship !is null)
 	{
 		CBlob@[] cores;
@@ -424,7 +425,7 @@ void initiateSelfDestruct(CBlob@ this)
 
 	//add block explosion scripts
 	const int color = this.getShape().getVars().customData;
-	Ship@ ship = getShip(color); 
+	Ship@ ship = getShipSet().getShip(color); 
 	if (ship is null) return;
 	
 	const u16 blocksLength = ship.blocks.length;
@@ -502,7 +503,7 @@ void selfDestruct(CBlob@ this)
 	}
 
 	//kill ship
-	Ship@ ship = getShip(this.getShape().getVars().customData);
+	Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 	if (ship is null) return;
 	
 	const u16 blocksLength = ship.blocks.length;

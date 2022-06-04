@@ -5,6 +5,8 @@
 bool showHelp = true;
 bool justJoined = true;
 bool page1 = true;
+bool mouseWasPressed1 = false;
+
 const f32 boxMargin = 50.0f;
 const SColor tipsColor = SColor(255, 255, 255, 255);
 //key names
@@ -22,12 +24,9 @@ const string zoomOut_key = getControls().getActionKeyKeyName(AK_ZOOMOUT);
 		
 void onInit(CRules@ this)
 {
-	sv_contact_info = "\ngithub.com/Gingerbeard5773/shiprekt"; //when errors appear
-	
 	CFileImage@ image = CFileImage("GameHelp.png");
 	Vec2f imageSize = Vec2f(image.getWidth(), image.getHeight());
 	AddIconToken("$HELP$", "GameHelp.png", imageSize, 0);
-	u_showtutorial = true;// for ShowTipOnDeath to work
 	
 	if (!GUI::isFontLoaded("thick font"))
 	{
@@ -40,8 +39,8 @@ void onTick(CRules@ this)
 	CControls@ controls = getControls();
 	if (controls.isKeyJustPressed(KEY_F1))
 	{
-		u_showtutorial = true;// for ShowTipOnDeath to work
 		showHelp = !showHelp;
+		u_showtutorial = showHelp;
 		justJoined = false;
 	}
 	if (controls.isKeyJustPressed(KEY_LBUTTON))
@@ -56,8 +55,8 @@ void onRender(CRules@ this)
 	
 	if (showHelp)
 	{
-		const f32 sWidth = getScreenWidth();
-		const f32 sHeight = getScreenHeight();
+		const f32 sMid = getScreenWidth()/2;
+		const f32 sCenter = getScreenHeight()/2;
 		const u32 gameTime = getGameTime();
 
 		Vec2f imageSize;
@@ -93,8 +92,8 @@ void onRender(CRules@ this)
 		Vec2f controlsSize;
 		GUI::GetTextDimensions(controlsTitle + controlsInfo, controlsSize);
 
-		const Vec2f tlBox = Vec2f(sWidth/2 - imageSize.x - boxMargin, Maths::Max(10.0f, sHeight/2 - imageSize.y - infoSize.y/2 - controlsSize.y/2 - boxMargin));
-		const Vec2f brBox = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + infoSize.y/2 + controlsSize.y/2);
+		const Vec2f tlBox = Vec2f(sMid - imageSize.x - boxMargin, Maths::Max(10.0f, sCenter - imageSize.y - infoSize.y/2 - controlsSize.y/2 - boxMargin));
+		const Vec2f brBox = Vec2f(sMid + imageSize.x + boxMargin, sCenter + imageSize.y + infoSize.y/2 + controlsSize.y/2);
 		
 		//draw box
 		GUI::DrawButtonPressed(tlBox, brBox);
@@ -107,7 +106,7 @@ void onRender(CRules@ this)
 			Vec2f introSize;
 			GUI::GetTextDimensions(intro, introSize);
 			GUI::SetFont("normal");
-			GUI::DrawTextCentered(intro, Vec2f(sWidth/2, tlBox.y + 20), tipsColor);
+			GUI::DrawTextCentered(intro, Vec2f(sMid, tlBox.y + 20), tipsColor);
 		} 
 		
 		if (!justJoined || gameTime % 90 > 30)
@@ -119,15 +118,15 @@ void onRender(CRules@ this)
 			GUI::GetTextDimensions(helpToggle, toggleSize);
 			
 			GUI::SetFont("menu");
-			GUI::DrawTextCentered(helpToggle, Vec2f(sWidth/2, tlBox.y + 40), tipsColor);
+			GUI::DrawTextCentered(helpToggle, Vec2f(sMid, tlBox.y + 40), tipsColor);
 			if (page1)
-				GUI::DrawTextCentered(helpToggle, Vec2f(sWidth/2, tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
+				GUI::DrawTextCentered(helpToggle, Vec2f(sMid, tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
 		}
 		
 		if (page1)
 		{
 			//PAGE 1
-			const string shiprektVersion = "Shiprekt++ "+Trans::Version+" 1.51.2\n";
+			const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
 			const string lastChangesInfo = Trans::LastChanges+":\n"
 			+ "- 5-12-2022 - By Gingerbeard\n"
 			+ "  * Weapons only refill ammunition if they aren't being fired.\n"
@@ -138,29 +137,30 @@ void onRender(CRules@ this)
 			+ "  * Refill is faster for miniships, but slower for your mothership.\n"
 			+ "  * Fixed a problem where players couldn't direct where they were swimming.\n"
 			+ "  * Changed some textures of damaged blocks.\n"
-			+ "  * Docking won't push the other ship if your ship is smaller (easier miniship docking).\n";
+			+ "  * Docking won't push the other ship if your ship is smaller (easier miniship docking).\n"
+			+ "  * Bullets will deflect other bullets.\n"
+			+ "  * Added support for the Spanish language.\n";
 			
 			GUI::SetFont("menu");
 			Vec2f lastChangesSize;
 			GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
 		
-			const Vec2f tlBoxJustJoined = Vec2f(sWidth/2 - imageSize.x - boxMargin,  Maths::Max(10.0f, sHeight/2 - imageSize.y - lastChangesSize.y/2));
-			//Vec2f brBoxJustJoined = Vec2f(sWidth/2 + imageSize.x + boxMargin, sHeight/2 + imageSize.y + lastChangesSize.y/2);
+			const Vec2f tlBoxJustJoined = Vec2f(sMid - imageSize.x - boxMargin,  Maths::Max(10.0f, sCenter - imageSize.y - lastChangesSize.y/2));
 			
 			GUI::SetFont("thick font");
-			GUI::DrawText(shiprektVersion, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
+			GUI::DrawText(shiprektVersion, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
 			
 			GUI::SetFont("menu");
-			GUI::DrawText(lastChangesInfo, Vec2f(sWidth/2 - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
+			GUI::DrawText(lastChangesInfo, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
 			
 			//image
-			GUI::DrawIconByName("$HELP$", Vec2f(sWidth/2 - imageSize.x, tlBox.y + boxMargin + 10));
+			GUI::DrawIconByName("$HELP$", Vec2f(sMid - imageSize.x, tlBox.y + boxMargin + 10));
 			
 			//captions
 			if (g_locale != "en")
 			{
 				GUI::SetFont("normal");
-				Vec2f ImagePos(sWidth/2 - imageSize.x, tlBox.y + boxMargin + 10);
+				Vec2f ImagePos(sMid - imageSize.x, tlBox.y + boxMargin + 10);
 				GUI::DrawTextCentered(Trans::Caption1, ImagePos + Vec2f(150,230), tipsColor);
 				GUI::DrawTextCentered(Trans::Caption2, ImagePos + Vec2f(150,400), tipsColor);
 				GUI::DrawTextCentered(Trans::Caption3, ImagePos + Vec2f(550,190), tipsColor);
@@ -183,37 +183,49 @@ void onRender(CRules@ this)
 			if (!v_fastrender)
 			{
 				const string lagTip = "<> "+Trans::FastGraphics+" <>";
-				GUI::DrawTextCentered(lagTip, Vec2f(sWidth/2, tlBox.y + boxMargin *10), tipsColor);
+				GUI::DrawTextCentered(lagTip, Vec2f(sMid, tlBox.y + boxMargin *10), tipsColor);
+			}
+			
+			if (player.isMod() || sv_test)
+			{
+				GUI::SetFont("thick font");
+				const string RCONDetected = (sv_test ? "Test mode":"Moderator status")+" detected!";
+				GUI::DrawText(RCONDetected, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin * 11), tipsColor);
+				
+				GUI::SetFont("menu");
+				const string modTools = "Shiprekt offers a variety of chat commands for testing and moderation purposes." +
+										"\n\n Type ' !list ' in chat and then check the console to see what is available. (check cmd console on server)";
+				GUI::DrawText(modTools, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin * 12), tipsColor);
 			}
 		}
-	
+		
+		GUI::SetFont("menu");
+		
 		//hud icons
 		Vec2f tl = getActorHUDStartPosition(null, 6);
-	
-		if (getLocalPlayerBlob() !is null && (getControls().getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
+		
+		CControls@ controls = getControls();
+		if (getLocalPlayerBlob() !is null && (controls.getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
 		{
-			GUI::SetFont("menu");
 			GUI::DrawTextCentered("[ "+Trans::ClickIcons+" ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), tipsColor);
-			//GUI::DrawSplineArrow2D(tl + Vec2f(225, 7), tl + Vec2f(105, -12), tipsColor);
 		}
 		
 		//Add social links
+		GUI::SetFont("menu");
 		makeWebsiteLink(Vec2f(brBox.x, 100.0f), Trans::Go_to_the+" Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
 		makeWebsiteLink(Vec2f(brBox.x, 150.0f), Trans::Go_to_the+" Shiprekt Discord", "https://discord.gg/V29BBeba3C");
+		
+		mouseWasPressed1 = controls.mousePressed1; 
 	}
 }
 
 void makeWebsiteLink(Vec2f pos, string text, string website)
-{
-	const f32 height = 40;
-
-	GUI::SetFont("menu");
-	
+{	
 	Vec2f dim;
 	GUI::GetTextDimensions(text, dim);
 
 	const f32 width = dim.x + 20;
-
+	const f32 height = 40;
 	const Vec2f tl = Vec2f(getScreenWidth() - 10 - width - pos.x, pos.y);
 	const Vec2f br = Vec2f(getScreenWidth() - 10 - pos.x, tl.y + height);
 
@@ -225,7 +237,7 @@ void makeWebsiteLink(Vec2f pos, string text, string website)
 	{
 		GUI::DrawButton(tl, br);
 
-		if (controls.isKeyJustPressed(KEY_LBUTTON))
+		if (controls.mousePressed1 && !mouseWasPressed1)
 		{
 			Sound::Play("option");
 			OpenWebsite(website);

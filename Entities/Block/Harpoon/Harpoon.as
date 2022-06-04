@@ -86,8 +86,9 @@ void onInit(CSprite@ this)
 }
 
 void onTick(CBlob@ this)
-{	
-	if (this.getShape().getVars().customData <= 0) return;
+{
+	const int col = this.getShape().getVars().customData;
+	if (col <= 0) return;
 	
 	HarpoonInfo@ harpoon;
 	if (!this.get("harpoonInfo", @harpoon)) return;
@@ -129,7 +130,7 @@ void onTick(CBlob@ this)
 		
 		//reel in
 		if (harpoon.grapple_ratio > 0.2f)
-				harpoon.grapple_ratio -= 1.0f / getTicksASecond();
+			harpoon.grapple_ratio -= 1.0f / getTicksASecond();
 				
 		Vec2f force = harpoon.grapple_pos - pos;
 		const f32 dist = force.Normalize();
@@ -251,31 +252,30 @@ void onTick(CBlob@ this)
 					harpoon.grapple_pos = b.getPosition();
 					
 					// Pull the ships together
-					Ship@ thisShip = getShip(this.getShape().getVars().customData);
-					Ship@ hitShip = getShip(b.getShape().getVars().customData);
-					if (hitShip !is null && thisShip !is null)
+					if (ropeTooLong)
 					{
-						const bool isMyShip = hitShip.id == thisShip.id;
-						if (!isMyShip && ropeTooLong)
+						ShipDictionary@ ShipSet = getShipSet();
+						Ship@ thisShip = ShipSet.getShip(col);
+						Ship@ hitShip = ShipSet.getShip(b.getShape().getVars().customData);
+						if (hitShip !is null && thisShip !is null && hitShip.id != thisShip.id)
 						{
 							//TODO: fix angular velocity support & find a better solution for super-sonic speeds
 							Vec2f moveVel;
-							Vec2f moveNorm;
 							float angleVel;	
 						
 							const f32 hitMass = hitShip.mass;
-							HarpoonForces(this, b, -1.0f, moveVel, moveNorm, angleVel);
+							HarpoonForces(this, b, hitShip, moveVel, angleVel);
 							moveVel /= hitMass;
-							angleVel /= hitMass;
+							//angleVel /= hitMass;
 							hitShip.vel = ClampSpeed(hitShip.vel + moveVel, 15);
-							//hitShip.angle_vel += angleVel*2.0f;
+							//hitShip.angle_vel += angleVel;
 							
 							const f32 thisMass = thisShip.mass;
-							HarpoonForces(b, this, -1.0f, moveVel, moveNorm, angleVel);
+							HarpoonForces(b, this, thisShip, moveVel, angleVel);
 							moveVel /= thisMass;
-							angleVel /= thisMass;
+							//angleVel /= thisMass;
 							thisShip.vel = ClampSpeed(thisShip.vel + moveVel, 15);
-							//thisShip.angle_vel += angleVel*2.0f;
+							//thisShip.angle_vel += angleVel;
 						}
 					}
 				}				
@@ -312,14 +312,8 @@ void doRopeUpdate(CSprite@ this, CBlob@ blob, HarpoonInfo@ harpoon)
 	CSpriteLayer@ hook = this.getSpriteLayer("hook");
 	CSpriteLayer@ layer = this.getSpriteLayer("harpoon");
 	
-	if (harpoon.grapple_id != 0xffff || harpoon.reeling)
-	{
-		looseRope.SetAnimation("tight");
-	}
-	else
-	{
-		looseRope.SetAnimation("default");
-	}
+	const string anim = harpoon.grapple_id != 0xffff || harpoon.reeling ? "tight" : "default";
+	looseRope.SetAnimation(anim);
 
 	const bool visible = harpoon.grappling;
 	looseRope.SetVisible(visible);
@@ -383,7 +377,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		
 		Vec2f pos = this.getPosition();
 		Vec2f direction = params.read_Vec2f();
-		Ship@ ship = getShip(this.getShape().getVars().customData);
+		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 		Vec2f shipVel = ship !is null ? ship.vel : Vec2f();
 		
 		harpoon.grappling = true;

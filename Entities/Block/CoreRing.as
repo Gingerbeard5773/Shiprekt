@@ -16,16 +16,16 @@ void onInit(CSprite@ this)
 			layer.SetVisible(false);
 		}
 	}
-	this.getBlob().set_bool("updateLayers", true);
+	this.getBlob().set_bool("updateBlock", true);
 }
 
 void onTick(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
-	if (blob.get_bool("updateLayers") && blob.getShape().getVars().customData > 0)
+	if (blob.get_bool("updateBlock") && blob.getShape().getVars().customData > 0)
 	{
 		checkPerimeter(this, blob);
-		blob.set_bool("updateLayers", false);
+		blob.set_bool("updateBlock", false);
 	}
 }
 
@@ -34,7 +34,7 @@ void checkPerimeter(CSprite@ this, CBlob@ blob)
 	//check nearby platforms if we can activate our spritelayers
 	CMap@ map = getMap();
 	Vec2f pos = blob.getPosition();
-	f32 angle = blob.getAngleDegrees();
+	const f32 angle = blob.getAngleDegrees();
 	
 	checkBlock(this, map, pos + Vec2f(0,-8).RotateBy(angle), "side0");
 	checkBlock(this, map, pos + Vec2f(8,0).RotateBy(angle), "side1");
@@ -45,7 +45,6 @@ void checkPerimeter(CSprite@ this, CBlob@ blob)
 void checkBlock(CSprite@ this, CMap@ map, Vec2f pos, string layername)
 {
 	CSpriteLayer@ layer = this.getSpriteLayer(layername);
-	if (layer is null) return;
 	
 	CBlob@[] blobs;
 	map.getBlobsAtPosition(pos, @blobs);

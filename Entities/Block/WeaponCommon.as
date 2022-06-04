@@ -34,7 +34,7 @@ shared void refillAmmo(CBlob@ this, Ship@ ship, u8 refillAmount, u8 refillSecond
 // Check if the weapon is connected to a mothership through couplings (docked miniship)
 shared void checkDocked(CBlob@ this, Ship@ ship)
 {
-	if (!isServer() || !this.get_bool("updateArrays")) return;
+	if (!isServer() || !this.get_bool("updateBlock")) return;
 	
 	const u32 gameTime = getGameTime();
 	if ((gameTime + this.getNetworkID() * 33) % 30 == 0)
@@ -43,12 +43,12 @@ shared void checkDocked(CBlob@ this, Ship@ ship)
 		{
 			CBlob@ core = getMothership(this.getTeamNum());
 			u16[] checked, unchecked;
-			this.set_bool("docked", core !is null ? !coreLinkedPathed(this, core, checked, unchecked) : false);
+			this.set_bool("docked", core !is null ? !shipLinked(this, core, checked, unchecked) : false);
 		}
 		else
 			this.set_bool("docked", false);
 
 		this.Sync("docked", true); //-169657557 HASH
-		this.set_bool("updateArrays", false);
+		this.set_bool("updateBlock", false);
 	}
 }

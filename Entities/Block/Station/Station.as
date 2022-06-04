@@ -36,7 +36,7 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 
 void Capture(CBlob@ this, const int attackerTeam)
 {
-	Ship@ ship = getShip(this.getShape().getVars().customData);
+	Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 	if (ship is null) return;
 	
 	if (!ship.isMothership)

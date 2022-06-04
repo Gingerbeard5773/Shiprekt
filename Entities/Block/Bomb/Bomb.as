@@ -3,7 +3,6 @@
 #include "ShipsCommon.as";
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
-#include "BlockHooks.as";
 
 const f32 BOMB_RADIUS = 15.0f;
 const f32 BOMB_BASE_DAMAGE = 2.7f;
@@ -16,10 +15,6 @@ void onInit(CBlob@ this)
     //this.getCurrentScript().tickFrequency = 60;
 	
 	this.set_f32("weight", 2.0f);
-	
-	BlockHooks@ blockHooks;
-	this.get("BlockHooks", @blockHooks);
-	blockHooks.addHook("onColored", @onColored);
 	
     /*CSprite@ sprite = this.getSprite();
     if (sprite !is null)
@@ -70,10 +65,10 @@ void onInit(CBlob@ this)
     }*/
 }
 
-void onColored(CBlob@ this) //activate when the block changes color
+void onTick(CBlob@ this)
 {
-	const int color = this.getShape().getVars().customData;
-	if (color == 0) return;
+	const int col = this.getShape().getVars().customData;
+	if (col <= 0) return;
 	
 	CPlayer@ owner = getPlayerByUsername(this.get_string("playerOwner"));
 	if (owner !is null)
@@ -89,13 +84,14 @@ void onColored(CBlob@ this) //activate when the block changes color
 		for (u8 i = 0; i < overlappingLength; i++)
 		{
 			CBlob@ b = overlapping[i];
-			if (b.getShape().getVars().customData == color && this.getTeamNum() != b.getTeamNum())
+			if (b.getShape().getVars().customData == col && this.getTeamNum() != b.getTeamNum())
 			{
 				this.server_setTeamNum(255);
 				break;
 			}
 		}
 	}
+	this.getCurrentScript().tickFrequency = 0; //only tick once, when this block is placed
 }
 
 u8 findCloseBombs(CBlob@ this)
@@ -130,12 +126,17 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 	//hit blobs
 	CBlob@[] blobs;
-	getMap().getBlobsInRadius(pos, (radius-3)+ (stackfactor*3), @blobs);
+	if (!getMap().getBlobsInRadius(pos, (radius-3)+ (stackfactor*3), @blobs))
+		return;
+	
+	ShipDictionary@ ShipSet = getShipSet();
 	const u8 blobsLength = blobs.length;
 	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ hit_blob = blobs[i];
 		if (hit_blob is this) continue;
+		
+		const int hitCol = hit_blob.getShape().getVars().customData;
 
 		if (isServer())
 		{
@@ -143,12 +144,11 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 
 			if (hit_blob.hasTag("block"))
 			{
-				const int hitCol = hit_blob.getShape().getVars().customData;
 				if (hitCol <= 0) continue;
 
 				// move the ship
 
-				Ship@ ship = getShip(hitCol);
+				Ship@ ship = ShipSet.getShip(hitCol);
 				if (ship !is null && ship.mass > 0.0f)
 				{
 					Vec2f impact = (hit_blob_pos - pos) * 0.15f / ship.mass;
@@ -174,11 +174,11 @@ void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
 		}
 		
 		CPlayer@ owner = this.getDamageOwnerPlayer();
-		if (owner !is null)
+		if (owner !is null && hitCol > 0)
 		{
 			CBlob@ blob = owner.getBlob();
 			if (blob !is null)
-				damageBootyBomb(owner, blob, hit_blob);
+				damageBootyBomb(owner, blob, hit_blob, ShipSet);
 		}
 	}
 }
@@ -220,16 +220,16 @@ void onDie(CBlob@ this)
     sprite.RewindEmitSound();
 }*/
 
-void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim)
+void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, ShipDictionary@ ShipSet)
 {
 	if (victim.hasTag("block"))
 	{
 		const u8 teamNum = attacker.getTeamNum();
 		const u8 victimTeamNum = victim.getTeamNum();
 		
-		Ship@ victimShip = getShip(victim.getShape().getVars().customData);
+		Ship@ victimShip = ShipSet.getShip(victim.getShape().getVars().customData);
 		if (victimShip !is null && victimShip.blocks.length > 3
-			&& (victimShip.owner != "" || victimShip.isMothership) //only inhabited ships
+			&& (!victimShip.owner.isEmpty() || victimShip.isMothership) //only inhabited ships
 			&& victimTeamNum != teamNum //cant be own ships
 			&& (!victim.hasTag("platform") && !victim.hasTag("coupling")))
 		{

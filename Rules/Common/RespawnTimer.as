@@ -1,3 +1,4 @@
+//render respawn timer
 #include "ShiprektTranslation.as";
 
 void onInit(CRules@ this)
@@ -11,12 +12,12 @@ void onRender(CRules@ this)
 	
 	CPlayer@ player = getLocalPlayer();
 	if (player is null) return;
-		
+	
 	CBlob@ localBlob = getLocalPlayerBlob();
 	if (localBlob !is null) return;
 
-	u32 time = this.get_u32("respawn time") + 30;
-	s32 time_left = (time - getGameTime())/getTicksASecond();
+	const u32 time = this.get_u32("respawn time") + 30;
+	const s32 time_left = (time - getGameTime())/getTicksASecond();
 	
 	if (!g_videorecording && player.getTeamNum() != this.getSpectatorTeamNum())
 	{
@@ -33,7 +34,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	if (isClient() && cmd == this.getCommandID("sync respawn time"))
 	{
-		u32 time = params.read_u32();
+		const u32 time = params.read_u32();
 		this.set_u32("respawn time", time);
 	}
 }

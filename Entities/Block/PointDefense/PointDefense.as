@@ -76,7 +76,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Ship@ ship = getShip(col);
+		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null && canShootAuto(this))
 			refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 	}
@@ -108,32 +108,21 @@ void Auto(CBlob@ this)
 			{
 				bPos = b.getPosition();
 
-				Ship@ targetShip;
-				if (b.hasTag("block"))
-					@targetShip = getShip(b.getShape().getVars().customData);
-				else
+				if (b.isAttached())
 				{
-					@targetShip = getShip(b);
-					if (b.isAttached())
-					{
-						AttachmentPoint@ humanAttach = b.getAttachmentPoint(0);
-						CBlob@ seat = humanAttach.getOccupied();
-						if (seat !is null)
-							bPos = seat.getPosition();
-					}
+					AttachmentPoint@ humanAttach = b.getAttachmentPoint(0);
+					CBlob@ seat = humanAttach.getOccupied();
+					if (seat !is null)
+						bPos = seat.getPosition();
 				}
 
 				Vec2f aimVec = bPos - pos;
 				f32 distance = aimVec.Length();
 
-				int bColor = 0;
-
-				bool merged = bColor != 0 && thisColor == bColor;
-
 				if (b.getName() == "human")
 					distance += 80.0f;//humans have lower priority
 
-				if (distance < minDistance && isClearShot(this, aimVec, merged) && !getMap().rayCastSolid(bPos, pos))
+				if (distance < minDistance && isClearShot(this, aimVec) && !getMap().rayCastSolid(bPos, pos))
 				{
 					shoot = true;
 					shootVec = aimVec;
@@ -158,7 +147,7 @@ bool canShootAuto(CBlob@ this)
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
+bool isClearShot(CBlob@ this, Vec2f aimVec)
 {
 	Vec2f pos = this.getPosition();
 	const f32 distanceToTarget = Maths::Max(aimVec.Length() - 8.0f, 0.0f);
@@ -185,7 +174,7 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 			const int thisColor = this.getShape().getVars().customData;
 			const int bColor = b.getShape().getVars().customData;
 			const bool sameShip = bColor != 0 && thisColor == bColor;
-			const bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
+			const bool canShootSelf = hi.distance > distanceToTarget * 0.7f;
 
 			//if (sameShip || targetMerged) print ("" + (sameShip ? "sameship; " : "") + (targetMerged ? "targetMerged; " : ""));
 

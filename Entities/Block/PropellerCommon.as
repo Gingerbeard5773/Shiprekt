@@ -72,7 +72,7 @@ void onTick(CBlob@ this)
 			return;
 		}
 		
-		Ship@ ship = getShip(col);
+		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null)
 		{
 			// move

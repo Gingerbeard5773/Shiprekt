@@ -73,7 +73,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null) return;
 		
-		Ship@ ship = getShip(this.getShape().getVars().customData);
+		ShipDictionary@ ShipSet = getShipSet();
+		Ship@ ship = ShipSet.getShip(this.getShape().getVars().customData);
 		if (ship is null) return;
 
 		this.set_u32("fire time", getGameTime());
@@ -99,64 +100,63 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				CBlob@ b = hi.blob;	  
 				if (b is null || b is this) continue;
 				
-				Ship@ bship = getShip(b.getShape().getVars().customData);
+				const int bCol = b.getShape().getVars().customData;
+				if (bCol <= 0) continue;
 				
-				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector) && (bship !is null && bship.owner != ""))) 
+				Ship@ bship = ShipSet.getShip(bCol);
+				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector) && (bship !is null && !bship.owner.isEmpty()))) 
 					continue;
-
-				if (b.hasTag("block") && b.getShape().getVars().customData > 0)
-				{
-					killed = true;
 					
-					if (isClient())//effects
-					{
-						setLaser(sprite, hi.hitpos - barrelPos);
-						sparks(hi.hitpos, 4);
-					}
-
-					CPlayer@ thisPlayer = shooter.getPlayer();						
-					if (thisPlayer is null) return; 
-
-					const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
-					const f32 initialHealth = b.getInitialHealth();
-					const f32 currentReclaim = b.get_f32("current reclaim");
-
-					if (bship !is null && bCost > 0)
-					{
-						const f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
-						const string shipOwnerName = bship.owner;
-						
-						if (!b.hasTag("mothership"))
-						{
-							f32 deconstructAmount = 0;
-							if ((shipOwnerName == "" && !bship.isMothership) //true if no owner for ship and ship is not a mothership
-								|| (b.get_string("playerOwner") == "" && !bship.isMothership) //true if no owner for the block and is not on a mothership
-								|| (shipOwnerName == thisPlayer.getUsername()) //true if we own the ship
-								|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
-							{
-								deconstructAmount = fullConstructAmount; 
-							}
-							else
-							{
-								deconstructAmount = (1.0f/bCost)*initialHealth; //slower reclaim
-							}
-
-							if ((currentReclaim - deconstructAmount) <= 0)
-							{
-								string cName = thisPlayer.getUsername();
-
-								server_addPlayerBooty(cName, (getCost(b.getName())*0.7f)*(b.getHealth()/initialHealth));
-								directionalSoundPlay("/ChaChing.ogg", barrelPos);
-
-								b.Tag("disabled");
-								b.server_Die();
-							}
-							else
-								b.set_f32("current reclaim", currentReclaim - deconstructAmount);
-						}
-					}			
-					if (killed) break;
+				killed = true;
+				
+				if (isClient())//effects
+				{
+					setLaser(sprite, hi.hitpos - barrelPos);
+					sparks(hi.hitpos, 4);
 				}
+
+				CPlayer@ thisPlayer = shooter.getPlayer();						
+				if (thisPlayer is null) return; 
+
+				const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
+				const f32 initialHealth = b.getInitialHealth();
+				const f32 currentReclaim = b.get_f32("current reclaim");
+
+				if (bship !is null && bCost > 0)
+				{
+					const f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
+					const string shipOwnerName = bship.owner;
+					
+					if (!b.hasTag("mothership"))
+					{
+						f32 deconstructAmount = 0;
+						if ((shipOwnerName.isEmpty() && !bship.isMothership) //true if no owner for ship and ship is not a mothership
+							|| (b.get_string("playerOwner").isEmpty() && !bship.isMothership) //true if no owner for the block and is not on a mothership
+							|| (shipOwnerName == thisPlayer.getUsername()) //true if we own the ship
+							|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
+						{
+							deconstructAmount = fullConstructAmount; 
+						}
+						else
+						{
+							deconstructAmount = (1.0f/bCost)*initialHealth; //slower reclaim
+						}
+
+						if ((currentReclaim - deconstructAmount) <= 0)
+						{
+							string cName = thisPlayer.getUsername();
+
+							server_addPlayerBooty(cName, (getCost(b.getName())*0.7f)*(b.getHealth()/initialHealth));
+							directionalSoundPlay("/ChaChing.ogg", barrelPos);
+
+							b.Tag("disabled");
+							b.server_Die();
+						}
+						else
+							b.set_f32("current reclaim", currentReclaim - deconstructAmount);
+					}
+				}			
+				if (killed) break;
 			}
 		}
 		

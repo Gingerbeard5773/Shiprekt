@@ -76,7 +76,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		if (shooter is null)
 			return;
 		
-		Ship@ ship = getShip(this.getShape().getVars().customData);
+		ShipDictionary@ ShipSet = getShipSet();
+		Ship@ ship = ShipSet.getShip(this.getShape().getVars().customData);
 		if (ship is null)
 			return;
 
@@ -100,8 +101,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				if (b is null || b is this) continue;
 				
 				const int color = b.getShape().getVars().customData;
-				
-				if (!b.hasTag("block") || color <= 0) return;
+				if (color <= 0) return;
 				
 				if (isClient())//effects
 				{
@@ -111,12 +111,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				if (b.hasTag("station")) continue;
 
 				if (count >= NUM_HEALS) continue;
-							
+				
 				CPlayer@ thisPlayer = shooter.getPlayer();						
 				if (thisPlayer is null) 
 					return;		
 				
-				Ship@ otherShip = getShip(color);
+				Ship@ otherShip = ShipSet.getShip(color);
 				const bool isMyShip = otherShip !is null && otherShip is ship;
 
 				f32 reconstructAmount = 0;

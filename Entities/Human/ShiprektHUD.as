@@ -1,4 +1,5 @@
 //shiprekt HUD
+#define CLIENT_ONLY
 #include "ActorHUDStartPos.as";
 #include "ShipsCommon.as";
 #include "ShiprektTranslation.as";
@@ -62,7 +63,6 @@ void onTick(CSprite@ this)
 	// transfer booty
 	if ((controls.getMouseScreenPos() - tl - Vec2f(146, 20)).Length() < 15.0f)
 	{
-		CRules@ rules = getRules();
 		const u16 BOOTY_TRANSFER = rules.get_u16("booty_transfer");
 		const f32 BOOTY_TRANSFER_FEE = rules.get_f32("booty_transfer_fee");//% of transfer
 		const u16 fee = Maths::Round(BOOTY_TRANSFER * BOOTY_TRANSFER_FEE);
@@ -154,9 +154,9 @@ void onRender(CSprite@ this)
 		const bool mShipOnScreen = teamCore.isOnScreen();
 		const f32 mShipDMG = rules.get_f32("msDMG" + teamNum);
 		
-		if (name == captainName && !mShipOnScreen)//is Captain and abandoned mothership?
+		if (name == captainName && !mShipOnScreen) //is Captain and abandoned mothership?
 			GUI::DrawText(Trans::Abandon, Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
-		else//mothership under attack alert
+		else //mothership under attack alert
 		{
 			if (mShipNear || mShipDMG < MSHIP_DAMAGE_ALERT - 1.0f)
 				blob.set_bool("msAlert", false);
@@ -168,8 +168,14 @@ void onRender(CSprite@ this)
 		}
 		
 		//poor and no captain: sharks for income
-		if (mShipOnScreen && captainName == "" && pBooty < rules.get_u16("bootyRefillLimit") && mShipDMG == 0)
+		if (mShipOnScreen && captainName.isEmpty() && pBooty < rules.get_u16("bootyRefillLimit") && mShipDMG == 0)
 			GUI::DrawText("[ "+Trans::KillSharks+" ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
+	}
+	
+	//testing
+	if (sv_test)
+	{
+		GUI::DrawText("[ sv_test ]", Vec2f(screenWidth/2 - 200, 15), tipsColor);
 	}
 	
 	//			Draw HUD Icons and Status text
@@ -181,15 +187,16 @@ void onRender(CSprite@ this)
 	DrawResources(pBooty, name, captainName, tl, controls);
 }
 
-void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
+void DrawShipStatus(CBlob@ this, const string name, Vec2f tl, CControls@ controls)
 {
-	Ship@ ship = getShip(this);	
+	const s32 overlappingShipID = this.get_s32("shipID");
+	Ship@ ship = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
 	if (ship !is null)
 	{
 		CPlayer@ shipOwner = getPlayerByUsername(ship.owner);
 		
 		//Owner name text (top left)
-		if (ship.owner != "" && ship.owner != "*")
+		if (!ship.owner.isEmpty() && ship.owner != "*")
 		{
 			const string lastChar = ship.owner.substr(ship.owner.size() -1);
 			const string ownership = ship.owner + (lastChar == "s" ? "'" : "'s") +" "+Trans::Ship;
@@ -203,7 +210,7 @@ void DrawShipStatus(CBlob@ this, string name, Vec2f tl, CControls@ controls)
 		{
 			if (name == ship.owner || ship.owner == "*")
 				GUI::DrawIconByName("$CAPTAIN$", tl + Vec2f(67, -12));
-			else if (ship.owner != "")
+			else if (!ship.owner.isEmpty())
 				GUI::DrawIconByName("$CREW$", tl + Vec2f(67, -11));
 			else
 				GUI::DrawIconByName("$FREEMAN$", tl + Vec2f(67, -12));
@@ -249,7 +256,7 @@ void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 		GUI::DrawText(Trans::CoreHealth,  tl + Vec2f(-45, -25), tipsColor);
 }
 
-void DrawStationStatus(u8 teamnum, Vec2f tl, CControls@ controls)
+void DrawStationStatus(const u8 teamnum, Vec2f tl, CControls@ controls)
 {
     GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, teamnum);
 		

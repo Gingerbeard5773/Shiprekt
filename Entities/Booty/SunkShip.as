@@ -57,6 +57,8 @@ void onTick(CBlob@ this)
 		return;
 	}
 	
+	CRules@ rules = getRules();
+	
 	string[] served;
 	bool gaveBooty = false;
 
@@ -65,14 +67,17 @@ void onTick(CBlob@ this)
 	getBlobsByTag("player", @humans);
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
-	const u16 minBooty = getRules().get_u16("bootyRefillLimit");
+	ShipDictionary@ ShipSet = getShipSet(rules);
+	const u16 minBooty = rules.get_u16("bootyRefillLimit");
 	const u8 coresLength = cores.length;
 	const u8 humansLength = humans.length;
 	for (u8 i = 0; i < coresLength; i++)
 	{
 		const int coreColor = cores[i].getShape().getVars().customData;
-		Ship@ ship = getShip(coreColor);
-		if (ship is null || ship.owner == "" || ship.owner == "*")
+		if (coreColor <= 0) continue;
+		
+		Ship@ ship = ShipSet.getShip(coreColor);
+		if (ship is null || ship.owner.isEmpty() || ship.owner == "*")
 			continue;
 			
 		served.push_back(ship.owner);//captains only gather through the core
@@ -82,11 +87,11 @@ void onTick(CBlob@ this)
 			bool captainOnShip = false;
 			for (u8 i = 0; i < humansLength; i++)//get crew on mothership and check if captain is there
 			{
-				CPlayer@ player = humans[i].getPlayer();
-				if (player is null)
-					continue;
+				CBlob@ human = humans[i];
+				CPlayer@ player = human.getPlayer();
+				if (player is null) continue;
 					
-				CBlob@ shipBlob = getShipBlob(humans[i]);
+				CBlob@ shipBlob = getBlobByNetworkID(human.get_u16("shipBlobID"));
 				if (shipBlob is null || shipBlob.getShape().getVars().customData != coreColor)
 					continue;
 					
@@ -122,10 +127,11 @@ void onTick(CBlob@ this)
 				
 			for (u8 i = 0; i < crewLength; i++)
 			{
-				served.push_back(crew[i]);
+				const string name = crew[i];
+				served.push_back(name);
 				const f32 rewardFactor = Maths::Max(mothership_crewRewardFactor/crewLength, CREW_REWARD_FACTOR);
 				const u16 reward = Maths::Ceil(amount * rewardFactor);
-				server_giveBooty(crew[i], reward);
+				server_giveBooty(name, reward);
 				server_updateX(this, reward, false);
 			}
 		}
@@ -134,12 +140,12 @@ void onTick(CBlob@ this)
 	//booty to over-sea crew
 	for (u8 i = 0; i < humansLength; i++)
 	{
-		CPlayer@ player = humans[i].getPlayer();
-		if (player is null)
-			continue;
+		CBlob@ human = humans[i];
+		CPlayer@ player = human.getPlayer();
+		if (player is null) continue;
 
 		const string name = player.getUsername();
-		if (this.getDistanceTo(humans[i]) <= FISH_RADIUS && served.find(name) == -1)
+		if (this.getDistanceTo(human) <= FISH_RADIUS && served.find(name) == -1)
 		{
 			const u16 reward = Maths::Ceil(amount * CREW_REWARD_FACTOR);
 			server_giveBooty(name, reward);
@@ -154,7 +160,7 @@ void onTick(CBlob@ this)
 	{
 		if (amount < AMOUNT_INSTANT_PICKUP)
 			this.server_Die();
-		else if (amount > 0 && (amount < getRules().get_u16("booty_x_min") || this.getTickSinceCreated() > 3600))
+		else if (amount > 0 && (amount < rules.get_u16("booty_x_min") || this.getTickSinceCreated() > 3600))
 			server_updateX(this, 2, false);
 	}
 }
@@ -171,7 +177,7 @@ void server_updateX(CBlob@ this, const u16 reward, const bool instaPickup = true
 	else
 		this.set_u16("amount", Maths::Max(0, amount - reward));
 
-	this.Sync("amount", true);	//522519900 HASH
+	this.Sync("amount", true); //522519900 HASH
 }
 
 void server_giveBooty(string name, const u16 amount)
@@ -199,7 +205,7 @@ void onTick(CSprite@ this)
 	
 	if (change > 0)
 	{
-		f32 size = amount/prevAmount;
+		const f32 size = amount/prevAmount;
 		this.ScaleBy(Vec2f(size, size));
 	}
 }

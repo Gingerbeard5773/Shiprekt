@@ -96,7 +96,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Ship@ ship = getShip(col);
+		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null)
 		{
 			checkDocked(this, ship);
@@ -135,7 +135,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		if (shooter is null)
 			return;
 
-		Ship@ ship = getShip(this.getShape().getVars().customData);
+		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 		if (ship is null)
 			return;
 
@@ -143,7 +143,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		{
 			f32 currentFirePause = this.get_f32("fire pause");
 			if (currentFirePause < MAX_FIRE_PAUSE)
-				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * (ship.isMothership ? 1.0 : 1.0f) * FIRE_PAUSE_RATE));
+				this.set_f32("fire pause", currentFirePause + Maths::Sqrt(currentFirePause * (ship.isMothership ? 1.1 : 1.0f) * FIRE_PAUSE_RATE));
 		}
 
 		Vec2f pos = this.getPosition();
@@ -187,7 +187,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			this.set_string("barrel", "left");
 		}
 
-		Vec2f barrelPos = this.getPosition() + aimVector*9 + barrelOffset;
+		Vec2f barrelPos = pos + aimVector*9 + barrelOffset;
 
 		//hit stuff
 		const u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
@@ -214,7 +214,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 				const int thisColor = this.getShape().getVars().customData;
 				const int bColor = b.getShape().getVars().customData;
-				const bool sameShip = bColor != 0 && thisColor == bColor;
+				const bool sameShip = thisColor == bColor;
 				const bool isBlock = b.hasTag("block");
 				
 				if (b.hasTag("plank") && !CollidesWithPlank(b, aimVector))
@@ -224,8 +224,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				{
 					if (isBlock || b.hasTag("rocket"))
 					{
-						if (b.hasTag("solid") || (b.getTeamNum() != teamNum && 
-						   (b.hasTag("door") || b.hasTag("core") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb"))))//hit these and die
+						if (b.hasTag("solid") || (b.hasTag("door") && b.getShape().getConsts().collidable) || (b.getTeamNum() != teamNum && 
+						   (b.hasTag("core") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb"))))//hit these and die
 							killed = true;
 						else if (sameShip && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
 						{

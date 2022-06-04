@@ -58,6 +58,7 @@ void Repulse(CBlob@ this)
 	
 	CBlob@[] blobs;
 	getMap().getBlobsInRadius(pos, PUSH_RADIUS, @blobs);
+	ShipDictionary@ ShipSet = getShipSet();
 	const u8 blobsLength = blobs.length;
 	for (u8 i = 0; i < blobsLength; i++)
 	{
@@ -66,7 +67,7 @@ void Repulse(CBlob@ this)
 		if (b is this || color <= 0) continue;
 		
 		//push ship
-		Ship@ ship = getShip(color);
+		Ship@ ship = ShipSet.getShip(color);
 		if (ship !is null && ship.mass > 0.0f)
 		{
 			const f32 pushMultiplier = b.hasTag("engine") ? 1.5f : 1.0f; //engines get pushed more
@@ -79,7 +80,7 @@ void Repulse(CBlob@ this)
 		}
 		
 		//turn on propellers
-		if (isServer() && b.hasTag("engine") && ship.owner == "")
+		if (isServer() && b.hasTag("engine") && ship.owner.isEmpty())
 		{
 			b.set_u32("onTime", getGameTime());
 			b.set_f32("power", -1.0f);
@@ -96,33 +97,22 @@ void onTick(CBlob@ this)
 		const u32 gameTime = getGameTime();
 		if (isServer() && gameTime == this.get_u32("detonationTime") - 1) //one tick before repulsion
 		{
-			Ship@ ship = getShip(this.getShape().getVars().customData);
-			if (ship !is null)
-			{
-				this.getShape().getVars().customData = -1; //remove this block from all ships
-				
-				CRules@ rules = getRules();
-				bool pushShip = true;
-				
-				Ship[]@ dirtyShips;
-				rules.get("dirtyShips", @dirtyShips);
-				
-				const u8 dirtyLength = dirtyShips.length;
-				for (u8 i = 0; i < dirtyLength; i++) //dont push duplicates
-				{
-					if (ship.id == dirtyShips[i].id)
-					{
-						pushShip = false;
-						break;
-					}
-				}
-				
-				if (ship.blocks.length > 1 && pushShip)
-					rules.push("dirtyShips", ship); //seperate a ship
-			}
+			SeperateShip(this);
 		}
 		else if (gameTime == this.get_u32("detonationTime"))
 			Repulse(this);
+	}
+}
+
+void SeperateShip(CBlob@ this)
+{
+	CRules@ rules = getRules();
+	Ship@ ship = getShipSet(rules).getShip(this.getShape().getVars().customData);
+	if (ship !is null)
+	{
+		this.Tag("dead");
+		CBlob@[] tempArray; tempArray.push_back(this);
+		rules.push("dirtyBlocks", tempArray);
 	}
 }
 
@@ -168,5 +158,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 void onDie(CBlob@ this)
 {
 	if (!this.hasTag("disabled"))
+	{
 		Repulse(this);
+		
+		if (getGameTime() != this.get_u32("detonationTime"))
+			SeperateShip(this);
+	}
 }

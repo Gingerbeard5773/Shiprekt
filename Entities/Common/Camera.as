@@ -55,22 +55,18 @@ void onTick(CBlob@ this)
 	}
 	else
 	{
-		Ship@ ship = getShip(this);
-		if (ship !is null && ship.centerBlock !is null)
+		//reference off block we're on
+		CBlob@ refBlob = getBlobByNetworkID(this.get_u16("shipBlobID"));
+		if (refBlob !is null)
 		{
-			//find best refBlock
-			CBlob@ refBlob = getShipBlob(this);
-			if (refBlob !is null)
-			{
-				//find rotation
-				const f32 camAngle = camera.getRotation();
-				f32 nearest_angle = refBlob.getAngleDegrees();
-						
-				while (nearest_angle > camAngle + 45) nearest_angle -= 90.0f;
-				while (nearest_angle < camAngle - 45) nearest_angle += 90.0f;
+			//find rotation
+			const f32 camAngle = camera.getRotation();
+			f32 nearest_angle = refBlob.getAngleDegrees();
+					
+			while (nearest_angle > camAngle + 45) nearest_angle -= 90.0f;
+			while (nearest_angle < camAngle - 45) nearest_angle += 90.0f;
 
-				angle = nearest_angle;
-			}
+			angle = nearest_angle;
 		}
 	}
 	

@@ -87,7 +87,7 @@ void Rules_SetVote(CRules@ this, VoteObject@ vote)
 		else
 		{
 			//more info for server and those who cant see the vote
-			if (vote.user_to_kick != "")
+			if (!vote.user_to_kick.isEmpty())
 			{
 				//special case; votekick
 				client_AddToChat(

@@ -59,7 +59,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	int seatColor = this.getShape().getVars().customData;
+	const int seatColor = this.getShape().getVars().customData;
 	if (seatColor <= 0) return;	
 
 	const u32 gameTime = getGameTime();
@@ -85,9 +85,9 @@ void onTick(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-	sprite.SetAnimation(seatOwner != "" ? "default": "fold");//update sprite
+	sprite.SetAnimation(!seatOwner.isEmpty() ? "default": "fold"); //update sprite
 
-	Ship@ ship = getShip(seatColor);
+	Ship@ ship = getShipSet().getShip(seatColor);
 	if (ship is null) return;
 	
 	AttachmentPoint@ seat = this.getAttachmentPoint(0);
@@ -104,7 +104,7 @@ void onTick(CBlob@ this)
 		CHUD@ HUD = getHUD();
 		const string occupierName = player.getUsername();
 		const u8 occupierTeam = occupier.getTeamNum();
-		const bool isCaptain = ship.owner == occupierName || ship.owner == "*" || ship.owner == "";
+		const bool isCaptain = ship.owner == occupierName || ship.owner == "*" || ship.owner.isEmpty();
 		const bool canHijack = seatOwner == ship.owner && occupierTeam != teamNum;
 			
 		const bool up = occupier.isKeyPressed(key_up);
@@ -121,7 +121,7 @@ void onTick(CBlob@ this)
 		if (player.isMyPlayer())
 		{
 			//show help tip
-			occupier.set_bool("drawSeatHelp", ship.owner != "" && occupierTeam == teamNum && !isCaptain && occupierName == seatOwner);
+			occupier.set_bool("drawSeatHelp", !ship.owner.isEmpty() && occupierTeam == teamNum && !isCaptain && occupierName == seatOwner);
 			
 			//couplings help tip
 			occupier.set_bool("drawCouplingsHelp", this.get_bool("canProduceCoupling"));
@@ -156,12 +156,12 @@ void onTick(CBlob@ this)
 					CBlob@ c = couplings[i];
 					if (!c.isOnScreen()) continue;
 					
-					bool isOwner = c.get_string("playerOwner") == occupierName;
+					const bool isOwner = c.get_string("playerOwner") == occupierName;
 
 					if (isCaptain)
 					{
 						CButton@ button;
-						bool oldEnough = c.getTickSinceCreated() > CREW_COUPLINGS_LEASE || c.getTeamNum() != occupierTeam;
+						const bool oldEnough = c.getTickSinceCreated() > CREW_COUPLINGS_LEASE || c.getTeamNum() != occupierTeam;
 						if ((isOwner || oldEnough))
 						{
 							@button = occupier.CreateGenericButton(isOwner ? 2 : 1, Vec2f_zero, c, c.getCommandID("decouple"), isOwner ? "Decouple" : "Decouple (crew's)");
@@ -193,7 +193,7 @@ void onTick(CBlob@ this)
 				for (u16 i = 0; i < repulsorLength; ++i)
 				{
 					CBlob@ r = repulsors[i];
-					int color = r.getShape().getVars().customData;
+					const int color = r.getShape().getVars().customData;
 					if (color > 0 && r.isOnScreen() && !r.hasTag("activated") && r.get_string("playerOwner") == occupierName || (isCaptain && seatColor == color))
 					{
 						CButton@ button = occupier.CreateGenericButton(8, Vec2f_zero, r, r.getCommandID("chainReaction"), "Activate");
@@ -260,15 +260,14 @@ void onTick(CBlob@ this)
 		}
 		
 		//******svOnly below
-		if (!isServer())
-			return;
+		if (!isServer()) return;
 	
 		if (occupierName == seatOwner)
 			this.set_u32("lastActive", gameTime);
 		else
 			this.set_u32("lastActive", Maths::Max(0, this.get_u32("lastActive") - 3));//resets 4x faster if enemy is using it
 			
-		if (seatOwner == "")//Re-set empty seat's owner to occupier
+		if (seatOwner.isEmpty())//Re-set empty seat's owner to occupier
 		{
 			//print("** Re-setting seat owner: " + occupierName);
 			server_setOwner(this, occupierName);
@@ -281,14 +280,14 @@ void onTick(CBlob@ this)
 		this.set_bool("canProduceCoupling", canProduceCoupling);
 		this.Sync("canProduceCoupling", true); //-1891382656 HASH
 		
-		if (inv && canProduceCoupling && !Human::wasHoldingBlocks(occupier))
+		if (inv && canProduceCoupling && !Human::wasHoldingBlocks(occupier) && !Human::isHoldingBlocks(occupier))
 		{
 			this.set("couplingCooldown", gameTime + COUPLINGS_COOLDOWN);
 			ProduceBlock(rules, occupier, "coupling", 2);
 		}
 		
 		//update if ships changed
-		if (this.get_bool("updateArrays") && (gameTime + this.getNetworkID()) % 10 == 0)
+		if (this.get_bool("updateBlock") && (gameTime + this.getNetworkID()) % 10 == 0)
 			updateArrays(this, ship);
 		
 		if (space && left_click)//so when a player undocks the ship stops
@@ -312,7 +311,7 @@ void onTick(CBlob@ this)
 			this.get("cannons", cannons);
 
 			//propellers
-			bool teamInsensitive = !ship.isMothership || ship.owner != "*";//it's a mini or mship isn't merged with another mship (every side controlls their props)
+			const bool teamInsensitive = !ship.isMothership || ship.owner != "*"; //it's a mini or mship isn't merged with another mship (every side controls their props)
 			
 			const u16 upPropLength = up_propellers.length;
 			const u16 downPropLength = down_propellers.length;
@@ -420,12 +419,12 @@ void onTick(CBlob@ this)
 				}
 				else
 				{
-					u8 maxStrafers = Maths::Round(Maths::FastSqrt(ship.mass)/3.0f);
+					const u8 maxStrafers = Maths::Round(Maths::FastSqrt(ship.mass)/3.0f);
 					const u16 strLeftPropLength = strafe_left_propellers.length;
 					for (u16 i = 0; i < strLeftPropLength; ++i)
 					{
 						CBlob@ prop = getBlobByNetworkID(strafe_left_propellers[i]);
-						f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
+						const f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
 						if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						{
 							prop.set_u32("onTime", gameTime);
@@ -436,7 +435,7 @@ void onTick(CBlob@ this)
 					for (u16 i = 0; i < strRightPropLength; ++i)
 					{
 						CBlob@ prop = getBlobByNetworkID(strafe_right_propellers[i]);
-						f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
+						const f32 oDrive = i < maxStrafers ? 2.0f : 1.0f;
 						if (prop !is null && seatColor == prop.getShape().getVars().customData && (teamInsensitive || occupierTeam == prop.getTeamNum()))
 						{
 							prop.set_u32("onTime", gameTime);
@@ -456,8 +455,7 @@ void onTick(CBlob@ this)
 					for (u16 i = 0; i < machinegunsLength; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID(machineguns[i]);
-						if (weap is null)
-							continue;
+						if (weap is null) continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
 						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
@@ -478,8 +476,7 @@ void onTick(CBlob@ this)
 					for (u16 i = 0; i < cannonsLength; ++i)
 					{
 						CBlob@ weap = getBlobByNetworkID(cannons[i]);
-						if (weap is null || !weap.get_bool("fire ready"))
-							continue;
+						if (weap is null || !weap.get_bool("fire ready")) continue;
 						
 						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
 						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
@@ -488,7 +485,7 @@ void onTick(CBlob@ this)
 					
 					if (fireCannons.length > 0)
 					{
-						u8 index = this.get_u8("cannonFireIndex");
+						const u8 index = this.get_u8("cannonFireIndex");
 						CBlob@ weap = fireCannons[index % fireCannons.length];
 						CBitStream bs;
 						bs.write_netid(occupier.getNetworkID());
@@ -500,11 +497,11 @@ void onTick(CBlob@ this)
 			}
 		}
 	}
-	else if (isServer() && ship.owner == seatOwner)//captain seats release rates
+	else if (isServer() && ship.owner == seatOwner) //captain seats release rates
 	{
-		if (ship.pos != ship.old_pos)//keep extra seats alive while the mothership moves
+		if ((ship.pos - ship.old_pos).Length() > 0.01f) //keep extra seats alive while the mothership moves
 			this.set_u32("lastActive", gameTime);
-		else//release seat faster for when captain abandons the ship
+		else //release seat faster for when captain abandons the ship
 			this.set_u32("lastActive", Maths::Max(0, this.get_u32("lastActive") - 2));
 	}
 }
@@ -531,7 +528,7 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 
 void updateArrays(CBlob@ this, Ship@ ship)
 {
-	this.set_bool("updateArrays", false);
+	this.set_bool("updateBlock", false);
 
 	u16[] left_propellers, strafe_left_propellers, strafe_right_propellers, right_propellers, up_propellers, down_propellers, machineguns, cannons;	
 	const u16 blocksLength = ship.blocks.length;
@@ -542,13 +539,13 @@ void updateArrays(CBlob@ this, Ship@ ship)
 
 		CBlob@ block = getBlobByNetworkID(ship_block.blobID);
 		if (block is null) continue;
-					
+		
+		const u16 netID = block.getNetworkID();
 		//machineguns
 		if (block.hasTag("machinegun"))
-			machineguns.push_back(block.getNetworkID());
-		
-		if (block.hasTag("cannon"))
-			cannons.push_back(block.getNetworkID());
+			machineguns.push_back(netID);
+		else if (block.hasTag("cannon"))
+			cannons.push_back(netID);
 		
 		//propellers
 		if (block.hasTag("engine"))
@@ -564,22 +561,22 @@ void updateArrays(CBlob@ this, Ship@ ship)
 			const float forceLimit_side = 0.2f;
 
 			if (angleVel < -angleLimit || (velNorm.y < -forceLimit_side && angleVel < angleLimit))
-				right_propellers.push_back(block.getNetworkID());
+				right_propellers.push_back(netID);
 			else if (angleVel > angleLimit || (velNorm.y > forceLimit_side && angleVel > -angleLimit))
-				left_propellers.push_back(block.getNetworkID());
+				left_propellers.push_back(netID);
 			
 			if (Maths::Abs(velNorm.x) < forceLimit)
 			{
 				if (velNorm.y < -forceLimit_side)
-					strafe_right_propellers.push_back(block.getNetworkID());
+					strafe_right_propellers.push_back(netID);
 				else if (velNorm.y > forceLimit_side)
-					strafe_left_propellers.push_back(block.getNetworkID());
+					strafe_left_propellers.push_back(netID);
 			}
 					
 			if (velNorm.x > forceLimit)
-				down_propellers.push_back(block.getNetworkID());
+				down_propellers.push_back(netID);
 			else if (velNorm.x < -forceLimit)
-				up_propellers.push_back(block.getNetworkID());
+				up_propellers.push_back(netID);
 		}
 	}
 	

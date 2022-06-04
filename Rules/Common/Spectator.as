@@ -126,6 +126,7 @@ void Spectator(CRules@ this)
 		SetTargetPlayer(null);
 		getBlobsByTag("player", @players);
 		getBlobsByTag("block", @players);
+		ShipDictionary@ ShipSet = getShipSet(this);
 		const u16 playersLength = players.length;
 		for (u16 i = 0; i < playersLength; i++)
 		{
@@ -138,10 +139,11 @@ void Spectator(CRules@ this)
 				if (zoomTarget >= 0.2f)
 					zoomTarget = 0.5f;
 				
-				if (blob.hasTag("block"))
+				const int bCol = blob.getShape().getVars().customData;
+				if (bCol > 0)
 				{
 					//set an ship as the target
-					Ship@ ship = getShip(blob.getShape().getVars().customData);
+					Ship@ ship = ShipSet.getShip(bCol);
 					if (ship is null || ship.centerBlock is null) return;
 					
 					camera.setTarget(ship.centerBlock);

@@ -116,7 +116,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Ship@ ship = getShip(col);
+		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null && canShootAuto(this))
 			refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 	}
@@ -132,7 +132,7 @@ void Manual(CBlob@ this, CBlob@ controller)
 	// fire
 	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && isClearShot(this, aimVec))
 	{
-		Ship@ ship = getShip(this.getShape().getVars().customData);
+		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 		u16 netID = 0;
 		if (ship !is null && player !is null && (!ship.isMothership || ship.owner != player.getUsername()))
 			netID = controller.getNetworkID();
@@ -156,6 +156,7 @@ void Auto(CBlob@ this)
 	CBlob@[] blobsInRadius;
 	const Vec2f pos = this.getPosition();
 	const int thisColor = this.getShape().getVars().customData;
+	ShipDictionary@ ShipSet = getShipSet();
 	f32 minDistance = 9999999.9f;
 	bool shoot = false;
 	Vec2f shootVec = Vec2f(0, 0);
@@ -173,10 +174,11 @@ void Auto(CBlob@ this)
 
 				Ship@ targetShip;
 				if (b.hasTag("block"))
-					@targetShip = getShip(b.getShape().getVars().customData);
+					@targetShip = ShipSet.getShip(b.getShape().getVars().customData);
 				else
 				{
-					@targetShip = getShip(b);
+					const s32 overlappingShipID = b.get_s32("shipID");
+					@targetShip = overlappingShipID > 0 ? ShipSet.getShip(overlappingShipID) : null;
 					if (b.isAttached())
 					{
 						AttachmentPoint@ humanAttach = b.getAttachmentPoint(0);
@@ -225,7 +227,7 @@ void Auto(CBlob@ this)
 		if (canShootAuto(this))
 		{
 			u16 netID = 0;
-			Ship@ ship = getShip(this.getShape().getVars().customData);
+			Ship@ ship = ShipSet.getShip(thisColor);
 			if (ship !is null)
 			{
 				CPlayer@ shipOwner = getPlayerByUsername(ship.owner);
@@ -253,7 +255,7 @@ void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
 		Rotate(this, aimVec);
 		if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
 		{
-			Ship@ ship = getShip(this.getShape().getVars().customData);
+			Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 			u16 netID = 0;
 			if (ship !is null && player !is null && (!ship.isMothership || ship.owner != player.getUsername()))
 				netID = controller.getNetworkID();

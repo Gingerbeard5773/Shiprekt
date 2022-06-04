@@ -29,6 +29,7 @@ void onInit(CRules@ this)
 void onReload(CRules@ this)
 {
     this.clear("respawns");
+	const u32 gameTime = getGameTime();
 	const u8 specNum = this.getSpectatorTeamNum();
 	const u8 plyCount = getPlayerCount();
     for (u8 i = 0; i < plyCount; i++)
@@ -36,9 +37,9 @@ void onReload(CRules@ this)
         CPlayer@ player = getPlayer(i);
         if (player.getBlob() is null && player.getTeamNum() != specNum)
         {
-            Respawn r(player.getUsername(), getGameTime());
+            Respawn r(player.getUsername(), gameTime);
             this.push("respawns", r);
-            syncRespawnTime(this, player, getGameTime());
+            syncRespawnTime(this, player, gameTime);
         }
     }
 }
@@ -48,6 +49,7 @@ void onRestart(CRules@ this)
 	this.clear("respawns");
 	
 	CPlayer@[] players;
+	const u32 gameTime = getGameTime();
 	const u8 specNum = this.getSpectatorTeamNum();
 	const u8 plyCount = getPlayerCount();
 	for (u8 i = 0; i < plyCount; i++)
@@ -58,9 +60,9 @@ void onRestart(CRules@ this)
 			players.push_back(player);
 			
 			//spawn players!
-			Respawn r(player.getUsername(), getGameTime());
+			Respawn r(player.getUsername(), gameTime);
 			this.push("respawns", r);
-			syncRespawnTime(this, player, getGameTime());
+			syncRespawnTime(this, player, gameTime);
 		}
 	}
 	
@@ -80,7 +82,7 @@ void assignTeams(CRules@ this, CPlayer@[] players)
 	
 	while (!players.isEmpty())
 	{
-		u8 randPlayer = XORRandom(players.length); //randomize selection
+		const u8 randPlayer = XORRandom(players.length); //randomize selection
 		CPlayer@ player = players[randPlayer];
 		
 		//print("assignTeams: assigning " + player.getUsername() +" "+cores[currentTeam].getTeamNum());
@@ -195,7 +197,6 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 		if (shark !is null)
 		{
 			shark.server_SetPlayer(player);
-			//player.server_setTeamNum(this.getSpectatorTeamNum());
 		}
 		return shark;
 	}
@@ -230,14 +231,15 @@ bool isRespawnAdded(CRules@ this, const string username)
 
 Vec2f getSpawnPosition(const u8 team)
 {
+	CMap@ map = getMap();
+	
     Vec2f[] spawns;			 
-    if (getMap().getMarkers("spawn", spawns))
+    if (map.getMarkers("spawn", spawns))
 	{
     	if (team >= 0 && team < spawns.length)
     		return spawns[team];
     }
-    CMap@ map = getMap();
-    return Vec2f(map.tilesize*map.tilemapwidth/2, map.tilesize*map.tilemapheight/2);
+    return map.getMapDimensions() / 2;
 }
 
 void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)

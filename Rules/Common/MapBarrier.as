@@ -1,13 +1,13 @@
-// force barrier around edge of map
+//bouncy map borders
+#define SERVER_ONLY
 #include "ShipsCommon.as";
 
-CBlob@[] hitBlobs;
-uint[] shipTimes;
+//TODO: better calculation for torpedo bounce angle, to allow for ships with more blocks than 2
 
-void onInit(CRules@ this)
-{
-	this.addCommandID("ship bounce");
-}
+s32[] shipIDs;
+u32[] shipTimes;
+
+const u32 ticksTillNextBounce = 4;
 
 void onTick(CRules@ this)
 {
@@ -15,10 +15,10 @@ void onTick(CRules@ this)
 	if (map is null) return;
 
 	const Vec2f dim = map.getMapDimensions();
+	const u32 gameTime = getGameTime();
 
+	//simulate borders on each side of the map
 	CBlob@[] blobsAtBorder;
-
-	//create borders
 	map.getBlobsInBox(dim, Vec2f(0.0f, dim.y), @blobsAtBorder);
 	map.getBlobsInBox(dim, Vec2f(dim.x, 0.0f), @blobsAtBorder);
 	map.getBlobsInBox(Vec2f(dim.x, 0.0f), Vec2f(), @blobsAtBorder);
@@ -27,81 +27,69 @@ void onTick(CRules@ this)
 	const u8 borderBlobsLength = blobsAtBorder.length;
 	if (borderBlobsLength > 0)
 	{
+		ShipDictionary@ ShipSet = getShipSet(this);
 		for (u8 i = 0; i < borderBlobsLength; i++)
 		{
 			CBlob@ b = blobsAtBorder[i];
-			Ship@ ship = getShip(b.getShape().getVars().customData);
-			if (ship !is null && ship.vel.LengthSquared() > 0)
-			{
-				const Vec2f pos = b.getPosition();
+			const int bCol = b.getShape().getVars().customData;
+			if (bCol <= 0) continue;
+			
+			Ship@ ship = ShipSet.getShip(bCol);
+			if (ship is null) continue;
+			
+			const Vec2f pos = b.getPosition();
 
-				//determine bounce direction
-				const f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : ship.vel.x;
-				const f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : ship.vel.y;
-				
-				const u16 blocksLength = ship.blocks.length;
-				if (blocksLength < 3)
+			//determine bounce direction
+			const f32 bounceX = dim.x - 20 < pos.x ? -3.0f : pos.x - 20 < 0.0f ? 3.0f : ship.vel.x;
+			const f32 bounceY = dim.y - 20 < pos.y ? -3.0f : pos.y - 20 < 0.0f ? 3.0f : ship.vel.y;
+			
+			CBitStream bs;
+			bs.write_s32(ship.id);
+			
+			const u16 blocksLength = ship.blocks.length;
+			if (blocksLength < 3) //do torpedo bounce
+			{
+				if (shipIDs.find(ship.id) < 0)
 				{
-					//pinball machine!!!
-					bool bounce = true;
-					const u8 blobsLength = hitBlobs.length;
-					for (u8 q = 0; q < blobsLength; q++)
-					{
-						//make sure ships don't bounce again too soon after first bounce
-						if (hitBlobs[q] !is null && hitBlobs[q] is b)
-							bounce = false;
-					}
+					//set the ship to not bounce again for the next few ticks
+					shipIDs.push_back(ship.id);
+					shipTimes.push_back(gameTime);
 					
-					if (bounce && ship.centerBlock !is null)
-					{
-						for (u8 q = 0; q < blocksLength; ++q)
-						{
-							CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
-							if (b !is null)
-							{
-								hitBlobs.push_back(b);
-								shipTimes.push_back(getGameTime());
-							}
-						}
-						
-						if (isServer())
-						{
-							const f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all borders
-							f32 bounceAngle = Vec2f(-ship.vel.y * bounceFactor, ship.vel.x * bounceFactor).Angle();
-							while (bounceAngle < 0.0f)	 bounceAngle += 360.0f;
-							while (bounceAngle > 360.0f) bounceAngle -= 360.0f;
-							
-							CBitStream bs;
-							bs.write_netid(ship.centerBlock.getNetworkID());
-							bs.write_f32(bounceAngle); //calculate perpendicular angle
-							this.SendCommand(this.getCommandID("ship bounce"), bs); //synchronize
-						}
-					}
-					ship.vel = Vec2f(bounceX / 1.5f, bounceY / 1.5f);
+					//calculate perpendicular angle
+					const f32 bounceFactor = dim.y - 20 < pos.y || pos.y - 20 < 0.0f ? -1 : 1; //account for all border sides
+					const f32 bounceAngle = Vec2f(-ship.vel.y * bounceFactor, ship.vel.x * bounceFactor).Angle();
+					
+					bs.write_f32(bounceAngle);
 				}
 				else
-				{
-					ship.vel = Vec2f(bounceX, bounceY);
-					server_turnOffPropellers(ship);
-				}
+					bs.write_f32(800.0f);
+				
+				bs.write_Vec2f(Vec2f(bounceX / 1.5f, bounceY / 1.5f));
 			}
+			else //do normal bounce
+			{
+				bs.write_f32(800.0f);
+				bs.write_Vec2f(Vec2f(bounceX, bounceY));
+				server_turnOffPropellers(ship);
+			}
+			this.SendCommand(this.getCommandID("ship bounce"), bs); //sent to Ships.as
 		}
 	}
 	
+	//release any ships to be bounced again
 	for (u8 i = 0; i < shipTimes.length; i++)
 	{
-		if (getGameTime() > shipTimes[i]+4) //timer to let ships bounce again
+		if (gameTime > shipTimes[i] + ticksTillNextBounce)
 		{
-			hitBlobs.erase(i);
+			shipIDs.erase(i);
 			shipTimes.erase(i);
+			i = 0;
 		}
 	}
 }
 
 void server_turnOffPropellers(Ship@ ship)
 {
-	if (!isServer()) return;
-	
 	const u16 blocksLength = ship.blocks.length;
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
@@ -116,19 +104,5 @@ void server_turnOffPropellers(Ship@ ship)
 		{
 			block.set_f32("power", 0);
 		}
-	}
-}
-
-void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
-{
-	if (cmd == this.getCommandID("ship bounce"))
-	{
-		CBlob@ centerblock = getBlobByNetworkID(params.read_netid());
-		if (centerblock is null) return;
-		
-		Ship@ ship = getShip(centerblock.getShape().getVars().customData);
-		if (ship is null) return;
-		
-		ship.angle = params.read_f32();
 	}
 }

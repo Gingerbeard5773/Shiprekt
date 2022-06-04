@@ -26,16 +26,15 @@ void onInit(CBlob@ this)
 void onTick(CBlob@ this)
 {
 	CRules@ rules = getRules();
-	if (rules.isGameOver())
-		return;
+	if (rules.isGameOver()) return;
 	
-	Vec2f pos = this.getPosition();
 	const u32 gameTime = getGameTime();
+	Vec2f pos = this.getPosition();
 	f32 force = this.get_f32("force");
 	f32 forceAngle = this.get_f32("force angle");
 	
 	//particles
-	if (gameTime % 5 == 0)
+	if (isClient() && gameTime % 5 == 0)
 		makeParticle(pos);
 		
 	//suck in player
@@ -52,35 +51,37 @@ void onTick(CBlob@ this)
 	}
 		
 	//suck in ships
-	Ship[]@ ships;
-	if (rules.get("ships", @ships))
+	
+	ShipDictionary@ ShipSet = getShipSet(rules);
+	Ship@[] ships = ShipSet.getShips();
+	
+	const u16 shipsLength = ships.length;
+	for (u16 i = 0; i < shipsLength; ++i)
 	{
-		const u16 shipsLength = ships.length;
-		for (u16 i = 0; i < shipsLength; ++i)
-		{
-			Ship@ ship = ships[i];	
-			Vec2f attractDir = ship.pos - pos;
-			f32 distance = attractDir.Length();
-			f32 distanceFactor;
-			
-			if (distance > 600.0f)
-				distanceFactor = 3.0f;
-			else if (distance > 315.0f || distance < 50.0f)
-				distanceFactor = 2.0f;
-			else 
-				distanceFactor = 1.0f;
-									
-			attractDir.Normalize();
-			Vec2f perpDir = attractDir;
-			perpDir.RotateBy(forceAngle);
-			
-			attractDir *= force * distanceFactor;
-			perpDir *= force / Maths::Pow(distanceFactor, 2);
-			
-			f32 massFactor = ship.isMothership ? (Maths::Sqrt(ship.mass) * 65.0f) : Maths::Max(200.0f, (ship.mass * 35.0f));
-			
-			ship.vel -= (attractDir + perpDir)/massFactor;
-		}
+		Ship@ ship = ships[i];
+		if (ship is null) continue;
+		
+		Vec2f attractDir = ship.pos - pos;
+		f32 distance = attractDir.Length();
+		f32 distanceFactor;
+		
+		if (distance > 600.0f)
+			distanceFactor = 3.0f;
+		else if (distance > 315.0f || distance < 50.0f)
+			distanceFactor = 2.0f;
+		else 
+			distanceFactor = 1.0f;
+								
+		attractDir.Normalize();
+		Vec2f perpDir = attractDir;
+		perpDir.RotateBy(forceAngle);
+		
+		attractDir *= force * distanceFactor;
+		perpDir *= force / Maths::Pow(distanceFactor, 2);
+		
+		f32 massFactor = ship.isMothership ? (Maths::Sqrt(ship.mass) * 65.0f) : Maths::Max(200.0f, (ship.mass * 35.0f));
+		
+		ship.vel -= (attractDir + perpDir)/massFactor;
 	}
 	
 	//increase factor, damage blobs

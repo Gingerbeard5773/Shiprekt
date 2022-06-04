@@ -81,7 +81,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Ship@ ship = getShip(col);
+		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null)
 		{
 			checkDocked(this, ship);
@@ -148,7 +148,7 @@ void Fire(CBlob@ this, CBlob@ shooter)
 		{
 			Vec2f vel = aimVector * PROJECTILE_SPEED;
 
-			Ship@ ship = getShip(this.getShape().getVars().customData);
+			Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 			if (ship !is null)
 			{
 				vel += ship.vel;

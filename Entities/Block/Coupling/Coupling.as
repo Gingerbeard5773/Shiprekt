@@ -1,7 +1,9 @@
 //coupling
+#include "AccurateSoundPlay.as";
 void onInit(CBlob@ this)
 {
     this.addCommandID("decouple");
+	this.addCommandID("couple");
     this.Tag("coupling");
 	this.Tag("ramming");
 	this.Tag("removable");//for corelinked checks
@@ -11,7 +13,7 @@ void onInit(CBlob@ this)
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
 {
-	if (this.getShape().getVars().customData <= 0)//mycolour
+	if (this.getShape().getVars().customData <= 0)
         return;
 
 	//only owners can directly destroy the coupling
@@ -28,4 +30,16 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     {
         this.server_Die();
     }
+	else if (cmd == this.getCommandID("couple"))
+	{
+		if (isClient())
+		{
+			directionalSoundPlay("mechanical_click", this.getPosition());
+		}
+		if (isServer())
+		{
+			CBlob@[] tempArray; tempArray.push_back(this);
+			getRules().push("dirtyBlocks", tempArray);
+		}
+	}
 }

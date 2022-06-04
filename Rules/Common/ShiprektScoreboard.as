@@ -106,9 +106,9 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8 teamNum)
 
 		const string tex = p.getScoreboardTexture();
 
-		if (p.isMyPlayer() && tex == "")
+		if (p.isMyPlayer() && tex.isEmpty())
 			GUI::DrawIcon("ScoreboardIcons", 2, Vec2f(16,16), topleft, 0.5f, p.getTeamNum());
-		else if (tex != "")
+		else if (!tex.isEmpty())
 			GUI::DrawIcon(tex, p.getScoreboardFrame(), p.getScoreboardFrameSize(), topleft, 0.5f, p.getTeamNum());
 
 		const string username = p.getUsername();
@@ -141,7 +141,7 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8 teamNum)
 		const SColor namecolour = getNameColour(p);
 
 		//right align clantag
-		if (clantag != "")
+		if (!clantag.isEmpty())
 		{
 			Vec2f clantag_actualsize(0, 0);
 			GUI::GetTextDimensions(clantag, clantag_actualsize);
@@ -301,11 +301,15 @@ void onTick(CRules@ this)
 		string[] captains;
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
+		ShipDictionary@ ShipSet = getShipSet(this);
 		const u8 coresLength = cores.length;
 		for (u8 i = 0; i < coresLength; i++)
 		{
-			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
-			if (ship !is null && ship.owner != "")
+			const int coreCol = cores[i].getShape().getVars().customData;
+			if (coreCol <= 0) continue;
+			
+			Ship@ ship = ShipSet.getShip(coreCol);
+			if (ship !is null && !ship.owner.isEmpty())
 				captains.push_back(ship.owner);
 		}
 		

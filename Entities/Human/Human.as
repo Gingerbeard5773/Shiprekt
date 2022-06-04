@@ -54,16 +54,15 @@ void onInit(CBlob@ this)
 	this.set_u32("punch time", 0); //gametime at last punch
 	this.set_f32("camera rotation", 0); //the player's camera rotation synced for all clients
 	
-	if (this.isMyPlayer())
-	{	
-		CBlob@ core = getMothership(this.getTeamNum());
-		if (core !is null) 
-		{
-			this.setPosition(core.getPosition());
-			this.set_u16("shipID", core.getNetworkID());
-			this.set_s8("stay count", 3);
-		}
+	CBlob@ core = getMothership(this.getTeamNum());
+	if (core !is null && this.getPlayer() !is null) 
+	{
+		this.setPosition(core.getPosition());
+		this.set_u16("shipBlobID", core.getNetworkID());
+		this.set_u16("stay ID", core.getNetworkID());
+		this.set_s8("stay count", 3);
 	}
+	
 	if (isClient())
 	{
 		directionalSoundPlay("Respawn", this.getPosition(), 2.5f);
@@ -103,6 +102,33 @@ void Move(CBlob@ this)
 	CShape@ shape = this.getShape();
 	CSprite@ sprite = this.getSprite();
 	
+	ShipDictionary@ ShipSet = getShipSet(rules);
+		
+	CBlob@ shipBlob = null;
+	CBlob@[] blobsInRadius;
+	if (getMap().getBlobsInRadius(pos, 1.0f, @blobsInRadius))
+	{
+		f32 mDist = 9999.0f;
+		const u8 blobsLength = blobsInRadius.length;
+		for (u8 i = 0; i < blobsLength; i++)
+		{
+			CBlob@ blob = blobsInRadius[i];
+			if (blob.getShape().getVars().customData <= 0) continue;
+			
+			const f32 dist = (blob.getPosition() - pos).Length();
+			if (dist < mDist)
+			{
+				@shipBlob = blob;
+				mDist = dist;
+			}
+		}
+	}
+	
+	this.set_u16("shipBlobID", shipBlob !is null ? shipBlob.getNetworkID() : 0);
+	
+	Ship@ ship = shipBlob !is null ? ShipSet.getShip(shipBlob.getShape().getVars().customData) : null;
+	this.set_s32("shipID", ship !is null ? ship.id : 0);
+	
 	if (!this.isAttached())
 	{
 		if (myPlayer && blobInitialized && !rules.isGameOver()) //isGameOver check is to stop bad-deltas at next-map
@@ -124,7 +150,6 @@ void Move(CBlob@ this)
 		const bool punch = this.isKeyPressed(key_action1);
 		const bool shoot = this.isKeyPressed(key_action2);
 		
-		Ship@ ship = getShip(this);
 		shape.getVars().onground = ship !is null || isTouchingLand(pos);
 		
 		if (myPlayer || isBot)
@@ -185,10 +210,10 @@ void Move(CBlob@ this)
 			}
 			
 			//when on our mothership
-			if (ship !is null && ship.isMothership && ship.centerBlock !is null)
+			if (ship !is null && ship.isMothership)
 			{
-				CBlob@ thisCore = getMothership(this.getTeamNum());
-				if (thisCore !is null && thisCore.getShape().getVars().customData == ship.centerBlock.getShape().getVars().customData)
+				CBlob@ thisCore = getMothership(this.getTeamNum(), rules);
+				if (thisCore !is null && thisCore.getShape().getVars().customData == ship.id)
 				{
 					moveVel *= 1.35f; //speedup on own mothership
 					
@@ -243,37 +268,33 @@ void Move(CBlob@ this)
 			else angle = -forward.Angle();
 		}
 		
-		while(angle > 360)
-			angle -= 360;
-		while(angle < 0)
-			angle += 360;
+		while(angle > 360) angle -= 360;
+		while(angle < 0)   angle += 360;
 
 		shape.SetAngleDegrees(angle);	
 
 		// artificial stay on ship
 		if (myPlayer || isBot)
 		{
-			CBlob@ shipBlob = getShipBlob(this);
 			if (shipBlob !is null)
 			{
-				this.set_u16("shipID", shipBlob.getNetworkID());	
+				this.set_u16("stay ID", shipBlob.getNetworkID());	
 				this.set_s8("stay count", 3);
 			}
 			else
 			{
-				CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("shipID"));
+				CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("stay ID"));
 				if (shipBlob !is null)
 				{
 					s8 count = this.get_s8("stay count");		
 					count--;
 					if (count <= 0)
 					{
-						this.set_u16("shipID", 0);	
+						this.set_u16("stay ID", 0);	
 					}
 					else if (!shipBlob.hasTag("solid") && ((!up && !left && !right && !down) || !blobInitialized))
 					{
-						Ship@ blobship = getShip(shipBlob.getShape().getVars().customData);
-						if (blobship !is null && blobship.vel.Length() > 1.0f)
+						if (ship !is null && ship.vel.Length() > 1.0f)
 							this.setPosition(shipBlob.getPosition());
 					}
 					this.set_s8("stay count", count);		
@@ -369,8 +390,9 @@ void PlayerControls(CBlob@ this)
 					else
 					{
 						//choose a new block to buy
-						Ship@ pShip = getShip(this);
-						if (pShip !is null && pShip.centerBlock !is null && ((pShip.centerBlock.getShape().getVars().customData == core.getShape().getVars().customData) 
+						const s32 overlappingShipID = this.get_s32("shipID");
+						Ship@ pShip = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
+						if (pShip !is null && pShip.centerBlock !is null && ((pShip.id == core.getShape().getVars().customData) 
 							|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum())))
 						{
 							buildMenuOpen = true;
@@ -461,60 +483,46 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 		
 		string description;
 		{ //Seat
-			description = Trans::SeatDesc;
-			AddBlock(this, menu, "seat", "$SEAT$", Trans::Seat, description, core, 0.5f);
+			AddBlock(this, menu, "seat", "$SEAT$", Trans::Seat, Trans::SeatDesc, core, 0.5f);
 		}
 		{ //Propeller
-			description = Trans::EngineDesc;
-			AddBlock(this, menu, "propeller", "$PROPELLER$", Trans::Engine, description, core, 1.0f);
+			AddBlock(this, menu, "propeller", "$PROPELLER$", Trans::Engine, Trans::EngineDesc, core, 1.0f);
 		}
 		{ //Ram Engine
-			description = Trans::RamEngineDesc;
-			AddBlock(this, menu, "ramengine", "$RAMENGINE$", Trans::RamEngine, description, core, 1.25f);
+			AddBlock(this, menu, "ramengine", "$RAMENGINE$", Trans::RamEngine, Trans::RamEngineDesc, core, 1.25f);
 		}
 		{ //Coupling
-			description = Trans::CouplingDesc;
-			AddBlock(this, menu, "coupling", "$COUPLING$", Trans::Coupling, description, core, 0.1f);
+			AddBlock(this, menu, "coupling", "$COUPLING$", Trans::Coupling, Trans::CouplingDesc, core, 0.1f);
 		}
 		{ //Wooden Hull
-			description = Trans::WoodHullDesc;
-			AddBlock(this, menu, "solid", "$SOLID$", Trans::Hull, description, core, 0.75f);
+			AddBlock(this, menu, "solid", "$SOLID$", Trans::Hull, Trans::WoodHullDesc, core, 0.75f);
 		}
 		{ //Wooden Platform
-			description = Trans::PlatformDesc;
-			AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, description, core, 0.2f);
+			AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, Trans::PlatformDesc, core, 0.2f);
 		}
 		{ //Wooden Door
-			description = Trans::DoorDesc;
-			AddBlock(this, menu, "door", "$DOOR$", Trans::Door, description, core, 1.0f);
+			AddBlock(this, menu, "door", "$DOOR$", Trans::Door, Trans::DoorDesc, core, 1.0f);
 		}
 		{ //Wooden Plank
-			description = Trans::PlankDesc;
-			AddBlock(this, menu, "plank", "$PLANK$", Trans::Plank, description, core, 0.7f);
+			AddBlock(this, menu, "plank", "$PLANK$", Trans::Plank, Trans::PlankDesc, core, 0.7f);
 		}
 		{ //Harpoon
-			description = Trans::HarpoonDesc;
-			AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, description, core, 2.0f);
+			AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, Trans::HarpoonDesc, core, 2.0f);
 		}
 		{ //Harvester
-			description = Trans::HarvesterDesc;
-			AddBlock(this, menu, "harvester", "$HARVESTER$", Trans::Harvester, description, core, 2.0f);
+			AddBlock(this, menu, "harvester", "$HARVESTER$", Trans::Harvester, Trans::HarvesterDesc, core, 2.0f);
 		}
 		{ //Patcher
-			description = Trans::PatcherDesc;
-			AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, description, core, 3.0f);
+			AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, Trans::PatcherDesc, core, 3.0f);
 		}
 		{ //Repulsor
-			description = Trans::RepulsorDesc;
-			AddBlock(this, menu, "repulsor", "$REPULSOR$", Trans::Repulsor, description, core, 0.25f);
+			AddBlock(this, menu, "repulsor", "$REPULSOR$", Trans::Repulsor, Trans::RepulsorDesc, core, 0.25f);
 		}
 		{ //Decoy Core
-			description = Trans::DecoyCoreDesc;
-			AddBlock(this, menu, "decoycore", "$DECOYCORE$", Trans::DecoyCore, description, core, 6.0f);
+			AddBlock(this, menu, "decoycore", "$DECOYCORE$", Trans::DecoyCore, Trans::DecoyCoreDesc, core, 6.0f);
 		}
 		{ //Auxilliary Core
-			description = Trans::AuxillDesc;
-			CGridButton@ button = AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, description, core, 12.0f);
+			CGridButton@ button = AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, Trans::AuxillDesc, core, 12.0f);
 			if (isStation)
 			{
 				button.SetEnabled(false);
@@ -522,12 +530,10 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isS
 			}
 		}
 		{ //Bomb
-			description = Trans::BombDesc;
-			AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, description, core, 2.0f, warmup);
+			AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, Trans::BombDesc, core, 2.0f, warmup);
 		}
 		{ //Ram Hull
-			description = Trans::RamDesc;
-			AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, description, core, 2.0f, warmup);
+			AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, Trans::RamDesc, core, 2.0f, warmup);
 		}
 		{ //Machinegun
 			description = Trans::MGDesc+"\n"+Trans::AmmoCap+": 250";
@@ -696,14 +702,14 @@ void ShootPistol(CBlob@ this)
 	params.write_Vec2f(vel);
 	params.write_f32(lifetime);
 
-	Ship@ ship = getShip(this);
+	const s32 overlappingShipID = this.get_s32("shipID");
+	Ship@ ship = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
 	if (ship !is null && ship.centerBlock !is null) //relative positioning
 	{
 		params.write_bool(true);
 		const Vec2f rPos = (pos + aimVector*3) - ship.centerBlock.getPosition();
 		params.write_Vec2f(rPos);
-		const u32 shipColor = ship.centerBlock.getShape().getVars().customData;
-		params.write_u32(shipColor);
+		params.write_u32(ship.id);
 	}
 	else //absolute positioning
 	{
@@ -807,7 +813,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		{
 			Vec2f rPos = params.read_Vec2f();
 			const int shipColor = params.read_u32();
-			Ship@ ship = getShip(shipColor);
+			Ship@ ship = getShipSet().getShip(shipColor);
 			if (ship !is null && ship.centerBlock !is null)
 			{
 				pos = rPos + ship.centerBlock.getPosition();
@@ -852,7 +858,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		CBlob@ mBlob = getBlobByNetworkID(params.read_netid());
 		if (mBlob is null) return;
 		
-		Ship@ ship = getShip(mBlob.getShape().getVars().customData);
+		Ship@ ship = getShipSet().getShip(mBlob.getShape().getVars().customData);
 		if (ship is null) return;
 		
 		CPlayer@ thisPlayer = this.getPlayer();						
@@ -877,8 +883,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			//deconstruct
 			const string shipOwner = ship.owner;
 			f32 deconstructAmount = 0;
-			if ((shipOwner == "" && !ship.isMothership) //no owner and is not a mothership
-				|| (mBlob.get_string("playerOwner") == "" && (!ship.isMothership || mBlob.getTeamNum() == this.getTeamNum())) //no one owns the block and is not a mothership
+			if ((shipOwner.isEmpty() && !ship.isMothership) //no owner and is not a mothership
+				|| (mBlob.get_string("playerOwner").isEmpty() && (!ship.isMothership || mBlob.getTeamNum() == this.getTeamNum())) //no one owns the block and is not a mothership
 				|| shipOwner == thisPlayer.getUsername()  //we own the ship
 				|| mBlob.get_string("playerOwner") == thisPlayer.getUsername()) //we own the block
 			{
@@ -962,7 +968,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		}
 		
 		//laser creation
-		if (isClient())//effects
+		if (isClient()) //effects
 		{
 			Vec2f aimVector = aimPos - pos;	 
 			const Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
@@ -1036,7 +1042,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		}
 		else
 		{
-			CBlob@ core = getMothership(teamNum);
+			CBlob@ core = getMothership(teamNum, rules);
 			if (core !is null)
 			{
 				const int coreColor = core.getShape().getVars().customData;
@@ -1049,7 +1055,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					CBlob@ human = humans[i];
 					if (human.getTeamNum() == teamNum && human !is this)
 					{
-						CBlob@ shipBlob = getShipBlob(human);
+						CBlob@ shipBlob = getBlobByNetworkID(human.get_u16("shipBlobID"));
 						if (shipBlob !is null && shipBlob.getShape().getVars().customData == coreColor)
 							crew.push_back(human);
 					}
@@ -1100,7 +1106,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		if (block !is this) //player didn't hit themselves
 		{
 			//death when run-over by a ship
-			Ship@ ship = getShip(block.getShape().getVars().customData);
+			Ship@ ship = getShipSet().getShip(block.getShape().getVars().customData);
 			if (ship !is null)
 			{
 				//set the damage owner so the ship's owner gets the kill
@@ -1132,7 +1138,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 {
 	this.getShape().getVars().onground = true;
-	this.set_u16("shipID", detached.getNetworkID());
+	this.set_u16("shipBlobID", detached.getNetworkID());
 	this.set_s8("stay count", 3);
 }
 
@@ -1193,9 +1199,11 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		{
 			u16 reward = 15;
 			
-			if (hitterPlayer.getBlob() !is null)
+			CBlob@ hitterBlob = hitterPlayer.getBlob();
+			if (hitterBlob !is null)
 			{
-				Ship@ pShip = getShip(hitterPlayer.getBlob());
+				const s32 overlappingShipID = hitterBlob.get_s32("shipID");
+				Ship@ pShip = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
 				if (pShip !is null && pShip.isMothership && //this is on a mothership
 					pShip.centerBlock !is null && pShip.centerBlock.getTeamNum() == teamNum) //hitter is on this mothership
 				{

@@ -30,7 +30,7 @@ void onTick(CBlob@ this)
 {
 	if (isClient() && this.hasTag("critical"))
 	{
-		//Ship@ ship = getShip(this.getShape().getVars().customData);
+		//Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 		//ship.vel *= 0.8f;
 
 		if (!v_fastrender)
@@ -68,7 +68,7 @@ f32 onHit(CBlob@ this, Vec2f point, Vec2f velocity, f32 damage, CBlob@ blob, u8 
 		this.AddScript("Block_Explode.as");
 
 		const int color = this.getShape().getVars().customData;
-		Ship@ ship = getShip(color);
+		Ship@ ship = getShipSet().getShip(color);
 		if (ship is null || ship.isMothership) return 0.0f;
 		
 		const u16 blocksLength = ship.blocks.length;

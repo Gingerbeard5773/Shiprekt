@@ -44,9 +44,9 @@ namespace Destruct
 
 		// Kill ship
 		int color = this.getShape().getVars().customData;
-		if (color == 0) return;
+		if (color <= 0) return;
 
-		Ship@ ship = getShip(color);
+		Ship@ ship = getShipSet().getShip(color);
 		if (ship is null) return;
 		
 		const u16 blocksLength = ship.blocks.length;

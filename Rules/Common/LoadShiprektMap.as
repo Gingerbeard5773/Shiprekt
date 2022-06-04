@@ -9,7 +9,7 @@ void onTick(CRules@ this)
 		
 	//remove these comments to activate playercount dependent map loading
 	/*const string nextMap = getRandomMap(this);
-	if (nextMap != "")
+	if (!nextMap.isEmpty())
 	{
 		LoadMap(nextMap);
 	}

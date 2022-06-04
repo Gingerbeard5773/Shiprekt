@@ -57,7 +57,7 @@ void onTick(CBlob@ this)
 
 	if (isServer())
 	{
-		Ship@ ship = getShip(col);
+		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null)
 		{
 			checkDocked(this, ship);
@@ -100,20 +100,16 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if (!canShoot(this) || this.get_bool("docked"))
-			return;
+		if (!canShoot(this) || this.get_bool("docked")) return;
 
 		u16 shooterID;
-		if (!params.saferead_netid(shooterID))
-			return;
+		if (!params.saferead_netid(shooterID)) return;
 
 		CBlob@ shooter = getBlobByNetworkID(shooterID);
-		if (shooter is null)
-			return;
-
-		Ship@ ship = getShip(this.getShape().getVars().customData);
-		if (ship is null)
-			return;
+		if (shooter is null) return;
+		
+		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
+		if (ship is null) return;
 			
 		Vec2f pos = this.getPosition();
 
@@ -148,7 +144,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				{
                 	bullet.SetDamageOwnerPlayer(shooter.getPlayer());
                 }
-                bullet.setVelocity(velocity + ((getShip(this) !is null) ? getShip(this).vel : Vec2f(0, 0)));
+                bullet.setVelocity(velocity + ship.vel);
 				bullet.setAngleDegrees(-aimvector.Angle() + 90.0f);
                 bullet.server_SetTimeToDie(25);
             }

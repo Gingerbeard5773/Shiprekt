@@ -34,45 +34,48 @@ void onTick(CRules@ this)
 	if (gameTime % 150 == 0 && !this.get_bool("whirlpool"))
 	{
 		const u16 minBooty = this.get_u16("bootyRefillLimit");
+		ShipDictionary@ ShipSet = getShipSet(this);
 		CBlob@[] cores;
 		getBlobsByTag("mothership", @cores);
 		
 		const u8 coresLength = cores.length;
 		for (u8 i = 0; i < coresLength; i++)
 		{
-			Ship@ ship = getShip(cores[i].getShape().getVars().customData);
-			if (ship !is null && ship.owner != "" && ship.owner  != "*")
+			const int coreCol = cores[i].getShape().getVars().customData;
+			if (coreCol <= 0) continue;
+			
+			Ship@ ship = ShipSet.getShip(coreCol);
+			if (ship is null || ship.owner.isEmpty() || ship.owner == "*") continue;
+			
+			const u16 captainBooty = server_getPlayerBooty(ship.owner);
+			if (captainBooty < minBooty)
 			{
-				const u16 captainBooty = server_getPlayerBooty(ship.owner);
-				if (captainBooty < minBooty)
+				CPlayer@ player = getPlayerByUsername(ship.owner);
+				if (player is null) continue;
+				
+				//consider blocks to propellers ratio
+				u16 propellers = 1;
+				u16 couplings = 0;
+				const u16 blocksLength = ship.blocks.length;
+				for (u16 q = 0; q < blocksLength; ++q)
 				{
-					CPlayer@ player = getPlayerByUsername(ship.owner);
-					if (player is null) continue;
-					
-					//consider blocks to propellers ratio
-					u16 propellers = 1;
-					u16 couplings = 0;
-					const u16 blocksLength = ship.blocks.length;
-					for (u16 q = 0; q < blocksLength; ++q)
+					CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
+					if (b !is null)
 					{
-						CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
-						if (b !is null)
-						{
-							if (b.hasTag("engine"))
-								propellers++;
-							else if (b.hasTag("coupling"))
-								couplings++;
-						}
+						if (b.hasTag("engine"))
+							propellers++;
+						else if (b.hasTag("coupling"))
+							couplings++;
 					}
+				}
 
-					if (((blocksLength - propellers - couplings)/propellers > 3) || this.isWarmup())
-					{
-						CBlob@ pBlob = player.getBlob();
-						CBlob@[]@ blocks;
-						if (pBlob !is null && pBlob.get("blocks", @blocks) && blocks.size() == 0)
-							server_addPlayerBooty(ship.owner, Maths::Min(15, minBooty - captainBooty));
-					}
-				}				
+				if (((blocksLength - propellers - couplings)/propellers > 3) || this.isWarmup())
+				{
+					CBlob@ pBlob = player.getBlob();
+					CBlob@[]@ blocks;
+					if (pBlob !is null && pBlob.get("blocks", @blocks) && blocks.size() == 0)
+						server_addPlayerBooty(ship.owner, Maths::Min(15, minBooty - captainBooty));
+				}
 			}
 		}
 		
@@ -195,10 +198,10 @@ void onTick(CRules@ this)
 					CBlob@ mShip = getMothership(teamWithPlayers);
 					if (mShip !is null)
 					{
-						Ship@ ship = getShip(mShip.getShape().getVars().customData);
-						if (ship !is null && ship.owner != "" && ship.owner != "*")
+						Ship@ ship = getShipSet(this).getShip(mShip.getShape().getVars().customData);
+						if (ship !is null && !ship.owner.isEmpty() && ship.owner != "*")
 						{
-							string lastChar = ship.owner.substr(ship.owner.length() -1);
+							const string lastChar = ship.owner.substr(ship.owner.length() -1);
 							captain = ship.owner + (lastChar == "s" ? "' " : "'s ");
 						}
 						this.SetGlobalMessage(captain + this.getTeam(mShip.getTeamNum()).getName() + " Wins!");
@@ -229,7 +232,7 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 	else
 		server_setPlayerBooty(pName, !this.isWarmup() ? minBooty : this.get_u16("starting_booty"));
 		
-	print("New player joined. New count : " + getPlayersCount());
+	//print("New player count: " + getPlayersCount());
 	if (getPlayersCount() <= 1 && !this.get_bool("freebuild"))
 	{
 		//print("*** Restarting the map to be fair to the new player ***");
@@ -249,10 +252,11 @@ void onPlayerLeave(CRules@ this, CPlayer@ player)
 	}
 }
 
+const string[] devNames = {"Mr"+"Ho"+"bo"};
+
 bool isDev(CPlayer@ player)
 {
 	//case sensitive
-	const string[] devNames = {"Mr"+"Ho"+"bo"};
 	return devNames.find(player.getUsername()) >= 0;
 }
 
@@ -374,10 +378,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					player.server_setTeamNum(parseInt(tokens[1]));
 					pBlob.server_setTeamNum(parseInt(tokens[1]));
 				}
-				else if (tokens[0] == "!setcorekills") //change your player core kills
-				{
-					player.setAssists(parseInt(tokens[1]));
-				}
 				else if (tokens[0] == "!crit") //kill defined mothership
 				{
 					CBlob@ mothership = getMothership(parseInt(tokens[1]));
@@ -389,18 +389,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					Sound::Play(tokens[1]);
 					return false;
 				}
-				else if (tokens[0] == "!g_debug") //change the debug settings
-				{
-					g_debug = parseInt(tokens[1]);
-					print("Setting g_debug to "+tokens[1], color_white);
-					return false;
-				}
 				else if (tokens[0] == "!saveship") //all players can save their ship
 				{
 					ConfigFile cfg;
 					
 					Vec2f playerPos = pBlob.getPosition();
-					Ship@ ship = getShip(player.getBlob());
+					Ship@ ship = getOverlappingShip(player.getBlob());
 					if (ship is null)
 					{
 						warn("!saveship:: No ship found!");
@@ -457,7 +451,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					if (pBlob is null)
 						return false;
 					
-					Ship@ ship = getShip(player.getBlob());
+					Ship@ ship = getOverlappingShip(player.getBlob());
 					if (ship !is null)
 					{
 						const u16 numBlocks = ship.blocks.length;
@@ -475,7 +469,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						print(player.getUsername()+" destroyed "+numBlocks+" blocks", color_white);
 					}
 				}
-				else if (tokens[0] == "!clearmap") //destroys all the blocks on the server except cores
+				else if (tokens[0] == "!clearmap") //destroys all the blocks
 				{
 					CBlob@[] blocks;
 					if (getBlobsByTag("block", @blocks))
@@ -497,36 +491,64 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					if (player.getBlob() is null) return true;
 					
-					Ship@ ship = getShip(player.getBlob());
-					if (ship is null || ship.centerBlock is null)
+					Ship@ ship = getOverlappingShip(player.getBlob());
+					if (ship is null)
 					{
 						warn("!debugship:: no ship found");
 						return false;
 					}
 					
-					string shipType;
-					if (ship.isMothership) shipType += "Mothership";
+					string shipType = !ship.owner.isEmpty() ? "Miniship" : "";
+					if (ship.isMothership) shipType = "Mothership";
 					if (ship.isSecondaryCore) shipType += (shipType.length > 0 ? ", " : "")+"Secondary Core";
 					if (ship.isStation) shipType += (shipType.length > 0 ? ", " : "")+"Station";
 					
 					//RGB cause cool
-					print("---- ISLAND "+ship.centerBlock.getShape().getVars().customData+" ----", color_white);
-					print("ID: "+ship.id, SColor(255, 235, 30, 30));
-					print("Type: "+shipType, SColor(255, 255, 165, 0));
-					print("Owner: "+ship.owner, SColor(255, 235, 235, 0));
-					print("Speed: "+ship.vel.LengthSquared(), SColor(255, 30, 220, 30));
-					print("Angle Vel: "+ship.angle_vel, SColor(255, 173, 216, 200));
+					print("---- SHIP "+ship.id+" ----", color_white);
+					print("Type: "+shipType, SColor(255, 235, 30, 30));
+					print("Owner: "+ship.owner, SColor(255, 255, 165, 0));
+					print("Speed: "+ship.vel.LengthSquared(), SColor(255, 235, 235, 0));
+					print("Angle Vel: "+ship.angle_vel, SColor(255, 30, 220, 30));
 					print("Angle: "+ship.angle, SColor(255, 173, 216, 200));
 					print("Mass: "+ship.mass, SColor(255, 77, 100, 195));
 					print("Blocks: "+ship.blocks.length, SColor(255, 168, 50, 168));
 					
 					return false;
 				}
+				else if (tokens[0] == "!list") //print all available shiprekt commands
+				{
+					print("\n      >>    SHIPREKT COMMANDS LIST    <<\n"+
+						  "\n !kick [playername] : kick the specified player."+
+						  "\n !addbot [botname] [team] : add a bot to the server. [team] is optional."+
+						  "\n !hash [string] : print the hashcode of a string. originally used for debugging purposes."+
+						  "\n !tp [playername OR playerID] ['here'] : teleport to a player, add the token 'here' to do the opposite."+
+						  "\n !class [blobname] : change your player's blob. mostly useful for changing between human and shark."+
+						  "\n !booty [amount] : give booty to your player. use negative integers to remove booty instead."+
+						  "\n !teamchange [teamnum] : change your player's team without dying."+
+						  "\n !crit [teamnum] : instantly kill a team's mothership core."+
+						  "\n !spawnmothership [teamnum] : spawn a new starter mothership for the specified team. see !dirty."+
+						  "\n !ds [deltasmoothness] : set the delta smoothness. ignore the parameter to print the current ds."+
+						  "\n !playsound [soundname] : play specified sound. only works on localhost."+
+						  "\n !saveship [shipname] : save a ship to your cache for later use."+
+						  "\n !loadship [shipname] : load a previously saved ship to be used again. see !dirty."+
+						  "\n !dirty : activate loaded ships."+
+						  "\n !deleteship : kills the ship your player is on."+
+						  "\n !clearmap : removes all the blocks on the map."+
+						  "\n !candy : toggle shiprekt debug mode on/off, very cool for modders!"+
+						  "\n !debugship : prints information about the ship your player is on."+
+						  "\n !bc : prints the amount of blocks on the server."+
+						  "\n !props : activates all propeller engines on the server."+
+						  "\n !freebuild : toggle free-build mode on or off."+
+						  "\n !sd : spawn a whirlpool in the center of the map."+
+						  "\n !pinball : fun."+
+						  "\n !list : this! \n", color_white);
+					return false;
+				}
 				else if (tokens[0] == "!bc") //print block count
 				{
 					CBlob@[] blocks;
 					getBlobsByTag("block", @blocks);
-					print("BLOCK COUNT: "+blocks.length, color_white);
+					print("Server block count: "+blocks.length, color_white);
 					return false;
 				}
 				else if (tokens[0] == "!dirty") //activate dirty ships 
@@ -549,17 +571,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					}
 					return false;
 				}
-				else if (tokens[0] == "!sv_test") //sets the test mode on or off
-				{
-					sv_test = !sv_test;
-					print("Setting sv_test "+ (sv_test ? "on" : "off"), color_white);
-					return false;
-				}
-				else if (tokens[0] == "!performance") //toggles performance testing with '/rcon /performance'
-				{
-					g_measureperformance = !g_measureperformance;
-					print("Setting g_measureperformance to "+g_measureperformance, color_white);
-				}
 				else if (tokens[0] == "!freebuild") //toggle freebuild mode
 				{
 					getNet().server_SendMsg("*** Setting freebuild mode "+ (this.get_bool("freebuild") ? "off" : "on") +" ***");
@@ -568,20 +579,21 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!sd") //spawn a whirlpool
 				{
-					CMap@ map = getMap();
-					const Vec2f mapCenter = Vec2f(map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
+					const Vec2f mapCenter = getMap().getMapDimensions()/2;
 					server_CreateBlob("whirlpool", 0, mapCenter);
 				}
 				else if (tokens[0] == "!pinball") //pinball machine
 				{
-					Ship[]@ ships;
-					if (!this.get("ships", @ships)) return false;
+					ShipDictionary@ ShipSet = getShipSet(this);
+					Ship@[] ships = ShipSet.getShips();
 					
 					const u16 shipsLength = ships.length;
 					for (u16 i = 0; i < shipsLength; ++i)
 					{
 						//commence pain
 						Ship@ ship = ships[i];
+						if (ship is null) continue;
+						
 						ship.angle_vel += (180 + XORRandom(180)) * (XORRandom(2) == 0 ? 1 : -1);
 						ship.vel += Vec2f(XORRandom(50) * (XORRandom(2) == 0 ? 1 : -1), XORRandom(50)* (XORRandom(2) == 0 ? 1 : -1));
 					}
