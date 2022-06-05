@@ -5,11 +5,17 @@ void onInit(CRules@ this)
 {
 	this.set_string("version", "1.51.2"); //version of shiprekt this is running
 	
+	//engine's global settings
 	sv_contact_info = "github.com/Gingerbeard5773/shiprekt"; //if red circles appear, this link will show
 	particles_gravity.y = 0.0f;
 	sv_gravity = 0;
 	sv_visiblity_scale = 2.0f;
-	s_effects = false;
+	
+	this.minimap = !isClient();
+	
+	Driver@ driver = getDriver();
+	driver.AddShader("hq2x", 1.0f);
+	driver.SetShader("hq2x", v_postprocess);
 	
 	SColor shiprektCol(255,120,240,103);
 	print("\n      ------- INITIALIZING SHIPREKT ------- "+
@@ -19,20 +25,14 @@ void onInit(CRules@ this)
 		  "\n" +
 		  "\n      ------------------------------------- \n", shiprektCol);
 	
-	this.minimap = !isClient();
-
-	Driver@ driver = getDriver();
-	driver.AddShader("hq2x", 1.0f);
-	driver.SetShader("hq2x", v_postprocess);
-	
 	//gameplay settings
-	this.set_u16("starting_booty", 325);
-	this.set_u16("warmup_time", 1 * 150 * 30); //no weapons warmup time
-	this.set_u16("booty_x_max", 200);
-	this.set_u16("booty_x_min", 100);
-	this.set_u16("booty_transfer", 50); //min transfer amount
-	this.set_f32("booty_transfer_fee", 0.0f);
-	this.set_u16("bootyRefillLimit", 50);
+	this.set_u16("starting_booty", 325);         //booty given to players on map restart
+	this.set_u16("warmup_time", 150 * 30);       //no weapons warmup time
+	this.set_u16("booty_x_max", 200);            //X maximum booty
+	this.set_u16("booty_x_min", 100);            //X minimum booty
+	this.set_u16("booty_transfer", 50);          //min transfer amount
+	this.set_f32("booty_transfer_fee", 0.0f);    //percentage of booty lost during player-player transfer
+	this.set_u16("bootyRefillLimit", 50);        //limit of welfare booty for poor captains
 	
 	//Icons
 	AddIconToken("$BOOTY$", "InteractionIconsBig.png", Vec2f(32,32), 26);
@@ -66,15 +66,15 @@ void onInit(CRules@ this)
 	AddIconToken("$SECONDARYCORE$", "SecondaryCore.png", Vec2f(8,8), 0);
 	AddIconToken("$DECOYCORE$", "Mothership.png", Vec2f(8,8), 0);
 	AddIconToken("$PLANK$", "Plank.png", Vec2f(8,8), 0);
-
+	
 	//spectator stuff
 	this.addCommandID("pick teams");
     this.addCommandID("pick spectator");
 	this.addCommandID("pick none");
-
+	
     AddIconToken("$TEAMS$", "GUI/MenuItems.png", Vec2f(32,32), 1);
     AddIconToken("$SPECTATOR$", "GUI/MenuItems.png", Vec2f(32,32), 19);
-
+	
 	//sandbox notice
 	if (getPlayersCount() == 0)
 		client_AddToChat("> Free building mode set until more players join! <");

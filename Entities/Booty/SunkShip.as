@@ -3,13 +3,13 @@
 #include "AccurateSoundPlay.as"
 #include "TileCommon.as"
 
-const u8 CHECK_FREQUENCY = 30;//30 = 1 second
-const u32 FISH_RADIUS = 65.0f;//pickup radius
-const f32 MAX_REWARD_FACTOR = 0.13f;//% taken per check for mothership (goes fully to captain if no one else on the ship)
+const u8 CHECK_FREQUENCY = 30; //30 = 1 second
+const u32 FISH_RADIUS = 65.0f; //pickup radius
+const f32 MAX_REWARD_FACTOR = 0.13f; //% taken per check for mothership (goes fully to captain if no one else on the ship)
 const f32 CREW_REWARD_FACTOR = MAX_REWARD_FACTOR/5.0f;
 const f32 CREW_REWARD_FACTOR_MOTHERSHIP = MAX_REWARD_FACTOR/2.5f;
 const u32 AMOUNT_INSTANT_PICKUP = 50;
-const u8 SPACE_HOG_TICKS = 15;//seconds after collecting where no Xs can spawn there
+const u8 SPACE_HOG_TICKS = 15; //seconds after collecting where no Xs can spawn there
 
 void onInit(CBlob@ this)
 {
@@ -80,12 +80,12 @@ void onTick(CBlob@ this)
 		if (ship is null || ship.owner.isEmpty() || ship.owner == "*")
 			continue;
 			
-		served.push_back(ship.owner);//captains only gather through the core
+		served.push_back(ship.owner); //captains only gather through the core
 		string[] crew;
 		if (this.getDistanceTo(cores[i]) <= FISH_RADIUS)
 		{
 			bool captainOnShip = false;
-			for (u8 i = 0; i < humansLength; i++)//get crew on mothership and check if captain is there
+			for (u8 i = 0; i < humansLength; i++) //get crew on mothership and check if captain is there
 			{
 				CBlob@ human = humans[i];
 				CPlayer@ player = human.getPlayer();
@@ -100,7 +100,7 @@ void onTick(CBlob@ this)
 					captainOnShip = true;
 				else if (server_getPlayerBooty(pName) < minBooty * 4)
 					crew.push_back(pName);
-				else//wealthy or slacker on the mShip
+				else //wealthy or slacker on the mShip
 					served.push_back(pName);
 			}
 			

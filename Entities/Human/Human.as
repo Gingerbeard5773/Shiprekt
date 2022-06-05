@@ -41,9 +41,7 @@ void onInit(CBlob@ this)
 	this.chatBubbleOffset = Vec2f(0.0f, 10.0f);
 	this.getShape().getVars().onground = true;
 	
-	this.SetMapEdgeFlags(u8(CBlob::map_collide_up) |
-		u8(CBlob::map_collide_down) |
-		u8(CBlob::map_collide_sides));
+	this.SetMapEdgeFlags(u8(CBlob::map_collide_up | CBlob::map_collide_down | CBlob::map_collide_sides));
 	
 	this.set_bool("justMenuClicked", false); //placement won't happen immediately after clicking on block menu
 	this.set_bool("getting block", false); //grabbing another block
@@ -473,88 +471,87 @@ void PlayerControls(CBlob@ this)
 }
 
 // Open the build menu
-void BuildShopMenu(CBlob@ this, CBlob@ core, string desc, Vec2f offset, bool isStation = false)
+void BuildShopMenu(CBlob@ this, CBlob@ core, const string desc, const Vec2f offset, const bool isStation = false)
 {
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, sv_test ? BUILD_MENU_TEST : BUILD_MENU_SIZE, desc);
-	if (menu !is null) 
-	{
-		const bool warmup = getRules().isWarmup();
-		menu.deleteAfterClick = true;
-		
-		string description;
-		{ //Seat
-			AddBlock(this, menu, "seat", "$SEAT$", Trans::Seat, Trans::SeatDesc, core, 0.5f);
+	if (menu is null) return;
+	
+	const bool warmup = getRules().isWarmup();
+	menu.deleteAfterClick = true;
+	
+	string description;
+	{ //Seat
+		AddBlock(this, menu, "seat", "$SEAT$", Trans::Seat, Trans::SeatDesc, core, 0.5f);
+	}
+	{ //Propeller
+		AddBlock(this, menu, "propeller", "$PROPELLER$", Trans::Engine, Trans::EngineDesc, core, 1.0f);
+	}
+	{ //Ram Engine
+		AddBlock(this, menu, "ramengine", "$RAMENGINE$", Trans::RamEngine, Trans::RamEngineDesc, core, 1.25f);
+	}
+	{ //Coupling
+		AddBlock(this, menu, "coupling", "$COUPLING$", Trans::Coupling, Trans::CouplingDesc, core, 0.1f);
+	}
+	{ //Wooden Hull
+		AddBlock(this, menu, "solid", "$SOLID$", Trans::Hull, Trans::WoodHullDesc, core, 0.75f);
+	}
+	{ //Wooden Platform
+		AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, Trans::PlatformDesc, core, 0.2f);
+	}
+	{ //Wooden Door
+		AddBlock(this, menu, "door", "$DOOR$", Trans::Door, Trans::DoorDesc, core, 1.0f);
+	}
+	{ //Wooden Plank
+		AddBlock(this, menu, "plank", "$PLANK$", Trans::Plank, Trans::PlankDesc, core, 0.7f);
+	}
+	{ //Harpoon
+		AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, Trans::HarpoonDesc, core, 2.0f);
+	}
+	{ //Harvester
+		AddBlock(this, menu, "harvester", "$HARVESTER$", Trans::Harvester, Trans::HarvesterDesc, core, 2.0f);
+	}
+	{ //Patcher
+		AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, Trans::PatcherDesc, core, 3.0f);
+	}
+	{ //Repulsor
+		AddBlock(this, menu, "repulsor", "$REPULSOR$", Trans::Repulsor, Trans::RepulsorDesc, core, 0.25f);
+	}
+	{ //Decoy Core
+		AddBlock(this, menu, "decoycore", "$DECOYCORE$", Trans::DecoyCore, Trans::DecoyCoreDesc, core, 6.0f);
+	}
+	{ //Auxilliary Core
+		CGridButton@ button = AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, Trans::AuxillDesc, core, 12.0f);
+		if (isStation)
+		{
+			button.SetEnabled(false);
+			button.hoverText += "\nOnly available at your Mothership.\n";
 		}
-		{ //Propeller
-			AddBlock(this, menu, "propeller", "$PROPELLER$", Trans::Engine, Trans::EngineDesc, core, 1.0f);
-		}
-		{ //Ram Engine
-			AddBlock(this, menu, "ramengine", "$RAMENGINE$", Trans::RamEngine, Trans::RamEngineDesc, core, 1.25f);
-		}
-		{ //Coupling
-			AddBlock(this, menu, "coupling", "$COUPLING$", Trans::Coupling, Trans::CouplingDesc, core, 0.1f);
-		}
-		{ //Wooden Hull
-			AddBlock(this, menu, "solid", "$SOLID$", Trans::Hull, Trans::WoodHullDesc, core, 0.75f);
-		}
-		{ //Wooden Platform
-			AddBlock(this, menu, "platform", "$WOOD$", Trans::Platform, Trans::PlatformDesc, core, 0.2f);
-		}
-		{ //Wooden Door
-			AddBlock(this, menu, "door", "$DOOR$", Trans::Door, Trans::DoorDesc, core, 1.0f);
-		}
-		{ //Wooden Plank
-			AddBlock(this, menu, "plank", "$PLANK$", Trans::Plank, Trans::PlankDesc, core, 0.7f);
-		}
-		{ //Harpoon
-			AddBlock(this, menu, "harpoon", "$HARPOON$", Trans::Harpoon, Trans::HarpoonDesc, core, 2.0f);
-		}
-		{ //Harvester
-			AddBlock(this, menu, "harvester", "$HARVESTER$", Trans::Harvester, Trans::HarvesterDesc, core, 2.0f);
-		}
-		{ //Patcher
-			AddBlock(this, menu, "patcher", "$PATCHER$", Trans::Patcher, Trans::PatcherDesc, core, 3.0f);
-		}
-		{ //Repulsor
-			AddBlock(this, menu, "repulsor", "$REPULSOR$", Trans::Repulsor, Trans::RepulsorDesc, core, 0.25f);
-		}
-		{ //Decoy Core
-			AddBlock(this, menu, "decoycore", "$DECOYCORE$", Trans::DecoyCore, Trans::DecoyCoreDesc, core, 6.0f);
-		}
-		{ //Auxilliary Core
-			CGridButton@ button = AddBlock(this, menu, "secondarycore", "$SECONDARYCORE$", Trans::Auxilliary, Trans::AuxillDesc, core, 12.0f);
-			if (isStation)
-			{
-				button.SetEnabled(false);
-				button.hoverText += "\nOnly available at your Mothership.\n";
-			}
-		}
-		{ //Bomb
-			AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, Trans::BombDesc, core, 2.0f, warmup);
-		}
-		{ //Ram Hull
-			AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, Trans::RamDesc, core, 2.0f, warmup);
-		}
-		{ //Machinegun
-			description = Trans::MGDesc+"\n"+Trans::AmmoCap+": 250";
-			AddBlock(this, menu, "machinegun", "$MACHINEGUN$", Trans::Machinegun, description, core, 2.0f, warmup);
-		}
-		{ //Point Defense
-			description = Trans::PointDefDesc+"\n"+Trans::AmmoCap+": 15";
-			AddBlock(this, menu, "pointdefense", "$POINTDEFENSE$", Trans::PointDefense, description, core, 3.5f, warmup);
-		}
-		{ //Flak
-			description = Trans::FlakDesc+"\n"+Trans::AmmoCap+": 15";
-			AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, warmup);
-		}
-		{ //AP Cannon
-			description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 12";
-			AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, warmup);
-		}
-		{ //Missile Launcher
-			description = Trans::LauncherDesc+"\n"+Trans::AmmoCap+": 8";
-			AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, warmup);
-		}
+	}
+	{ //Bomb
+		AddBlock(this, menu, "bomb", "$BOMB$", Trans::Bomb, Trans::BombDesc, core, 2.0f, warmup);
+	}
+	{ //Ram Hull
+		AddBlock(this, menu, "ram", "$RAM$", Trans::Ram, Trans::RamDesc, core, 2.0f, warmup);
+	}
+	{ //Machinegun
+		description = Trans::MGDesc+"\n"+Trans::AmmoCap+": 250";
+		AddBlock(this, menu, "machinegun", "$MACHINEGUN$", Trans::Machinegun, description, core, 2.0f, warmup);
+	}
+	{ //Point Defense
+		description = Trans::PointDefDesc+"\n"+Trans::AmmoCap+": 15";
+		AddBlock(this, menu, "pointdefense", "$POINTDEFENSE$", Trans::PointDefense, description, core, 3.5f, warmup);
+	}
+	{ //Flak
+		description = Trans::FlakDesc+"\n"+Trans::AmmoCap+": 15";
+		AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, warmup);
+	}
+	{ //AP Cannon
+		description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 12";
+		AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, warmup);
+	}
+	{ //Missile Launcher
+		description = Trans::LauncherDesc+"\n"+Trans::AmmoCap+": 8";
+		AddBlock(this, menu, "launcher", "$LAUNCHER$", Trans::Launcher, description, core, 4.5f, warmup);
 	}
 }
 
@@ -581,31 +578,26 @@ CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, string block, string icon, s
 }
 
 // Open the tools menu
-void BuildToolsMenu(CBlob@ this, string description, Vec2f offset)
+void BuildToolsMenu(CBlob@ this, const string description, const Vec2f offset)
 {	
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, this, TOOLS_MENU_SIZE, description);
-	if (menu !is null) 
-	{
-		menu.deleteAfterClick = true;
-
-		string description;
-		{ //Pistol
-			description = Trans::PistolDesc;
-			AddTool(this, menu, "$PISTOL$", Trans::Pistol, description, "pistol");
-		}
-		{ //Deconstructor
-			description = Trans::DeconstDesc;
-			AddTool(this, menu, "$DECONSTRUCTOR$", Trans::Deconstructor, description, "deconstructor");
-		}
-		{ //Reconstructor
-			description = Trans::ReconstDesc;
-			AddTool(this, menu, "$RECONSTRUCTOR$", Trans::Reconstructor, description, "reconstructor");
-		}
+	if (menu is null) return;
+	
+	menu.deleteAfterClick = true;
+	
+	{ //Pistol
+		AddTool(this, menu, "$PISTOL$", Trans::Pistol, Trans::PistolDesc, "pistol");
+	}
+	{ //Deconstructor
+		AddTool(this, menu, "$DECONSTRUCTOR$", Trans::Deconstructor, Trans::DeconstDesc, "deconstructor");
+	}
+	{ //Reconstructor
+		AddTool(this, menu, "$RECONSTRUCTOR$", Trans::Reconstructor, Trans::ReconstDesc, "reconstructor");
 	}
 }
 
 //Add a tool to the tools menu
-CGridButton@ AddTool(CBlob@ this, CGridMenu@ menu, string icon, string toolName, string desc, string currentTool)
+CGridButton@ AddTool(CBlob@ this, CGridMenu@ menu, const string icon, const string toolName, const string desc, const string currentTool)
 {
 	CBitStream params;
 	params.write_string(currentTool);
@@ -1240,7 +1232,10 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	
 	if (isClient())
 	{
-		if (customData != Hitters::muscles) directionalSoundPlay("ImpactFlesh", worldPoint);
+		if (customData != Hitters::muscles)
+			directionalSoundPlay("ImpactFlesh", worldPoint);
+			
+		if (!g_kidssafe)
 		{
 			//blood particle
 			CParticle@ p = ParticleAnimated("BloodSplat", pos, velocity, velocity.Angle(), 1.0f, 2, 0.0f, false);

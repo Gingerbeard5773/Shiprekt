@@ -4,16 +4,18 @@ Random _r(1569815698); //clientside
 
 void onGib(CSprite@ this)
 {
+	if (g_kidssafe) return;
+	
 	/**
 	 register the 
 	 */
 
-	string effectname = "BV: Emit Blood";
+	const string effectname = "BV: Emit Blood";
 	if (!CustomEmitEffectExists(effectname))
 	{
 		SetupCustomEmitEffect(effectname, "HumanGibs.as", "EmitBlood", 10, 5, 45);
 	}
-	u8 emiteffect = GetCustomEmitEffectID(effectname);
+	const u8 emiteffect = GetCustomEmitEffectID(effectname);
 
 	CBlob@ blob = this.getBlob();
     Vec2f pos = blob.getPosition();

@@ -351,7 +351,7 @@ bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 di
 		if (b.hasTag("plank") && !CollidesWithPlank(b, harpoon.grapple_vel))
 			return false;
 		
-		if (b.hasTag("block") && b.hasTag("solid"))
+		if (b.hasTag("block") && b.getShape().getConsts().collidable)
 		{
 			harpoon.grapple_id = b.getNetworkID();
 			
