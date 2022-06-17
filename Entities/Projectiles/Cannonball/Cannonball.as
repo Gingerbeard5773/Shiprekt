@@ -111,7 +111,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 	}
 }
 
-f32 getDamage(CBlob@ this, CBlob@ hitBlob)
+const f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 {
 	const u16 piercedCount = this.get_u16("pierced count");
 	f32 damageFactor = 1.0f;
@@ -197,7 +197,7 @@ void onDie(CBlob@ this)
 }
 
 Random _sprk_r;
-void sparksDirectional(Vec2f pos, Vec2f blobVel, u8 amount)
+void sparksDirectional(const Vec2f&in pos, Vec2f&in blobVel, const u8&in amount)
 {
 	for (u8 i = 0; i < amount; i++)
     {

@@ -34,7 +34,7 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 	Capture(this, this.getTeamNum());
 }
 
-void Capture(CBlob@ this, const int attackerTeam)
+void Capture(CBlob@ this, const int&in attackerTeam)
 {
 	Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 	if (ship is null) return;

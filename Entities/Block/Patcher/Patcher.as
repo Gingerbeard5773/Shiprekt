@@ -56,7 +56,7 @@ void onTick(CBlob@ this)
 	}
 }
  
-bool canShoot(CBlob@ this)
+const bool canShoot(CBlob@ this)
 {
 	return (this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime());
 }
@@ -195,7 +195,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
 }
 
-void setLaser(CSprite@ this, Vec2f lengthPos)
+void setLaser(CSprite@ this, Vec2f&in lengthPos)
 {
 	this.RemoveSpriteLayer("laser");
 	CSpriteLayer@ laser = this.addSpriteLayer("laser", "repairBeam.png", 16, 16);

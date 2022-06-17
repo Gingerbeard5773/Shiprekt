@@ -9,7 +9,7 @@
 namespace Destruct
 {
 	// Client- & server-side: Blow up a ship
-	void self(CBlob@ this, float radius)
+	void self(CBlob@ this, const f32&in radius)
 	{
 		Vec2f position = this.getPosition();
 
@@ -43,7 +43,7 @@ namespace Destruct
 		}
 
 		// Kill ship
-		int color = this.getShape().getVars().customData;
+		const int color = this.getShape().getVars().customData;
 		if (color <= 0) return;
 
 		Ship@ ship = getShipSet().getShip(color);

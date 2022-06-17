@@ -37,7 +37,7 @@
 /// Miniships can dock not just with their own mothership, but enemy motherships as well!
 /// Bombs stack with power when placed together.
 
-shared const string Translate(const string words)
+shared const string Translate(const string&in words)
 {
 	string[]@ tokens = words.split("\\");
 	if (g_locale == "en") //english

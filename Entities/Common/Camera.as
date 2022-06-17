@@ -73,7 +73,7 @@ void onTick(CBlob@ this)
 	CameraRotation(camera, angle);
 }
 
-void CameraRotation(CCamera@ camera, const f32 angle)
+void CameraRotation(CCamera@ camera, const f32&in angle)
 {
 	f32 camAngle = camera.getRotation();
 	f32 rotdelta = angle - camAngle;

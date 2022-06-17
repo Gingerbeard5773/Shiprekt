@@ -54,7 +54,7 @@ void onTick(CRules@ this)
 	}
 }
 
-void createBooty(Vec2f pos, u16 amount)
+void createBooty(const Vec2f&in pos, const u16&in amount)
 {
     CBlob@ booty = server_CreateBlobNoInit("booty");
     if (booty !is null)
@@ -68,7 +68,7 @@ void createBooty(Vec2f pos, u16 amount)
 	}
 }
 
-int totalBooty()
+const int totalBooty()
 {
 	CBlob@[] booty;
 	getBlobsByName("booty", @booty);
@@ -81,7 +81,7 @@ int totalBooty()
 	return totalBooty;
 }
 
-bool zoneClear(CMap@ map, Vec2f spot, bool onlyBooty = false)
+const bool zoneClear(CMap@ map, const Vec2f&in spot, const bool&in onlyBooty = false)
 {
 	const f32 clearRadius = Maths::Min(Maths::Sqrt(map.tilemapwidth * map.tilemapheight) * CLEAR_RADIUS_FACTOR, MAX_CLEAR_RADIUS);
 	const bool mothership = map.isBlobWithTagInRadius("mothership", spot, clearRadius * 0.5f);

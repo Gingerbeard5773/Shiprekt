@@ -180,7 +180,7 @@ void onTick(CBlob@ this)
 	}
 }
 
-void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_angle, CBlob@ refBlock, CBlob@ shipBlob)
+void PositionBlocks(CBlob@[]@ blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&in blocks_angle, CBlob@ refBlock, CBlob@ shipBlob)
 {
 	Vec2f ship_pos = refBlock.getPosition();
     const f32 angle = refBlock.getAngleDegrees();
@@ -216,7 +216,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f pos, Vec2f aimPos, const f32 blocks_
 	}
 }
 
-Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
+Vec2f SnapToGrid(Vec2f&in pos) //determines the grid of blocks
 {
     pos.x = Maths::Round(pos.x / 8.0f);
     pos.y = Maths::Round(pos.y / 8.0f);
@@ -224,7 +224,7 @@ Vec2f SnapToGrid(Vec2f pos) //determines the grid of blocks
     return pos;
 }
 
-bool blocksOverlappingShip(CBlob@[]@ blocks)
+const bool blocksOverlappingShip(CBlob@[]@ blocks)
 {
 	const u8 blocksLength = blocks.length;
     for (u8 i = 0; i < blocksLength; ++i)
@@ -356,7 +356,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
 }
 
-void SetDisplay(CBlob@ blob, SColor color, RenderStyle::Style style, f32 Z = -10000)
+void SetDisplay(CBlob@ blob, const SColor&in color, RenderStyle::Style&in style, const f32&in Z = -10000)
 {
     CSprite@ sprite = blob.getSprite();
     sprite.asLayer().SetColor(color);

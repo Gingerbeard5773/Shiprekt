@@ -1,4 +1,4 @@
-u16 getCost(const string blockName, const bool normalCost = false)
+const u16 getCost(const string&in blockName, const bool&in normalCost = false)
 {
 	ConfigFile cfg;
 	if (!cfg.loadFile("BlockVars.cfg"))

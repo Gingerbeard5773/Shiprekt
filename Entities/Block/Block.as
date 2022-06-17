@@ -87,7 +87,7 @@ bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 	return (this.getShape().getVars().customData > 0 && this.getTickSinceCreated() > 0);
 }
 
-bool doesCollideWithPlank(CBlob@ plank, const Vec2f blobPos)
+bool doesCollideWithPlank(CBlob@ plank, const Vec2f&in blobPos)
 {
 	//done by position rather than velocity since blocks dont have velocity
 	Vec2f direction = Vec2f(0.0f, -1.0f).RotateBy(plank.getAngleDegrees());
@@ -239,7 +239,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	}
 }
 
-void CollisionResponse(CRules@ rules, Ship@ ship, Ship@ other_ship, Vec2f point1)
+void CollisionResponse(CRules@ rules, Ship@ ship, Ship@ other_ship, Vec2f&in point1)
 {
 	Vec2f velnorm = ship.vel; 
 	const f32 vellen = velnorm.Normalize();
@@ -269,7 +269,7 @@ void CollisionResponse(CRules@ rules, Ship@ ship, Ship@ other_ship, Vec2f point1
 	rules.SendCommand(rules.getCommandID("ship collision"), bs); //sent to Ships.as
 }
 
-Vec2f ClampSpeed(const Vec2f vel, const f32 cap)
+Vec2f ClampSpeed(const Vec2f&in vel, const f32&in cap)
 {
 	return Vec2f(Maths::Clamp(vel.x, -cap, cap), Maths::Clamp(vel.y, -cap, cap));
 }

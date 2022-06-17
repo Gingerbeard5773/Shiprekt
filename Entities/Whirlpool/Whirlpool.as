@@ -149,7 +149,7 @@ void updateWhirlpoolParticle(CParticle@ p)
 	}
 }
 
-void makeParticle(Vec2f pos)
+void makeParticle(Vec2f&in pos)
 {
 	const u32 step = getGameTime()/6;
 	const u8 aliveT = 20;

@@ -2,7 +2,7 @@
 
 #include "ShipsCommon.as";
 
-shared void HarpoonForces(CBlob@ this, CBlob@ hitBlob, Ship@ ship, Vec2f &out moveVel, float &out angleVel)
+shared void HarpoonForces(CBlob@ this, CBlob@ hitBlob, Ship@ ship, Vec2f&out moveVel, float&out angleVel)
 {
 	Vec2f pos = this.getPosition();
 

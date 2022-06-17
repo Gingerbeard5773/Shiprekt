@@ -116,7 +116,7 @@ void SeperateShip(CBlob@ this)
 	}
 }
 
-void Activate(CBlob@ this, u32 time)
+void Activate(CBlob@ this, const u32&in time)
 {
     this.Tag("activated");
 	this.set_u32("detonationTime", time);
@@ -127,7 +127,7 @@ void Activate(CBlob@ this, u32 time)
 	}
 }
 
-void ChainReaction(CBlob@ this, u32 time)
+void ChainReaction(CBlob@ this, const u32&in time)
 {
 	CBitStream bs;
 	bs.write_u32(time);

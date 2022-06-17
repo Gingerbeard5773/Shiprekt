@@ -592,7 +592,7 @@ void updateArrays(CBlob@ this, Ship@ ship)
 	this.set("cannons", cannons);
 }
 
-void server_setOwner(CBlob@ this, string owner)
+void server_setOwner(CBlob@ this, const string&in owner)
 {
 	//print("" + this.getNetworkID() + " seat setOwner: " + owner);
 	this.set_string("playerOwner", owner);

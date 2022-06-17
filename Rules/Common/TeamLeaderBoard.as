@@ -9,8 +9,7 @@ u8[] boardTeams = {0};
 
 void onTick(CRules@ this)
 {
-	if (getGameTime() % 30 != 0)
-		return;
+	if (getGameTime() % 30 != 0) return;
 		
 	boardBooty.clear();
 	CBlob@[] cores;

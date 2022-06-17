@@ -4,7 +4,7 @@
 
 const f32 PROPELLER_SPEED = 0.9f; //0.9f
 
-shared void PropellerForces(CBlob@ this, Ship@ ship, const float power, Vec2f &out moveVel, Vec2f &out moveNorm, float &out angleVel)
+shared void PropellerForces(CBlob@ this, Ship@ ship, const f32&in power, Vec2f&out moveVel, Vec2f&out moveNorm, f32&out angleVel)
 {
 	moveVel = Vec2f(0.0f, PROPELLER_SPEED * power).RotateBy(this.getAngleDegrees());
 	moveNorm = moveVel;

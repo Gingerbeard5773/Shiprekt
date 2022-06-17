@@ -176,7 +176,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 }
 
 Random _smokerandom(0x15125); //clientside
-void smoke(Vec2f pos)
+void smoke(const Vec2f&in pos)
 {
 	CParticle@ p = ParticleAnimated("SmallSmoke1.png",
 											  pos, Vec2f_zero,

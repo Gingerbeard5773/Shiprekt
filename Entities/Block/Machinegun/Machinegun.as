@@ -110,12 +110,12 @@ void onTick(CBlob@ this)
 		_shotspreadrandom.Reset(gameTime);
 }
 
-bool canShoot(CBlob@ this)
+const bool canShoot(CBlob@ this)
 {
 	return (this.get_u32("fire time") + this.get_f32("fire pause") < getGameTime());
 }
 
-bool canIncreaseFirePause(CBlob@ this)
+const bool canIncreaseFirePause(CBlob@ this)
 {
 	return (MIN_FIRE_PAUSE < getGameTime());
 }
@@ -338,7 +338,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
 }
 
-f32 getDamage(CBlob@ hitBlob)
+const f32 getDamage(CBlob@ hitBlob)
 {
 	f32 damage = 0.01f;
 
@@ -362,7 +362,7 @@ f32 getDamage(CBlob@ hitBlob)
 	return damage;//cores, solids
 }
 
-void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
+void hitEffects(CBlob@ hitBlob, const Vec2f&in worldPoint)
 {
 	if (hitBlob.hasTag("block") && isClient())
 	{

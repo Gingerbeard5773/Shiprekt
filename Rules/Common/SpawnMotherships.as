@@ -37,7 +37,7 @@ void onRestart(CRules@ this)
 	}
 }
 
-void SpawnMothership(Vec2f pos, const u8 team)
+void SpawnMothership(Vec2f pos, const u8&in team)
 {
 	// platforms
 	
@@ -80,7 +80,7 @@ void SpawnMothership(Vec2f pos, const u8 team)
 	makeOuterPlatform(pos + Vec2f(-8*2, 0), team);
 }
 
-void makeOuterPlatform(Vec2f pos, const u8 team)
+void makeOuterPlatform(Vec2f pos, const u8&in team)
 {
 	CBlob@ platform = makeBlock(pos, 0.0f, "platform", team);
 	CSprite@ sprite = platform.getSprite();

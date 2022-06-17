@@ -43,7 +43,7 @@ namespace CMap
 	pixel_RD = color_water;
 
 	//
-	void handlePixel(CMap@ map, CFileImage@ image, SColor pixel, const int offset, Vec2f pixelPos)
+	void handlePixel(CMap@ map, CFileImage@ image, SColor&in pixel, const int&in offset, Vec2f&in pixelPos)
 	{	
 		if (pixel == color_water)
 			return;

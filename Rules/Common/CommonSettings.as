@@ -114,7 +114,7 @@ void ShowTeamMenu(CRules@ this)
     }
 }
 
-void ReadChangeTeam(CRules@ this, CBitStream@ params, int team)
+void ReadChangeTeam(CRules@ this, CBitStream@ params, const u8&in team)
 {
     CPlayer@ player = getPlayerByNetworkId(params.read_netid());
     if (player is getLocalPlayer())

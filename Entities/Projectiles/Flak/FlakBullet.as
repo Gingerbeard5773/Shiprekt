@@ -112,7 +112,7 @@ void onDie(CBlob@ this)
 		flak(this);
 }
 
-f32 getDamage(CBlob@ hitBlob)
+const f32 getDamage(CBlob@ hitBlob)
 {
 	if (hitBlob.hasTag("rocket"))
 		return 0.25f; 

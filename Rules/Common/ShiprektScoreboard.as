@@ -18,7 +18,7 @@ bool mouseWasPressed2 = false;
 CPlayer@ hoveredPlayer;
 
 //returns the bottom
-float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8 teamNum)
+float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8&in teamNum)
 {
 	CTeam@ team = getRules().getTeam(teamNum);
 	const u8 playersLength = players.length;
@@ -380,7 +380,7 @@ void getMapName(CRules@ this)
 	}
 }
 
-void DrawFancyCopiedText(string username, Vec2f mousePos, uint duration)
+void DrawFancyCopiedText(string username, Vec2f&in mousePos, const u32&in duration)
 {
 	const string text = "Username copied: " + username;
 	const Vec2f pos = mousePos - Vec2f(0, duration);

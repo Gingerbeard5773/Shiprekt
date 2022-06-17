@@ -39,7 +39,7 @@ shared void setStartingBooty(CRules@ this)
 	}
 }
 
-shared void server_updateTotalBooty(const u8 teamNum, const u16 amount)
+shared void server_updateTotalBooty(const u8&in teamNum, const u16&in amount)
 {
 	if (!isServer()) return;
 	
@@ -82,7 +82,7 @@ shared void server_resetTotalBooty(CRules@ this)
 }
 
 //player
-shared u16 server_getPlayerBooty(const string name)
+shared u16 server_getPlayerBooty(const string&in name)
 {
 	if (isServer())
 	{
@@ -93,7 +93,7 @@ shared u16 server_getPlayerBooty(const string name)
 	return 0;
 }
  
-shared void server_setPlayerBooty(const string name, const u16 booty)
+shared void server_setPlayerBooty(const string&in name, const u16&in booty)
 {
 	if (!isServer()) return;
 	
@@ -107,7 +107,7 @@ shared void server_setPlayerBooty(const string name, const u16 booty)
 		player.setScore(booty);
 }
 
-shared void server_addPlayerBooty(const string name, const u16 booty) //give or take booty
+shared void server_addPlayerBooty(const string&in name, const u16&in booty) //give or take booty
 {
 	server_setPlayerBooty(name, server_getPlayerBooty(name) + booty);
 }
@@ -115,7 +115,7 @@ shared void server_addPlayerBooty(const string name, const u16 booty) //give or 
 #include "ShipsCommon.as";
 
 //rewards for damaging enemy ships
-shared void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, const bool rewardBlocks = false, u16 reward = 4, const string sound = "Pinball_0", const bool randomSound = false)
+shared void damageBooty(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, const bool&in rewardBlocks = false, u16&in reward = 4, const string&in sound = "Pinball_0", const bool&in randomSound = false)
 {
 	const int col = victim.getShape().getVars().customData;
 	if (col <= 0) return;

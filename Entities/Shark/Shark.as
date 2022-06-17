@@ -110,7 +110,7 @@ void onTick(CSprite@ this)
 
 Random _anglerandom(0x9090); //clientside
 
-void MoveTo(CBlob@ this, Vec2f vel)
+void MoveTo(CBlob@ this, const Vec2f&in vel)
 {
 	Vec2f pos = this.getPosition();	
 

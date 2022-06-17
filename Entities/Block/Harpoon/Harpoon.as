@@ -226,7 +226,7 @@ void onTick(CBlob@ this)
 						harpoon.grapple_pos = next;
 					}
 					delta -= step;
-					found = checkGrappleStep(this, harpoon, map, dist);
+					found = checkGrappleStep(this, harpoon, map);
 				}
 				
 				if (isClient())
@@ -284,7 +284,7 @@ void onTick(CBlob@ this)
 	}
 }
 
-Vec2f ClampSpeed(Vec2f vel, f32 cap)
+Vec2f ClampSpeed(const Vec2f&in vel, const f32&in cap)
 {
 	return Vec2f(Maths::Clamp(vel.x, -cap, cap), Maths::Clamp(vel.y, -cap, cap));
 }
@@ -343,7 +343,7 @@ void doRopeUpdate(CSprite@ this, CBlob@ blob, HarpoonInfo@ harpoon)
 		layer.SetAnimation("set");
 }
 
-bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map, const f32 dist)
+const bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 {
 	CBlob@ b = map.getBlobAtPosition(harpoon.grapple_pos);
 	if (b !is null)

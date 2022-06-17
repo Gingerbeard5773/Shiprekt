@@ -174,7 +174,7 @@ void Fire(CBlob@ this, CBlob@ shooter)
 	}
 }
 
-bool isClear(CBlob@ this)
+const bool isClear(CBlob@ this)
 {
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 

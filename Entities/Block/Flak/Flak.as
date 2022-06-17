@@ -299,7 +299,7 @@ bool canShootManual(CBlob@ this)
 	return this.get_u32("fire time") + FIRE_RATE/2 < getGameTime();
 }
 
-bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
+const bool isClearShot(CBlob@ this, Vec2f&in aimVec, const bool&in targetMerged = false)
 {
 	Vec2f pos = this.getPosition();
 	const f32 distanceToTarget = Maths::Max(aimVec.Length(), 80.0f);
@@ -353,7 +353,7 @@ bool isClearShot(CBlob@ this, Vec2f aimVec, bool targetMerged = false)
 	return true;
 }
 
-void Fire(CBlob@ this, Vec2f aimVector, const u16 netid)
+void Fire(CBlob@ this, Vec2f&in aimVector, const u16&in netid)
 {
 	const f32 aimdist = Maths::Min(aimVector.Normalize(), PROJECTILE_RANGE);
 
@@ -371,7 +371,7 @@ void Fire(CBlob@ this, Vec2f aimVector, const u16 netid)
 	this.set_u32("fire time", getGameTime());
 }
 
-void Rotate(CBlob@ this, Vec2f aimVector)
+void Rotate(CBlob@ this, Vec2f&in aimVector)
 {
 	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
 	if (layer !is null)

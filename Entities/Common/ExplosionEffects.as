@@ -1,4 +1,4 @@
-shared void makeSmallExplosionParticle(const Vec2f pos)
+shared void makeSmallExplosionParticle(const Vec2f&in pos)
 {
      CParticle@ p = ParticleAnimated("Entities/Effects/Sprites/SmallExplosion"+(XORRandom(3)+1)+".png",
                       pos, Vec2f_zero, 0.0f, 1.0f,
@@ -8,7 +8,7 @@ shared void makeSmallExplosionParticle(const Vec2f pos)
 		p.Z = 650.0f;
 }
 
-shared void makeBrightExplosionParticle(const Vec2f pos)
+shared void makeBrightExplosionParticle(const Vec2f&in pos)
 {
      CParticle@ p = ParticleAnimated("Entities/Effects/Sprites/explosion_old.png",
                       pos, Vec2f_zero, 0.0f, 1.0f,
@@ -19,7 +19,7 @@ shared void makeBrightExplosionParticle(const Vec2f pos)
 		p.Z = 650.0f;
 }
 
-shared void makeLargeExplosionParticle(const Vec2f pos)
+shared void makeLargeExplosionParticle(const Vec2f&in pos)
 {
 	 CParticle@ p = ParticleAnimated("Entities/Effects/Sprites/Explosion.png",
 						pos, Vec2f_zero, 0.0f, 1.0f,
@@ -29,7 +29,7 @@ shared void makeLargeExplosionParticle(const Vec2f pos)
 		p.Z = 650.0f;
 }
 
-shared void makeHugeExplosionParticle(const Vec2f pos)
+shared void makeHugeExplosionParticle(const Vec2f&in pos)
 {
 	CParticle@ p = ParticleAnimated("Entities/Effects/Sprites/Explosion.png",
 						pos, Vec2f_zero, 0.0f, 2.0f,

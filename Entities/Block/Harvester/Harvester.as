@@ -178,7 +178,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
 }
 
-void setLaser(CSprite@ this, Vec2f lengthPos)
+void setLaser(CSprite@ this, Vec2f&in lengthPos)
 {
 	this.RemoveSpriteLayer("laser");
 	

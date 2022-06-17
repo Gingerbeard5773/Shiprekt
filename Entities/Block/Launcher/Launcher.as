@@ -67,12 +67,12 @@ void onTick(CBlob@ this)
 	}
 }
 
-bool canShoot(CBlob@ this)
+const bool canShoot(CBlob@ this)
 {
 	return (this.get_u32("fire time") + FIRE_RATE < getGameTime());
 }
 
-bool isClear(CBlob@ this)
+const bool isClear(CBlob@ this)
 {
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 	

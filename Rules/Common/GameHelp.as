@@ -219,7 +219,7 @@ void onRender(CRules@ this)
 	mouseWasPressed1 = controls.mousePressed1; 
 }
 
-void makeWebsiteLink(Vec2f pos, string text, string website)
+void makeWebsiteLink(Vec2f pos, const string&in text, const string&in website)
 {	
 	Vec2f dim;
 	GUI::GetTextDimensions(text, dim);

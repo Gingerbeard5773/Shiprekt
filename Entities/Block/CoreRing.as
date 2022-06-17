@@ -42,7 +42,7 @@ void checkPerimeter(CSprite@ this, CBlob@ blob)
 	checkBlock(this, map, pos + Vec2f(-8,0).RotateBy(angle), "side3");
 }
 
-void checkBlock(CSprite@ this, CMap@ map, Vec2f pos, string layername)
+void checkBlock(CSprite@ this, CMap@ map, const Vec2f&in pos, const string&in layername)
 {
 	CSpriteLayer@ layer = this.getSpriteLayer(layername);
 	

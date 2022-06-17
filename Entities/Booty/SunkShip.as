@@ -165,7 +165,7 @@ void onTick(CBlob@ this)
 	}
 }
 
-void server_updateX(CBlob@ this, const u16 reward, const bool instaPickup = true)
+void server_updateX(CBlob@ this, const u16&in reward, const bool&in instaPickup = true)
 {
 	if (!isServer()) return;
 	
@@ -180,7 +180,7 @@ void server_updateX(CBlob@ this, const u16 reward, const bool instaPickup = true
 	this.Sync("amount", true); //522519900 HASH
 }
 
-void server_giveBooty(string name, const u16 amount)
+void server_giveBooty(const string&in name, const u16&in amount)
 {
 	if (!isServer()) return;
 

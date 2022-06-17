@@ -112,7 +112,7 @@ u8 findCloseBombs(CBlob@ this)
 	return factor;
 }
 
-void Explode(CBlob@ this, f32 radius = BOMB_RADIUS)
+void Explode(CBlob@ this, const f32&in radius = BOMB_RADIUS)
 {
     const Vec2f pos = this.getPosition();
 	const u8 stackfactor = findCloseBombs(this);

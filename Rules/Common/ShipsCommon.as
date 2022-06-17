@@ -42,13 +42,13 @@ shared class ShipDictionary
 	
 	ShipDictionary() {}
 	
-	void setShip(const s32 ID, Ship@ ship) // Set a ship object to the dictionary
+	void setShip(const s32&in ID, Ship@ ship) // Set a ship object to the dictionary
 	{
 		IDs.push_back(ID);
 		Ships.push_back(ship);
 	}
 	
-	Ship@ getShip(const s32 ID) // Grab a ship object from the dictionary
+	Ship@ getShip(const s32&in ID) // Grab a ship object from the dictionary
 	{
 		const s32 Index = IDs.find(ID);
 		if (Index > -1)
@@ -66,7 +66,7 @@ shared class ShipDictionary
 		Ships.clear();
 	}
 	
-	void delete(const s32 ID) // Delete an entry
+	void delete(const s32&in ID) // Delete an entry
 	{
 		const s32 Index = IDs.find(ID);
 		if (Index > -1)
@@ -110,7 +110,7 @@ shared Ship@ getOverlappingShip(CBlob@ this, ShipDictionary@ ShipSet = getShipSe
 }
 
 // Gets the mothership core block on determined team 
-shared CBlob@ getMothership(const u8 team, CRules@ rules = getRules())
+shared CBlob@ getMothership(const u8&in team, CRules@ rules = getRules())
 {
 	if (team < 8)
 	{
@@ -122,7 +122,7 @@ shared CBlob@ getMothership(const u8 team, CRules@ rules = getRules())
 }
 
 // Gets the name of the mothership's captain
-shared const string getCaptainName(const u8 team, ShipDictionary@ ShipSet = getShipSet())
+shared const string getCaptainName(const u8&in team, ShipDictionary@ ShipSet = getShipSet())
 {
 	CBlob@ core = getMothership(team);
 	if (core !is null)
@@ -140,7 +140,7 @@ shared const string getCaptainName(const u8 team, ShipDictionary@ ShipSet = getS
 
 // Paths to specified block from start, returns true if it is connected
 // Doesn't path through couplings and repulsors
-shared const bool shipLinked(CBlob@ this, CBlob@ goal, u16[] checked, u16[] unchecked, const bool colorCheck = true)
+shared const bool shipLinked(CBlob@ this, CBlob@ goal, u16[]&in checked, u16[]&in unchecked, const bool&in colorCheck = true)
 {
 	const u16 networkID = this.getNetworkID();
 	checked.push_back(networkID);

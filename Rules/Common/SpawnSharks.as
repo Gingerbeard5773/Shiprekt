@@ -22,7 +22,7 @@ void onTick(CRules@ this)
 	}
 }
 
-void SpawnShark(CRules@ this, Vec2f pos)
+void SpawnShark(CRules@ this, Vec2f&in pos)
 {
     if (getSharkCountInArea(this, pos) < MAX_SHARKS_AREA)
     {
@@ -40,7 +40,7 @@ void SpawnShark(CRules@ this, Vec2f pos)
     }
 }
 
-u8 getSharkCountInArea(CRules@ this, const Vec2f pos, const f32 radius = SHARK_SPAWN_RADIUS+5.0f)
+const u8 getSharkCountInArea(CRules@ this, const Vec2f&in pos, const f32&in radius = SHARK_SPAWN_RADIUS+5.0f)
 {
 	u8 sharks = 0;
 	CBlob@[] blobsInRadius;

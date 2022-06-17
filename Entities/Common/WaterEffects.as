@@ -1,7 +1,7 @@
 #include "TileCommon.as";
 Random _waterparticlerandom(0x1a73a);
 
-CParticle@ MakeWaterParticle(const Vec2f pos, const Vec2f vel)
+CParticle@ MakeWaterParticle(const Vec2f&in pos, const Vec2f&in vel)
 {
 	if (isInWater(pos))
 	{
@@ -20,7 +20,7 @@ CParticle@ MakeWaterParticle(const Vec2f pos, const Vec2f vel)
 	return null;
 }
 
-CParticle@ MakeWaterWave(const Vec2f pos, const Vec2f vel, const float angle)
+CParticle@ MakeWaterWave(const Vec2f&in pos, const Vec2f&in vel, const f32&in angle)
 {
 	CParticle@ p = ParticleAnimated("Sprites/water_wave.png",
 											  pos, vel,
@@ -35,7 +35,7 @@ CParticle@ MakeWaterWave(const Vec2f pos, const Vec2f vel, const float angle)
 	return p;
 }
 
-CParticle@ MakeWhirlpoolParticle(const Vec2f pos, const Vec2f vel, const int animtime)
+CParticle@ MakeWhirlpoolParticle(const Vec2f&in pos, const Vec2f&in vel, const int&in animtime)
 {
 	CParticle@ p = ParticleAnimated("Sprites/water_whirl.png",
 											  pos, vel,
@@ -50,7 +50,7 @@ CParticle@ MakeWhirlpoolParticle(const Vec2f pos, const Vec2f vel, const int ani
 	return p;
 }
 
-void makeWaveRing(Vec2f center, f32 speed = 4.0f, u8 animtime = 10)
+void makeWaveRing(Vec2f&in center, const f32&in speed = 4.0f, const u8&in animtime = 10)
 {
 	Vec2f pos = Vec2f(0.0f, 1.0f);
 	u16 step = 7;

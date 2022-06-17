@@ -23,7 +23,7 @@ void onInit(CBlob@ this)
 	}
 }
 
-bool isOpen(CBlob@ this)
+const bool isOpen(CBlob@ this)
 {
 	return !this.getShape().getConsts().collidable;
 }
@@ -46,7 +46,7 @@ void setOpen(CBlob@ this, bool open)
 	}
 }
 
-bool canClose(CBlob@ this)
+const bool canClose(CBlob@ this)
 {
 	const u8 count = this.getTouchingCount();
 	for (u8 step = 0; step < count; ++step)

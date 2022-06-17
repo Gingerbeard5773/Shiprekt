@@ -187,7 +187,7 @@ void onRender(CSprite@ this)
 	DrawResources(pBooty, name, captainName, tl, controls);
 }
 
-void DrawShipStatus(CBlob@ this, const string name, Vec2f tl, CControls@ controls)
+void DrawShipStatus(CBlob@ this, const string&in name, Vec2f&in tl, CControls@ controls)
 {
 	const s32 overlappingShipID = this.get_s32("shipID");
 	Ship@ ship = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
@@ -233,7 +233,7 @@ void DrawShipStatus(CBlob@ this, const string name, Vec2f tl, CControls@ control
 	}
 }
 
-void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
+void DrawCoreStatus(CBlob@ core, Vec2f&in tl, CControls@ controls)
 {
 	if (core is null) return;
 	
@@ -256,7 +256,7 @@ void DrawCoreStatus(CBlob@ core, Vec2f tl, CControls@ controls)
 		GUI::DrawText(Trans::CoreHealth,  tl + Vec2f(-45, -25), tipsColor);
 }
 
-void DrawStationStatus(const u8 teamnum, Vec2f tl, CControls@ controls)
+void DrawStationStatus(const u8&in teamnum, Vec2f&in tl, CControls@ controls)
 {
     GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, teamnum);
 		
@@ -278,7 +278,7 @@ void DrawStationStatus(const u8 teamnum, Vec2f tl, CControls@ controls)
 		GUI::DrawText(Trans::Bases,  tl + Vec2f(200, -25), tipsColor);
 }
 
-void DrawResources(u16 pBooty, string name, string captainName, Vec2f tl, CControls@ controls)
+void DrawResources(u16&in pBooty, const string&in name, const string&in captainName, Vec2f&in tl, CControls@ controls)
 {
 	GUI::DrawIconByName("$BOOTY$", tl + Vec2f(111, -12));
 

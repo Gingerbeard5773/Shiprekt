@@ -1,7 +1,7 @@
 #include "ShipsCommon.as";
 
 // Refill ammunition for weapons
-shared void refillAmmo(CBlob@ this, Ship@ ship, u8 refillAmount, u8 refillSeconds, u8 refillSecondaryCore, u8 refillSecondaryCoreSeconds)
+shared void refillAmmo(CBlob@ this, Ship@ ship, const u8&in refillAmount, const u8&in refillSeconds, const u8&in refillSecondaryCore, const u8&in refillSecondaryCoreSeconds)
 {
 	if (!isServer()) return;
 	

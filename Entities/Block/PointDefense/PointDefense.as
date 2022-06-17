@@ -142,12 +142,12 @@ void Auto(CBlob@ this)
 	}
 }
 
-bool canShootAuto(CBlob@ this)
+const bool canShootAuto(CBlob@ this)
 {
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-bool isClearShot(CBlob@ this, Vec2f aimVec)
+const bool isClearShot(CBlob@ this, Vec2f&in aimVec)
 {
 	Vec2f pos = this.getPosition();
 	const f32 distanceToTarget = Maths::Max(aimVec.Length() - 8.0f, 0.0f);
@@ -190,16 +190,16 @@ bool isClearShot(CBlob@ this, Vec2f aimVec)
 	return true;
 }
 
-void Fire(CBlob@ this, Vec2f aimVector, const u16 hitBlobNetID)
+void Fire(CBlob@ this, const Vec2f&in aimVector, const u16&in netid)
 {
 	CBitStream params;
-	params.write_netid(hitBlobNetID);
+	params.write_netid(netid);
 	params.write_Vec2f(aimVector);
 
 	this.SendCommand(this.getCommandID("fire"), params);
 }
 
-void Rotate(CBlob@ this, Vec2f aimVector)
+void Rotate(CBlob@ this, Vec2f&in aimVector)
 {
 	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
 	if (layer !is null)
@@ -279,7 +279,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
 }
 
-f32 getDamage(CBlob@ hitBlob)
+const f32 getDamage(CBlob@ hitBlob)
 {
 	if (hitBlob.hasTag("rocket"))
 		return 0.5f;
@@ -289,7 +289,7 @@ f32 getDamage(CBlob@ hitBlob)
 	return 0.01f;//cores, solids
 }
 
-void hitEffects(CBlob@ hitBlob, Vec2f worldPoint)
+void hitEffects(CBlob@ hitBlob, const Vec2f&in worldPoint)
 {
 	if (hitBlob.hasTag("projectile"))
 	{

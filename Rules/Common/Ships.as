@@ -435,7 +435,7 @@ void InitShip(Ship @ship)
 }
 
 // Called every tick, this is what makes the ships move and function
-void UpdateShips(CRules@ this, const bool integrate = true, const bool forceOwnerSearch = false)
+void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in forceOwnerSearch = false)
 {
 	CMap@ map = getMap();
 	const u32 gameTime = getGameTime();
@@ -653,7 +653,7 @@ void UpdateShipBlob(CBlob@ blob, Ship@ ship, ShipBlock@ ship_block)
 }
 
 // Update blocks outside of this script
-void SetUpdateBlocks(const int shipColor = 0)
+void SetUpdateBlocks(const int&in shipColor = 0)
 {
 	CBlob@[] blocks;
 	getBlobsByTag("weapon", @blocks); //update docking info
@@ -662,7 +662,7 @@ void SetUpdateBlocks(const int shipColor = 0)
 }
 
 // Update core rings spritelayer
-void SetUpdateCores(const int shipColor = 0)
+void SetUpdateCores(const int&in shipColor = 0)
 {
 	if (!isClient()) return;
 	
@@ -672,7 +672,7 @@ void SetUpdateCores(const int shipColor = 0)
 }
 
 // Update specified blocks
-void UpdateBlocks(const int shipColor, CBlob@[] blocks)
+void UpdateBlocks(const int&in shipColor, CBlob@[] blocks)
 {
 	const u16 blocksLength = blocks.length;
 	for (u16 i = 0; i < blocksLength; i++)
@@ -684,7 +684,7 @@ void UpdateBlocks(const int shipColor, CBlob@[] blocks)
 }
 
 // For collision with tiles (rock)
-void TileCollision(Ship@ ship, Vec2f tilePos)
+void TileCollision(Ship@ ship, Vec2f&in tilePos)
 {
 	Vec2f colvec1 = ship.pos - tilePos;;
 	colvec1.Normalize();
@@ -792,7 +792,7 @@ void Synchronize(CRules@ this, const bool full_sync, CPlayer@ player = null)
 }
 
 // Writes ship information into bitstream for client cmd
-const bool Serialize(CRules@ this, CBitStream@ stream, const bool full_sync)
+const bool Serialize(CRules@ this, CBitStream@ stream, const bool&in full_sync)
 {
 	ShipDictionary@ ShipSet = getShipSet(this);
 	Ship@[] ships = ShipSet.getShips();

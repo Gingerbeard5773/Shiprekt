@@ -471,7 +471,7 @@ void PlayerControls(CBlob@ this)
 }
 
 // Open the build menu
-void BuildShopMenu(CBlob@ this, CBlob@ core, const string desc, const Vec2f offset, const bool isStation = false)
+void BuildShopMenu(CBlob@ this, CBlob@ core, const string&in desc, const Vec2f&in offset, const bool&in isStation = false)
 {
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, core, sv_test ? BUILD_MENU_TEST : BUILD_MENU_SIZE, desc);
 	if (menu is null) return;
@@ -556,7 +556,7 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, const string desc, const Vec2f offs
 }
 
 // Add a block to the build menu
-CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, string block, string icon, string bname, string desc, CBlob@ core, f32 weight, bool isWeapon = false)
+CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, const string&in block, const string&in icon, const string&in bname, const string&in desc, CBlob@ core, const f32&in weight, const bool&in isWeapon = false)
 {
 	const u16 cost = getCost(block);
 	
@@ -578,7 +578,7 @@ CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, string block, string icon, s
 }
 
 // Open the tools menu
-void BuildToolsMenu(CBlob@ this, const string description, const Vec2f offset)
+void BuildToolsMenu(CBlob@ this, const string&in description, const Vec2f&in offset)
 {	
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, this, TOOLS_MENU_SIZE, description);
 	if (menu is null) return;
@@ -597,7 +597,7 @@ void BuildToolsMenu(CBlob@ this, const string description, const Vec2f offset)
 }
 
 //Add a tool to the tools menu
-CGridButton@ AddTool(CBlob@ this, CGridMenu@ menu, const string icon, const string toolName, const string desc, const string currentTool)
+CGridButton@ AddTool(CBlob@ this, CGridMenu@ menu, const string&in icon, const string&in toolName, const string&in desc, const string&in currentTool)
 {
 	CBitStream params;
 	params.write_string(currentTool);

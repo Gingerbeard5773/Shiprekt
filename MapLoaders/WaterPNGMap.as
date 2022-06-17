@@ -1,7 +1,7 @@
 // loads a .PNG map
 // PNG loader base class - extend this to add your own PNG loading functionality!
 
-bool LoadMap(CMap@ map, const string& in fileName)
+bool LoadMap(CMap@ map, const string&in fileName)
 {
 	PNGLoader loader();
 	return loader.loadShiprektMap(map, fileName);
@@ -20,7 +20,7 @@ class PNGLoader
 	CFileImage@ image;
 	CMap@ map;
 
-	bool loadShiprektMap(CMap@ _map, const string& in filename)
+	bool loadShiprektMap(CMap@ _map, const string&in filename)
 	{
 		@map = _map;
 

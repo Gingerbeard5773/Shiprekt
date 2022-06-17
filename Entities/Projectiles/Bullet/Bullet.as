@@ -19,7 +19,7 @@ void onInit(CBlob@ this)
 	this.getSprite().SetZ(550.0f);	
 }
 
-f32 getDamage(CBlob@ hitBlob)
+const f32 getDamage(CBlob@ hitBlob)
 {
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human" || hitBlob.hasTag("weapon"))
 		return 0.4f;

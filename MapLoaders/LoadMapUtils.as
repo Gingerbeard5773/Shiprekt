@@ -1,4 +1,4 @@
-Vec2f getSpawnPosition(CMap@ map, int offset)
+Vec2f getSpawnPosition(CMap@ map, const int&in offset)
 {
 	Vec2f pos = map.getTileWorldPosition(offset);
 	f32 tile_offset = map.tilesize * 0.5f;
@@ -7,7 +7,7 @@ Vec2f getSpawnPosition(CMap@ map, int offset)
 	return pos;
 }
 
-CBlob@ spawnBlob(CMap@ map, const string& in name, int offset, int team, bool attached_to_map = false)
+CBlob@ spawnBlob(CMap@ map, const string&in name, const int&in offset, const int&in team, const bool&in attached_to_map = false)
 {
 	CBlob@ blob = server_CreateBlob(name, team, getSpawnPosition(map, offset));
 
@@ -19,7 +19,7 @@ CBlob@ spawnBlob(CMap@ map, const string& in name, int offset, int team, bool at
 	return blob;
 }
 
-void AddMarker(CMap@ map, int offset, const string& in name)
+void AddMarker(CMap@ map, const int&in offset, const string&in name)
 {
 	map.AddMarker(map.getTileWorldPosition(offset), name);
 }

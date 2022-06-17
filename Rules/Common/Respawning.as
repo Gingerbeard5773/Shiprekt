@@ -213,7 +213,7 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 	return newBlob;
 }
 
-bool isRespawnAdded(CRules@ this, const string username)
+bool isRespawnAdded(CRules@ this, const string&in username)
 {
 	Respawn[]@ respawns;
 	if (this.get("respawns", @respawns))
@@ -229,7 +229,7 @@ bool isRespawnAdded(CRules@ this, const string username)
 	return false;
 }
 
-Vec2f getSpawnPosition(const u8 team)
+Vec2f getSpawnPosition(const u8&in team)
 {
 	CMap@ map = getMap();
 	
@@ -265,7 +265,7 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 	}
 }
 
-void syncRespawnTime(CRules@ this, CPlayer@ player, u32 time)
+void syncRespawnTime(CRules@ this, CPlayer@ player, const u32&in time)
 {
 	CBitStream params;
 	params.write_u32(time);

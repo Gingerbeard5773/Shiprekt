@@ -1,7 +1,7 @@
 //Various particles 
 
 Random spark;
-void sparks(const Vec2f pos, const u8 amount, const f32 spread = 1.0f, const int16 pTime = 10)
+void sparks(const Vec2f&in pos, const u8&in amount, const f32&in spread = 1.0f, const u16&in pTime = 10)
 {
 	for (u8 i = 0; i < amount; i++)
     {
@@ -20,7 +20,7 @@ void sparks(const Vec2f pos, const u8 amount, const f32 spread = 1.0f, const int
 }
 
 Random shotrandom(0x15125);
-void shotParticles(const Vec2f pos, const float angle, const bool smoke = true, const f32 smokeVelocity = 0.1f, const f32 scale = 1.0f)
+void shotParticles(const Vec2f&in pos, const f32&in angle, const bool&in smoke = true, const f32&in smokeVelocity = 0.1f, const f32&in scale = 1.0f)
 {
 	//muzzle flash
 	{
@@ -65,7 +65,7 @@ void shotParticles(const Vec2f pos, const float angle, const bool smoke = true, 
 	}
 }
 
-shared void ShrapnelParticle(const Vec2f pos, const Vec2f vel)
+shared void ShrapnelParticle(const Vec2f&in pos, const Vec2f&in vel)
 {
 	CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + XORRandom(128), 100), true);
 	if (p !is null)
@@ -77,7 +77,7 @@ shared void ShrapnelParticle(const Vec2f pos, const Vec2f vel)
 	}
 }
 
-shared void AngledDirtParticle(const Vec2f pos, const f32 angle = 0.0f, const string fileName = "DustSmall")
+shared void AngledDirtParticle(const Vec2f&in pos, const f32&in angle = 0.0f, const string&in fileName = "DustSmall")
 {
 	CParticle@ p = ParticleAnimated(fileName, pos, Vec2f(0, 0), angle, 1.0f, 3, 0.0f, false);
 	if (p !is null)

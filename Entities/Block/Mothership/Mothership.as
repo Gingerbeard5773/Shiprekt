@@ -80,7 +80,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	}
 }
 
-void BuyBlock(CBlob@ this, CBlob@ caller, string bType, u16 cost)
+void BuyBlock(CBlob@ this, CBlob@ caller, const string&in bType, const u16&in cost)
 {
 	CRules@ rules = getRules();
 

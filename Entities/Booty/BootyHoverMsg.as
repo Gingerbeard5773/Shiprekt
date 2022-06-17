@@ -55,7 +55,7 @@ void onRender(CSprite@ this)
 	}
 }
 
-void bootyIncrease(CBlob@ this, int amount)
+void bootyIncrease(CBlob@ this, const int&in amount)
 {
 	if (!this.exists("messages"))
 	{
@@ -68,7 +68,7 @@ void bootyIncrease(CBlob@ this, int amount)
 	this.push("messages", m);
 }
 
-void bootyDecrease(CBlob@ this, int amount)
+void bootyDecrease(CBlob@ this, const int&in amount)
 {
 	if (!this.exists("messages"))
 	{
