@@ -1,5 +1,5 @@
 //shiprekt HUD
-#define CLIENT_ONLY
+
 #include "ActorHUDStartPos.as";
 #include "ShipsCommon.as";
 #include "ShiprektTranslation.as";
