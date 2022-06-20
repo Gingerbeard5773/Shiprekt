@@ -114,9 +114,9 @@ shared CBlob@ getMothership(const u8&in team, CRules@ rules = getRules())
 {
 	if (team < 8)
 	{
-		CBlob@[]@ cores;
-		if (rules.get("motherships", @cores))
-			return cores[team];
+		u16[] cores;
+		if (rules.get("motherships", cores))
+			return getBlobByNetworkID(cores[team]);
 	}
 	return null;
 }

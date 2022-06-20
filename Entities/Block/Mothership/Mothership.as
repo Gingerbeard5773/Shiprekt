@@ -27,7 +27,8 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 12.0f);
 	
-	getRules().setAt("motherships", this.getTeamNum(), @this);
+	if (this.getTeamNum() < 8)
+		getRules().setAt("motherships", this.getTeamNum(), this.getNetworkID());
 	
 	if (isClient())
 	{
@@ -301,24 +302,21 @@ void onDie(CBlob@ this)
 	//if there is another mothership on our team, set the index to that mothership (only used in testing)
 	CRules@ rules = getRules();
 	CBlob@[] cores;
-    getBlobsByTag("mothership", @cores);
+	getBlobsByTag("mothership", @cores);
 	const u8 teamNum = this.getTeamNum();
 	const u8 coresLength = cores.length;
-    for (u8 i = 0; i < coresLength; i++)
-    {
-        CBlob@ core = cores[i];  
-        if (core !is this && core.getTeamNum() == teamNum)
+	for (u8 i = 0; i < coresLength; i++)
+	{
+		CBlob@ core = cores[i];  
+		if (core !is this && core.getTeamNum() == teamNum)
 		{
-            rules.setAt("motherships", teamNum, @core);
-			return; //stop from setting to null
+			rules.setAt("motherships", teamNum, core.getNetworkID());
+			return;
 		}
-    }
-	
-	//set to null, otherwise a crash will occur
-	rules.setAt("motherships", teamNum, null);
+	}
 }
 
-//healing, repelling, dmgmanaging, selfDestruct, damagesprite
+//healing, repelling, dmgmanaging, selfDestruct
 void onTick(CBlob@ this)
 {
 	const Vec2f pos = this.getPosition();
