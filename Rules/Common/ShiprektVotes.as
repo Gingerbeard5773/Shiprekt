@@ -76,7 +76,12 @@ void initializeBools(CRules@ this)
 	lastSDVote = -suddenDeathVoteCooldown;
 	lastFBVote = -freeBuildCooldown;
 	lastSRVote = 0;
-	this.set_bool("freebuild", getPlayerCount() <= 1);
+	
+	if (isServer())
+	{
+		this.set_bool("freebuild", getPlayerCount() <= 1);
+		this.Sync("freebuild", true);
+	}
 }
 
 //VOTE KICK --------------------------------------------------------------------

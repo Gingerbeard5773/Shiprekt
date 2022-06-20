@@ -232,19 +232,12 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 	else
 		server_setPlayerBooty(pName, !this.isWarmup() ? minBooty : this.get_u16("starting_booty"));
 		
-	//print("New player count: " + getPlayersCount());
-	if (getPlayersCount() <= 1 && !this.get_bool("freebuild"))
-	{
-		//print("*** Restarting the map to be fair to the new player ***");
-		getNet().server_SendMsg("*** 1 player on map. Setting freebuild mode until more players join. ***");
-		this.set_bool("freebuild", true);
-		this.Sync("freebuild", true); //1861922193 HASH
-	}
+	this.Sync("freebuild", true);
 }
 
 void onPlayerLeave(CRules@ this, CPlayer@ player)
 {
-	if ((getPlayersCount() - 1) <= 1 && !this.get_bool("freebuild"))
+	if ((getPlayerCount() - 1) <= 1 && !this.get_bool("freebuild"))
 	{
 		getNet().server_SendMsg("*** 1 player on map. Setting freebuild mode until more players join. ***");
 		this.set_bool("freebuild", true);
