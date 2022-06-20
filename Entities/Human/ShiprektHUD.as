@@ -172,12 +172,6 @@ void onRender(CSprite@ this)
 			GUI::DrawText("[ "+Trans::KillSharks+" ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 	}
 	
-	//testing
-	if (sv_test)
-	{
-		GUI::DrawText("[ sv_test ]", Vec2f(screenWidth/2 - 200, 15), tipsColor);
-	}
-	
 	//			Draw HUD Icons and Status text
 	DrawShipStatus(blob, name, tl, controls);
 	
@@ -278,7 +272,7 @@ void DrawStationStatus(const u8&in teamnum, Vec2f&in tl, CControls@ controls)
 		GUI::DrawText(Trans::Bases,  tl + Vec2f(200, -25), tipsColor);
 }
 
-void DrawResources(u16&in pBooty, const string&in name, const string&in captainName, Vec2f&in tl, CControls@ controls)
+void DrawResources(const u16&in pBooty, const string&in name, const string&in captainName, Vec2f&in tl, CControls@ controls)
 {
 	GUI::DrawIconByName("$BOOTY$", tl + Vec2f(111, -12));
 

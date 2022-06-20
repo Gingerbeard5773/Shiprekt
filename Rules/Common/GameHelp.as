@@ -187,10 +187,10 @@ void onRender(CRules@ this)
 			GUI::DrawTextCentered(lagTip, Vec2f(sMid, tlBox.y + boxMargin *10), tipsColor);
 		}
 		
-		if (player.isMod() || sv_test)
+		if (player.isMod())
 		{
 			GUI::SetFont("thick font");
-			const string RCONDetected = (sv_test ? "Test mode":"Moderator status")+" detected!";
+			const string RCONDetected = "Moderator status detected!";
 			GUI::DrawText(RCONDetected, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin * 11), tipsColor);
 			
 			GUI::SetFont("menu");
