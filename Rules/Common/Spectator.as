@@ -4,8 +4,8 @@
 f32 zoomTarget = 1.0f;
 float timeToScroll = 0.0f;
 
-bool justClicked = false;
 string _targetPlayer;
+s32 _shipID;
 bool waitForRelease = false;
 
 CPlayer@ targetPlayer()
@@ -13,12 +13,13 @@ CPlayer@ targetPlayer()
 	return getPlayerByUsername(_targetPlayer);
 }
 
-void SetTargetPlayer(CPlayer@ p)
+void SetTargetPlayer(CPlayer@ p, CCamera@ camera = null)
 {
-	getCamera().setTarget(null);
-	_targetPlayer = "";
-	if (p is null) return;
-	_targetPlayer = p.getUsername();
+	_shipID = 0;
+	_targetPlayer = p is null ? "" : p.getUsername();
+	
+	if (camera !is null)
+		camera.setTarget(null);
 }
 
 void Spectator(CRules@ this)
@@ -27,10 +28,10 @@ void Spectator(CRules@ this)
 	CControls@ controls = getControls();
 	CMap@ map = getMap();
 
+	//Get a target from the scoreboard
     if (this.get_bool("set new target"))
     {
-        const string newTarget = this.get_string("new target");
-        _targetPlayer = newTarget;
+        _targetPlayer = this.get_string("new target");
         if (targetPlayer() !is null)
         {
             waitForRelease = true;
@@ -38,39 +39,37 @@ void Spectator(CRules@ this)
         }
     }
 
-	if (camera is null || controls is null)
+	if (camera is null || controls is null || map is null)
 		return;
+		
+	const Vec2f dim = map.getMapDimensions();
 
 	//Zoom in and out using mouse wheel
 	if (timeToScroll <= 0)
 	{
-		if (map !is null)
+		if (controls.mouseScrollUp)
 		{
-			if (controls.mouseScrollUp)
-			{
-				timeToScroll = 1;
-				if (zoomTarget <= 0.2f)
-					zoomTarget = 0.5f;
-				else if (zoomTarget <= 0.5f)
-					zoomTarget = 1.0f;
-				else if (zoomTarget <= 1.0f)
-					zoomTarget = 2.0f;
-			}
-			else if (controls.mouseScrollDown)
-			{
-				const Vec2f dim = map.getMapDimensions();
-				CPlayer@ localPlayer = getLocalPlayer();
-				const bool isSpectator = localPlayer !is null ? localPlayer.getTeamNum() == this.getSpectatorTeamNum() : false;
-				const bool allowMegaZoom = isSpectator && dim.x > 900 && camera.getTarget() is null; //map must be large enough, player has to be spectator team
-				
-				timeToScroll = 1;
-				if (zoomTarget >= 2.0f)
-					zoomTarget = 1.0f;
-				else if (zoomTarget >= 1.0f)
-					zoomTarget = 0.5f;
-				else if (zoomTarget >= 0.5f && allowMegaZoom)
-					zoomTarget = 0.2f;
-			}
+			timeToScroll = 1;
+			if (zoomTarget <= 0.2f)
+				zoomTarget = 0.5f;
+			else if (zoomTarget <= 0.5f)
+				zoomTarget = 1.0f;
+			else if (zoomTarget <= 1.0f)
+				zoomTarget = 2.0f;
+		}
+		else if (controls.mouseScrollDown)
+		{
+			CPlayer@ localPlayer = getLocalPlayer();
+			const bool isSpectator = localPlayer !is null ? localPlayer.getTeamNum() == this.getSpectatorTeamNum() : false;
+			const bool allowMegaZoom = isSpectator && dim.x > 900 && camera.getTarget() is null; //map must be large enough, player has to be spectator team
+			
+			timeToScroll = 1;
+			if (zoomTarget >= 2.0f)
+				zoomTarget = 1.0f;
+			else if (zoomTarget >= 1.0f)
+				zoomTarget = 0.5f;
+			else if (zoomTarget >= 0.5f && allowMegaZoom)
+				zoomTarget = 0.2f;
 		}
 	}
 	else
@@ -89,28 +88,28 @@ void Spectator(CRules@ this)
 		camera.targetDistance = zoomTarget;
 	}
 
-	f32 camSpeed = getRenderApproximateCorrectionFactor() * 15.0f / zoomTarget;
+	const f32 camSpeed = getRenderApproximateCorrectionFactor() * 15.0f / zoomTarget;
 
 	//Move the camera using the action movement keys
 	if (controls.ActionKeyPressed(AK_MOVE_LEFT))
 	{
 		pos.x -= camSpeed;
-		SetTargetPlayer(null);
+		SetTargetPlayer(null, camera);
 	}
 	if (controls.ActionKeyPressed(AK_MOVE_RIGHT))
 	{
 		pos.x += camSpeed;
-		SetTargetPlayer(null);
+		SetTargetPlayer(null, camera);
 	}
 	if (controls.ActionKeyPressed(AK_MOVE_UP))
 	{
 		pos.y -= camSpeed;
-		SetTargetPlayer(null);
+		SetTargetPlayer(null, camera);
 	}
 	if (controls.ActionKeyPressed(AK_MOVE_DOWN))
 	{
 		pos.y += camSpeed;
-		SetTargetPlayer(null);
+		SetTargetPlayer(null, camera);
 	}
 
     if (controls.isKeyJustReleased(KEY_LBUTTON))
@@ -118,40 +117,39 @@ void Spectator(CRules@ this)
         waitForRelease = false;
     }
 
-	//Click on players to track them or set camera to mousePos
+	//Click on targets to track them or set camera to mousePos
 	Vec2f mousePos = controls.getMouseWorldPos();
 	if (controls.isKeyJustPressed(KEY_LBUTTON) && !waitForRelease)
 	{
-		CBlob@[] players;
-		SetTargetPlayer(null);
-		getBlobsByTag("player", @players);
-		getBlobsByTag("block", @players);
+		SetTargetPlayer(null, camera);
+		
+		CBlob@[] candidates;
+		map.getBlobsInRadius(controls.getMouseWorldPos(), 7.0f, @candidates);
+
 		ShipDictionary@ ShipSet = getShipSet(this);
-		const u16 playersLength = players.length;
+		const u16 playersLength = candidates.length;
 		for (u16 i = 0; i < playersLength; i++)
 		{
-			CBlob@ blob = players[i];
-			Vec2f bpos = blob.getInterpolatedPosition();
-
-			if (Maths::Pow(mousePos.x - bpos.x, 2) + Maths::Pow(mousePos.y - bpos.y, 2) <= Maths::Pow(blob.getRadius() * 2, 2) && camera.getTarget() !is blob)
+			CBlob@ blob = candidates[i];
+			if ((blob.hasTag("player") || blob.hasTag("block")) && camera.getTarget() !is blob)
 			{
-				//print("set player to track: " + (blob.getPlayer() is null ? "null" : blob.getPlayer().getUsername()));
 				if (zoomTarget >= 0.2f)
 					zoomTarget = 0.5f;
 				
 				const int bCol = blob.getShape().getVars().customData;
 				if (bCol > 0)
 				{
-					//set an ship as the target
+					//set a ship as the target
 					Ship@ ship = ShipSet.getShip(bCol);
 					if (ship is null || ship.centerBlock is null) return;
 					
+					_shipID = bCol;
 					camera.setTarget(ship.centerBlock);
 					camera.setPosition(ship.centerBlock.getInterpolatedPosition());
 					return;
 				}
 				
-				SetTargetPlayer(blob.getPlayer());
+				SetTargetPlayer(blob.getPlayer(), camera);
 				camera.setTarget(blob);
 				camera.setPosition(blob.getInterpolatedPosition());
 				return;
@@ -163,23 +161,30 @@ void Spectator(CRules@ this)
 		pos += ((mousePos - pos) / 8.0f) * getRenderApproximateCorrectionFactor();
 	}
 	
-	if (camera.getTarget() !is null && camera.getTarget().hasTag("block"))
+	//Track new blobs if our current one died
+	if (camera.getTarget() is null)
 	{
-		camera.setTarget(camera.getTarget());
-	}
-	else if (targetPlayer() !is null)
-	{
-		if (camera.getTarget() !is targetPlayer().getBlob())
+		if (_shipID > 0)
 		{
-			camera.setTarget(targetPlayer().getBlob());
+			Ship@ ship = getShipSet(this).getShip(_shipID);
+			if (ship !is null && ship.centerBlock !is null)
+			{
+				camera.setTarget(ship.centerBlock);
+			}
+			else
+				_shipID = 0;
+		}
+		else if (targetPlayer() !is null)
+		{
+			CBlob@ plyBlob = targetPlayer().getBlob();
+			if (plyBlob !is null)
+			{
+				camera.setTarget(plyBlob);
+			}
 		}
 	}
-	else
-	{
-		camera.setTarget(null);
-	}
 
-	//set specific zoom if we have a target
+	//Set specific zoom if we have a target
 	if (camera.getTarget() !is null)
 	{
 		camera.mousecamstyle = 1;
@@ -188,28 +193,18 @@ void Spectator(CRules@ this)
 	}
 
 	//Don't go to far off the map boundaries
-	if (map !is null)
-	{
-		const f32 borderMarginX = map.tilesize * (zoomTarget == 0.2f ? 15 : 2) / zoomTarget;
-		const f32 borderMarginY = map.tilesize * (zoomTarget == 0.2f ? 5 : 2) / zoomTarget;
 
-		if (pos.x < borderMarginX)
-		{
-			pos.x = borderMarginX;
-		}
-		if (pos.y < borderMarginY)
-		{
-			pos.y = borderMarginY;
-		}
-		if (pos.x > map.tilesize * map.tilemapwidth - borderMarginX)
-		{
-			pos.x = map.tilesize * map.tilemapwidth - borderMarginX;
-		}
-		if (pos.y > map.tilesize * map.tilemapheight - borderMarginY)
-		{
-			pos.y = map.tilesize * map.tilemapheight - borderMarginY;
-		}
-	}
+	const f32 borderMarginX = map.tilesize * (zoomTarget == 0.2f ? 15 : 2) / zoomTarget;
+	const f32 borderMarginY = map.tilesize * (zoomTarget == 0.2f ? 5 : 2) / zoomTarget;
+
+	if (pos.x < borderMarginX)
+		pos.x = borderMarginX;
+	if (pos.y < borderMarginY)
+		pos.y = borderMarginY;
+	if (pos.x > dim.x - borderMarginX)
+		pos.x = dim.x - borderMarginX;
+	if (pos.y > dim.y - borderMarginY)
+		pos.y = dim.y - borderMarginY;
 
 	camera.setPosition(pos);
 }
