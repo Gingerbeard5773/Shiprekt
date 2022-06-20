@@ -450,7 +450,8 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 		const u16 blocksLength = ship.blocks.length;
 		if (blocksLength <= 0)
 		{
-			warn("UpdateShips: no ship blocks found! ID ["+ship.id+"]");
+			warn("UpdateShips: no ship blocks found! Removing ID ["+ship.id+"]");
+			ShipSet.delete(ship.id);
 			continue;
 		}
 
@@ -515,7 +516,7 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 			}
 		}
 		
-		if (!isServer() || (!forceOwnerSearch && (gameTime + ship.id * 33) % 45 > 0))//updateShipBlobs if !isServer OR isServer and not on a 'second tick'
+		if (!isServer() || (!forceOwnerSearch && (gameTime + ship.id * 33) % 45 > 0)) //updateShipBlobs if !isServer OR isServer and not on a 'second tick'
 		{
 			for (u16 q = 0; q < blocksLength; ++q)
 			{
@@ -644,7 +645,7 @@ void UpdateShipBlob(CBlob@ blob, Ship@ ship, ShipBlock@ ship_block)
 {
 	Vec2f offset = ship_block.offset;
 	offset.RotateBy(ship.angle);
-		
+	
 	blob.setPosition(ship.pos + offset);
 	blob.setAngleDegrees(ship.angle + ship_block.angle_offset);
 	blob.setVelocity(Vec2f_zero);

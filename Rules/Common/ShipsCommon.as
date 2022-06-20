@@ -56,7 +56,7 @@ shared class ShipDictionary
 			return Ships[Index];
 		}
 			
-		if (sv_test || isServer()) warn("ShipDictionary (get):: Ship ID ["+ID+"] does not exist!");
+		if (sv_test || isServer()) warn("ShipDictionary (get):: Ship ID ["+ID+"] does not exist! ["+getScriptStack()[0]+".as]");
 		return null;
 	}
 	
@@ -75,7 +75,7 @@ shared class ShipDictionary
 			Ships.erase(Index);
 			return;
 		}
-		warn("ShipDictionary (delete):: Ship ID ["+ID+"] does not exist!");
+		warn("ShipDictionary (delete):: Ship ID ["+ID+"] does not exist! ["+getScriptStack()[0]+".as]");
 	}
 	
 	const Ship@[] getShips() // Retrieve all ships inside the dictionary
