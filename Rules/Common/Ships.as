@@ -122,8 +122,7 @@ void ConfigureToShip(CRules@ this, CBlob@[] blocks)
 		
 		//find all ships touching our blocks
 		CBlob@[] overlapping;
-		overlapping.push_back(block); //check this block too (for combining ships)
-		if (!block.getOverlapping(@overlapping)) continue;
+		if (!map.getBlobsInRadius(block.getPosition(), 4.0f, @overlapping)) continue;
 		
 		const u8 overlappingLength = overlapping.length;
 		for (u8 q = 0; q < overlappingLength; q++)
