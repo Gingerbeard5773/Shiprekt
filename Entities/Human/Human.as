@@ -29,7 +29,8 @@ Random _shotspreadrandom(0x11598);
 
 void onInit(CBlob@ this)
 {
-	this.Tag("player");	 
+	this.Tag("player");
+	this.addCommandID("sync camera");
 	this.addCommandID("get out");
 	this.addCommandID("shoot");
 	this.addCommandID("construct");
@@ -130,13 +131,14 @@ void Move(CBlob@ this)
 	
 	if (!this.isAttached())
 	{
-		if (myPlayer && blobInitialized && !rules.isGameOver()) //isGameOver check is to stop bad-deltas at next-map
+		if (myPlayer && blobInitialized)
 		{
 			const f32 camRotation = getCamera().getRotation();
 			if (Maths::Roundf(this.get_f32("camera rotation")) != Maths::Roundf(camRotation))
 			{
-				this.set_f32("camera rotation", camRotation);
-				this.Sync("camera rotation", false); //-930854664 !! has a history of causing bad deltas !!
+				CBitStream params;
+				params.write_f32(camRotation);
+				this.SendCommand(this.getCommandID("sync camera"), params);
 			}
 		}
 		
@@ -841,7 +843,12 @@ void EndConstructEffects(CBlob@ this, CSprite@ sprite)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (isServer() && this.getCommandID("get out") == cmd)
+	if (this.getCommandID("sync camera") == cmd)
+	{
+		const f32 camRotation = params.read_f32();
+		this.set_f32("camera rotation", camRotation);
+	}
+	else if (isServer() && this.getCommandID("get out") == cmd)
 	{
 		//get out of a seat
 		this.server_DetachFromAll();
