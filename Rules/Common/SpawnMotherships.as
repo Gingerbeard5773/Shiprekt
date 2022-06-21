@@ -32,7 +32,10 @@ void onRestart(CRules@ this)
 		
 		for (u8 s = 0; s < mShipsToSpawn; s++)
 		{
-			SpawnMothership(spawns[s] + spawnOffset, s);
+			const u8 randomSpawn = XORRandom(spawns.length);
+			SpawnMothership(spawns[randomSpawn] + spawnOffset, s);
+			
+			spawns.erase(randomSpawn);
 		}
 	}
 }
