@@ -547,7 +547,7 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, const string&in desc, const Vec2f&i
 		AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, warmup);
 	}
 	{ //AP Cannon
-		description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 12";
+		description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 10";
 		AddBlock(this, menu, "cannon", "$CANNON$", Trans::Cannon, description, core, 3.25f, warmup);
 	}
 	{ //Missile Launcher

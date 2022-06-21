@@ -7,7 +7,7 @@ const f32 PROJECTILE_SPEED = 15.0f;;
 const u16 FIRE_RATE = 170;//max wait between shots
 
 // Max amount of ammunition
-const u8 MAX_AMMO = 12;
+const u8 MAX_AMMO = 10;
 
 // Amount of ammunition to refill when
 // connected to motherships and stations
