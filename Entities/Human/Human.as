@@ -11,9 +11,10 @@
 #include "ShiprektTranslation.as";
 #include "PlankCommon.as";
 
-const int CONSTRUCT_VALUE = 5;
+const int CONSTRUCT_COST = 5;
 const int CONSTRUCT_RANGE = 48;
-const f32 MOTHERSHIP_HEAL = 0.1f;
+const f32 MOTHERSHIP_CREW_HEAL = 0.1f;
+const u16 MOTHERSHIP_HEAL_COST = 10;
 const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
@@ -217,14 +218,14 @@ void Move(CBlob@ this)
 					
 					if (isServer() && gameTime % 60 == 0 && !thisCore.hasTag("critical")) //heal on own mothership
 					{
-						this.server_Heal(MOTHERSHIP_HEAL);
+						this.server_Heal(MOTHERSHIP_CREW_HEAL);
 					}
 				}
 			}
 		}
 		
 		//tool actions
-		if (isClient() && shoot && !punch)
+		if (shoot && !punch)
 		{
 			const string currentTool = this.get_string("current tool");
 			
@@ -723,36 +724,100 @@ void Construct(CBlob@ this)
 
 	CSprite@ sprite = this.getSprite();
 
-	CBlob@ mBlob = getMap().getBlobAtPosition(aimPos);
-	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && aimVector.getLength() <= CONSTRUCT_RANGE && !mBlob.hasTag("station"))
+	CBlob@ blob = getMap().getBlobAtPosition(aimPos);
+	if (blob !is null && blob.getShape().getVars().customData > 0 && aimVector.Length() <= CONSTRUCT_RANGE && !blob.hasTag("station"))
 	{
-		if (this.isMyPlayer() && canConstruct(this))
+		const string currentTool = this.get_string("current tool");
+		if (isServer() && canConstruct(this))
 		{
+			Ship@ ship = getShipSet().getShip(blob.getShape().getVars().customData);
+			if (ship is null) return;
+			
+			CPlayer@ player = this.getPlayer();
+			if (player is null) return;
+			
+			const string playerName = player.getUsername();
+			
+			const u16 blobCost = Maths::Max(!blob.hasTag("coupling") ? getCost(blob.getName(), true) : 1, 1);
+			const f32 health = blob.getHealth();
+			const f32 initHealth = blob.getInitialHealth();
+			const f32 currentReclaim = blob.get_f32("current reclaim");
+			
+			f32 heal = health;
+			f32 reclaim = currentReclaim;
+			u16 cost = 0;
+			bool doWarning = false;
+			
+			const f32 constructAmount = blob.hasTag("mothership") ? initHealth / 100 : (CONSTRUCT_COST / f32(blobCost)) * initHealth * (blob.hasTag("weapon") ? 3 : 1);
+			
+			if (currentTool == "deconstructor")
+			{
+				if (blob.hasTag("mothership")) return;
+				
+				const string blockOwner = blob.get_string("playerOwner");
+				
+				if ((ship.owner.isEmpty() && !ship.isMothership)
+					|| (blockOwner.isEmpty() && (!ship.isMothership || blob.getTeamNum() == this.getTeamNum()))
+					|| ship.owner == playerName || blockOwner == playerName)
+				{
+					reclaim = currentReclaim - constructAmount;
+				}
+				else
+				{
+					reclaim = currentReclaim - constructAmount / 3;
+					doWarning = true;
+				}
+				
+				if (reclaim <= 0) //give money if we ate this blob
+				{
+					cost = blobCost * (health / initHealth);
+				}
+			}
+			else if (currentTool == "reconstructor")
+			{
+				reclaim = Maths::Min(currentReclaim + constructAmount, initHealth);
+				
+				const u16 reconstructCost = blob.hasTag("mothership") ? MOTHERSHIP_HEAL_COST : CONSTRUCT_COST;
+				if (reclaim > health && server_getPlayerBooty(playerName) > reconstructCost)
+				{
+					heal = reclaim;
+					cost = -reconstructCost;
+				}
+			}
+			
+			reclaim = Maths::Min(reclaim, initHealth);
+			
 			CBitStream params;
-			params.write_Vec2f(pos);
-			params.write_Vec2f(aimPos);
-			params.write_netid(mBlob.getNetworkID());
+			params.write_netid(blob.getNetworkID());
+			params.write_f32(heal);
+			params.write_f32(reclaim);
+			params.write_u16(cost);
+			params.write_bool(doWarning);
+			
 			this.SendCommand(this.getCommandID("construct"), params);
 			this.set_u32("fire time", getGameTime());
 		}
 		
-		const Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
-		const f32 offsetAngle = aimVector.Angle() - (mBlob.getPosition() - pos).Angle(); 
-		
-		CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
-		if (laser !is null) //laser management
+		//effects
+		if (isClient())
 		{
-			laser.SetVisible(true);
-			const f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);						
-			laser.ResetTransform();						
-			laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-			laser.TranslateBy(Vec2f(laserLength*16.0f, + 0.5f));
-			laser.RotateBy(offsetAngle, Vec2f());
-			laser.setRenderStyle(RenderStyle::light);
+			const Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
+			const f32 offsetAngle = aimVector.Angle() - (blob.getPosition() - pos).Angle(); 
+			
+			CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
+			if (laser !is null)
+			{
+				laser.SetVisible(true);
+				const f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);						
+				laser.ResetTransform();						
+				laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+				laser.TranslateBy(Vec2f(laserLength * 16.0f, + 0.5f));
+				laser.RotateBy(offsetAngle, Vec2f());
+			}
+			
+			if (sprite.getEmitSoundPaused())
+				sprite.SetEmitSoundPaused(false);
 		}
-		
-		if (sprite.getEmitSoundPaused())
-			sprite.SetEmitSoundPaused(false);
 	}
 	else
 	{
@@ -843,146 +908,46 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	}
 	else if (this.getCommandID("construct") == cmd)
 	{
-		//deconstruct or heal block
-		Vec2f pos = params.read_Vec2f();
-		Vec2f aimPos = params.read_Vec2f();
+		CPlayer@ player = this.getPlayer();
+		if (player is null) return;
 		
-		CBlob@ mBlob = getBlobByNetworkID(params.read_netid());
-		if (mBlob is null) return;
+		CBlob@ blob = getBlobByNetworkID(params.read_netid());
+		if (blob is null) return;
 		
-		Ship@ ship = getShipSet().getShip(mBlob.getShape().getVars().customData);
-		if (ship is null) return;
+		const f32 heal = params.read_f32();
+		const f32 reclaim = params.read_f32();
+		const u16 cost = params.read_u16();
 		
-		CPlayer@ thisPlayer = this.getPlayer();						
-		if (thisPlayer is null) return;
-		
-		const f32 mBlobCost = !mBlob.hasTag("coupling") ? getCost(mBlob.getName(), true) : 1;
-		const f32 mBlobHealth = mBlob.getHealth();
-		const f32 mBlobInitHealth = mBlob.getInitialHealth();
-		const f32 currentReclaim = mBlob.get_f32("current reclaim");
-		
-		f32 fullConstructAmount;
-		if (mBlob.hasTag("mothership"))
-			fullConstructAmount = (0.01f)*mBlobInitHealth;
-		else if (mBlobCost > 0)
-			fullConstructAmount = (CONSTRUCT_VALUE/mBlobCost)*mBlobInitHealth;
-		else
-			fullConstructAmount = 0.0f;
-		
-		const string currentTool = this.get_string("current tool");
-		if (currentTool == "deconstructor" && !mBlob.hasTag("mothership") && mBlobCost > 0)
+		if (params.read_bool())
 		{
-			//deconstruct
-			const string shipOwner = ship.owner;
-			f32 deconstructAmount = 0;
-			if ((shipOwner.isEmpty() && !ship.isMothership) //no owner and is not a mothership
-				|| (mBlob.get_string("playerOwner").isEmpty() && (!ship.isMothership || mBlob.getTeamNum() == this.getTeamNum())) //no one owns the block and is not a mothership
-				|| shipOwner == thisPlayer.getUsername()  //we own the ship
-				|| mBlob.get_string("playerOwner") == thisPlayer.getUsername()) //we own the block
-			{
-				if (mBlob.hasTag("weapon")) fullConstructAmount *= 3;
-				deconstructAmount = fullConstructAmount; 
-			}
-			else
-			{
-				deconstructAmount = (1.0f/mBlobCost)*mBlobInitHealth; 
-				this.set_bool("reclaimPropertyWarn", true);
-			}
-			
-			if (ship.isStation && mBlob.getTeamNum() != this.getTeamNum())
-			{
-				deconstructAmount = (1.0f/mBlobCost)*mBlobInitHealth; 
-				this.set_bool("reclaimPropertyWarn", true);					
-			}
-			
-			if ((currentReclaim - deconstructAmount) <= 0)
-			{
-				server_addPlayerBooty(thisPlayer.getUsername(), (!mBlob.hasTag("coupling") ? getCost(mBlob.getName()) : 1) *(mBlobHealth/mBlobInitHealth));
-				directionalSoundPlay("/ChaChing.ogg", pos);
-				mBlob.Tag("disabled");
-				mBlob.server_Die();
-			}
-			else
-				mBlob.sub_f32("current reclaim", deconstructAmount);
-		}
-		else if (currentTool == "reconstructor")
-		{
-			//construct
-			f32 reconstructAmount = 0;
-			u16 reconstructCost = 0;
-			const string cName = thisPlayer.getUsername();
-			const u16 cBooty = server_getPlayerBooty(cName);
-			
-			if (mBlob.hasTag("mothership"))
-			{
-				//mothership
-				if ((mBlobHealth + reconstructAmount) <= mBlobInitHealth)
-				{
-					reconstructAmount = fullConstructAmount;
-					reconstructCost = CONSTRUCT_VALUE;
-				}
-				else if ((mBlobHealth + reconstructAmount) > mBlobInitHealth)
-				{
-					reconstructAmount = mBlobInitHealth - mBlobHealth;
-					reconstructCost = (CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount));
-				}
-				
-				if (cBooty >= reconstructCost && mBlobHealth < mBlobInitHealth)
-				{
-					mBlob.server_SetHealth(mBlobHealth + reconstructAmount);
-					server_addPlayerBooty(cName, -reconstructCost);
-				}
-			}
-			else if (currentReclaim < mBlobInitHealth)
-			{
-				//blocks
-				if ((currentReclaim + reconstructAmount) <= mBlobInitHealth)
-				{
-					reconstructAmount = fullConstructAmount;
-					reconstructCost = CONSTRUCT_VALUE;
-				}
-				else if ((currentReclaim + reconstructAmount) > mBlobInitHealth)
-				{
-					reconstructAmount = mBlobInitHealth - currentReclaim;
-					reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
-				}
-				
-				if ((currentReclaim + reconstructAmount > mBlobHealth) && cBooty >= reconstructCost)
-				{
-					const f32 heal = Maths::Clamp(mBlobHealth + reconstructAmount, 0.0f, mBlobInitHealth);
-					mBlob.server_SetHealth(heal);
-					mBlob.set_f32("current reclaim", heal);
-					server_addPlayerBooty(cName, -reconstructCost);
-				}
-				else if ((currentReclaim + reconstructAmount) <= mBlobHealth)
-					mBlob.add_f32("current reclaim", reconstructAmount);
-			}
+			this.set_bool("reclaimPropertyWarn", true);	
 		}
 		
-		//laser creation
+		if (reclaim <= 0)
+		{
+			directionalSoundPlay("/ChaChing.ogg", blob.getPosition());
+			blob.Tag("disabled");
+			blob.server_Die();
+		}
+		
+		blob.server_SetHealth(heal);
+		blob.set_f32("current reclaim", reclaim);
+		server_addPlayerBooty(player.getUsername(), cost);
+		
 		if (isClient()) //effects
 		{
-			Vec2f aimVector = aimPos - pos;	 
-			const Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
-			const f32 offsetAngle = aimVector.Angle() - (mBlob.getPosition() - pos).Angle(); 
-			
 			CSprite@ sprite = this.getSprite();
 			sprite.RemoveSpriteLayer("laser");
 			
-			const string beamSpriteFilename = currentTool == "deconstructor" ? "ReclaimBeam" : "RepairBeam";
-			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", beamSpriteFilename + ".png", 32, 16);
-			if (laser !is null)//partial length laser
+			const string beamSpriteFilename = this.get_string("current tool") == "deconstructor" ? "ReclaimBeam" : "RepairBeam";
+			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", beamSpriteFilename, 32, 16);
+			if (laser !is null)
 			{
 				Animation@ reclaimingAnim = laser.addAnimation("constructing", 1, true);
 				int[] reclaimingAnimFrames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 				reclaimingAnim.AddFrames(reclaimingAnimFrames);
-				laser.SetAnimation("constructing");
-				laser.SetVisible(true);
-				const f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);						
-				laser.ResetTransform();						
-				laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-				laser.TranslateBy(Vec2f(laserLength*16.0f, + 0.5f));
-				laser.RotateBy(offsetAngle, Vec2f());
+				
+				laser.SetAnimation("constructing");				
 				laser.setRenderStyle(RenderStyle::light);
 				laser.SetRelativeZ(-1);
 			}

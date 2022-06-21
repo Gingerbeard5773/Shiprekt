@@ -330,14 +330,13 @@ void onHealthChange(CBlob@ this, f32 oldHealth)
 {
 	if (this.getShape().getVars().customData <= 0) return;
 	
-	const bool isCore = this.hasTag("mothership");
 	const f32 hp = this.getHealth();
 
-	if (hp <= 0.0f && !isCore) this.server_Die();
+	if (hp <= 0.0f && !this.hasTag("mothership")) this.server_Die();
 	else
 	{
 		//update reclaim status
-		if (hp < this.get_f32("current reclaim") && !isCore)
+		if (hp < this.get_f32("current reclaim"))
 		{
 			this.set_f32("current reclaim", hp);
 		}
