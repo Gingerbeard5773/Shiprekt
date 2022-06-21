@@ -185,12 +185,8 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 					}
 					else if (blob.hasTag("weapon"))
 					{
-						if (blob.getHealth() >= this.getHealth())
-						{
-							Die(this);
-							this.server_Hit(blob, point1, ship.vel, this.getHealth(), 0, true);
-						}
-						else blob.server_Hit(this, point1, other_ship.vel, 2.0f, 0, true);
+						this.server_Hit(blob, point1, ship.vel, this.getHealth()/2, 0, true);
+						Die(this);
 					}
 					else if (!blob.hasTag("solid"))
 					{
