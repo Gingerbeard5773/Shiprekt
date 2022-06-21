@@ -128,17 +128,14 @@ void onRender(CRules@ this)
 		//PAGE 1
 		const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
 		const string lastChangesInfo = Trans::LastChanges+":\n"
-		+ "- 5-12-2022 - By Gingerbeard\n"
+		+ "- 6-20-2022 - By Gingerbeard\n"
+		+ "  * Reduced ammo capacity for the cannon.\n"
+		+ "  * Ram blocks do more consistent damage to weapons.\n"
 		+ "  * Weapons only refill ammunition if they aren't being fired.\n"
-		+ "  * Tweaked the harvester to be weaker.\n"
-		+ "  * Disabled anti-ram.\n"
 		+ "  * Bombs' power stacks with nearby bombs! Boom!\n"
 		+ "  * Enemy miniships can dock on your mothership! Watch out.\n"
 		+ "  * Refill is faster for miniships, but slower for your mothership.\n"
-		+ "  * Fixed a problem where players couldn't direct where they were swimming.\n"
 		+ "  * Changed some textures of damaged blocks.\n"
-		+ "  * Docking won't push the other ship if your ship is smaller (easier miniship docking).\n"
-		+ "  * Bullets will deflect other bullets.\n"
 		+ "  * New map: CursedSea.\n"
 		+ "  * Added support for the Spanish language.\n";
 		
@@ -146,7 +143,7 @@ void onRender(CRules@ this)
 		Vec2f lastChangesSize;
 		GUI::GetTextDimensions(lastChangesInfo, lastChangesSize);
 	
-		const Vec2f tlBoxJustJoined = Vec2f(sMid - imageSize.x - boxMargin,  Maths::Max(10.0f, sCenter - imageSize.y - lastChangesSize.y/2));
+		const Vec2f tlBoxJustJoined = Vec2f(sMid - imageSize.x - boxMargin, Maths::Max(10.0f, sCenter - imageSize.y - lastChangesSize.y/2));
 		
 		GUI::SetFont("thick font");
 		GUI::DrawText(shiprektVersion, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);

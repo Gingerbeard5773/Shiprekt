@@ -3,7 +3,7 @@ const u8 BUTTON_SIZE = 4;
 
 void onInit(CRules@ this)
 {
-	this.set_string("version", "1.51.2"); //version of shiprekt this is running
+	this.set_string("version", "1.51.3"); //version of shiprekt this is running
 	
 	//engine's global settings
 	sv_contact_info = "github.com/Gingerbeard5773/shiprekt"; //if red circles appear, this link will show
@@ -17,13 +17,14 @@ void onInit(CRules@ this)
 	driver.AddShader("hq2x", 1.0f);
 	driver.SetShader("hq2x", v_postprocess);
 	
-	SColor shiprektCol(255,120,240,103);
 	print("\n      ------- INITIALIZING SHIPREKT ------- "+
 		  "\n" +
 		  "\n  Version: " + this.get_string("version") +
-		  "\n  Mod Page: "+ sv_contact_info + 
+		  "\n  Mod Page: " + sv_contact_info + 
+		  "\n  Localhost: " + (isServer() && isClient()) +
+		  "\n  Testing: " + sv_test +
 		  "\n" +
-		  "\n      ------------------------------------- \n", shiprektCol);
+		  "\n      ------------------------------------- \n", 0xff66C6FF);
 	
 	//gameplay settings
 	this.set_u16("starting_booty", 325);         //booty given to players on map restart
