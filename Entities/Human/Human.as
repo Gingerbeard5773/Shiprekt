@@ -730,7 +730,7 @@ void Construct(CBlob@ this)
 	if (blob !is null && blob.getShape().getVars().customData > 0 && aimVector.Length() <= CONSTRUCT_RANGE && !blob.hasTag("station"))
 	{
 		const string currentTool = this.get_string("current tool");
-		if (isServer() && canConstruct(this))
+		if (this.isMyPlayer() && canConstruct(this))
 		{
 			Ship@ ship = getShipSet().getShip(blob.getShape().getVars().customData);
 			if (ship is null) return;
@@ -780,7 +780,7 @@ void Construct(CBlob@ this)
 				reclaim = Maths::Min(currentReclaim + constructAmount, initHealth);
 				
 				const u16 reconstructCost = blob.hasTag("mothership") ? MOTHERSHIP_HEAL_COST : CONSTRUCT_COST;
-				if (reclaim > health && server_getPlayerBooty(playerName) > reconstructCost)
+				if (reclaim > health)
 				{
 					heal = reclaim;
 					cost = -reconstructCost;
@@ -921,6 +921,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		CBlob@ blob = getBlobByNetworkID(params.read_netid());
 		if (blob is null) return;
 		
+		const string playerName = player.getUsername();
+		
 		const f32 heal = params.read_f32();
 		const f32 reclaim = params.read_f32();
 		const u16 cost = params.read_u16();
@@ -937,9 +939,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			blob.server_Die();
 		}
 		
-		blob.server_SetHealth(heal);
 		blob.set_f32("current reclaim", reclaim);
-		server_addPlayerBooty(player.getUsername(), cost);
+		if (server_getPlayerBooty(playerName) > -cost)
+		{
+			server_addPlayerBooty(playerName, cost);
+			blob.server_SetHealth(heal);
+		}
 		
 		if (isClient()) //effects
 		{
