@@ -102,33 +102,37 @@ void assignTeam(CRules@ this, CPlayer@ player)
 	//TODO: prioritize assignment to teams with less booty over rich teams when teams have equal playercount
 	
 	const u8 teamsNum = this.getTeamsNum();
-    u8[] playersperteam(teamsNum);
+	u8[] playersperteam(teamsNum);
 
-    //gather the per team player counts
+	//gather the per team player counts
 	const u8 plyCount = getPlayersCount();
-    for (u8 i = 0; i < plyCount; i++)
-    {
-        CPlayer@ p = getPlayer(i);
-        u8 pteam = p.getTeamNum();
-        if (pteam >= 0 && pteam < teamsNum)
-            playersperteam[pteam]++;
-    }
+	for (u8 i = 0; i < plyCount; i++)
+	{
+		CPlayer@ p = getPlayer(i);
+		if (p is null) continue;
+		
+		const u8 pteam = p.getTeamNum();
+		if (pteam < teamsNum)
+			playersperteam[pteam]++;
+	}
 	
-	 //calc the minimum player count, dequalify teams
-    u8 minplayers = 255; //set as the max of u8
-    for (u8 i = 0; i < teamsNum; i++)
-    {
-        if (getMothership(i) is null)
-            playersperteam[i] = 255; //disqualify since team is dead
+	//calc the minimum player count, dequalify teams
+	u8 minplayers = 255; //set as the max of u8
+	for (u8 i = 0; i < teamsNum; i++)
+	{
+		if (getMothership(i) is null)
+			playersperteam[i] = 255; //disqualify since team is dead
 			
-        minplayers = Maths::Min(playersperteam[i], minplayers); //set minimum
-    }
+		minplayers = Maths::Min(playersperteam[i], minplayers); //set minimum
+	}
 	
-    //choose a random team with minimum player count
-    u8 team;
-    do
-		team = XORRandom(teamsNum); //this could technically go forever?
-    while (playersperteam[team] > minplayers);
+	if (minplayers == 255) return;
+	
+	//choose a random team with minimum player count
+	u8 team;
+	do
+		team = XORRandom(teamsNum);
+	while (playersperteam[team] > minplayers); //theoretically could loop infinitely
 
 	player.server_setTeamNum(team);
 }
