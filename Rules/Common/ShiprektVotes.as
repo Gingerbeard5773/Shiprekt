@@ -14,7 +14,7 @@ const u32 BaseEnableTimeSuddenDeath = 10*30*60; //minimum base time. decreases o
 
 const u32 kickCooldown = 10*30*60;
 const u32 suddenDeathVoteCooldown = 3*30*60;
-const u32 freeBuildCooldown = 3*30*60;
+const u32 freeBuildCooldown = 5*30*60;
 const u32 surrenderCooldown = 3*30*60;
 
 const s32 VoteKickTime = 30; //minutes (30min default)
@@ -270,6 +270,7 @@ class VoteFreebuildFunctor : VoteFunctor
 		}
 		else
 		{
+			lastFBVote = getGameTime() + freeBuildCooldown;
 			client_AddToChat("*** "+Trans::FreebuildMode+" "+Trans::Vote+" "+Trans::Failed+"! ***", vote_message_colour());
 		}
 	}
@@ -426,11 +427,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 		const u32 coolDownKick = Maths::Max(0, kickCooldown - (getGameTime() - lastKVote));
 		if (coolDownKick > 0 && !can_skip_wait)
 		{
-			string cantstart_info = getTranslatedString(
-				"Voting requires a {REQUIRED_MIN} min wait\n" +
-				"after each started vote to\n" +
-				"prevent spamming/abuse.\n"
-			).replace("{REQUIRED_MIN}", "10");
+			string cantstart_info = getTranslatedString("Voting requires a {REQUIRED_MIN} min wait\nafter each started vote to\nprevent spamming/abuse.\n").replace("{REQUIRED_MIN}", "10");
 
 			Menu::addInfoBox(kickmenu, getTranslatedString("Can't Start Vote"), cantstart_info);
 		}
