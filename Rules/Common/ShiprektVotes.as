@@ -3,17 +3,16 @@
 #include "VoteCommon.as";
 #include "ShiprektTranslation.as";
 
-bool g_haveStartedVote = false;
-s32 g_lastVoteCounter = 0;
+s32 lastKVote = 0;
 s32 lastFBVote = 0;
 s32 lastSDVote = 0;
 s32 lastSRVote = 0;
+
 string g_lastUsernameVoted = "";
-const float required_minutes = 10; //time you have to wait after joining w/o skip_votewait.
 
-const float required_minutes_nextmap = 10; //global nextmap vote cooldown
+const u32 BaseEnableTimeSuddenDeath = 10*30*60; //minimum base time. decreases on smaller maps and increases with cores count
 
-const u32 BaseEnableTimeSuddenDeath = 10*30*60;//minimum base time. decreases on smaller maps and increases with cores count
+const u32 kickCooldown = 10*30*60;
 const u32 suddenDeathVoteCooldown = 3*30*60;
 const u32 freeBuildCooldown = 3*30*60;
 const u32 surrenderCooldown = 3*30*60;
@@ -58,30 +57,25 @@ void onInit(CRules@ this)
 	this.addCommandID(votefreebuild_id);
 	this.addCommandID(votesurrender_id);
 	
-	initializeBools(this);
+	initializeTimes(this);
 }
 	
 void onReload(CRules@ this)
 {
-	initializeBools(this);
+	initializeTimes(this);
 }
 
 void onRestart(CRules@ this)
 {
-	initializeBools(this);
+	initializeTimes(this);
 }
 
-void initializeBools(CRules@ this)
+void initializeTimes(CRules@ this)
 {
 	lastSDVote = -suddenDeathVoteCooldown;
 	lastFBVote = -freeBuildCooldown;
 	lastSRVote = 0;
-	
-	if (isServer())
-	{
-		this.set_bool("freebuild", getPlayerCount() <= 1);
-		this.Sync("freebuild", true);
-	}
+	lastKVote = 0;
 }
 
 //VOTE KICK --------------------------------------------------------------------
@@ -101,13 +95,9 @@ class VoteKickFunctor : VoteFunctor
 	{
 		if (kickplayer !is null && outcome)
 		{
-			client_AddToChat(
-				getTranslatedString("Votekick passed! {USER} will be kicked out.")
-					.replace("{USER}", kickplayer.getUsername()),
-				vote_message_colour()
-			);
+			client_AddToChat(getTranslatedString("Votekick passed! {USER} will be kicked out.").replace("{USER}", kickplayer.getUsername()), vote_message_colour());
 
-			if (getNet().isServer())
+			if (isServer())
 			{
 				getSecurity().ban(kickplayer, VoteKickTime, "Voted off"); //30 minutes ban
 			}
@@ -159,12 +149,8 @@ class VoteKickLeaveFunctor : VotePlayerLeaveFunctor
 	{
 		if (player is kickplayer)
 		{
-			client_AddToChat(
-				getTranslatedString("{USER} left early, acting as if they were kicked.")
-					.replace("{USER}", player.getUsername()),
-				vote_message_colour()
-			);
-			if (getNet().isServer())
+			client_AddToChat(getTranslatedString("{USER} left early, acting as if they were kicked.").replace("{USER}", player.getUsername()), vote_message_colour());
+			if (isServer())
 			{
 				getSecurity().ban(player, VoteKickTime, "Ran from vote");
 			}
@@ -201,52 +187,23 @@ VoteObject@ Create_Votekick(CPlayer@ player, CPlayer@ byplayer, string reason)
 class VoteNextmapFunctor : VoteFunctor
 {
 	VoteNextmapFunctor() {} //dont use this
-	VoteNextmapFunctor(CPlayer@ player)
-	{
-		string charname = player.getCharacterName();
-		string username = player.getUsername();
-		//name differs?
-		if (
-			charname != username &&
-			charname != player.getClantag() + username &&
-			charname != player.getClantag() + " " + username
-		) {
-			playername = charname + " (" + player.getUsername() + ")";
-		}
-		else
-		{
-			playername = charname;
-		}
-	}
-
-	string playername;
+	VoteNextmapFunctor(CPlayer@ player) {}
+	
 	void Pass(bool outcome)
 	{
 		CMap@ map = getMap();
-		f32 mapFactor = Maths::Min(1.0f, Maths::Sqrt(map.tilemapwidth * map.tilemapheight) / 300.0f);
-		u32 minTime = Maths::Max(0, Maths::Round(BaseEnableTimeSuddenDeath * mapFactor) - getGameTime());
+		const f32 mapFactor = Maths::Min(1.0f, Maths::Sqrt(map.tilemapwidth * map.tilemapheight) / 300.0f);
+		const u32 minTime = Maths::Max(0, Maths::Round(BaseEnableTimeSuddenDeath * mapFactor) - getGameTime());
 		
-		if (minTime > 0)	return;//for left-over votes from last round
+		if (minTime > 0) return; //for left-over votes from last round
 			
 		if (outcome)
 		{
-			client_AddToChat("\n*** "+Trans::DeathStarted
-							+ "\n"+Trans::AttackReward
-							+ "\n"+Trans::WeightNote+" ***\n", vote_message_colour());
-			CRules@ rules = getRules();
-		}
-		else
-		{
-			client_AddToChat("*** "+Trans::SuddenDeath+" "+Trans::Failed+"! ***", vote_message_colour());
-		}
-		
-		if (isServer())
-		{
-			if (outcome)
+			client_AddToChat("\n*** "+Trans::DeathStarted + "\n" + Trans::AttackReward + "\n" + Trans::WeightNote+" ***\n", vote_message_colour());
+			
+			if (isServer())
 			{
-				CMap@ map = getMap();
-				Vec2f mapCenter = Vec2f(map.tilemapwidth * map.tilesize/2, map.tilemapheight * map.tilesize/2);
-				server_CreateBlob("whirlpool", 0, mapCenter);
+				server_CreateBlob("whirlpool", 0, map.getMapDimensions() / 2);
 				
 				//kill all stations
 				CBlob@[] stations;
@@ -257,6 +214,10 @@ class VoteNextmapFunctor : VoteFunctor
 					stations[i].server_Die();
 				}
 			}
+		}
+		else
+		{
+			client_AddToChat("*** "+Trans::SuddenDeath+" "+Trans::Failed+"! ***", vote_message_colour());
 		}
 	}
 };
@@ -296,36 +257,16 @@ VoteObject@ Create_VoteNextmap(CPlayer@ byplayer, string reason)
 class VoteFreebuildFunctor : VoteFunctor
 {
 	VoteFreebuildFunctor() {} //dont use this
-	VoteFreebuildFunctor(CPlayer@ player)
-	{
-		string charname = player.getCharacterName();
-		string username = player.getUsername();
-		//name differs?
-		if (
-			charname != username &&
-			charname != player.getClantag() + username &&
-			charname != player.getClantag() + " " + username
-		) {
-			playername = charname + " (" + player.getUsername() + ")";
-		}
-		else
-		{
-			playername = charname;
-		}
-	}
+	VoteFreebuildFunctor(CPlayer@ player) {}
 
-	string playername;
 	void Pass(bool outcome)
 	{
 		CRules@ rules = getRules();
-		bool newFreeState = !rules.get_bool("freebuild");
+		const bool newFreeState = !rules.get_bool("freebuild");
 		if (outcome)
 		{
 			rules.set_bool("freebuild", newFreeState);
-			if (newFreeState)
-				client_AddToChat("\n*** "+Trans::BuildEnabled+" ***\n", vote_message_colour());
-			else
-			client_AddToChat("\n*** "+Trans::BuildDisabled+" ***\n", vote_message_colour());
+			client_AddToChat("\n*** "+(newFreeState ? Trans::BuildEnabled : Trans::BuildDisabled)+" ***\n", vote_message_colour());
 		}
 		else
 		{
@@ -414,7 +355,7 @@ class VoteSurrenderFunctor : VoteFunctor
 
 class VoteSurrenderCheckFunctor : VoteCheckFunctor
 {
-	VoteSurrenderCheckFunctor() {}//dont use this
+	VoteSurrenderCheckFunctor() {} //dont use this
 	VoteSurrenderCheckFunctor(s32 _team)
 	{
 		team = _team;
@@ -457,10 +398,9 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	CPlayer@ me = getLocalPlayer();
 	if (me is null) return;
 
-	CRules@ rules = getRules();
-	if (Rules_AlreadyHasVote(rules))
+	if (Rules_AlreadyHasVote(this))
 	{
-		Menu::addContextItem(menu, getTranslatedString("(Vote already in progress)"), "DefaultVotes.as", "void CloseMenu()");
+		Menu::addContextItem(menu, getTranslatedString("(Vote already in progress)"), "ShiprektVotes.as", "void CloseMenu()");
 		Menu::addSeparator(menu);
 
 		return;
@@ -474,29 +414,29 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 
 	CContextMenu@ kickmenu = Menu::addContextMenu(votemenu, getTranslatedString("Kick"));
 	CContextMenu@ mapmenu = Menu::addContextMenu(votemenu, Trans::SuddenDeath);
-	CContextMenu@ Freebuildmenu = Menu::addContextMenu(votemenu, Trans::Freebuild);
+	CContextMenu@ freebuildmenu = Menu::addContextMenu(votemenu, Trans::Freebuild);
 	CContextMenu@ surrendermenu = Menu::addContextMenu(votemenu, "Self-Destruct Mothership");
 	Menu::addSeparator(votemenu); //before the back button
 
-	bool can_skip_wait = getSecurity().checkAccess_Feature(me, "skip_votewait");
+	const bool can_skip_wait = getSecurity().checkAccess_Feature(me, "skip_votewait");
 
 	//kick menu
 	if (getSecurity().checkAccess_Feature(me, "mark_player"))
 	{
-		if (g_lastVoteCounter < 60 * getTicksASecond()*required_minutes
-				&& (!can_skip_wait || g_haveStartedVote))
+		const u32 coolDownKick = Maths::Max(0, kickCooldown - (getGameTime() - lastKVote));
+		if (coolDownKick > 0 && !can_skip_wait)
 		{
 			string cantstart_info = getTranslatedString(
 				"Voting requires a {REQUIRED_MIN} min wait\n" +
 				"after each started vote to\n" +
 				"prevent spamming/abuse.\n"
-			).replace("{REQUIRED_MIN}", "" + required_minutes);
+			).replace("{REQUIRED_MIN}", "10");
 
 			Menu::addInfoBox(kickmenu, getTranslatedString("Can't Start Vote"), cantstart_info);
 		}
 		else
 		{
-			string votekick_info = getTranslatedString(
+			const string votekick_info = getTranslatedString(
 				"Vote to kick a player on your team\nout of the game.\n\n" +
 				"- use responsibly\n" +
 				"- report any abuse of this feature.\n" +
@@ -514,7 +454,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 			{
 				CBitStream params;
 				params.write_u8(i);
-				Menu::addContextItemWithParams(kickmenu, getTranslatedString(kick_reason_string[i]), "DefaultVotes.as", "Callback_KickReason", params);
+				Menu::addContextItemWithParams(kickmenu, getTranslatedString(kick_reason_string[i]), "ShiprektVotes.as", "Callback_KickReason", params);
 			}
 
 			Menu::addSeparator(kickmenu);
@@ -528,7 +468,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 				//if(player is me) continue; //don't display ourself for kicking
 				//commented out for max lols
 
-				int player_team = player.getTeamNum();
+				const u8 player_team = player.getTeamNum();
 				if ((player_team == me.getTeamNum() || player_team == this.getSpectatorTeamNum()
 						|| getSecurity().checkAccess_Feature(me, "mark_any_team"))
 						&& (!getSecurity().checkAccess_Feature(player, "kick_immunity")))
@@ -540,24 +480,16 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 
 					if (g_lastUsernameVoted == player.getUsername())
 					{
-						string title = getTranslatedString(
-							"Cannot kick {USER}"
-						).replace("{USER}", descriptor);
-						string info = getTranslatedString(
-							"You started a vote for\nthis person last time.\n\nSomeone else must start the vote."
-						);
+						const string title = getTranslatedString("Cannot kick {USER}").replace("{USER}", descriptor);
+						const string info = getTranslatedString("You started a vote for\nthis person last time.\n\nSomeone else must start the vote.");
 						//no-abuse box
-						Menu::addInfoBox(
-							kickmenu,
-							title,
-							info
-						);
+						Menu::addInfoBox(kickmenu, title, info);
 					}
 					else
 					{
-						string kick = getTranslatedString("Kick {USER}").replace("{USER}", descriptor);
-						string kicking = getTranslatedString("Kicking {USER}").replace("{USER}", descriptor);
-						string info = getTranslatedString("Make sure you're voting to kick\nthe person you meant.\n");
+						const string kick = getTranslatedString("Kick {USER}").replace("{USER}", descriptor);
+						const string kicking = getTranslatedString("Kicking {USER}").replace("{USER}", descriptor);
+						const string info = getTranslatedString("Make sure you're voting to kick\nthe person you meant.\n");
 
 						CContextMenu@ usermenu = Menu::addContextMenu(kickmenu, kick);
 						Menu::addInfoBox(usermenu, kicking, info);
@@ -566,11 +498,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 						CBitStream params;
 						params.write_u16(player.getNetworkID());
 
-						Menu::addContextItemWithParams(
-							usermenu, getTranslatedString("Yes, I'm sure"),
-							"DefaultVotes.as", "Callback_Kick",
-							params
-						);
+						Menu::addContextItemWithParams(usermenu, getTranslatedString("Yes, I'm sure"), "ShiprektVotes.as", "Callback_Kick", params);
 						added = true;
 
 						Menu::addSeparator(usermenu);
@@ -580,23 +508,13 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 
 			if (!added)
 			{
-				Menu::addContextItem(
-					kickmenu, getTranslatedString("(No-one available)"),
-					"DefaultVotes.as", "void CloseMenu()"
-				);
+				Menu::addContextItem(kickmenu, getTranslatedString("(No-one available)"), "ShiprektVotes.as", "void CloseMenu()");
 			}
 		}
 	}
 	else
 	{
-		Menu::addInfoBox(
-			kickmenu,
-			getTranslatedString("Can't vote"),
-			getTranslatedString(
-				"You are now allowed to votekick\n" +
-				"players on this server\n"
-			)
-		);
+		Menu::addInfoBox(kickmenu, getTranslatedString("Can't vote"), getTranslatedString("You are now allowed to votekick\nplayers on this server\n"));
 	}
 	Menu::addSeparator(kickmenu);
 
@@ -635,14 +553,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	}
 	else
 	{
-		Menu::addInfoBox(
-			mapmenu,
-			getTranslatedString("Can't vote"),
-			getTranslatedString(
-				"You are not allowed to vote\n" +
-				"to activate sudden death on this server\n"
-			)
-		);
+		Menu::addInfoBox(mapmenu, getTranslatedString("Can't vote"), "You are not allowed to vote\nto activate sudden death on this server\n");
 	}
 	Menu::addSeparator(mapmenu);
 
@@ -651,25 +562,23 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	{
 		const u32 coolDownFb = Maths::Max(0, freeBuildCooldown - (getGameTime() - lastFBVote));
 		
-		string nameFb = Trans::Enable+" "+Trans::FreebuildMode+"\n";
-		if (this.get_bool("freebuild")) nameFb = Trans::Disable+" "+Trans::FreebuildMode+"\n";
-		
 		string descFb = Trans::Vote+" "+Trans::Enable+"/"+Trans::Disable+" "+Trans::FreebuildMode+".";
 		if (coolDownFb > 0) 
 			descFb = coolDownFb > 30*60 ? (Trans::SwitchTime+" "+ (1 + coolDownFb/30/60) +" "+Trans::Minutes+".") : (Trans::SwitchTime+" "+ coolDownFb/30 + getTranslatedString(" seconds")+".");
 		
-		Menu::addInfoBox(Freebuildmenu, nameFb, descFb);
+		const string nameFb = (this.get_bool("freebuild") ? Trans::Disable : Trans::Enable)+" "+Trans::FreebuildMode+"\n";
+		Menu::addInfoBox(freebuildmenu, nameFb, descFb);
 
 		if (coolDownFb == 0)
 		{
-			Menu::addSeparator(Freebuildmenu);
+			Menu::addSeparator(freebuildmenu);
 			//reason
 			CBitStream params;
 			params.write_u8(1);
-			Menu::addContextItemWithParams(Freebuildmenu, getTranslatedString("Yes"), "ShiprektVotes.as", "Callback_Freebuild", params);
+			Menu::addContextItemWithParams(freebuildmenu, getTranslatedString("Yes"), "ShiprektVotes.as", "Callback_Freebuild", params);
 		}
 	}
-	Menu::addSeparator(Freebuildmenu);
+	Menu::addSeparator(freebuildmenu);
 	
 	//Self-Destruction menu
 	//vote to blow up your mothership
@@ -697,12 +606,6 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 void CloseMenu()
 {
 	Menu::CloseAllMenus();
-}
-
-void onPlayerStartedVote()
-{
-	g_lastVoteCounter = 0;
-	g_haveStartedVote = true;
 }
 
 void Callback_KickReason(CBitStream@ params)
@@ -741,7 +644,6 @@ void Callback_Kick(CBitStream@ params)
 	params2.write_string(g_kick_reason);
 
 	getRules().SendCommand(getRules().getCommandID(votekick_id), params2);
-	onPlayerStartedVote();
 }
 
 void Callback_NextMap(CBitStream@ params)
@@ -761,7 +663,6 @@ void Callback_NextMap(CBitStream@ params)
 	params2.write_string(reason);
 
 	getRules().SendCommand(getRules().getCommandID(votenextmap_id), params2);
-	onPlayerStartedVote();
 }
 
 void Callback_Freebuild(CBitStream@ params)
@@ -775,7 +676,6 @@ void Callback_Freebuild(CBitStream@ params)
 	params2.write_u16(me.getNetworkID());
 
 	getRules().SendCommand(getRules().getCommandID(votefreebuild_id), params2);
-	onPlayerStartedVote();
 }
 
 void Callback_Surrender(CBitStream@ params)
@@ -789,7 +689,6 @@ void Callback_Surrender(CBitStream@ params)
 	params2.write_u16(me.getNetworkID());
 
 	getRules().SendCommand(getRules().getCommandID(votesurrender_id), params2);
-	onPlayerStartedVote();
 }
 
 //actually setting up the votes
@@ -806,6 +705,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 		if (!params.saferead_u16(playerid)) return;
 		if (!params.saferead_u16(byplayerid)) return;
 		if (!params.saferead_string(reason)) return;
+		
+		lastKVote = getGameTime();
 
 		CPlayer@ player = getPlayerByNetworkId(playerid);
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
