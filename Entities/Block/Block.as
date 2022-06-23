@@ -121,30 +121,28 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		Ship@ ship = ShipSet.getShip(color);
 		Ship@ other_ship = ShipSet.getShip(other_color);
 		if (ship is null || other_ship is null) return;
-				
-		const bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) 
-				&& ((ship.isMothership || other_ship.isMothership) || (ship.isSecondaryCore || other_ship.isSecondaryCore) || (ship.isStation || other_ship.isStation))
-				//&& this.getTeamNum() == blob.getTeamNum()
-				&& ((!ship.isMothership && !ship.isSecondaryCore && !ship.owner.isEmpty()) || (!other_ship.isMothership && !other_ship.isSecondaryCore && !other_ship.owner.isEmpty()));
-							
-		const bool ramming = this.hasTag("ramming") || blob.hasTag("ramming");
-		
-		if (!ship.colliding && !docking && !ramming)
-		{
-			ship.colliding = true; //only collide once per tick
-			CollisionResponse(rules, ship, other_ship, point1);
-		}
 		
 		//TODO: isolate collision code in each blob's script rather than here
+				
+		const bool docking = (this.hasTag("coupling") || blob.hasTag("coupling")) && this.getTeamNum() == blob.getTeamNum()
+				&& ((ship.isMothership || other_ship.isMothership) || (ship.isSecondaryCore || other_ship.isSecondaryCore) || (ship.isStation || other_ship.isStation))
+				&& ((!ship.isMothership && !ship.isSecondaryCore && !ship.owner.isEmpty()) || (!other_ship.isMothership && !other_ship.isSecondaryCore && !other_ship.owner.isEmpty()));
+		
 		if (docking) //force ship merge
 		{
-			if (this.hasTag("coupling"))
-				this.SendCommand(this.getCommandID("couple"));
-			else if (blob.hasTag("coupling"))
+			if (blob.hasTag("coupling"))
 				blob.SendCommand(blob.getCommandID("couple"));
+			else if (this.hasTag("coupling"))
+				this.SendCommand(this.getCommandID("couple"));
 		}
 		else
 		{
+			if (!ship.colliding && !this.hasTag("ramming") && !blob.hasTag("ramming"))
+			{
+				ship.colliding = true; //only collide once per tick
+				CollisionResponse(rules, ship, other_ship, point1);
+			}
+			
 			// these are checked separately so that seats/ram engines don't break from coups/repulsors
 			if (this.hasTag("removable")) Die(this);
 			if (blob.hasTag("removable")) Die(blob);
@@ -204,31 +202,27 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			}
 		}
 	}
-	else if (isClient() && blob.getName() == "human")
+	else if (isClient() && blob.getName() == "human" && this.getShape().getConsts().collidable) // block vs player
 	{
-		// solid block vs player
-		if ((this.hasTag("solid") || (this.hasTag("door") && this.getShape().getConsts().collidable)))
+		if (blob.getAirTime() > 4) //air time is time spent on water
 		{
-			if (blob.getAirTime() > 4) //air time is time spent on water
+			//kill player by impact
+			Ship@ ship = getShipSet().getShip(color);
+			if (ship !is null && (ship.vel.LengthSquared() > 5.0f || Maths::Abs(ship.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
 			{
-				//kill player by impact
-				Ship@ ship = getShipSet().getShip(color);
-				if (ship !is null && (ship.vel.LengthSquared() > 5.0f || Maths::Abs(ship.angle_vel) > 1.75f || blob.getOldVelocity().LengthSquared() > 9.0f))
+				Vec2f blockSide(5.0f, 0.0f);
+				blockSide.RotateBy(-ship.vel.Angle());
+				const bool noSideHits = ((this.getPosition() + blockSide) - point1).Length() < 4.15f; //dont die if we arent in block's path
+				
+				if (!noSideHits)
+					directionalSoundPlay("Scrape1", point1);
+				
+				if ((blob.isMyPlayer() || (blob.getPlayer() !is null && blob.getPlayer().isBot())) && 
+					noSideHits && blob.getTeamNum() != this.getTeamNum())
 				{
-					Vec2f blockSide(5.0f, 0.0f);
-					blockSide.RotateBy(-ship.vel.Angle());
-					const bool noSideHits = ((this.getPosition() + blockSide) - point1).Length() < 4.15f; //dont die if we arent in block's path
-					
-					if (!noSideHits)
-						directionalSoundPlay("Scrape1", point1);
-					
-					if ((blob.isMyPlayer() || (blob.getPlayer() !is null && blob.getPlayer().isBot())) && 
-						noSideHits && blob.getTeamNum() != this.getTeamNum())
-					{
-						CBitStream params;
-						params.write_netid(this.getNetworkID());
-						blob.SendCommand(blob.getCommandID("run over"), params);
-					}
+					CBitStream params;
+					params.write_netid(this.getNetworkID());
+					blob.SendCommand(blob.getCommandID("run over"), params);
 				}
 			}
 		}
