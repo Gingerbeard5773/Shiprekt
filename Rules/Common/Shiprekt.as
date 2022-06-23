@@ -231,18 +231,6 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 	}
 	else
 		server_setPlayerBooty(pName, !this.isWarmup() ? minBooty : this.get_u16("starting_booty"));
-		
-	this.Sync("freebuild", true);
-}
-
-void onPlayerLeave(CRules@ this, CPlayer@ player)
-{
-	if ((getPlayerCount() - 1) <= 1 && !this.get_bool("freebuild"))
-	{
-		getNet().server_SendMsg("*** 1 player on map. Setting freebuild mode until more players join. ***");
-		this.set_bool("freebuild", true);
-		this.Sync("freebuild", true);
-	}
 }
 
 const string[] devNames = {"Mr"+"Ho"+"bo"};

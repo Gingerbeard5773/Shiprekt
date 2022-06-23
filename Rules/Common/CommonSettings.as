@@ -77,8 +77,8 @@ void onInit(CRules@ this)
     AddIconToken("$SPECTATOR$", "GUI/MenuItems.png", Vec2f(32,32), 19);
 	
 	//sandbox notice
-	if (getPlayersCount() == 0)
-		client_AddToChat("> Free building mode set until more players join! <");
+	//if (getPlayerCount() == 0)
+		//client_AddToChat("> Free building mode set until more players join! <");
 }
 
 void onRestart(CRules@ this)
@@ -88,6 +88,17 @@ void onRestart(CRules@ this)
 	CCamera@ camera = getCamera();
     if (camera !is null)
     	camera.setRotation(0.0f);
+	
+	this.set_bool("freebuild", getPlayerCount() <= 1);
+}
+
+void onPlayerLeave(CRules@ this, CPlayer@ player)
+{
+	if ((getPlayerCount() - 1) <= 1 && !this.get_bool("freebuild"))
+	{
+		client_AddToChat("> Free building mode set until more players join! <");
+		this.set_bool("freebuild", true);
+	}
 }
 
 void ShowTeamMenu(CRules@ this)
