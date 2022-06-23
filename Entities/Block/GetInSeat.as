@@ -66,9 +66,13 @@ void onDie(CBlob@ this)
 {
 	if (isServer())
 	{
-		AttachmentPoint@ seat = this.getAttachmentPoint(0);
-		CBlob@ b = seat.getOccupied();
-		if (b !is null) b.server_Die();
+		CBlob@ b = this.getAttachmentPoint(0).getOccupied();
+		if (b !is null)
+		{
+			CBitStream params;
+			params.write_netid(b.getNetworkID());
+			b.SendCommand(b.getCommandID("run over"), params);
+		}
 	}
 }
 
