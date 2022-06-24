@@ -38,7 +38,7 @@ void onInit(CBlob@ this)
 	
 	this.set_string("seat label", "Control Harpoon"); 
 	
-	HarpoonInfo harpoon;	  
+	HarpoonInfo harpoon;
 	this.set("harpoonInfo", @harpoon);
 
 	this.addCommandID("unhook"); //start reel
@@ -50,39 +50,39 @@ void onInit(CSprite@ this)
 {
 	const string texname = "Entities/Block/Harpoon.png";
 	
-    CSpriteLayer@ hook = this.addSpriteLayer("hook", texname, 16, 16);
-    if (hook !is null)
-    {
-        Animation@ anim = hook.addAnimation("default", 0, false);
-        anim.AddFrame(28);
-        hook.SetRelativeZ(4.0f);
-        hook.SetVisible(false);
-    }
-    
-    CSpriteLayer@ looseRope = this.addSpriteLayer("loose rope", texname, 32, 32);
-    if (looseRope !is null)
-    {
-        Animation@ anim = looseRope.addAnimation("default", 1, true);
+	CSpriteLayer@ hook = this.addSpriteLayer("hook", texname, 16, 16);
+	if (hook !is null)
+	{
+		Animation@ anim = hook.addAnimation("default", 0, false);
+		anim.AddFrame(28);
+		hook.SetRelativeZ(4.0f);
+		hook.SetVisible(false);
+	}
+	
+	CSpriteLayer@ looseRope = this.addSpriteLayer("loose rope", texname, 32, 32);
+	if (looseRope !is null)
+	{
+		Animation@ anim = looseRope.addAnimation("default", 1, true);
 		array<int> frames = {0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1};
 		anim.AddFrames(frames);
 		Animation@ tight = looseRope.addAnimation("tight", 0, false);
 		tight.AddFrame(3);
-        looseRope.SetRelativeZ(2.0f);
-        looseRope.SetVisible(false);
-    }
+		looseRope.SetRelativeZ(2.0f);
+		looseRope.SetVisible(false);
+	}
 	
 	CSpriteLayer@ base = this.addSpriteLayer("harpoon", "HarpoonBlock.png", 16, 16);
-    if (base !is null)
-    {
-    	base.SetRelativeZ(3.0f);
-    	base.SetLighting(false);
-     	Animation@ animFired = base.addAnimation("fired", 0, false);
-        animFired.AddFrame(1);
+	if (base !is null)
+	{
+		base.SetRelativeZ(3.0f);
+		base.SetLighting(false);
+		Animation@ animFired = base.addAnimation("fired", 0, false);
+		animFired.AddFrame(1);
 
 		Animation@ animSet = base.addAnimation("set", 0, false);
-        animSet.AddFrame(0);
-        base.SetAnimation("set");
-    }
+		animSet.AddFrame(0);
+		base.SetAnimation("set");
+	}
 }
 
 void onTick(CBlob@ this)
@@ -131,7 +131,7 @@ void onTick(CBlob@ this)
 		//reel in
 		if (harpoon.grapple_ratio > 0.2f)
 			harpoon.grapple_ratio -= 1.0f / getTicksASecond();
-				
+		
 		Vec2f force = harpoon.grapple_pos - pos;
 		const f32 dist = force.Normalize();
 		const f32 offdist = dist - harpoon_grapple_range;
@@ -178,7 +178,7 @@ void onTick(CBlob@ this)
 			f32 delta = dir.Normalize();
 			const f32 step = map.tilesize * 0.5f;
 			while (delta > 0) //fake raycast
-			{				
+			{
 				if (delta > step)
 				{
 					harpoon.grapple_pos += dir * step;
@@ -278,7 +278,7 @@ void onTick(CBlob@ this)
 							//thisShip.angle_vel += angleVel;
 						}
 					}
-				}				
+				}
 			}
 		}
 	}
@@ -351,7 +351,7 @@ const bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 		if (b.hasTag("plank") && !CollidesWithPlank(b, harpoon.grapple_vel))
 			return false;
 		
-		if (b.hasTag("block") && b.getShape().getConsts().collidable)
+		if (b.getShape().getVars().customData > 0 && b.getShape().getConsts().collidable)
 		{
 			harpoon.grapple_id = b.getNetworkID();
 			
@@ -369,9 +369,9 @@ const bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
-{	
+{
 	if (cmd == this.getCommandID("grapple"))
-    {
+	{
 		HarpoonInfo@ harpoon;
 		if (!this.get("harpoonInfo", @harpoon)) return;
 		
@@ -394,14 +394,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 								this.getVelocity()*0.5f + direction/(direction).getLength(),
 								1.0f, 0.5f, 
 								2, 
-								0.0f, true);			
+								0.0f, true);
 								
 			if (p !is null)
 				p.Z = 650;
 		}
 	}
 	else if (cmd == this.getCommandID("unhook"))
-    {
+	{
 		HarpoonInfo@ harpoon;
 		if (!this.get("harpoonInfo", @harpoon)) return;
 		
@@ -409,12 +409,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			directionalSoundPlay("HookReel.ogg", this.getPosition());
 			
 		harpoon.grapple_id = 0xffff;
-        harpoon.reeling = true;
-    }
+		harpoon.reeling = true;
+	}
 	else if (cmd == this.getCommandID("resetgrapple"))
 	{
 		HarpoonInfo@ harpoon;
-		if (!this.get("harpoonInfo", @harpoon)) return;						
+		if (!this.get("harpoonInfo", @harpoon)) return;
 		
 		if (isClient())		
 			directionalSoundPlay("HookReset.ogg", this.getPosition());
@@ -426,17 +426,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 }
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
-{   
+{
 	HarpoonInfo@ harpoon;
 	if (!this.get("harpoonInfo", @harpoon)) 
 		return;
 	
-    if ((harpoon.grapple_pos - caller.getPosition()).getLength() > 16.0f || this.getShape().getVars().customData <= 0)
-        return;
+	if ((harpoon.grapple_pos - caller.getPosition()).getLength() > 16.0f || this.getShape().getVars().customData <= 0)
+		return;
 
-    if (harpoon.grapple_id != 0xffff)
+	if (harpoon.grapple_id != 0xffff)
 	{
-        CButton@ unhookButton = caller.CreateGenericButton(1, (harpoon.grapple_pos - this.getPosition())*0.5f, this, this.getCommandID("unhook"), "Unhook Harpoon");
+		CButton@ unhookButton = caller.CreateGenericButton(1, (harpoon.grapple_pos - this.getPosition())*0.5f, this, this.getCommandID("unhook"), "Unhook Harpoon");
 		if (unhookButton !is null) unhookButton.radius = 3.3f; //engine fix
 	}
 }
