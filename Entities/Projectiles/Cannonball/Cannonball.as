@@ -70,9 +70,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 				else
 				{
 					this.push("pierced blob IDs", bID);
-					piercedCount++;
 					this.setVelocity(this.getVelocity() * 0.5f);
 				}
+				piercedCount++;
 			}
 			else if (b.hasTag("hasSeat"))
 			{
@@ -85,9 +85,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 					else
 					{
 						this.push("pierced blob IDs", bID);
-						piercedCount++;
 						this.setVelocity(this.getVelocity() * 0.5f);
 					}
+					piercedCount++;
 				}
 				else return;
 			}
@@ -95,7 +95,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 		}
 		else
 		{
-			if (sameTeam || (b.hasTag("player") && b.isAttached()) || b.hasTag("projectile"))//don't hit
+			if (sameTeam || (b.hasTag("player") && b.isAttached()) || b.hasTag("projectile")) //don't hit
 				return;
 		}
 		
@@ -116,23 +116,21 @@ const f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 	const u16 piercedCount = this.get_u16("pierced count");
 	f32 damageFactor = 1.0f;
 	
-	if (piercedCount > 1)
-		damageFactor *= 0.7f;
 	if (piercedCount > 2)
-		damageFactor *= 0.4f;
+		damageFactor = 0.35f;
+	else if (piercedCount > 1)
+		damageFactor = 0.5f;
 	
 	if (hitBlob.hasTag("ramengine"))
 		return 3.9f * damageFactor;
 	if (hitBlob.hasTag("propeller"))
 		return 2.15f * damageFactor;
-	if (hitBlob.hasTag("door"))
-		return 2.0f * damageFactor;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("plank"))
 		return 1.5f * damageFactor;
 	if (hitBlob.hasTag("weapon"))
 		return 1.75f * damageFactor;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
-		return 1.0f * damageFactor;
+		return 0.9f * damageFactor;
 	if (hitBlob.hasTag("mothership"))
 		return 0.4f * damageFactor;
 
