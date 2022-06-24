@@ -16,16 +16,16 @@ void onInit(CBlob@ this)
 	this.Tag("projectile");
 
 	ShapeConsts@ consts = this.getShape().getConsts();
-    consts.mapCollisions = true;
-	consts.bullet = true;	
+	consts.mapCollisions = true;
+	consts.bullet = true;
 	
 	this.SetMapEdgeFlags(CBlob::map_collide_none);
 	
 	this.set_u16("pierced count", 0);
-    u32[] piercedBlobIDs;
-    this.set("pierced blob IDs", piercedBlobIDs);
+	u32[] piercedBlobIDs;
+	this.set("pierced blob IDs", piercedBlobIDs);
 
-	this.getSprite().SetZ(550.0f);	
+	this.getSprite().SetZ(550.0f);
 }
 
 void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
@@ -47,8 +47,8 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 		return;
 	
 	u16 piercedCount = this.get_u16("pierced count");
-    u32[]@ piercedBlobIDs;
-    this.get("pierced blob IDs", @piercedBlobIDs);
+	u32[]@ piercedBlobIDs;
+	this.get("pierced blob IDs", @piercedBlobIDs);
 	
 	const u32 bID = b.getNetworkID();
 	if (piercedBlobIDs.find(bID) >= 0) return;
@@ -179,7 +179,7 @@ void onDie(CBlob@ this)
 			directionalSoundPlay("WaterSplashBall.ogg", pos);
 		}
 	}
-		
+	
 	if (!isServer()) return;
 	
 	//splash damage
@@ -200,16 +200,16 @@ Random _sprk_r;
 void sparksDirectional(const Vec2f&in pos, Vec2f&in blobVel, const u8&in amount)
 {
 	for (u8 i = 0; i < amount; i++)
-    {
-        Vec2f vel(_sprk_r.NextFloat() * 5.0f, 0);
-        vel.RotateBy((-blobVel.getAngle() + 180.0f) + _sprk_r.NextFloat() * 30.0f - 15.0f);
+	{
+		Vec2f vel(_sprk_r.NextFloat() * 5.0f, 0);
+		vel.RotateBy((-blobVel.getAngle() + 180.0f) + _sprk_r.NextFloat() * 30.0f - 15.0f);
 
-        CParticle@ p = ParticlePixel(pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true);
-        if (p is null) return; //bail if we stop getting particles
+		CParticle@ p = ParticlePixel(pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true);
+		if (p is null) return; //bail if we stop getting particles
 
-        p.timeout = 20 + _sprk_r.NextRanged(20);
-        p.scale = 1.0f + _sprk_r.NextFloat();
-        p.damping = 0.85f;
+		p.timeout = 20 + _sprk_r.NextRanged(20);
+		p.scale = 1.0f + _sprk_r.NextFloat();
+		p.damping = 0.85f;
 		p.Z = 650.0f;
-    }
+	}
 }

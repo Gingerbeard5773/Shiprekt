@@ -23,27 +23,27 @@ void onTick(CSprite@ this)
 	else if (diff < 0)
 		bootyDecrease(blob, diff);
 	
-    HoverMessageShiprekt2[]@ messages;
-    if (blob.get("messages", @messages))
+	HoverMessageShiprekt2[]@ messages;
+	if (blob.get("messages", @messages))
 	{
-        for (u16 i = 0; i < messages.length; i++)
+		for (u16 i = 0; i < messages.length; i++)
 		{
-            HoverMessageShiprekt2@ message = messages[i];
-            message.draw(getActorHUDStartPosition(blob, 6) +  Vec2f(70 , -4));
+			HoverMessageShiprekt2@ message = messages[i];
+			message.draw(getActorHUDStartPosition(blob, 6) +  Vec2f(70 , -4));
 
-            if (message.isExpired())
+			if (message.isExpired())
 			{
-                messages.removeAt(i);
-            }
-        }
-    }
+				messages.removeAt(i);
+			}
+		}
+	}
 }
 
 void onRender(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
 
-	HoverMessageShiprekt2[]@ messages;	
+	HoverMessageShiprekt2[]@ messages;
 	if (blob.get("messages", @messages))
 	{
 		u16 messagesLength = messages.length;

@@ -101,12 +101,12 @@ shared Ship@ getOverlappingShip(CBlob@ this, ShipDictionary@ ShipSet = getShipSe
 		const u8 blobsLength = blobsInRadius.length;
 		for (u8 i = 0; i < blobsLength; i++)
 		{
-            const int color = blobsInRadius[i].getShape().getVars().customData;
-            if (color > 0)
-            	return ShipSet.getShip(color);
+			const int color = blobsInRadius[i].getShape().getVars().customData;
+			if (color > 0)
+				return ShipSet.getShip(color);
 		}
 	}
-    return null;
+	return null;
 }
 
 // Gets the mothership core block on determined team 

@@ -11,7 +11,7 @@ void onInit(CBlob@ this)
 	this.Tag("bullet");
 
 	ShapeConsts@ consts = this.getShape().getConsts();
-    consts.mapCollisions = true;
+	consts.mapCollisions = true;
 	consts.bullet = true;
 	
 	this.SetMapEdgeFlags(CBlob::map_collide_none);

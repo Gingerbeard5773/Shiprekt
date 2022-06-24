@@ -12,57 +12,57 @@ void onInit(CBlob@ this)
 	this.Tag("bomb");
 	//this.Tag("ramming");
 	this.set_u8("gibType", 1);
-    //this.getCurrentScript().tickFrequency = 60;
+	//this.getCurrentScript().tickFrequency = 60;
 	
 	this.set_f32("weight", 2.0f);
 	
-    /*CSprite@ sprite = this.getSprite();
-    if (sprite !is null)
-    {
-        //default animation
-        {
-            Animation@ anim = sprite.addAnimation("default", 0, false);
-            anim.AddFrame(0);
-        }
-        //exploding "warmup" animation
-        {
-            Animation@ anim = sprite.addAnimation("exploding", 2, true);
+	/*CSprite@ sprite = this.getSprite();
+	if (sprite !is null)
+	{
+		//default animation
+		{
+			Animation@ anim = sprite.addAnimation("default", 0, false);
+			anim.AddFrame(0);
+		}
+		//exploding "warmup" animation
+		{
+			Animation@ anim = sprite.addAnimation("exploding", 2, true);
 
-            int[] frames = {
-                1, 1,
-                2, 2,
-                0, 0,
-                0, 0,
+			int[] frames = {
+				1, 1,
+				2, 2,
+				0, 0,
+				0, 0,
 
-                1, 1,
-                2, 2,
-                0, 0,
-                0,
+				1, 1,
+				2, 2,
+				0, 0,
+				0,
 
-                1,
-                2,
-                0, 0,
+				1,
+				2,
+				0, 0,
 
-                1,
-                2,
-                0, 0,
+				1,
+				2,
+				0, 0,
 
-                1,
-                2,
-                0, 0,
+				1,
+				2,
+				0, 0,
 
-                1,
-                2,
-                0, 0,
+				1,
+				2,
+				0, 0,
 
-                1,
-                2,
-                0, 0,
-            };
+				1,
+				2,
+				0, 0,
+			};
 
-            anim.AddFrames(frames);
-        }
-    }*/
+			anim.AddFrames(frames);
+		}
+	}*/
 }
 
 void onTick(CBlob@ this)
@@ -94,7 +94,7 @@ void onTick(CBlob@ this)
 	this.getCurrentScript().tickFrequency = 0; //only tick once, when this block is placed
 }
 
-u8 findCloseBombs(CBlob@ this)
+const u8 findCloseBombs(CBlob@ this)
 {
 	u8 factor = 0;
 	CBlob@[] blobs;
@@ -114,7 +114,7 @@ u8 findCloseBombs(CBlob@ this)
 
 void Explode(CBlob@ this, const f32&in radius = BOMB_RADIUS)
 {
-    const Vec2f pos = this.getPosition();
+	const Vec2f pos = this.getPosition();
 	const u8 stackfactor = findCloseBombs(this);
 
 	if (isClient())
@@ -185,11 +185,11 @@ void Explode(CBlob@ this, const f32&in radius = BOMB_RADIUS)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-    if (isClient() && customData == Hitters::bomb)
-    {
-        //explosion particle
-        makeSmallExplosionParticle(worldPoint);
-    }
+	if (isClient() && customData == Hitters::bomb)
+	{
+		//explosion particle
+		makeSmallExplosionParticle(worldPoint);
+	}
 }
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
@@ -202,22 +202,22 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 
 void onDie(CBlob@ this)
 {
-    if (this.getShape().getVars().customData > 0)
-    {
-        this.getSprite().Gib();
+	if (this.getShape().getVars().customData > 0)
+	{
+		this.getSprite().Gib();
 		if (!this.hasTag("disabled"))
 			Explode(this);
-    }
+	}
 }
 
 /*void StartDetonation(CBlob@ this)//not being used
 {
-    this.server_SetTimeToDie(2);
-    CSprite@ sprite = this.getSprite();
-    sprite.SetAnimation("exploding");
-    sprite.SetEmitSound("/bomb_timer.ogg");
-    sprite.SetEmitSoundPaused(false);
-    sprite.RewindEmitSound();
+	this.server_SetTimeToDie(2);
+	CSprite@ sprite = this.getSprite();
+	sprite.SetAnimation("exploding");
+	sprite.SetEmitSound("/bomb_timer.ogg");
+	sprite.SetEmitSoundPaused(false);
+	sprite.RewindEmitSound();
 }*/
 
 void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, ShipDictionary@ ShipSet)

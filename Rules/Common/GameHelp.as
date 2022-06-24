@@ -30,8 +30,8 @@ void onInit(CRules@ this)
 	
 	if (!GUI::isFontLoaded("thick font"))
 	{
-        GUI::LoadFont("thick font", g_locale == "ru" ? "GUI/Fonts/Arial.ttf" : "GUI/Fonts/AveriaSerif-Bold.ttf", 30, true);
-    }
+		GUI::LoadFont("thick font", g_locale == "ru" ? "GUI/Fonts/Arial.ttf" : "GUI/Fonts/AveriaSerif-Bold.ttf", 30, true);
+	}
 }
 
 void onTick(CRules@ this)
@@ -217,7 +217,7 @@ void onRender(CRules@ this)
 }
 
 void makeWebsiteLink(Vec2f pos, const string&in text, const string&in website)
-{	
+{
 	Vec2f dim;
 	GUI::GetTextDimensions(text, dim);
 
@@ -251,7 +251,7 @@ void makeWebsiteLink(Vec2f pos, const string&in text, const string&in website)
 
 //failback for F1 key problems
 bool onClientProcessChat(CRules@ this, const string &in textIn, string &out textOut, CPlayer@ player)
-{	
+{
 	if (player !is null && player.isMyPlayer() && textIn == "!help")
 	{
 		showHelp = !showHelp;

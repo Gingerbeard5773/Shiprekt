@@ -9,12 +9,12 @@ u8 crewCantPlaceCounter = 0;
 
 void onInit(CBlob@ this)
 {
-    CBlob@[] blocks;
-    this.set("blocks", blocks);
-    this.set_f32("blocks_angle", 0.0f);
-    this.set_f32("target_angle", 0.0f);
+	CBlob@[] blocks;
+	this.set("blocks", blocks);
+	this.set_f32("blocks_angle", 0.0f);
+	this.set_f32("target_angle", 0.0f);
 
-    this.addCommandID("place");
+	this.addCommandID("place");
 }
 
 CBlob@ getReferenceBlock(CBlob@ this, Ship@ ship, CBlob@ shipBlob) //find specific origin blocks connected to a ship
@@ -43,8 +43,8 @@ CBlob@ getReferenceBlock(CBlob@ this, Ship@ ship, CBlob@ shipBlob) //find specif
 
 void onTick(CBlob@ this)
 {
-    CBlob@[]@ blocks;
-    if (!this.get("blocks", @blocks) || blocks.size() <= 0)
+	CBlob@[]@ blocks;
+	if (!this.get("blocks", @blocks) || blocks.size() <= 0)
 		return;
 	
 	Vec2f pos = this.getPosition();
@@ -183,7 +183,7 @@ void onTick(CBlob@ this)
 void PositionBlocks(CBlob@[]@ blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&in blocks_angle, CBlob@ refBlock, CBlob@ shipBlob)
 {
 	Vec2f ship_pos = refBlock.getPosition();
-    const f32 angle = refBlock.getAngleDegrees();
+	const f32 angle = refBlock.getAngleDegrees();
 	f32 refBAngle = shipBlob.getAngleDegrees(); //reference block angle
 	//current ship angle as point of reference
 	while (refBAngle > angle + 45) refBAngle -= 90.0f;
@@ -208,7 +208,7 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&i
 		CBlob@ block = blocks[i];
 		Vec2f offset = block.get_Vec2f("offset");
 		offset.RotateBy(blocks_angle + refBAngle);
-  
+
 		block.setPosition(cursor_pos + offset); //align to ship grid
 		block.setAngleDegrees((refBAngle + blocks_angle + (block.hasTag("engine") ? 90.0f : 0.0f)) % 360.0f); //set angle: reference angle + rotation angle
 
@@ -218,18 +218,18 @@ void PositionBlocks(CBlob@[]@ blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&i
 
 Vec2f SnapToGrid(Vec2f&in pos) //determines the grid of blocks
 {
-    pos.x = Maths::Round(pos.x / 8.0f);
-    pos.y = Maths::Round(pos.y / 8.0f);
-    pos *= 8;
-    return pos;
+	pos.x = Maths::Round(pos.x / 8.0f);
+	pos.y = Maths::Round(pos.y / 8.0f);
+	pos *= 8;
+	return pos;
 }
 
 const bool blocksOverlappingShip(CBlob@[]@ blocks)
 {
 	const u8 blocksLength = blocks.length;
-    for (u8 i = 0; i < blocksLength; ++i)
-    {
-        CBlob@ block = blocks[i];
+	for (u8 i = 0; i < blocksLength; ++i)
+	{
+		CBlob@ block = blocks[i];
 		
 		CBlob@[] overlapping; //we use radius since getOverlapping has a delay when blob is created
 		if (getMap().getBlobsInRadius(block.getPosition(), 8.0f, @overlapping))
@@ -240,40 +240,40 @@ const bool blocksOverlappingShip(CBlob@[]@ blocks)
 				CBlob@ b = overlapping[q];
 				if (b.getShape().getVars().customData > 0)
 				{
-					if ((b.getPosition() - block.getPosition()).getLength() < block.getRadius()*0.4f)
+					if ((b.getPosition() - block.getPosition()).getLength() < block.getRadius() * 0.4f)
 						return true;
 				}
 			}
 		}
-    }
-    return false; 
+	}
+	return false; 
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("place"))
-    {
-        CBlob@ refBlock = getBlobByNetworkID(params.read_netid());
-        CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
-        if (refBlock is null || shipBlob is null)
-        {
-            warn("place cmd: centerBlock not found");
-            return;
-        }
+	if (cmd == this.getCommandID("place"))
+	{
+		CBlob@ refBlock = getBlobByNetworkID(params.read_netid());
+		CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
+		if (refBlock is null || shipBlob is null)
+		{
+			warn("place cmd: centerBlock not found");
+			return;
+		}
 
-        Vec2f pos_offset = params.read_Vec2f();
-        Vec2f aimPos_offset = params.read_Vec2f();
-        const f32 target_angle = params.read_f32();
-        const f32 ship_angle = params.read_f32();
+		Vec2f pos_offset = params.read_Vec2f();
+		Vec2f aimPos_offset = params.read_Vec2f();
+		const f32 target_angle = params.read_f32();
+		const f32 ship_angle = params.read_f32();
 		
 		CRules@ rules = getRules();
 		ShipDictionary@ ShipSet = getShipSet(rules);
-        Ship@ ship = ShipSet.getShip(refBlock.getShape().getVars().customData);
-        if (ship is null)
-        {
-            warn("place cmd: ship not found");
-            return;
-        }
+		Ship@ ship = ShipSet.getShip(refBlock.getShape().getVars().customData);
+		if (ship is null)
+		{
+			warn("place cmd: ship not found");
+			return;
+		}
 		
 		if (ship.centerBlock is null)
 		{
@@ -281,9 +281,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			return;
 		}
 		
-        CBlob@[]@ blocks;
-        if (this.get("blocks", @blocks) && blocks.size() > 0)                 
-        {
+		CBlob@[]@ blocks;
+		if (this.get("blocks", @blocks) && blocks.size() > 0)
+		{
 			Vec2f shipPos = refBlock.getPosition();
 			const f32 shipAngle = ship.centerBlock.getAngleDegrees();
 			const f32 angleDelta = refBlock.getAngleDegrees() - ship_angle; //to account for ship angle lag
@@ -314,7 +314,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 						ship_block.offset.RotateBy(-shipAngle);
 						ship_block.angle_offset = b.getAngleDegrees() - shipAngle;
 						b.getShape().getVars().customData = iColor;
-						ship.blocks.push_back(ship_block);	
+						ship.blocks.push_back(ship_block);
 					}
 					else
 						b.getShape().getVars().customData = 0; // push on ship
@@ -326,13 +326,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					warn("place cmd: blob not found");
 				}
 			}
-        }
-        else
-        {
+		}
+		else
+		{
 			//can happen when placing and returning blocks at same time
-            warn("place cmd: no blocks");
-            return;
-        }
+			warn("place cmd: no blocks");
+			return;
+		}
 		
 		blocks.clear(); //releases the blocks (they are placed)
 		directionalSoundPlay("build_ladder.ogg", this.getPosition());
@@ -353,16 +353,16 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				}
 			}
 		}
-    }
+	}
 }
 
 void SetDisplay(CBlob@ blob, const SColor&in color, RenderStyle::Style&in style, const f32&in Z = -10000)
 {
-    CSprite@ sprite = blob.getSprite();
-    sprite.asLayer().SetColor(color);
-    sprite.asLayer().setRenderStyle(style);
-    if (Z > -10000)
+	CSprite@ sprite = blob.getSprite();
+	sprite.asLayer().SetColor(color);
+	sprite.asLayer().setRenderStyle(style);
+	if (Z > -10000)
 	{
-        sprite.SetZ(Z);
-    }
+		sprite.SetZ(Z);
+	}
 }

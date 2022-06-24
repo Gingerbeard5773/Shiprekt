@@ -156,11 +156,11 @@ void onTick(CRules@ this)
 		
 		//check if the game has ended
 		CBlob@[] cores;
-        getBlobsByTag("mothership", cores);
+		getBlobsByTag("mothership", cores);
 		
 		const u8 coresLength = cores.length;
 		
-        const bool oneTeamLeft = coresLength <= 1;
+		const bool oneTeamLeft = coresLength <= 1;
 		const u8 endCount = this.get_u8("endCount");
 		
 		if (oneTeamLeft && endCount == 0)//start endmatch countdown

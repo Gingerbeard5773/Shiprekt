@@ -45,13 +45,13 @@ void onTick(CRules@ this)
 		{
 			ship.old_pos.x = ship.pos.x;
 			ship.old_pos.x -= ship.vel.x;
-			ship.pos.x += dim.x;			
+			ship.pos.x += dim.x;
 		}
 		if (ship.vel.y < 0.0f && ship.pos.y < 0)
 		{
 			ship.old_pos.y = ship.pos.y;
 			ship.old_pos.y -= ship.vel.y;
-			ship.pos.y += dim.y;		
+			ship.pos.y += dim.y;
 		}
 	}*/
 }

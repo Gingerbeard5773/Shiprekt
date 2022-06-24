@@ -29,15 +29,15 @@ void Spectator(CRules@ this)
 	CMap@ map = getMap();
 
 	//Get a target from the scoreboard
-    if (this.get_bool("set new target"))
-    {
-        _targetPlayer = this.get_string("new target");
-        if (targetPlayer() !is null)
-        {
-            waitForRelease = true;
-            this.set_bool("set new target", false);
-        }
-    }
+	if (this.get_bool("set new target"))
+	{
+		_targetPlayer = this.get_string("new target");
+		if (targetPlayer() !is null)
+		{
+			waitForRelease = true;
+			this.set_bool("set new target", false);
+		}
+	}
 
 	if (camera is null || controls is null || map is null)
 		return;
@@ -112,10 +112,10 @@ void Spectator(CRules@ this)
 		SetTargetPlayer(null, camera);
 	}
 
-    if (controls.isKeyJustReleased(KEY_LBUTTON))
-    {
-        waitForRelease = false;
-    }
+	if (controls.isKeyJustReleased(KEY_LBUTTON))
+	{
+		waitForRelease = false;
+	}
 
 	//Click on targets to track them or set camera to mousePos
 	Vec2f mousePos = controls.getMouseWorldPos();

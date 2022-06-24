@@ -14,8 +14,8 @@ void onInit(CBlob@ this)
 	this.Tag("projectile");
 
 	ShapeConsts@ consts = this.getShape().getConsts();
-    consts.mapCollisions = true;
-	consts.bullet = true;	
+	consts.mapCollisions = true;
+	consts.bullet = true;
 
 	this.getSprite().SetZ(550.0f);
 	
@@ -77,9 +77,9 @@ void flak(CBlob@ this)
 			const u8 hitLength = hitInfos.length;
 			for (u8 i = 0; i < hitLength; i++)//sharpnel trail
 			{
-				CBlob@ b = hitInfos[i].blob;	  
+				CBlob@ b = hitInfos[i].blob;
 				if (b is null || b is this) continue;
-									
+				
 				const bool sameTeam = b.getTeamNum() == this.getTeamNum();
 				if (b.hasTag("solid") || b.hasTag("door") || (!sameTeam
 					&& (b.hasTag("seat") || b.hasTag("weapon") || b.hasTag("projectile") || b.hasTag("core") || b.hasTag("bomb") || (b.hasTag("player") && !b.isAttached()))))
@@ -108,7 +108,7 @@ void onDie(CBlob@ this)
 		}
 	}
 
-	if (isServer() && !this.hasTag("noFlakBoom")) 	
+	if (isServer() && !this.hasTag("noFlakBoom"))
 		flak(this);
 }
 

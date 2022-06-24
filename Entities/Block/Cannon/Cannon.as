@@ -47,13 +47,13 @@ void onInit(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    sprite.SetRelativeZ(2);
+	sprite.SetRelativeZ(2);
 	{
 		//shoot anim
-     	Animation@ anim = sprite.addAnimation("fire", 0, false);
-        anim.AddFrame(0);
-        anim.AddFrame(1);
-        sprite.SetAnimation("fire");
+		Animation@ anim = sprite.addAnimation("fire", 0, false);
+		anim.AddFrame(0);
+		anim.AddFrame(1);
+		sprite.SetAnimation("fire");
 	}
 	this.set_u32("fire time", 0);
 }

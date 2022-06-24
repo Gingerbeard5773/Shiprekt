@@ -49,16 +49,16 @@ void onInit(CBlob@ this)
 	this.set_u32("fire time", 0);
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "PointDefense.png", 16, 16);
-    if (layer !is null)
-    {
-    	layer.SetRelativeZ(2);
-    	layer.SetLighting(false);
-     	Animation@ anim = layer.addAnimation("fire", 15, false);
-        anim.AddFrame(1);
-        anim.AddFrame(0);
-        layer.SetAnimation("fire");
-    }
+	CSpriteLayer@ layer = sprite.addSpriteLayer("weapon", "PointDefense.png", 16, 16);
+	if (layer !is null)
+	{
+		layer.SetRelativeZ(2);
+		layer.SetLighting(false);
+		Animation@ anim = layer.addAnimation("fire", 15, false);
+		anim.AddFrame(1);
+		anim.AddFrame(0);
+		layer.SetAnimation("fire");
+	}
 }
 
 void onTick(CBlob@ this)
@@ -67,7 +67,7 @@ void onTick(CBlob@ this)
 	if (col <= 0) return; //not placed yet
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
+	CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 	if (laser !is null && this.get_u32("fire time") + 5.0f < getGameTime())
 		sprite.RemoveSpriteLayer("laser");
 
@@ -211,8 +211,8 @@ void Rotate(CBlob@ this, Vec2f&in aimVector)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("fire"))
-    {
+	if (cmd == this.getCommandID("fire"))
+	{
 		CBlob@ hitBlob = getBlobByNetworkID(params.read_netid());
 		Vec2f aimVector = params.read_Vec2f();
 

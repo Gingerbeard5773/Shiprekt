@@ -10,7 +10,7 @@ u8[] boardTeams = {0};
 void onTick(CRules@ this)
 {
 	if (getGameTime() % 30 != 0) return;
-		
+	
 	boardBooty.clear();
 	CBlob@[] cores;
 	getBlobsByTag("mothership", @cores);
@@ -39,12 +39,12 @@ void onRender(CRules@ this)
 {
 	if (g_videorecording || !isClient())
 		return;
-		
+	
 	Vec2f mousePos = getControls().getMouseScreenPos();
 	Vec2f panelCenter = Vec2f(getScreenWidth() - panelWidth/2, 75);
 	if ((mousePos - panelCenter).Length() < panelWidth/2)
 		return;
-		
+	
 	//Draw
 	Vec2f panelStart = Vec2f(getScreenWidth() - panelWidth - 5, 15);
 	GUI::SetFont("menu");
@@ -63,7 +63,7 @@ void onRender(CRules@ this)
 	{
 		GUI::DrawText(teamColors[boardTeams[i]]+" "+Trans::Team, panelStart + Vec2f(0, (i+1)*lineHeight), getTeamColor(boardTeams[i]));
 	}
-		
+	
 	//booty column
 	const u8 bootyLength = boardBooty.length;
 	for (u8 i = 0; i < bootyLength; i++)

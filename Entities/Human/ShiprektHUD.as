@@ -17,10 +17,9 @@ void onInit(CSprite@ this)
 
 void onTick(CSprite@ this)
 {
-	if (g_videorecording)
-		return;
+	if (g_videorecording) return;
 
-    CBlob@ blob = this.getBlob();
+	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
 	CPlayer@ player = blob.getPlayer();  
 	if (player is null) return;
@@ -85,13 +84,13 @@ void onRender(CSprite@ this)
 	if (g_videorecording)
 		return;
 
-    CBlob@ blob = this.getBlob();
+	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
 	CPlayer@ player = blob.getPlayer();  
 	if (player is null) return;
 	
 	CRules@ rules = getRules();
-	Vec2f tl = getActorHUDStartPosition(blob, slotsSize);								
+	Vec2f tl = getActorHUDStartPosition(blob, slotsSize);
 	const u8 teamNum = player.getTeamNum();
 	const string name = player.getUsername();
 	const string captainName = getCaptainName(teamNum);
@@ -124,7 +123,7 @@ void onRender(CSprite@ this)
 	if (blob.get_bool("reclaimPropertyWarn"))
 	{
 		GUI::DrawText(Trans::Reclaiming, Vec2f(screenWidth/2 - 340, screenHeight/2 + 310 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
-	}	
+	}
 	
 	//warm-up/freebuild
 	if (getPlayersCount() == 1)
@@ -216,7 +215,7 @@ void DrawShipStatus(CBlob@ this, const string&in name, Vec2f&in tl, CControls@ c
 		const u16 speed = ship.vel.Length() * 30;
 		GUI::DrawText(Trans::Speed+" : " + speed + " kilorekts/h", Vec2f(24, getScreenHeight() - 24), tipsColor);
 	}
-	else	
+	else
 		GUI::DrawIconByName("$SEA$", tl + Vec2f(67, -12));
 		
 	//GUI buttons text/function
@@ -231,7 +230,7 @@ void DrawCoreStatus(CBlob@ core, Vec2f&in tl, CControls@ controls)
 {
 	if (core is null) return;
 	
-    GUI::DrawIcon("InteractionIconsBig.png", 30, Vec2f(32,32), tl + Vec2f(-12, -12), 1.0f, core.getTeamNum());
+	GUI::DrawIcon("InteractionIconsBig.png", 30, Vec2f(32,32), tl + Vec2f(-12, -12), 1.0f, core.getTeamNum());
 
 	const u8 health = core.hasTag("critical") ? 0 : Maths::Min(100, Maths::Round(core.getHealth()/core.getInitialHealth() * 100));
 	
@@ -252,8 +251,8 @@ void DrawCoreStatus(CBlob@ core, Vec2f&in tl, CControls@ controls)
 
 void DrawStationStatus(const u8&in teamnum, Vec2f&in tl, CControls@ controls)
 {
-    GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, teamnum);
-		
+	GUI::DrawIcon("Station.png", 0, Vec2f(16,16), tl + Vec2f(210, 4), 1.0f, teamnum);
+	
 	CBlob@[] stations;
 	getBlobsByTag("station", @stations);
 	

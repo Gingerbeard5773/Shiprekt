@@ -22,24 +22,24 @@ void onTick(CBlob@ this)
 	if (zoom == 2.0f) //max zoom in
 	{
 		if (zoomOut)
-  			zoom = 1.0f;
+			zoom = 1.0f;
 		else if (camera.targetDistance < zoom)
-			camera.targetDistance += ZOOM_SPEED;		
+			camera.targetDistance += ZOOM_SPEED;
 	}
 	else if (zoom == 1.0f)	
 	{
 		if (zoomOut)
-  			zoom = 0.5f;
-  		else if (zoomIn)
-  			zoom = 2.0f;
+			zoom = 0.5f;
+		else if (zoomIn)
+			zoom = 2.0f;
 		
-  		if (camera.targetDistance < zoom) camera.targetDistance += ZOOM_SPEED;	
+		if (camera.targetDistance < zoom) camera.targetDistance += ZOOM_SPEED;	
 		if (camera.targetDistance > zoom) camera.targetDistance -= ZOOM_SPEED;
 	}
 	else if (zoom == 0.5f) //max out zoom
 	{
 		if (zoomIn)
-  			zoom = 1.0f;
+			zoom = 1.0f;
 		else if (camera.targetDistance > zoom)	
 			camera.targetDistance -= ZOOM_SPEED;
 	}
@@ -62,10 +62,10 @@ void onTick(CBlob@ this)
 			//find rotation
 			const f32 camAngle = camera.getRotation();
 			f32 nearest_angle = refBlob.getAngleDegrees();
-					
+			
 			while (nearest_angle > camAngle + 45) nearest_angle -= 90.0f;
 			while (nearest_angle < camAngle - 45) nearest_angle += 90.0f;
-
+			
 			angle = nearest_angle;
 		}
 	}

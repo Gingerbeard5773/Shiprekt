@@ -79,7 +79,7 @@ void onTick(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
+	CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 	
 	// stop reclaim effects
 	if (this.isKeyJustReleased(key_action2) || (!this.isKeyPressed(key_action2) && laser !is null ? laser.isVisible() : false))
@@ -96,14 +96,14 @@ void Move(CBlob@ this)
 	const bool blobInitialized = this.getTickSinceCreated() > 15; //solves some strange problems
 	const bool myPlayer = this.isMyPlayer();
 	const bool isBot = isServer() && this.getPlayer() !is null && this.getPlayer().isBot();
-	const Vec2f pos = this.getPosition();	
+	const Vec2f pos = this.getPosition();
 	Vec2f aimpos = this.getAimPos();
 	Vec2f forward = aimpos - pos;
 	CShape@ shape = this.getShape();
 	CSprite@ sprite = this.getSprite();
 	
 	ShipDictionary@ ShipSet = getShipSet(rules);
-		
+	
 	CBlob@ shipBlob = null;
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(pos, 1.0f, @blobsInRadius))
@@ -203,7 +203,7 @@ void Move(CBlob@ this)
 			}
 		}
 		else
-		{		
+		{
 			// punch
 			if (isClient() && punch && !Human::isHoldingBlocks(this) && canPunch(this))
 			{
@@ -240,7 +240,7 @@ void Move(CBlob@ this)
 			{
 				Construct(this);
 			}
-		}		
+		}
 
 		//canmove check
 		if (this.get_bool("onGround") || !rules.get_bool("whirlpool"))
@@ -272,14 +272,14 @@ void Move(CBlob@ this)
 		while(angle > 360) angle -= 360;
 		while(angle < 0)   angle += 360;
 
-		shape.SetAngleDegrees(angle);	
+		shape.SetAngleDegrees(angle);
 
 		// artificial stay on ship
 		if (myPlayer || isBot)
 		{
 			if (shipBlob !is null)
 			{
-				this.set_u16("stay ID", shipBlob.getNetworkID());	
+				this.set_u16("stay ID", shipBlob.getNetworkID());
 				this.set_s8("stay count", 3);
 			}
 			else
@@ -287,7 +287,7 @@ void Move(CBlob@ this)
 				CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("stay ID"));
 				if (shipBlob !is null)
 				{
-					s8 count = this.get_s8("stay count");		
+					s8 count = this.get_s8("stay count");
 					count--;
 					if (count <= 0)
 					{
@@ -298,7 +298,7 @@ void Move(CBlob@ this)
 						if (ship !is null && ship.vel.Length() > 1.0f)
 							this.setPosition(shipBlob.getPosition());
 					}
-					this.set_s8("stay count", count);		
+					this.set_s8("stay count", count);
 				}
 			}
 		}
@@ -318,7 +318,7 @@ void PlayerControls(CBlob@ this)
 
 	if (this.isAttached())
 	{
-	    // get out of seat
+		// get out of seat
 		if (this.isKeyJustPressed(key_use))
 		{
 			this.SendCommand(this.getCommandID("get out"));
@@ -326,29 +326,29 @@ void PlayerControls(CBlob@ this)
 
 		// aim cursor
 		hud.SetCursorImage("AimCursor.png", Vec2f(32,32));
-		hud.SetCursorOffset(Vec2f(-34, -34));		
+		hud.SetCursorOffset(Vec2f(-34, -34));
 	}
 	else
 	{
 		// use menu
-	    if (this.isKeyJustPressed(key_use))
-	    {
-	        useClickTime = getGameTime();
-	    }
-	    if (this.isKeyPressed(key_use))
-	    {
-	        this.ClearMenus();
+		if (this.isKeyJustPressed(key_use))
+		{
+		useClickTime = getGameTime();
+		}
+		if (this.isKeyPressed(key_use))
+		{
+			this.ClearMenus();
 			this.ClearButtons();
-	        this.ShowInteractButtons();
-	    }
-	    else if (this.isKeyJustReleased(key_use))
-	    {
-	    	const bool tapped = (getGameTime() - useClickTime) < 10; 
+			this.ShowInteractButtons();
+		}
+		else if (this.isKeyJustReleased(key_use))
+		{
+			const bool tapped = (getGameTime() - useClickTime) < 10; 
 			this.ClickClosestInteractButton(tapped ? this.getPosition() : this.getAimPos(), this.getRadius()*2);
-	        this.ClearButtons();
-	    }
+			this.ClearButtons();
+		}
 
-	    // default cursor
+		// default cursor
 		if (hud.hasMenus())
 			hud.SetDefaultCursor();
 		else
@@ -362,14 +362,14 @@ void PlayerControls(CBlob@ this)
 	if (hud.hasButtons() && this.isKeyPressed(key_action1) && !this.ClickClosestInteractButton(this.getAimPos(), 2.0f)) {}
 
 	// click grid menus
-    if (hud.hasButtons())
-    {
-        if (this.isKeyJustPressed(key_action1))
-        {
-		    CGridMenu@ gmenu;
-		    CGridButton@ gbutton;
-		    this.ClickGridMenu(0, gmenu, gbutton); 
-	    }
+	if (hud.hasButtons())
+	{
+		if (this.isKeyJustPressed(key_action1))
+		{
+			CGridMenu@ gmenu;
+			CGridButton@ gbutton;
+			this.ClickGridMenu(0, gmenu, gbutton); 
+		}
 	}
 	
 	//build menu
@@ -568,12 +568,12 @@ CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, const string&in block, const
 	params.write_string(block);
 	params.write_u16(cost);
 	params.write_bool(false);
-			
+	
 	CGridButton@ button = menu.AddButton(icon, bname + " $" + cost, core.getCommandID("buyBlock"), params);
 
 	const bool selected = this.get_string("last buy") == block;
 	if (selected) button.SetSelected(2);
-			
+	
 	button.SetHoverText(isWeapon ? Trans::WarmupWarning+".\n" :
 						desc + "\n"+ Trans::Weight+": " + weight * 100 + "rkt\n" + (selected ? "\n"+Trans::BuyAgain+"\n" : ""));
 	button.SetEnabled(!isWeapon);
@@ -582,7 +582,7 @@ CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, const string&in block, const
 
 // Open the tools menu
 void BuildToolsMenu(CBlob@ this, const string&in description, const Vec2f&in offset)
-{	
+{
 	CGridMenu@ menu = CreateGridMenu(this.getScreenPos() + offset, this, TOOLS_MENU_SIZE, description);
 	if (menu is null) return;
 	
@@ -606,10 +606,10 @@ CGridButton@ AddTool(CBlob@ this, CGridMenu@ menu, const string&in icon, const s
 	params.write_string(currentTool);
 	
 	CGridButton@ button = menu.AddButton(icon, toolName, this.getCommandID("swap tool"), params);
-			
+	
 	if (this.get_string("current tool") == currentTool)
 		button.SetSelected(2);
-			
+	
 	button.SetHoverText(desc);
 	return button;
 }
@@ -621,7 +621,7 @@ void Punch(CBlob@ this)
 	const Vec2f pos = this.getPosition();
 	Vec2f aimVector = this.getAimPos() - pos;
 	
-    HitInfo@[] hitInfos;
+	HitInfo@[] hitInfos;
 	if (map.getHitInfosFromArc(pos, -aimVector.Angle(), 120.0f, 10.0f, this, @hitInfos))
 	{
 		const u8 hitLength = hitInfos.length;
@@ -675,7 +675,7 @@ void Punch(CBlob@ this)
 
 	// miss
 	directionalSoundPlay("throw", pos);
-	this.set_u32("punch time", getGameTime());	
+	this.set_u32("punch time", getGameTime());
 }
 
 // Send a command to shoot the pistol
@@ -810,9 +810,9 @@ void Construct(CBlob@ this)
 			if (laser !is null)
 			{
 				laser.SetVisible(true);
-				const f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);						
-				laser.ResetTransform();						
-				laser.ScaleBy(Vec2f(laserLength, 1.0f));							
+				const f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);
+				laser.ResetTransform();
+				laser.ScaleBy(Vec2f(laserLength, 1.0f));
 				laser.TranslateBy(Vec2f(laserLength * 16.0f, + 0.5f));
 				laser.RotateBy(offsetAngle, Vec2f());
 			}
@@ -894,18 +894,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		
 		if (isServer())
 		{
-            CBlob@ bullet = server_CreateBlob("bullet", this.getTeamNum(), pos);
-            if (bullet !is null)
-            {
-            	if (this.getPlayer() !is null)
+			CBlob@ bullet = server_CreateBlob("bullet", this.getTeamNum(), pos);
+			if (bullet !is null)
+			{
+				if (this.getPlayer() !is null)
 				{
-                	bullet.SetDamageOwnerPlayer(this.getPlayer());
-                }
-                bullet.setVelocity(velocity);
+					bullet.SetDamageOwnerPlayer(this.getPlayer());
+				}
+				bullet.setVelocity(velocity);
 				bullet.setAngleDegrees(-velocity.Angle());
-                bullet.server_SetTimeToDie(lifetime); 
-            }
-    	}
+				bullet.server_SetTimeToDie(lifetime); 
+			}
+		}
 		
 		if (isClient())
 		{
@@ -959,7 +959,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				int[] reclaimingAnimFrames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 				reclaimingAnim.AddFrames(reclaimingAnimFrames);
 				
-				laser.SetAnimation("constructing");				
+				laser.SetAnimation("constructing");
 				laser.setRenderStyle(RenderStyle::light);
 				laser.SetRelativeZ(-1);
 			}
@@ -992,13 +992,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			
 		const u8 teamNum = this.getTeamNum();
 		CPlayer@ player = this.getPlayer();
-		const string cName = getCaptainName(teamNum);		
+		const string cName = getCaptainName(teamNum);
 		CPlayer@ captain = getPlayerByUsername(cName);
 		
 		if (captain is null || player is null) return;
 		
 		const u16 transfer = rules.get_u16("booty_transfer");
-		const u16 fee = Maths::Round(transfer * rules.get_f32("booty_transfer_fee"));		
+		const u16 fee = Maths::Round(transfer * rules.get_f32("booty_transfer_fee"));
 		const string pName = player.getUsername();
 		const u16 playerBooty = server_getPlayerBooty(pName);
 		if (playerBooty < transfer + fee) return;
@@ -1038,7 +1038,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					const u16 shareBooty = Maths::Floor(transfer/crewLength);
 					for (u8 i = 0; i < crewLength; i++)
 					{
-						CPlayer@ crewPlayer = crew[i].getPlayer();						
+						CPlayer@ crewPlayer = crew[i].getPlayer();
 						server_addPlayerBooty(crewPlayer.getUsername(), shareBooty);
 					}
 				}
@@ -1121,7 +1121,7 @@ void onDie(CBlob@ this)
 	//return held blocks
 	CRules@ rules = getRules();
 	CBlob@[]@ blocks;
-	if (this.get("blocks", @blocks) && blocks.size() > 0)                 
+	if (this.get("blocks", @blocks) && blocks.size() > 0)
 	{
 		if (isServer())
 		{

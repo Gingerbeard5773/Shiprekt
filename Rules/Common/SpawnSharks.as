@@ -24,20 +24,19 @@ void onTick(CRules@ this)
 
 void SpawnShark(CRules@ this, Vec2f&in pos)
 {
-    if (getSharkCountInArea(this, pos) < MAX_SHARKS_AREA)
-    {
-        // randomize pos in radius
+	if (getSharkCountInArea(this, pos) < MAX_SHARKS_AREA)
+	{
+		// randomize pos in radius
+		Vec2f radius = Vec2f(SHARK_SPAWN_RADIUS, 0);
+		radius.RotateBy(XORRandom(360));
 
-        Vec2f radius = Vec2f(SHARK_SPAWN_RADIUS, 0);
-        radius.RotateBy(XORRandom(360));
-        
 		//only spawn if position is in water and visible to human
-        const Vec2f spawnPos = pos + radius;
-        if (isInWater(spawnPos) && !isTouchingShoal(spawnPos) && !getMap().rayCastSolid(spawnPos, pos))
-        {
-            CBlob@ shark = server_CreateBlob("shark", -1, spawnPos);
-        }
-    }
+		const Vec2f spawnPos = pos + radius;
+		if (isInWater(spawnPos) && !isTouchingShoal(spawnPos) && !getMap().rayCastSolid(spawnPos, pos))
+		{
+			CBlob@ shark = server_CreateBlob("shark", -1, spawnPos);
+		}
+	}
 }
 
 const u8 getSharkCountInArea(CRules@ this, const Vec2f&in pos, const f32&in radius = SHARK_SPAWN_RADIUS+5.0f)

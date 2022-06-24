@@ -5,7 +5,7 @@ shared bool isTouchingLand(const Vec2f&in pos)
 {
 	CMap@ map = getMap();
 	const u16 tileType = map.getTile(pos).type;
-	
+
 	return ((tileType >= CMap::sand_inland && tileType <= CMap::grass_sand_border_diagonal_L1)
 			||	((tileType >= CMap::sand_shoal_border_convex_RU1 && tileType <= CMap::sand_shoal_border_diagonal_L1)&&(tileType)%2 == 0));
 }

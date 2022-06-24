@@ -57,20 +57,20 @@ void onInit(CBlob@ this)
 	}
 
 	CSprite@ sprite = this.getSprite();
-    {
-        sprite.SetRelativeZ(2);
-        Animation@ anim = sprite.addAnimation("fire left", Maths::Round(MIN_FIRE_PAUSE), false);
-        anim.AddFrame(1);
-        anim.AddFrame(0);
+	{
+		sprite.SetRelativeZ(2);
+		Animation@ anim = sprite.addAnimation("fire left", Maths::Round(MIN_FIRE_PAUSE), false);
+		anim.AddFrame(1);
+		anim.AddFrame(0);
 
 		Animation@ anim2 = sprite.addAnimation("fire right", Maths::Round(MIN_FIRE_PAUSE), false);
-        anim2.AddFrame(2);
-        anim2.AddFrame(0);
+		anim2.AddFrame(2);
+		anim2.AddFrame(0);
 
 		Animation@ anim3 = sprite.addAnimation("default", 1, false);
 		anim3.AddFrame(0);
-        sprite.SetAnimation("default");
-    }
+		sprite.SetAnimation("default");
+	}
 
 	this.set_u32("fire time", 0);
 }
@@ -88,7 +88,7 @@ void onTick(CBlob@ this)
 	//print("Fire pause: " + currentFirePause);
 
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
+	CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 
 	//kill laser after a certain time
 	if (laser !is null && this.get_u32("fire time") + 3.0f < gameTime)
@@ -122,8 +122,8 @@ const bool canIncreaseFirePause(CBlob@ this)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("fire"))
-    {
+	if (cmd == this.getCommandID("fire"))
+	{
 		if (!canShoot(this) || this.get_bool("docked"))
 			return;
 
@@ -335,7 +335,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				else if (!v_fastrender) AngledDirtParticle(endPos, this.getAngleDegrees()-90);
 			}
 		}
-    }
+	}
 }
 
 const f32 getDamage(CBlob@ hitBlob)

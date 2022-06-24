@@ -14,7 +14,7 @@ void onInit(CBlob@ this)
 	
 	ShapeConsts@ consts = this.getShape().getConsts();
 	consts.net_threshold_multiplier = -1.0f;
-    consts.mapCollisions = false; //ships.as gives own tile collision
+	consts.mapCollisions = false; //ships.as gives own tile collision
 	
 	this.SetMapEdgeFlags(u8(CBlob::map_collide_none | CBlob::map_collide_nodeath));
 	
@@ -374,13 +374,13 @@ bool onReceiveCreateData(CBlob@ this, CBitStream@ stream)
 	if (!stream.saferead_u8(type))
 	{
 		warn("Block::onReceiveCreateData - missing type");
-		return false;	
+		return false;
 	}
 
 	if (!stream.saferead_netid(ownerID))
 	{
 		warn("Block::onReceiveCreateData - missing ownerID");
-		return false;	
+		return false;
 	}
 
 	this.getSprite().SetFrame(type);

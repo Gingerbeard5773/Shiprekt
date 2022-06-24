@@ -4,19 +4,19 @@ Random spark;
 void sparks(const Vec2f&in pos, const u8&in amount, const f32&in spread = 1.0f, const u16&in pTime = 10)
 {
 	for (u8 i = 0; i < amount; i++)
-    {
-        Vec2f vel(spark.NextFloat() * spread, 0); //spread
-        vel.RotateBy(spark.NextFloat() * 360.0f);
+	{
+		Vec2f vel(spark.NextFloat() * spread, 0); //spread
+		vel.RotateBy(spark.NextFloat() * 360.0f);
 
-        CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + spark.NextRanged(128), spark.NextRanged(128)), true);
-        if (p is null) return; //bail if we stop getting particles
+		CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + spark.NextRanged(128), spark.NextRanged(128)), true);
+		if (p is null) return; //bail if we stop getting particles
 
-        p.timeout = pTime + spark.NextRanged(20);
-        p.scale = 0.5f + spark.NextFloat();
-        p.damping = 0.95f;
+		p.timeout = pTime + spark.NextRanged(20);
+		p.scale = 0.5f + spark.NextFloat();
+		p.damping = 0.95f;
 		p.collides = false;
 		p.Z = 650.0f;
-    }
+	}
 }
 
 Random shotrandom(0x15125);

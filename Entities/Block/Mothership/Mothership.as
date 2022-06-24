@@ -45,8 +45,8 @@ void onInit(CBlob@ this)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("buyBlock"))
-    {
+	if (cmd == this.getCommandID("buyBlock"))
+	{
 		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		const string block = params.read_string();
 		const u16 cost = params.read_u16();
@@ -73,7 +73,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		
 		BuyBlock(this, caller, block, cost);
 	}
-    else if (cmd == this.getCommandID("returnBlocks"))
+	else if (cmd == this.getCommandID("returnBlocks"))
 	{
 		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		if (caller !is null)

@@ -14,7 +14,7 @@ shared void HarpoonForces(CBlob@ this, CBlob@ hitBlob, Ship@ ship, Vec2f&out mov
 	// calculate "proper" force
 
 	Vec2f fromCenter = pos - ship.pos;
-	const f32 fromCenterLen = fromCenter.Normalize();			
+	const f32 fromCenterLen = fromCenter.Normalize();
 	const f32 directionMag = Maths::Abs(fromCenter * moveNorm);
 	const f32 dist = 35.0f;
 	const f32 harpoonLength = (hitBlob.getPosition() - pos).getLength();

@@ -8,7 +8,7 @@ const u32 MAX_PENALTY_TIME = 90 * 30 * 60;//time where the area of spawning is r
 
 void onTick(CRules@ this)
 {
-	if (getGameTime() % FREQUENCY > 0 || getRules().get_bool("whirlpool")) return;	
+	if (getGameTime() % FREQUENCY > 0 || getRules().get_bool("whirlpool")) return;
 	
 	CMap@ map = getMap();
 	const f32 mWidth = map.tilemapwidth * map.tilesize;
@@ -56,12 +56,12 @@ void onTick(CRules@ this)
 
 void createBooty(const Vec2f&in pos, const u16&in amount)
 {
-    CBlob@ booty = server_CreateBlobNoInit("booty");
-    if (booty !is null)
+	CBlob@ booty = server_CreateBlobNoInit("booty");
+	if (booty !is null)
 	{
 		booty.Tag("booty");
-	    booty.set_u16("amount", amount);
-	    booty.set_u16("prevAmount", amount);
+		booty.set_u16("amount", amount);
+		booty.set_u16("prevAmount", amount);
 		booty.server_setTeamNum(-1);
 		booty.setPosition(pos);
 		booty.Init();

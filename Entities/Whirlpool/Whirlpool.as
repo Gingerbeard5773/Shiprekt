@@ -18,7 +18,7 @@ void onInit(CBlob@ this)
 	sprite.SetEmitSoundPaused(false);
 	sprite.SetEmitSoundVolume(3.0f);
 	sprite.SetZ(-20.0f);
-		
+	
 	if (!CustomEmitEffectExists("whirlpoolEmit"))
 		SetupCustomEmitEffect("whirlpoolEmit", "Whirlpool.as", "updateWhirlpoolParticle", 10, 0, 120);
 }
@@ -49,7 +49,7 @@ void onTick(CBlob@ this)
 		
 		h.setVelocity(-(attractDir + perpDir) * Maths::Min(5.0f, force) / 2.0f);
 	}
-		
+	
 	//suck in ships
 	
 	ShipDictionary@ ShipSet = getShipSet(rules);
@@ -71,7 +71,7 @@ void onTick(CBlob@ this)
 			distanceFactor = 2.0f;
 		else 
 			distanceFactor = 1.0f;
-								
+		
 		attractDir.Normalize();
 		Vec2f perpDir = attractDir;
 		perpDir.RotateBy(forceAngle);
@@ -97,7 +97,7 @@ void onTick(CBlob@ this)
 		}
 		
 		if (isServer())
-			damageBlobs(this);		
+			damageBlobs(this);
 	}
 
 }
@@ -120,7 +120,7 @@ void updateWhirlpoolParticle(CParticle@ p)
 	//kill near center particles
 	if ((pos - p.position).Length() < 30.0f)
 		p.frame = 10;
-		
+	
 	//add actual particles emit
 	if (p.frame < 7)
 	{

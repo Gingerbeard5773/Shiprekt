@@ -8,12 +8,12 @@ void onInit(CBlob@ this)
 	this.set_u8("capture time", 25);
 	
 	CSprite@ sprite = this.getSprite();
-    CSpriteLayer@ layer = sprite.addSpriteLayer("station", "Station.png", 16, 16);
-    if (layer !is null)
-    {
-    	layer.SetRelativeZ(1);
-        layer.SetFrame(0);
-    }
+	CSpriteLayer@ layer = sprite.addSpriteLayer("station", "Station.png", 16, 16);
+	if (layer !is null)
+	{
+		layer.SetRelativeZ(1);
+		layer.SetFrame(0);
+	}
 }
 
 void onChangeTeam(CBlob@ this, const int oldTeam)

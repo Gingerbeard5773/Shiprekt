@@ -14,9 +14,9 @@ namespace Human
 {
 	shared bool isHoldingBlocks(CBlob@ this)
 	{
-	   	CBlob@[]@ blob_blocks;
-	    this.get("blocks", @blob_blocks);
-	    return blob_blocks.length > 0;
+		CBlob@[]@ blob_blocks;
+		this.get("blocks", @blob_blocks);
+		return blob_blocks.length > 0;
 	}
 	
 	shared bool wasHoldingBlocks(CBlob@ this)
@@ -27,7 +27,7 @@ namespace Human
 	shared void clearHeldBlocks(CBlob@ this)
 	{
 		CBlob@[]@ blocks;
-		if (this.get("blocks", @blocks))                 
+		if (this.get("blocks", @blocks))
 		{
 			const u8 blocksLength = blocks.length;
 			for (u8 i = 0; i < blocksLength; ++i)

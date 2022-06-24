@@ -16,8 +16,8 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 0.25f);
 	
-    this.addCommandID("chainReaction");
-    this.addCommandID("activate");
+	this.addCommandID("chainReaction");
+	this.addCommandID("activate");
 	this.set_u32("detonationTime", 0);
 	this.server_SetHealth(2.0f);
 
@@ -38,7 +38,7 @@ void onInit(CBlob@ this)
 
 void Repulse(CBlob@ this)
 {
-    const Vec2f pos = this.getPosition();
+	const Vec2f pos = this.getPosition();
 	if (isClient())
 	{
 		directionalSoundPlay("Repulse2.ogg", pos, 2.5f);
@@ -118,7 +118,7 @@ void SeperateShip(CBlob@ this)
 
 void Activate(CBlob@ this, const u32&in time)
 {
-    this.Tag("activated");
+	this.Tag("activated");
 	this.set_u32("detonationTime", time);
 	if (isClient())
 	{

@@ -4,8 +4,8 @@
 
 void onTick(CRules@ this)
 {
-    if (this.get_u8("endCount") != 1) //do nothing if the match is not over
-        return;
+	if (this.get_u8("endCount") != 1) //do nothing if the match is not over
+		return;
 		
 	//remove these comments to activate playercount dependent map loading
 	/*const string nextMap = getRandomMap(this);
@@ -31,10 +31,10 @@ const string getRandomMap(CRules@ this)
 	{
 		maps.push_back("CenterIsles.png");
 		maps.push_back("CenterIsles4.png");
-		maps.push_back("CenterIsles5.png"); 	    
-		maps.push_back("Clover.png");           
-		maps.push_back("Tribute.png");  
-		maps.push_back("Tow.png"); 
+		maps.push_back("CenterIsles5.png");
+		maps.push_back("Clover.png");
+		maps.push_back("Tribute.png");
+		maps.push_back("Tow.png");
 		maps.push_back("Hallway.png");
 		maps.push_back("Lagoon.png");
 		maps.push_back("Lagoon2.png");

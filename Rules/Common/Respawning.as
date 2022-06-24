@@ -23,25 +23,25 @@ void onInit(CRules@ this)
 {
 	Respawn[] respawns;
 	this.set("respawns", respawns);
-    onRestart(this);
+	onRestart(this);
 }
 
 void onReload(CRules@ this)
 {
-    this.clear("respawns");
+	this.clear("respawns");
 	const u32 gameTime = getGameTime();
 	const u8 specNum = this.getSpectatorTeamNum();
 	const u8 plyCount = getPlayerCount();
-    for (u8 i = 0; i < plyCount; i++)
-    {
-        CPlayer@ player = getPlayer(i);
-        if (player.getBlob() is null && player.getTeamNum() != specNum)
-        {
-            Respawn r(player.getUsername(), gameTime);
-            this.push("respawns", r);
-            syncRespawnTime(this, player, gameTime);
-        }
-    }
+	for (u8 i = 0; i < plyCount; i++)
+	{
+		CPlayer@ player = getPlayer(i);
+		if (player.getBlob() is null && player.getTeamNum() != specNum)
+		{
+			Respawn r(player.getUsername(), gameTime);
+			this.push("respawns", r);
+			syncRespawnTime(this, player, gameTime);
+		}
+	}
 }
 
 void onRestart(CRules@ this)
@@ -76,7 +76,7 @@ void assignTeams(CRules@ this, CPlayer@[] players)
 	//equally distribute players
 	
 	CBlob@[] cores;
-    getBlobsByTag(SPAWN_TAG, cores); //get available teams for the map
+	getBlobsByTag(SPAWN_TAG, cores); //get available teams for the map
 	const u8 coresLength = cores.length;
 	u8 currentTeam = XORRandom(coresLength);
 	
@@ -142,10 +142,10 @@ void onPlayerRequestSpawn(CRules@ this, CPlayer@ player)
 	if (!isRespawnAdded(this, player.getUsername()) && player.getTeamNum() != this.getSpectatorTeamNum())
 	{
 		const u32 gametime = getGameTime();
-    	Respawn r(player.getUsername(), standardRespawnTime + gametime);
-    	this.push("respawns", r);
-    	syncRespawnTime(this, player, standardRespawnTime + gametime);
-    }
+		Respawn r(player.getUsername(), standardRespawnTime + gametime);
+		this.push("respawns", r);
+		syncRespawnTime(this, player, standardRespawnTime + gametime);
+	}
 }
 
 void onTick(CRules@ this)
@@ -172,11 +172,11 @@ void onTick(CRules@ this)
 
 CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 {
-    if (player is null)
+	if (player is null)
 		return null;
 	
 	// remove previous players blob
-	CBlob@ blob = player.getBlob();		   
+	CBlob@ blob = player.getBlob();
 	if (blob !is null)
 	{
 		blob.server_SetPlayer(null);
@@ -237,20 +237,20 @@ Vec2f getSpawnPosition(const u8&in team)
 {
 	CMap@ map = getMap();
 	
-    Vec2f[] spawns;			 
-    if (map.getMarkers("spawn", spawns))
+	Vec2f[] spawns;
+	if (map.getMarkers("spawn", spawns))
 	{
-    	if (team >= 0 && team < spawns.length)
-    		return spawns[team];
-    }
-    return map.getMapDimensions() / 2;
+		if (team >= 0 && team < spawns.length)
+			return spawns[team];
+	}
+	return map.getMapDimensions() / 2;
 }
 
 void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 {
-    CBlob@ blob = player.getBlob();
+	CBlob@ blob = player.getBlob();
 	if (blob !is null)
-        blob.server_Die();
+		blob.server_Die();
 	
 	const u8 specNum = this.getSpectatorTeamNum();
 	const u8 old_team = player.getTeamNum();
@@ -261,8 +261,8 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 		if (old_team == specNum)
 		{
 			Respawn r(player.getUsername(), specToTeamRespawnTime + getGameTime());
-	    	this.push("respawns", r);
-	    	syncRespawnTime(this, player, specToTeamRespawnTime + getGameTime());
+			this.push("respawns", r);
+			syncRespawnTime(this, player, specToTeamRespawnTime + getGameTime());
 			return;
 		}
 		onPlayerRequestSpawn(this, player);

@@ -2,7 +2,7 @@
 void onInit(CBlob@ this)
 {
 	this.Tag("ram");
-    this.Tag("solid");
+	this.Tag("solid");
 	this.Tag("ramming");
 	this.set_u8("gibType", 1);
 	

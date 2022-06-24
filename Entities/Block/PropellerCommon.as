@@ -15,17 +15,17 @@ void onInit(CBlob@ this)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("on/off") && isServer())
-    {
-		this.set_f32("power", this.get_f32("power") != 0 ? 0.0f : -this.get_f32("powerFactor"));
-    }
-    else if (cmd == this.getCommandID("off") && isServer())
-    {
-		this.set_f32("power", 0.0f);
-    }
-    else if (cmd == this.getCommandID("stall") && isClient())
+	if (cmd == this.getCommandID("on/off") && isServer())
 	{
-		directionalSoundPlay("propellerStall.ogg", this.getPosition(), 2.5f);		
+		this.set_f32("power", this.get_f32("power") != 0 ? 0.0f : -this.get_f32("powerFactor"));
+	}
+	else if (cmd == this.getCommandID("off") && isServer())
+	{
+		this.set_f32("power", 0.0f);
+	}
+	else if (cmd == this.getCommandID("stall") && isClient())
+	{
+		directionalSoundPlay("propellerStall.ogg", this.getPosition(), 2.5f);
 		this.set_u8("stallTime", params.read_u8());
 	}
 }
@@ -126,7 +126,7 @@ void onTick(CBlob@ this)
 					MakeWaterParticle(pos + moveNorm * -6 + rpos, moveNorm * (-0.8f + _r.NextFloat() * -0.3f));
 				}
 				
-				// limit sounds		
+				// limit sounds
 				if (ship.soundsPlayed == 0 && sprite.getEmitSoundPaused())
 				{
 					sprite.SetEmitSoundPaused(false);
@@ -151,7 +151,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 {
 	if (!isServer() || this.get_u8("stallTime") > 0)
 		return damage;
-		
+	
 	const f32 healthPct = this.getHealth()/this.getInitialHealth();
 	if (healthPct > 0.0f && healthPct < 0.75f)
 	{
@@ -172,7 +172,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
 	if (isClient() && customData == 9)
-		directionalSoundPlay("propellerHit.ogg", worldPoint);		
+		directionalSoundPlay("propellerHit.ogg", worldPoint);
 }
 
 Random _smokerandom(0x15125); //clientside

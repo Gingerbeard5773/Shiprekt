@@ -42,8 +42,8 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("get in seat"))
-    {
+	if (cmd == this.getCommandID("get in seat"))
+	{
 		if (isServer())
 		{
 			CBlob@ caller = getBlobByNetworkID(params.read_netid());
