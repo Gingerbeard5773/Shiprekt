@@ -149,25 +149,17 @@ void onRender(CSprite@ this)
 	//mothership alerts
 	if (teamCore !is null)
 	{
-		const bool mShipNear = blob.getDistanceTo(teamCore) < 900.0f;
+		const f32 mShipDMG = rules.get_f32("msDMG");
 		const bool mShipOnScreen = teamCore.isOnScreen();
-		const f32 mShipDMG = rules.get_f32("msDMG" + teamNum);
 		
-		if (name == captainName && !mShipOnScreen) //is Captain and abandoned mothership?
-			GUI::DrawText(Trans::Abandon, Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
-		else //mothership under attack alert
-		{
-			if (mShipNear || mShipDMG < MSHIP_DAMAGE_ALERT - 1.0f)
-				blob.set_bool("msAlert", false);
-			else if (!mShipNear && mShipDMG > MSHIP_DAMAGE_ALERT)
-				blob.set_bool("msAlert", true);
-				
-			if (blob.get_bool("msAlert"))
+		if (!mShipOnScreen)
+		{	
+			if (name == captainName) //captain has abandoned ship!
+				GUI::DrawText(Trans::Abandon, Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
+			else if (mShipDMG > MSHIP_DAMAGE_ALERT) //mothership under attack alert
 				GUI::DrawText(Trans::ShipAttack, Vec2f(screenWidth/2 - 135, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 		}
-		
-		//poor and no captain: sharks for income
-		if (mShipOnScreen && captainName.isEmpty() && pBooty < rules.get_u16("bootyRefillLimit") && mShipDMG == 0)
+		else if (captainName.isEmpty() && pBooty < rules.get_u16("bootyRefillLimit") && mShipDMG == 0) //poor and no captain: sharks for income
 			GUI::DrawText("[ "+Trans::KillSharks+" ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 	}
 	

@@ -300,17 +300,22 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	const int color = this.getShape().getVars().customData;
 	if (color <= 0) return 0.0f; // unplaced blocks are invincible
 	
-	CRules@ rules = getRules();
-	const u8 teamNum = this.getTeamNum();
-	
-	Ship@ ship = getShipSet(rules).getShip(color);
-	if (ship is null) return damage;
-
-	if (teamNum != hitterBlob.getTeamNum() && ship.isMothership)
-	{	
-		const f32 msDMG = rules.get_f32("msDMG" + teamNum);
-		if (msDMG < 8.0f)
-			rules.set_f32("msDMG" + teamNum, msDMG + (this.hasTag("mothership") ? 5.0f : 1.0f) * damage);
+	if (isClient() && damage > 0.0f)
+	{
+		CPlayer@ localPly = getLocalPlayer();
+		if (localPly is null) return damage;
+		
+		CRules@ rules = getRules();
+		Ship@ ship = getShipSet(rules).getShip(color);
+		if (ship is null) return damage;
+		
+		const u8 teamNum = this.getTeamNum();
+		if (teamNum != hitterBlob.getTeamNum() && ship.isMothership)
+		{	
+			const f32 msDMG = rules.get_f32("msDMG");
+			if (msDMG < 6.0f)
+				rules.set_f32("msDMG", msDMG + (this.hasTag("mothership") ? 4.0f : 1.0f) * damage);
+		}
 	}
 	
 	return damage;
