@@ -65,6 +65,11 @@ void onInit(CBlob@ this)
 	
 	if (isClient())
 	{
+		CSprite@ sprite = this.getSprite();
+		sprite.SetEmitSound("/ReclaimSound.ogg");
+		sprite.SetEmitSoundVolume(0.5f);
+		sprite.SetEmitSoundPaused(true);
+		
 		directionalSoundPlay("Respawn", this.getPosition(), 2.5f);
 	}
 }
@@ -234,7 +239,8 @@ void Move(CBlob@ this)
 			if (currentTool == "pistol" && canShootPistol(this)) // shoot
 			{
 				ShootPistol(this);
-				sprite.SetAnimation("shoot");
+				if (!sprite.isAnimation("shoot"))
+					sprite.SetAnimation("shoot");
 			}
 			else if (currentTool == "deconstructor" || currentTool == "reconstructor") //reclaim, repair
 			{
@@ -681,6 +687,8 @@ void Punch(CBlob@ this)
 // Send a command to shoot the pistol
 void ShootPistol(CBlob@ this)
 {
+	this.set_u32("fire time", getGameTime());
+	
 	if (!this.isMyPlayer()) return;
 
 	Vec2f pos = this.getPosition();
@@ -714,7 +722,6 @@ void ShootPistol(CBlob@ this)
 	}
 	
 	this.SendCommand(this.getCommandID("shoot"), params);
-	this.set_u32("fire time", getGameTime());
 }
 
 // Send a command to construct or deconstruct
@@ -1049,18 +1056,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	{
 		const string tool = params.read_string();
 		
-		CPlayer@ player = this.getPlayer();
-		if (player is null) return;
-		
 		if (isClient())
 		{
-			CSprite@ sprite = this.getSprite();
-			if (tool == "deconstructor" || tool == "reconstructor")
-			{
-				sprite.SetEmitSound("/ReclaimSound.ogg");
-				sprite.SetEmitSoundVolume(0.5f);
-			}
-			EndConstructEffects(this, sprite);
+			EndConstructEffects(this, this.getSprite());
 		}
 		
 		this.set_string("current tool", tool);
