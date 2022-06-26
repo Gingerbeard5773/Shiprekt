@@ -1161,7 +1161,8 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		CPlayer@ hitterPlayer = hitterBlob.getDamageOwnerPlayer();
 		const u8 teamNum = this.getTeamNum();
 		const u8 hitterTeam = hitterBlob.getTeamNum();
-		if (hitterPlayer !is null && hitterTeam != teamNum)
+		//only pistol or punches
+		if ((customData == Hitters::muscles || customData == Hitters::bomb_arrow) && hitterPlayer !is null && hitterTeam != teamNum)
 		{
 			u16 reward = 15;
 			
