@@ -339,7 +339,7 @@ void PlayerControls(CBlob@ this)
 		// use menu
 		if (this.isKeyJustPressed(key_use))
 		{
-		useClickTime = getGameTime();
+			useClickTime = getGameTime();
 		}
 		if (this.isKeyPressed(key_use))
 		{
@@ -354,14 +354,13 @@ void PlayerControls(CBlob@ this)
 			this.ClearButtons();
 		}
 
-		// default cursor
+		// cursors
 		if (hud.hasMenus())
 			hud.SetDefaultCursor();
+		else if (Human::isHoldingBlocks(this) || this.get_bool("getting block"))
+			hud.SetCursorImage("BuilderCursor.png", Vec2f(9,9));
 		else
-		{
-			hud.SetCursorImage("PointerCursor.png", Vec2f(32,32));
-			hud.SetCursorOffset(Vec2f(-36, -36));		
-		}
+			hud.SetCursorImage("PointerCursor.png", Vec2f(16,16));
 	}
 	
 	// click action1 to click buttons
