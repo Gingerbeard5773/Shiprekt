@@ -26,7 +26,6 @@ void onInit(CRules@ this)
 	
 	this.addCommandID("ship collision");
 	this.addCommandID("ship bounce");
-	
 	this.addCommandID("ships sync");
 	this.addCommandID("ships update");
 }
@@ -36,10 +35,10 @@ void onRestart(CRules@ this)
 	if (isServer())
 		print("-- Resetting Ship Objects:: Last map's total: "+this.get_s32("ships id")+" --");
 	
-	getShipSet(this).deleteAll();
 	this.clear("dirtyBlocks");
-	this.set_s32("ships id", 0);
+	getShipSet(this).deleteAll();
 	
+	this.set_s32("ships id", 0);
 	this.set_bool("dirty ships", true);
 }
 
@@ -693,7 +692,7 @@ void UpdateBlocks(const int&in shipColor, CBlob@[] blocks)
 // For collision with tiles (rock)
 void TileCollision(Ship@ ship, Vec2f&in tilePos)
 {
-	Vec2f colvec1 = ship.pos - tilePos;;
+	Vec2f colvec1 = ship.pos - tilePos;
 	colvec1.Normalize();
 	
 	ship.vel = colvec1;

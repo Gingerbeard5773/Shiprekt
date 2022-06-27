@@ -128,16 +128,16 @@ void onRender(CRules@ this)
 		//PAGE 1
 		const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
 		const string lastChangesInfo = Trans::LastChanges+":\n"
-		+ "- 6-20-2022 - By Gingerbeard\n"
-		+ "  * Reduced ammo capacity for the cannon.\n"
-		+ "  * Ram blocks do more consistent damage to weapons.\n"
-		+ "  * Weapons only refill ammunition if they aren't being fired.\n"
-		+ "  * Bombs' power stacks with nearby bombs! Boom!\n"
-		+ "  * Enemy miniships can dock on your mothership! Watch out.\n"
-		+ "  * Refill is faster for miniships, but slower for your mothership.\n"
-		+ "  * Changed some textures of damaged blocks.\n"
-		+ "  * New map: CursedSea.\n"
-		+ "  * Added support for the Spanish language.\n";
+		+ "- 6-27-2022 - By Gingerbeard\n"
+		+ "  * Disabled enemy miniship docking.\n"
+		+ "  * Weakened the cannon.\n"
+		+ "  * Added a new map: Dice.\n"
+		+ "  * Improved cursor visibility.\n"
+		+ "  * Only punches and pistols reward from killing a player.\n"
+		+ "  * Player vote kicking will now work.\n"
+		+ "  * Fixed an issue with constructors not working on moving blocks.\n"
+		+ "  * Blocks will no longer suddenly detach from your ship.\n"
+		+ "  * Fixed ships suddenly going 'limbo' mode during an attempted docking.\n";
 		
 		GUI::SetFont("menu");
 		Vec2f lastChangesSize;

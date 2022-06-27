@@ -56,7 +56,7 @@ shared class ShipDictionary
 			return Ships[Index];
 		}
 			
-		if (sv_test || isServer()) warn("ShipDictionary (get):: Ship ID ["+ID+"] does not exist! ["+getScriptStack()[0]+".as]");
+		//if (sv_test || isServer()) warn("ShipDictionary (get):: Ship ID ["+ID+"] does not exist! ["+getScriptStack()[0]+".as]");
 		return null;
 	}
 	

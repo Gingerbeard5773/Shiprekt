@@ -3,19 +3,26 @@ const u8 BUTTON_SIZE = 4;
 
 void onInit(CRules@ this)
 {
-	this.set_string("version", "1.51.3"); //version of shiprekt this is running
+	//mod version
+	this.set_string("version", "1.51.4");
 	
-	//engine's global settings
+	//dedicated server name
+	const string server_name = "[EU] Shiprekt++ ("+this.get_string("version")+")";
+	
+	if (sv_name != server_name)
+	{
+		if (isServer())
+		{
+			warn("\nServer name overwritten!\n" +
+				 "Previous : " + sv_name + "\n" +
+				 "Current  : " + server_name + "\n" +
+				 "Change your server's name (if desired) at " + getCurrentScriptName() + "\n");
+		}
+		sv_name = server_name;
+	}
+	
+	//mod support
 	sv_contact_info = "github.com/Gingerbeard5773/shiprekt"; //if red circles appear, this link will show
-	particles_gravity.y = 0.0f;
-	sv_gravity = 0;
-	sv_visiblity_scale = 2.0f;
-	
-	this.minimap = !isClient();
-	
-	Driver@ driver = getDriver();
-	driver.AddShader("hq2x", 1.0f);
-	driver.SetShader("hq2x", v_postprocess);
 	
 	print("\n      ------- INITIALIZING SHIPREKT ------- "+
 		  "\n" +
@@ -26,6 +33,11 @@ void onInit(CRules@ this)
 		  "\n" +
 		  "\n      ------------------------------------- \n", 0xff66C6FF);
 	
+	//engine settings
+	particles_gravity.y = 0.0f;
+	sv_gravity = 0;
+	sv_visiblity_scale = 2.0f;
+	
 	//gameplay settings
 	this.set_u16("starting_booty", 325);         //booty given to players on map restart
 	this.set_u16("warmup_time", 150 * 30);       //no weapons warmup time
@@ -35,7 +47,7 @@ void onInit(CRules@ this)
 	this.set_f32("booty_transfer_fee", 0.0f);    //percentage of booty lost during player-player transfer
 	this.set_u16("bootyRefillLimit", 50);        //limit of welfare booty for poor captains
 	
-	//Icons
+	//add icons
 	AddIconToken("$BOOTY$", "InteractionIconsBig.png", Vec2f(32,32), 26);
 	AddIconToken("$CORE$", "InteractionIconsBig.png", Vec2f(32,32), 29);
 	AddIconToken("$CAPTAIN$", "InteractionIconsBig.png", Vec2f(32,32), 11);
@@ -70,11 +82,19 @@ void onInit(CRules@ this)
 	
 	//spectator stuff
 	this.addCommandID("pick teams");
-    this.addCommandID("pick spectator");
+	this.addCommandID("pick spectator");
 	this.addCommandID("pick none");
 	
-    AddIconToken("$TEAMS$", "GUI/MenuItems.png", Vec2f(32,32), 1);
-    AddIconToken("$SPECTATOR$", "GUI/MenuItems.png", Vec2f(32,32), 19);
+	AddIconToken("$TEAMS$", "GUI/MenuItems.png", Vec2f(32,32), 1);
+	AddIconToken("$SPECTATOR$", "GUI/MenuItems.png", Vec2f(32,32), 19);
+	
+	//minimap only appears on browsing
+	this.minimap = !isClient();
+	
+	//add shaders
+	Driver@ driver = getDriver();
+	driver.AddShader("hq2x", 1.0f);
+	driver.SetShader("hq2x", v_postprocess);
 	
 	//sandbox notice
 	//if (getPlayerCount() == 0)
@@ -86,8 +106,8 @@ void onRestart(CRules@ this)
 	this.set_bool("whirlpool", false);
 	
 	CCamera@ camera = getCamera();
-    if (camera !is null)
-    	camera.setRotation(0.0f);
+	if (camera !is null)
+		camera.setRotation(0.0f);
 	
 	this.set_bool("freebuild", getPlayerCount() <= 1);
 }
@@ -104,47 +124,47 @@ void onPlayerLeave(CRules@ this, CPlayer@ player)
 void ShowTeamMenu(CRules@ this)
 {
 	CPlayer@ local = getLocalPlayer();
-    if (local is null) return;
+	if (local is null) return;
 
-    CGridMenu@ menu = CreateGridMenu(getDriver().getScreenCenterPos(), null, Vec2f(BUTTON_SIZE, BUTTON_SIZE), "Change team");
-    if (menu !is null)
-    {
+	CGridMenu@ menu = CreateGridMenu(getDriver().getScreenCenterPos(), null, Vec2f(BUTTON_SIZE, BUTTON_SIZE), "Change team");
+	if (menu !is null)
+	{
 		CBitStream exitParams;
 		menu.AddKeyCommand(KEY_ESCAPE, this.getCommandID("pick none"), exitParams);
 		menu.SetDefaultCommand(this.getCommandID("pick none"), exitParams);
 
-        CBitStream params;
-        params.write_netid(local.getNetworkID());
-        if (local.getTeamNum() == this.getSpectatorTeamNum())
-        {
+		CBitStream params;
+		params.write_netid(local.getNetworkID());
+		if (local.getTeamNum() == this.getSpectatorTeamNum())
+		{
 			CGridButton@ button = menu.AddButton("$TEAMS$", "Auto-pick teams", this.getCommandID("pick teams"), Vec2f(BUTTON_SIZE, BUTTON_SIZE), params);
 		}
 		else
 		{
 			CGridButton@ button = menu.AddButton("$SPECTATOR$", "Spectator", this.getCommandID("pick spectator"), Vec2f(BUTTON_SIZE, BUTTON_SIZE), params);
 		}
-    }
+	}
 }
 
 void ReadChangeTeam(CRules@ this, CBitStream@ params, const u8&in team)
 {
-    CPlayer@ player = getPlayerByNetworkId(params.read_netid());
-    if (player is getLocalPlayer())
-    {
-        player.client_ChangeTeam(team);
-        getHUD().ClearMenus();
-    }
+	CPlayer@ player = getPlayerByNetworkId(params.read_netid());
+	if (player is getLocalPlayer())
+	{
+		player.client_ChangeTeam(team);
+		getHUD().ClearMenus();
+	}
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("pick teams"))
-    {
-        ReadChangeTeam(this, params, -1);
-    }
-    else if (cmd == this.getCommandID("pick spectator"))
-    {
-        ReadChangeTeam(this, params, this.getSpectatorTeamNum());
+	if (cmd == this.getCommandID("pick teams"))
+	{
+		ReadChangeTeam(this, params, -1);
+	}
+	else if (cmd == this.getCommandID("pick spectator"))
+	{
+		ReadChangeTeam(this, params, this.getSpectatorTeamNum());
 	}
 	else if (cmd == this.getCommandID("pick none"))
 	{
