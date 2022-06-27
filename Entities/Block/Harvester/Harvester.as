@@ -37,26 +37,26 @@ void onInit(CBlob@ this)
  
 void onTick(CBlob@ this)
 {
-	if (this.getShape().getVars().customData <= 0)//not placed yet
+	if (this.getShape().getVars().customData <= 0) //not placed yet
 		return;
 	
 	if (isClient())
 	{
 		//kill laser after a certain time
-		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
-		if (laser !is null && this.get_u32("fire time") + DECONSTRUCT_RATE < getGameTime())
+		if (canShoot(this))
 		{
+			CSprite@ sprite = this.getSprite();
 			if (!sprite.getEmitSoundPaused())
 			{
 				sprite.SetEmitSoundPaused(true);
 			}
+			
 			sprite.RemoveSpriteLayer("laser");
 		}
 	}
 }
  
-bool canShoot(CBlob@ this)
+const bool canShoot(CBlob@ this)
 {
 	return (this.get_u32("fire time") + DECONSTRUCT_RATE < getGameTime());
 }
@@ -73,24 +73,22 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		CBlob@ shooter = getBlobByNetworkID(shooterID);
 		if (shooter is null) return;
 		
+		CPlayer@ player = shooter.getPlayer();
+		if (player is null) return;
+		
 		ShipDictionary@ ShipSet = getShipSet();
-		Ship@ ship = ShipSet.getShip(this.getShape().getVars().customData);
-		if (ship is null) return;
 
 		this.set_u32("fire time", getGameTime());
 			
-		//effects
 		CSprite@ sprite = this.getSprite();
 	   
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-		
 		Vec2f barrelPos = this.getPosition();
 
 		//hit stuff
 		HitInfo@[] hitInfos;
 		bool killed = false;
-		bool blocked = false;
-			
+		
 		if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
 		{
 			const u8 hitLength = hitInfos.length;
@@ -115,9 +113,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					sparks(hi.hitpos, 4);
 				}
 
-				CPlayer@ thisPlayer = shooter.getPlayer();						
-				if (thisPlayer is null) return; 
-
 				const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
 				const f32 initialHealth = b.getInitialHealth();
 				const f32 currentReclaim = b.get_f32("current reclaim");
@@ -132,8 +127,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 						f32 deconstructAmount = 0;
 						if ((shipOwnerName.isEmpty() && !bship.isMothership) //true if no owner for ship and ship is not a mothership
 							|| (b.get_string("playerOwner").isEmpty() && !bship.isMothership) //true if no owner for the block and is not on a mothership
-							|| (shipOwnerName == thisPlayer.getUsername()) //true if we own the ship
-							|| (b.get_string("playerOwner") == thisPlayer.getUsername())) //true if we own the specific block
+							|| (shipOwnerName == player.getUsername()) //true if we own the ship
+							|| (b.get_string("playerOwner") == player.getUsername())) //true if we own the specific block
 						{
 							deconstructAmount = fullConstructAmount; 
 						}
@@ -144,9 +139,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 						if ((currentReclaim - deconstructAmount) <= 0)
 						{
-							string cName = thisPlayer.getUsername();
-
-							server_addPlayerBooty(cName, (getCost(b.getName())*0.7f)*(b.getHealth()/initialHealth));
+							server_addPlayerBooty(player.getUsername(), (bCost*0.7f)*(b.getHealth()/initialHealth));
 							directionalSoundPlay("/ChaChing.ogg", barrelPos);
 
 							b.Tag("disabled");
@@ -155,22 +148,19 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 						else
 							b.set_f32("current reclaim", currentReclaim - deconstructAmount);
 					}
-				}			
-				if (killed) break;
+				}
+				break;
 			}
 		}
 		
 		if (isClient())
 		{
-			if (!blocked)
+			if (sprite.getEmitSoundPaused())
 			{
-				if (sprite.getEmitSoundPaused())
-				{
-					sprite.SetEmitSoundPaused(false);
-				}
+				sprite.SetEmitSoundPaused(false);
 			}
 
-			if (!killed)//full length 'laser'
+			if (!killed) //full length 'laser'
 			{
 				setLaser(sprite, aimVector * BULLET_RANGE);
 			}
@@ -189,10 +179,10 @@ void setLaser(CSprite@ this, Vec2f&in lengthPos)
 		int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 		anim.AddFrames(frames);
 		laser.SetVisible(true);
-		f32 laserLength = Maths::Max(0.1f, (lengthPos).getLength() / 16.0f);						
+		f32 laserLength = Maths::Max(0.1f, lengthPos.getLength() / 16.0f);						
 		laser.ResetTransform();						
 		laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-		laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));								
+		laser.TranslateBy(Vec2f(laserLength * 8.0f, 0.0f));								
 		laser.RotateBy(0.0f, Vec2f());
 		laser.setRenderStyle(RenderStyle::light);
 		laser.SetRelativeZ(1);

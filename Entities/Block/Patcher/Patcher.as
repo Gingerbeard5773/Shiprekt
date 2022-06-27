@@ -37,20 +37,20 @@ void onInit(CBlob@ this)
  
 void onTick(CBlob@ this)
 {
-	if (this.getShape().getVars().customData <= 0)//not placed yet
+	if (this.getShape().getVars().customData <= 0) //not placed yet
 		return;
 	
 	if (isClient())
 	{
 		//kill laser after a certain time
-		CSprite@ sprite = this.getSprite();
-		CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
-		if (laser !is null && this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime())
+		if (canShoot(this))
 		{
+			CSprite@ sprite = this.getSprite();
 			if (!sprite.getEmitSoundPaused())
 			{
 				sprite.SetEmitSoundPaused(true);
-			}	
+			}
+			
 			sprite.RemoveSpriteLayer("laser");
 		}
 	}
@@ -65,26 +65,22 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
     if (cmd == this.getCommandID("fire"))
     {
-		if (!canShoot(this))
-			return;
+		if (!canShoot(this)) return;
 		
 		u16 shooterID;
-		if (!params.saferead_netid(shooterID))
-			return;
+		if (!params.saferead_netid(shooterID)) return;
 			
 		CBlob@ shooter = getBlobByNetworkID(shooterID);
-		if (shooter is null)
-			return;
+		if (shooter is null) return;
+		
+		CPlayer@ player = shooter.getPlayer();
+		if (player is null) return;
 		
 		ShipDictionary@ ShipSet = getShipSet();
-		Ship@ ship = ShipSet.getShip(this.getShape().getVars().customData);
-		if (ship is null)
-			return;
 
 		this.set_u32("fire time", getGameTime());
 	   
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-		   		
 		const Vec2f barrelPos = this.getPosition();
 
 		//hit stuff		
@@ -101,7 +97,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				if (b is null || b is this) continue;
 				
 				const int color = b.getShape().getVars().customData;
-				if (color <= 0) return;
+				if (color <= 0) continue;
 				
 				if (isClient())//effects
 				{
@@ -112,16 +108,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 				if (count >= NUM_HEALS) continue;
 				
-				CPlayer@ thisPlayer = shooter.getPlayer();						
-				if (thisPlayer is null) 
-					return;		
-				
-				Ship@ otherShip = ShipSet.getShip(color);
-				const bool isMyShip = otherShip !is null && otherShip is ship;
+				const bool isMyShip = color == this.getShape().getVars().customData;
 
 				f32 reconstructAmount = 0;
 				u16 reconstructCost = 0;
-				const string cName = thisPlayer.getUsername();
+				const string cName = player.getUsername();
 				const u16 cBooty = server_getPlayerBooty(cName);
 				const f32 mBlobHealth = b.getHealth();
 				const f32 mBlobCost = getCost(b.getName());
@@ -205,10 +196,10 @@ void setLaser(CSprite@ this, Vec2f&in lengthPos)
 		int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 		anim.AddFrames(frames);
 		laser.SetVisible(true);
-		f32 laserLength = Maths::Max(0.1f, (lengthPos).getLength() / 16.0f);						
+		f32 laserLength = Maths::Max(0.1f, lengthPos.getLength() / 16.0f);						
 		laser.ResetTransform();						
 		laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-		laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));								
+		laser.TranslateBy(Vec2f(laserLength * 8.0f, 0.0f));								
 		laser.RotateBy(0.0f, Vec2f());
 		laser.setRenderStyle(RenderStyle::light);
 		laser.SetRelativeZ(1);
