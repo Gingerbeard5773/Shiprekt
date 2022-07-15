@@ -393,7 +393,7 @@ bool onReceiveCreateData(CBlob@ this, CBitStream@ stream)
 	CBlob@ owner = getBlobByNetworkID(ownerID);
 	if (owner !is null)
 	{
-	    owner.push("blocks", @this);
+	    owner.push("blocks", this.getNetworkID());
 		this.getShape().getVars().customData = -1; // don't push on ship
 	}
 

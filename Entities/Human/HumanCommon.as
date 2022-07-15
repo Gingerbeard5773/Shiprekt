@@ -14,9 +14,9 @@ namespace Human
 {
 	shared bool isHoldingBlocks(CBlob@ this)
 	{
-		CBlob@[]@ blob_blocks;
-		this.get("blocks", @blob_blocks);
-		return blob_blocks.length > 0;
+		u16[] blocks;
+		this.get("blocks", blocks);
+		return blocks.length > 0;
 	}
 	
 	shared bool wasHoldingBlocks(CBlob@ this)
@@ -26,19 +26,20 @@ namespace Human
 	
 	shared void clearHeldBlocks(CBlob@ this)
 	{
-		CBlob@[]@ blocks;
-		if (this.get("blocks", @blocks))
+		u16[] blocks;
+		if (this.get("blocks", blocks))
 		{
 			const u8 blocksLength = blocks.length;
 			for (u8 i = 0; i < blocksLength; ++i)
 			{
-				CBlob@ block = blocks[i];
+				CBlob@ block = getBlobByNetworkID(blocks[i]);
+				if (block is null) continue;
+				
 				block.Tag("disabled");
 				block.server_Die();
 			}
-
-			blocks.clear();
 		}
+		this.clear("blocks");
 	}
 }
 

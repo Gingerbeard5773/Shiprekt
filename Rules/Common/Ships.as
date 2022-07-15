@@ -629,8 +629,8 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 	{
 		CBlob@ human = humans[i];
 		
-	    CBlob@[]@ blocks;
-		if (human.get("blocks", @blocks) && blocks.size() > 0)
+	    u16[] blocks;
+		if (human.get("blocks", blocks) && blocks.size() > 0)
 		{
 			const s32 overlappingShipID = human.get_s32("shipID");
 			Ship@ ship = overlappingShipID > 0 ? ShipSet.getShip(overlappingShipID) : null;
@@ -640,7 +640,9 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 			const u8 blocksLength = blocks.length;
 			for (u8 q = 0; q < blocksLength; q++)
 			{
-				ship.carryMass += 2.5f * blocks[q].get_f32("weight");
+				CBlob@ block = getBlobByNetworkID(blocks[q]);
+				if (block is null) continue;
+				ship.carryMass += 2.5f * block.get_f32("weight");
 			}
 		}
 	}

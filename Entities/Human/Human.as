@@ -1117,8 +1117,8 @@ void onDie(CBlob@ this)
 {
 	//return held blocks
 	CRules@ rules = getRules();
-	CBlob@[]@ blocks;
-	if (this.get("blocks", @blocks) && blocks.size() > 0)
+	u16[] blocks;
+	if (this.get("blocks", blocks) && blocks.size() > 0)
 	{
 		if (isServer())
 		{
@@ -1129,7 +1129,9 @@ void onDie(CBlob@ this)
 				const u8 blocksLength = blocks.length;
 				for (u8 i = 0; i < blocksLength; ++i)
 				{
-					CBlob@ block = blocks[i];
+					CBlob@ block = getBlobByNetworkID(blocks[i]);
+					if (block is null) continue;
+					
 					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
 						returnBooty += getCost(block.getName());
 				}

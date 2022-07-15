@@ -72,8 +72,8 @@ void onTick(CRules@ this)
 				if (((blocksLength - propellers - couplings)/propellers > 3) || this.isWarmup())
 				{
 					CBlob@ pBlob = player.getBlob();
-					CBlob@[]@ blocks;
-					if (pBlob !is null && pBlob.get("blocks", @blocks) && blocks.size() == 0)
+					u16[] blocks;
+					if (pBlob !is null && pBlob.get("blocks", blocks) && blocks.size() == 0)
 						server_addPlayerBooty(ship.owner, Maths::Min(15, minBooty - captainBooty));
 				}
 			}

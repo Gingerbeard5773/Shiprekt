@@ -7,16 +7,14 @@ shared void ProduceBlock(CRules@ this, CBlob@ blob, const string&in type, const 
 
 	if (isServer())
 	{
-		CBlob@[]@ blob_blocks;
-		blob.get("blocks", @blob_blocks);
-		blob_blocks.clear();
+		blob.clear("blocks");
 
 		const u16 blobID = blob.getNetworkID();
 
 		for (u8 i = 0; i < amount; i++)
 		{
 			CBlob@ b = makeBlock(Vec2f(i, 0) * 8, 0.0f, type, blobTeam);
-			blob_blocks.push_back(b);
+			blob.push("blocks", b.getNetworkID());
 
 			//set block infos
 			b.set_Vec2f("offset", b.getPosition());
