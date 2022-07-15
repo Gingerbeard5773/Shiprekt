@@ -147,20 +147,11 @@ void Explode(CBlob@ this, const f32&in radius = BOMB_RADIUS)
 				if (hitCol <= 0) continue;
 
 				// move the ship
-
 				Ship@ ship = ShipSet.getShip(hitCol);
 				if (ship !is null && ship.mass > 0.0f)
 				{
 					Vec2f impact = (hit_blob_pos - pos) * 0.15f / ship.mass;
 					ship.vel += impact;
-				}
-
-				// detonate bomb
-					
-				if (hit_blob.hasTag("bomb"))
-				{
-					hit_blob.server_Die();
-					continue;
 				}
 			}
 		
@@ -194,9 +185,14 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
-	if (hitterBlob.hasTag("engine") && this.getHealth()/this.getInitialHealth() < 0.5f)
+	if (hitterBlob.hasTag("engine") && this.getHealth() / this.getInitialHealth() < 0.5f)
 		this.Tag("disabled");
-		
+	
+	if (customData == Hitters::bomb)
+	{
+		this.server_Die();
+	}
+	
 	return damage;
 }
 
