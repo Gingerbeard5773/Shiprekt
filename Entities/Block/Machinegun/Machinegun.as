@@ -1,6 +1,6 @@
 #include "WeaponCommon.as";
 #include "WaterEffects.as";
-#include "Booty.as";
+#include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "Hitters.as";
 #include "ParticleSparks.as";
@@ -12,29 +12,26 @@ const f32 MIN_FIRE_PAUSE = 2.85f; //min wait between shots
 const f32 MAX_FIRE_PAUSE = 8.0f; //max wait between shots
 const f32 FIRE_PAUSE_RATE = 0.08f; //higher values = higher recover
 
-// Max amount of ammunition
 const u8 MAX_AMMO = 250;
-
-// Amount of ammunition to refill when
-// connected to motherships and stations
 const u8 REFILL_AMOUNT = 30;
-
-// How often to refill when connected
-// to motherships and stations
 const u8 REFILL_SECONDS = 6;
-
-// How often to refill when connected
-// to secondary cores
 const u8 REFILL_SECONDARY_CORE_SECONDS = 1;
-
-// Amount of ammunition to refill when
-// connected to secondary cores
 const u8 REFILL_SECONDARY_CORE_AMOUNT = 2;
 
 Random _shotspreadrandom(0x11598); //clientside
 
+BootyRewards@ booty_reward;
+
 void onInit(CBlob@ this)
 {
+	if (booty_reward is null)
+	{
+		BootyRewards _booty_reward;
+		_booty_reward.addTagReward("bomb", 1);
+		_booty_reward.addTagReward("engine", 2);
+		@booty_reward = _booty_reward;
+	}
+	
 	this.Tag("weapon");
 	this.Tag("machinegun");
 	this.Tag("usesAmmo");
@@ -49,7 +46,7 @@ void onInit(CBlob@ this)
 	{
 		this.set_u16("ammo", MAX_AMMO);
 		this.set_u16("maxAmmo", MAX_AMMO);
-		this.set_f32("fire pause",MIN_FIRE_PAUSE);
+		this.set_f32("fire pause", MIN_FIRE_PAUSE);
 
 		this.Sync("fire pause", true); //-1042743405 HASH
 		this.Sync("ammo", true);
@@ -277,9 +274,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 						hitEffects(b, hi.hitpos);
 					}
 
-					CPlayer@ attacker = shooter.getPlayer();
-					if (attacker !is null && !b.hasTag("mothership") && !b.hasTag("weapon"))
-						damageBooty(attacker, shooter, b, b.hasTag("engine"), 1, "Pinball_", true);
+					if (attacker !is null)
+						rewardBooty(attacker, b, booty_reward, "Pinball_"+XORRandom(4));
 
 					if (isServer())
 					{

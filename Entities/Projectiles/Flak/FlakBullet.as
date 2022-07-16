@@ -1,5 +1,5 @@
 #include "ExplosionEffects.as";;
-#include "Booty.as";
+#include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
@@ -8,8 +8,21 @@
 const f32 EXPLODE_RADIUS = 30.0f;
 const f32 FLAK_REACH = 50.0f;
 
+BootyRewards@ booty_reward;
+
 void onInit(CBlob@ this)
 {
+	if (booty_reward is null)
+	{
+		BootyRewards _booty_reward;
+		_booty_reward.addTagReward("bomb", 4);
+		_booty_reward.addTagReward("engine", 2);
+		_booty_reward.addTagReward("mothership", 8);
+		_booty_reward.addTagReward("secondarycore", 6);
+		_booty_reward.addTagReward("weapon", 5);
+		@booty_reward = _booty_reward;
+	}
+	
 	this.Tag("flak shell");
 	this.Tag("projectile");
 
@@ -49,9 +62,7 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 		CPlayer@ owner = this.getDamageOwnerPlayer();
 		if (owner !is null)
 		{
-			CBlob@ blob = owner.getBlob();
-			if (blob !is null)
-				damageBooty(owner, blob, b);
+			rewardBooty(owner, b, booty_reward);
 		}
 		this.server_Die();
 	}
@@ -134,9 +145,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	CPlayer@ owner = this.getDamageOwnerPlayer();
 	if (owner !is null)
 	{
-		CBlob@ blob = owner.getBlob();
-		if (blob !is null)
-			damageBooty(owner, blob, hitBlob);
+		rewardBooty(owner, hitBlob, booty_reward);
 	}
 	
 	if (!isClient()) return;

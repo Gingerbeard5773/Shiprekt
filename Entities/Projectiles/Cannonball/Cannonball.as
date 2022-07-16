@@ -1,5 +1,5 @@
 #include "WaterEffects.as";
-#include "Booty.as";
+#include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
@@ -10,8 +10,20 @@ const f32 SPLASH_RADIUS = 8.0f;
 const f32 SPLASH_DAMAGE = 0.25f;
 const f32 MAX_PIERCED = 2;
 
+BootyRewards@ booty_reward;
+
 void onInit(CBlob@ this)
 {
+	if (booty_reward is null)
+	{
+		BootyRewards _booty_reward;
+		_booty_reward.addTagReward("bomb", 8);
+		_booty_reward.addTagReward("engine", 6);
+		_booty_reward.addTagReward("weapon", 8);
+		_booty_reward.addTagReward("core", 12);
+		@booty_reward = _booty_reward;
+	}
+
 	this.Tag("cannonball");
 	this.Tag("projectile");
 
@@ -143,7 +155,8 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	if (owner !is null)
 	{
 		CBlob@ blob = owner.getBlob();
-		if (blob !is null) damageBooty(owner, blob, hitBlob, hitBlob.hasTag("engine"), 6);
+		if (blob !is null)
+			rewardBooty(owner, hitBlob, booty_reward);
 	}
 	
 	if (!isClient()) return;

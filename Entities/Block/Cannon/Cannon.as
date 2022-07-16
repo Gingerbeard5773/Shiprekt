@@ -6,23 +6,10 @@ const f32 PROJECTILE_RANGE = 375.0F;
 const f32 PROJECTILE_SPEED = 15.0f;;
 const u16 FIRE_RATE = 170;//max wait between shots
 
-// Max amount of ammunition
 const u8 MAX_AMMO = 10;
-
-// Amount of ammunition to refill when
-// connected to motherships and stations
 const u8 REFILL_AMOUNT = 1;
-
-// How often to refill when connected
-// to motherships and stations
 const u8 REFILL_SECONDS = 5;
-
-// How often to refill when connected
-// to secondary cores
 const u8 REFILL_SECONDARY_CORE_SECONDS = 12;
-
-// Amount of ammunition to refill when
-// connected to secondary cores
 const u8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotrandom(0x15125); //clientside

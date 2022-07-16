@@ -1,4 +1,4 @@
-#include "Booty.as";
+#include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
@@ -15,8 +15,22 @@ const f32 GUIDANCE_RANGE = 225.0f;
 
 Random _effectspreadrandom(0x11598); //clientside
 
+BootyRewards@ booty_reward;
+
 void onInit(CBlob@ this)
 {
+	if (booty_reward is null)
+	{
+		BootyRewards _booty_reward;
+		_booty_reward.addTagReward("bomb", 20);
+		_booty_reward.addTagReward("engine", 15);
+		_booty_reward.addTagReward("mothership", 30);
+		_booty_reward.addTagReward("secondarycore", 25);
+		_booty_reward.addTagReward("weapon", 20);
+		_booty_reward.addTagReward("solid", 15);
+		@booty_reward = _booty_reward;
+	}
+	
 	this.Tag("projectile");
 	this.Tag("rocket");
 	
@@ -222,9 +236,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	CPlayer@ owner = this.getDamageOwnerPlayer();
 	if (owner !is null && customData != Hitters::explosion) //no splash damage included
 	{
-		CBlob@ blob = owner.getBlob();
-		if (blob !is null)
-			damageBooty(owner, blob, hitBlob, hitBlob.hasTag("solid") || hitBlob.hasTag("door"), 15);
+		rewardBooty(owner, hitBlob, booty_reward);
 	}
 		
 	if (!isClient()) return;

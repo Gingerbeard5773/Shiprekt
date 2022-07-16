@@ -1,14 +1,29 @@
 #include "Hitters.as";
 #include "ExplosionEffects.as";
-#include "ShipsCommon.as";
-#include "Booty.as";
+#include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 
 const f32 BOMB_RADIUS = 15.0f;
 const f32 BOMB_BASE_DAMAGE = 2.7f;
 
+BootyRewards@ booty_reward;
+
 void onInit(CBlob@ this)
 {
+	if (booty_reward is null)
+	{
+		BootyRewards _booty_reward;
+		_booty_reward.addTagReward("bomb", 20);
+		_booty_reward.addTagReward("mothership", 35);
+		_booty_reward.addTagReward("secondarycore", 25);
+		_booty_reward.addTagReward("weapon", 20);
+		_booty_reward.addTagReward("solid", 15);
+		_booty_reward.addTagReward("seat", 20);
+		_booty_reward.addTagReward("platform", 5);
+		_booty_reward.addTagReward("door", 15);
+		@booty_reward = _booty_reward;
+	}
+	
 	this.Tag("bomb");
 	//this.Tag("ramming");
 	this.set_u8("gibType", 1);
@@ -167,9 +182,7 @@ void Explode(CBlob@ this, const f32&in radius = BOMB_RADIUS)
 		CPlayer@ owner = this.getDamageOwnerPlayer();
 		if (owner !is null && hitCol > 0)
 		{
-			CBlob@ blob = owner.getBlob();
-			if (blob !is null)
-				damageBootyBomb(owner, blob, hit_blob, ShipSet);
+			rewardBooty(owner, hit_blob, booty_reward, "Pinball_3");
 		}
 	}
 }
@@ -215,41 +228,3 @@ void onDie(CBlob@ this)
 	sprite.SetEmitSoundPaused(false);
 	sprite.RewindEmitSound();
 }*/
-
-void damageBootyBomb(CPlayer@ attacker, CBlob@ attackerBlob, CBlob@ victim, ShipDictionary@ ShipSet)
-{
-	if (victim.hasTag("block"))
-	{
-		const u8 teamNum = attacker.getTeamNum();
-		const u8 victimTeamNum = victim.getTeamNum();
-		
-		Ship@ victimShip = ShipSet.getShip(victim.getShape().getVars().customData);
-		if (victimShip !is null && victimShip.blocks.length > 3
-			&& (!victimShip.owner.isEmpty() || victimShip.isMothership) //only inhabited ships
-			&& victimTeamNum != teamNum //cant be own ships
-			&& (!victim.hasTag("platform") && !victim.hasTag("coupling")))
-		{
-			if (attacker.isMyPlayer())
-				directionalSoundPlay("Pinball_3", attackerBlob.getPosition(), 1.2f);
-
-			if (isServer())
-			{
-				CRules@ rules = getRules();
-				
-				u16 reward = 15;//propellers, seat, solids
-				if (victim.hasTag("weapon") || victim.hasTag("bomb"))
-					reward += 15;
-				else if (victim.hasTag("mothership"))
-					reward += 20;
-
-				const f32 bFactor = (rules.get_bool("whirlpool") ? 3.0f : 1.0f) * Maths::Min(2.5f, Maths::Max(0.15f,
-				(2.0f * rules.get_u16("bootyTeam_total" + victimTeamNum) - rules.get_u16("bootyTeam_total" + teamNum) + 1000)/(rules.get_u32("bootyTeam_median") + 1000)));
-				
-				reward = Maths::Round(reward * bFactor);
-				
-				server_addPlayerBooty(attacker.getUsername(), reward);
-				server_updateTotalBooty(teamNum, reward);
-			}
-		}
-	}
-}

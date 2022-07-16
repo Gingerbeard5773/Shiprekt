@@ -1,12 +1,25 @@
 #include "WaterEffects.as";
-#include "Booty.as";
+#include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "ParticleSparks.as";
 #include "Hitters.as";
 
+BootyRewards@ booty_reward;
+
 void onInit(CBlob@ this)
 {
+	if (booty_reward is null)
+	{
+		BootyRewards _booty_reward;
+		_booty_reward.addTagReward("bomb", 5);
+		_booty_reward.addTagReward("engine", 5);
+		_booty_reward.addTagReward("mothership", 10);
+		_booty_reward.addTagReward("secondarycore", 8);
+		_booty_reward.addTagReward("weapon", 8);
+		@booty_reward = _booty_reward;
+	}
+
 	this.Tag("projectile");
 	this.Tag("bullet");
 
@@ -103,9 +116,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	CPlayer@ owner = this.getDamageOwnerPlayer();
 	if (owner !is null)
 	{
-		CBlob@ blob = owner.getBlob();
-		if (blob !is null)
-			damageBooty(owner, blob, hitBlob, hitBlob.hasTag("engine"), 5);
+		rewardBooty(owner, hitBlob, booty_reward);
 	}
 	
 	if (!isClient()) return;

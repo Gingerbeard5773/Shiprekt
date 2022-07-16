@@ -9,23 +9,10 @@ const f32 PROJECTILE_RANGE = 460.0f;
 const f32 CLONE_RADIUS = 20.0f;
 const f32 AUTO_RADIUS = 380.0f;
 
-// Max amount of ammunition
 const u8 MAX_AMMO = 15;
-
-// Amount of ammunition to refill when
-// connected to motherships and stations
 const u8 REFILL_AMOUNT = 1;
-
-// How often to refill when connected
-// to motherships and stations
 const u8 REFILL_SECONDS = 5;
-
-// How often to refill when connected
-// to secondary cores
 const u8 REFILL_SECONDARY_CORE_SECONDS = 8;
-
-// Amount of ammunition to refill when
-// connected to secondary cores
 const u8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotspreadrandom(0x11598); //clientside
