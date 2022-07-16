@@ -565,19 +565,37 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!pinball") //pinball machine
 				{
+					//commence pain
 					ShipDictionary@ ShipSet = getShipSet(this);
 					Ship@[] ships = ShipSet.getShips();
 					
 					const u16 shipsLength = ships.length;
 					for (u16 i = 0; i < shipsLength; ++i)
 					{
-						//commence pain
 						Ship@ ship = ships[i];
 						if (ship is null) continue;
 						
 						ship.angle_vel += (180 + XORRandom(180)) * (XORRandom(2) == 0 ? 1 : -1);
 						ship.vel += Vec2f(XORRandom(50) * (XORRandom(2) == 0 ? 1 : -1), XORRandom(50)* (XORRandom(2) == 0 ? 1 : -1));
 					}
+				}
+				else if (tokens[0] == "!lego") //loosen the bolts
+				{
+					//commence pain
+					CBlob@[] blocks;
+					getBlobsByTag("block", @blocks);
+					
+					const u16 blobsLength = blocks.length;
+					for (u16 i = 0; i < blobsLength; ++i)
+					{
+						CBlob@ block = blocks[i];
+						const u32 col = XORRandom(2)+1;
+						block.set_u16("last color", col);
+						block.getShape().getVars().customData = 0;
+					}
+					
+					getShipSet(this).deleteAll();
+					this.set_bool("dirty ships", true);
 				}
 			}
 		}

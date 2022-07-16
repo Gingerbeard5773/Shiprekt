@@ -335,8 +335,8 @@ void ColorBlocks(CBlob@ this, Ship@ ship, CMap@ map = getMap())
 		CBlob@ b = overlapping[i];
 		if (b.getShape().getVars().customData == 0 && b.hasTag("block") // is uncolored block
 			&& (b.getPosition() - pos).LengthSquared() < 78 //avoid corner overlaps
-			&& ((b.get_u16("last color") == lastCol) || (b.hasTag("coupling")) || (isCoupling) 
-			|| ((gameTime - b.get_u32("placedTime")) < 10) || ((gameTime - placeTime) < 10))) //just placed block
+			&& (b.get_u16("last color") == lastCol || b.hasTag("coupling") || isCoupling
+			|| gameTime - b.get_u32("placedTime") < 10 || gameTime - placeTime < 10)) //just placed block
 		{
 			ColorBlocks(b, ship, map); //continue the cycle
 		}
@@ -377,7 +377,6 @@ void InitShip(Ship @ship)
 		ship.mass = totalMass; //linear mass growth
 
 		//determine center block
-		bool choseCenterBlock = false;
 		if (blocksLength == 2)
 		{
 			//use an engine as centerblock for 2 block ships (this is used for torpedo border bounce)
@@ -386,12 +385,11 @@ void InitShip(Ship @ship)
 				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
 				if (b is null || !b.hasTag("engine")) continue;
 				
-				choseCenterBlock = true;
 				@ship.centerBlock = b;
 				break;
 			}
 		}
-		if (!choseCenterBlock)
+		if (ship.centerBlock is null)
 		{
 			//find the center of ship and label it as the centerBlock
 			f32 maxDistance = 999999.9f;

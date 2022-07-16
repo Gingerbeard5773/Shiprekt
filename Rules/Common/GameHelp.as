@@ -128,16 +128,9 @@ void onRender(CRules@ this)
 		//PAGE 1
 		const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
 		const string lastChangesInfo = Trans::LastChanges+":\n"
-		+ "- 6-27-2022 - By Gingerbeard\n"
-		+ "  * Disabled enemy miniship docking.\n"
-		+ "  * Weakened the cannon.\n"
-		+ "  * Added a new map: Dice.\n"
-		+ "  * Improved cursor visibility.\n"
-		+ "  * Only punches and pistols reward from killing a player.\n"
-		+ "  * Player vote kicking will now work.\n"
-		+ "  * Fixed an issue with constructors not working on moving blocks.\n"
-		+ "  * Blocks will no longer suddenly detach from your ship.\n"
-		+ "  * Fixed ships suddenly going 'limbo' mode during an attempted docking.\n";
+		+ "- 7-15-2022 - By Gingerbeard\n"
+		+ "  * New maps; Dice, Youkai, Serpents.\n"
+		+ "  * Bombs will explode on contact with flak, rockets and other explosives.\n";
 		
 		GUI::SetFont("menu");
 		Vec2f lastChangesSize;
