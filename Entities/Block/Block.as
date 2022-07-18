@@ -309,8 +309,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		Ship@ ship = getShipSet(rules).getShip(color);
 		if (ship is null) return damage;
 		
-		const u8 teamNum = this.getTeamNum();
-		if (teamNum != hitterBlob.getTeamNum() && ship.isMothership)
+		if (localPly.getTeamNum() == this.getTeamNum() && ship.isMothership)
 		{	
 			const f32 msDMG = rules.get_f32("msDMG");
 			if (msDMG < 6.0f)
