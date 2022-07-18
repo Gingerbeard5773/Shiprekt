@@ -108,6 +108,12 @@ void ConfigureToShip(CRules@ this, CBlob@[] blocks)
 	CMap@ map = getMap();
 	
 	const u8 blocksLength = blocks.length;
+	if (blocksLength <= 0)
+	{
+		warn("ConfigureToShip: no blocks found!");
+		return;
+	}
+	
 	for (u8 i = 0; i < blocksLength; i++)
 	{
 		CBlob@ block = blocks[i];
