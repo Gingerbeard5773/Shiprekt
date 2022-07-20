@@ -2,6 +2,7 @@
 
 #include "VoteCommon.as";
 #include "ShiprektTranslation.as";
+#include "SoftBans.as";
 
 s32 lastKVote = 0;
 s32 lastFBVote = 0;
@@ -96,10 +97,16 @@ class VoteKickFunctor : VoteFunctor
 		if (kickplayer !is null && outcome)
 		{
 			client_AddToChat(getTranslatedString("Votekick passed! {USER} will be kicked out.").replace("{USER}", kickplayer.getUsername()), vote_message_colour());
-
+			
+			if (kickplayer.isMyPlayer())
+			{
+				client_AddToChat("You are now a shark for a minimum of 30 minutes.");
+			}
+			
 			if (isServer())
 			{
-				getSecurity().ban(kickplayer, VoteKickTime, "Voted off"); //30 minutes ban
+				server_SoftBan(kickplayer.getUsername(), 30*60, "[ "+kickplayer.getUsername()+" ] banned by vote for: "+g_kick_reason);
+				//getSecurity().ban(kickplayer, VoteKickTime, "Voted off"); //30 minutes ban
 			}
 		}
 	}
@@ -152,7 +159,8 @@ class VoteKickLeaveFunctor : VotePlayerLeaveFunctor
 			client_AddToChat(getTranslatedString("{USER} left early, acting as if they were kicked.").replace("{USER}", player.getUsername()), vote_message_colour());
 			if (isServer())
 			{
-				getSecurity().ban(player, VoteKickTime, "Ran from vote");
+				server_SoftBan(player.getUsername(), 30*60, "[ "+player.getUsername()+" ] banned by vote for: vote desertion, "+g_kick_reason);
+				//getSecurity().ban(player, VoteKickTime, "Ran from vote");
 			}
 
 			CancelVote(vote);

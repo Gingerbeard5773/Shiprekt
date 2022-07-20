@@ -1,5 +1,6 @@
 #define SERVER_ONLY
-#include "ShipsCommon.as"
+#include "ShipsCommon.as";
+#include "SoftBans.as";
 
 const string PLAYER_BLOB = "human";
 const string SPAWN_TAG = "mothership";
@@ -139,8 +140,12 @@ void assignTeam(CRules@ this, CPlayer@ player)
 
 void onPlayerRequestSpawn(CRules@ this, CPlayer@ player)
 {
-	if (!isRespawnAdded(this, player.getUsername()) && player.getTeamNum() != this.getSpectatorTeamNum())
+	const bool isSoftBanned = !hasSoftBanExpired(player);
+	if (!isRespawnAdded(this, player.getUsername()) && (player.getTeamNum() != this.getSpectatorTeamNum() || isSoftBanned))
 	{
+		if (isSoftBanned && player.getTeamNum() != this.getSpectatorTeamNum())
+			player.server_setTeamNum(this.getSpectatorTeamNum());
+		
 		const u32 gametime = getGameTime();
 		Respawn r(player.getUsername(), standardRespawnTime + gametime);
 		this.push("respawns", r);
@@ -183,25 +188,29 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 		blob.server_Die();
 	}
 	
+	if (!hasSoftBanExpired(player))
+	{
+		player.server_setTeamNum(this.getSpectatorTeamNum());
+	}
 	//player mothership got destroyed or joining player
-	if (getMothership(player.getTeamNum()) is null)
+	else if (getMothership(player.getTeamNum()) is null)
 	{
 		//reassign to a team with alive core
 		assignTeam(this, player);
-		//print("SpawnPlayer: reassigning " + player.getUsername() +"to team "+player.getTeamNum());
 	}
 	
 	const u8 newteam = player.getTeamNum();
 	CBlob@ newship = getMothership(newteam);
-		
+	
 	// spawn as shark if cant find a ship
 	if (newship is null)
 	{
-		CBlob@ shark = server_CreateBlob("shark", this.getSpectatorTeamNum(), getSpawnPosition(player.getTeamNum()));
+		CBlob@ shark = server_CreateBlob("shark", this.getSpectatorTeamNum(), getSpawnPosition(0));
 		if (shark !is null)
 		{
 			shark.server_SetPlayer(player);
 		}
+		
 		return shark;
 	}
 
@@ -240,7 +249,7 @@ Vec2f getSpawnPosition(const u8&in team)
 	Vec2f[] spawns;
 	if (map.getMarkers("spawn", spawns))
 	{
-		if (team >= 0 && team < spawns.length)
+		if (team < spawns.length)
 			return spawns[team];
 	}
 	return map.getMapDimensions() / 2;
@@ -248,6 +257,8 @@ Vec2f getSpawnPosition(const u8&in team)
 
 void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 {
+	if (!hasSoftBanExpired(player)) return;
+	
 	CBlob@ blob = player.getBlob();
 	if (blob !is null)
 		blob.server_Die();

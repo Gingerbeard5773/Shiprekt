@@ -2,6 +2,7 @@
 #include "Booty.as";
 #include "ShipsCommon.as";
 #include "MakeBlock.as";
+#include "SoftBans.as";
 
 const u8 STATION_BOOTY = 4;
 
@@ -254,9 +255,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 			const u8 tokensLength = tokens.length;
 			if (tokensLength > 1)
 			{
-				CBlob@ pBlob = player.getBlob();
-				if (pBlob is null) return false;
-				
 				if (tokens[0] == "!kick") //force kick player of choice by username or player ID
 				{
 					CPlayer@ kickedPly = getPlayerByUsername(tokens[1]);
@@ -270,8 +268,21 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						return true;
 					}
 					warn("!kick:: Player "+tokens[1]+" does not exist!");
+					return true;
 				}
-				else if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
+				else if (tokens[0] == "!ban" && tokensLength > 2) //soft ban someone
+				{
+					const s32 ban_time = parseInt(tokens[2]) > -1 ? parseInt(tokens[2])*60 : -1;
+					const string description = "banned by moderator: "+player.getUsername()+(tokensLength > 3 ? ", "+tokens[3] : "");
+					
+					server_SoftBan(tokens[1], ban_time, description);
+					return true;
+				}
+				
+				CBlob@ pBlob = player.getBlob();
+				if (pBlob is null) return false;
+				
+				if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
 				{
 					if (tokensLength > 2)
 						AddBot(tokens[1], parseInt(tokens[2]), 0);
@@ -500,6 +511,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				{
 					print("\n      >>    SHIPREKT COMMANDS LIST    <<\n"+
 						  "\n !kick [playername] : kick the specified player."+
+						  "\n !ban [playername OR IP address] [minutes] [reason] : soft ban the specified player. -1 for perm."+
 						  "\n !addbot [botname] [team] : add a bot to the server. [team] is optional."+
 						  "\n !hash [string] : print the hashcode of a string. originally used for debugging purposes."+
 						  "\n !tp [playername OR playerID] ['here'] : teleport to a player, add the token 'here' to do the opposite."+
@@ -600,5 +612,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 			}
 		}
 	}
-	return true;
+	
+	return hasSoftBanExpired(player);
 }

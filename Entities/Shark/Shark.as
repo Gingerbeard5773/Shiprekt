@@ -18,9 +18,7 @@ void onInit(CBlob@ this)
 	sprite.ReloadSprites(0,0); //always blue
 	sprite.SetAnimation("out");
 	
-	this.SetMapEdgeFlags(u8(CBlob::map_collide_up) |
-	u8(CBlob::map_collide_down) |
-	u8(CBlob::map_collide_sides));
+	this.SetMapEdgeFlags(u8(CBlob::map_collide_up | CBlob::map_collide_down | CBlob::map_collide_sides));
 }
 
 void onTick(CBlob@ this)
@@ -84,14 +82,7 @@ void onTick(CBlob@ this)
 		move_vel.Normalize();
 		move_vel *= speed;
 		MoveTo(this, vel + move_vel);
-
-		if (this.isMyPlayer())
-		{
-		    if (this.isKeyJustPressed(key_bubbles))
-			{
-				this.CreateBubbleMenu();
-			}
-		}
+		
 		this.getSprite().SetAnimation("default");
 	}
 }
@@ -125,7 +116,7 @@ void MoveTo(CBlob@ this, const Vec2f&in vel)
 		Vec2f fat = vel;
 		fat.Normalize();
 		fat *= 16;
-		if(isTouchingLand(pos + fat))
+		if (isTouchingLand(pos + fat))
 		{
 			moveVel = Vec2f_zero;
 		}
@@ -203,15 +194,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 void onSetPlayer(CBlob@ this, CPlayer@ player)
 {
 	this.Untag("vanish");
-	if (player !is null && player.isMyPlayer()) // setup camera to follow
-	{
-		CCamera@ camera = getCamera();
-		camera.setRotation(0);
-		camera.mousecamstyle = 1; // follow
-		camera.targetDistance = 1.0f; // zoom factor
-		camera.posLag = 5; // lag/smoothen the movement of the camera
-		client_AddToChat("You are a shark now.");
-	}
 }
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
@@ -222,7 +204,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 		directionalSoundPlay("BodyGibFall", worldPoint);
 	}
 
-	if (this.getHealth() - damage <= 0)
+	if (this.getHealth() - damage <= 0 && hitterBlob !is this)
 	{
 		CPlayer@ owner = hitterBlob.getDamageOwnerPlayer();
 		if (owner !is null)
