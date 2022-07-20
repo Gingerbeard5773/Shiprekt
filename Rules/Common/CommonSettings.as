@@ -1,10 +1,10 @@
-#include "EmotesCommon.as"; 
+#include "EmotesCommon.as";
 const u8 BUTTON_SIZE = 4;
 
 void onInit(CRules@ this)
 {
 	//mod version
-	this.set_string("version", "1.52.0");
+	this.set_string("version", "1.52.1");
 	
 	//dedicated server name
 	const string server_name = "[EU] Shiprekt++ ("+this.get_string("version")+")";
