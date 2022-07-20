@@ -219,16 +219,16 @@ f32 getDamage(CBlob@ hitBlob)
 		return 4.0f;
 	if (hitBlob.hasTag("ramengine"))
 		return 5.0f;
-	if (hitBlob.hasTag("propeller"))
-		return 2.0f;
+	if (hitBlob.hasTag("propeller") || hitBlob.hasTag("plank"))
+		return 3.0f;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
 		return 2.5f;
-	if (hitBlob.hasTag("decoyCore") || hitBlob.hasTag("plank"))
+	if (hitBlob.hasTag("decoyCore"))
 		return 1.5f;
 	if (hitBlob.hasTag("core"))
 		return 0.65f;
 
-	return 1.0f; //solids
+	return 1.4f; //solids
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
