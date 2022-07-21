@@ -126,10 +126,13 @@ void onRender(CSprite@ this)
 	}
 	
 	//warm-up/freebuild
-	if (getPlayersCount() == 1)
-		GUI::DrawText(Trans::FreeMode, Vec2f(screenWidth/2 - 125, 15), tipsColor);
-	else if (rules.get_bool("freebuild"))
-		GUI::DrawText(Trans::FreebuildMode, Vec2f(screenWidth/2 - 75, 15), tipsColor);
+	if (rules.get_bool("freebuild"))
+	{
+		if (getPlayersCount() == 1)
+			GUI::DrawText(Trans::FreeMode, Vec2f(screenWidth/2 - 125, 15), tipsColor);
+		else
+			GUI::DrawText(Trans::FreebuildMode, Vec2f(screenWidth/2 - 75, 15), tipsColor);
+	}
 	else if (rules.isWarmup())
 	{
 		const int WARMUP_TIME = rules.get_u16("warmup_time") - gameTime;
