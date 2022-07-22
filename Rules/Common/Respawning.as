@@ -56,9 +56,11 @@ void onRestart(CRules@ this)
 	for (u8 i = 0; i < plyCount; i++)
 	{
 		CPlayer@ player = getPlayer(i);
-		if (player.getTeamNum() != specNum)
+		const bool isSpec = player.getTeamNum() == specNum;
+		if (!isSpec || !hasSoftBanExpired(player))
 		{
-			players.push_back(player);
+			if (!isSpec)
+				players.push_back(player);
 			
 			//spawn players!
 			Respawn r(player.getUsername(), gameTime);

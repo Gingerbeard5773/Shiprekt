@@ -566,9 +566,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!freebuild") //toggle freebuild mode
 				{
-					getNet().server_SendMsg("*** Setting freebuild mode "+ (this.get_bool("freebuild") ? "off" : "on") +" ***");
-					this.set_bool("freebuild", !this.get_bool("freebuild"));
-					this.Sync("freebuild", true);
+					getNet().server_SendMsg("*** "+player.getUsername()+" set freebuild mode "+ (this.get_bool("freebuild") ? "off" : "on") +" ***");
+					CBitStream params;
+					params.write_string("freebuild");
+					params.write_bool(!this.get_bool("freebuild"));
+					this.SendCommand(this.getCommandID("sync bool"), params);
+					return false;
 				}
 				else if (tokens[0] == "!sd") //spawn a whirlpool
 				{

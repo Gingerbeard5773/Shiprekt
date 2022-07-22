@@ -96,28 +96,47 @@ void onInit(CRules@ this)
 	driver.AddShader("hq2x", 1.0f);
 	driver.SetShader("hq2x", v_postprocess);
 	
-	//sandbox notice
-	//if (getPlayerCount() == 0)
-		//client_AddToChat("> Free building mode set until more players join! <");
+	this.addCommandID("sync bool");
+	
+	if (isServer())
+	{
+		this.set_bool("freebuild", true);
+	}
 }
 
 void onRestart(CRules@ this)
 {
-	this.set_bool("whirlpool", false);
-	
 	CCamera@ camera = getCamera();
 	if (camera !is null)
 		camera.setRotation(0.0f);
 	
-	this.set_bool("freebuild", getPlayerCount() <= 1);
+	syncBool(this, "whirlpool", false);
+	syncBool(this, "freebuild", getPlayerCount() <= 1);
+}
+
+void onNewPlayerJoin(CRules@ this, CPlayer@ player)
+{
+	syncBool(this, "freebuild", this.get_bool("freebuild"));
 }
 
 void onPlayerLeave(CRules@ this, CPlayer@ player)
 {
-	if ((getPlayerCount() - 1) <= 1 && !this.get_bool("freebuild"))
+	//set freebuild on if only one player remains
+	if (isServer() && getPlayerCount() - 1 <= 1 && !this.get_bool("freebuild"))
 	{
-		client_AddToChat("> Free building mode set until more players join! <");
-		this.set_bool("freebuild", true);
+		getNet().server_SendMsg("> Free building mode set until more players join! <");
+		syncBool(this, "freebuild", true);
+	}
+}
+
+void syncBool(CRules@ this, const string&in boolname, const bool&in booltype)
+{
+	if (isServer())
+	{
+		CBitStream params;
+		params.write_string(boolname);
+		params.write_bool(booltype);
+		this.SendCommand(this.getCommandID("sync bool"), params);
 	}
 }
 
@@ -149,7 +168,7 @@ void ShowTeamMenu(CRules@ this)
 void ReadChangeTeam(CRules@ this, CBitStream@ params, const u8&in team)
 {
 	CPlayer@ player = getPlayerByNetworkId(params.read_netid());
-	if (player is getLocalPlayer())
+	if (player !is null && player is getLocalPlayer())
 	{
 		player.client_ChangeTeam(team);
 		getHUD().ClearMenus();
@@ -169,6 +188,11 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	else if (cmd == this.getCommandID("pick none"))
 	{
 		getHUD().ClearMenus();
+	}
+	else if (cmd == this.getCommandID("sync bool"))
+	{
+		const string boolname = params.read_string();
+		this.set_bool(boolname, params.read_bool());
 	}
 }
 
