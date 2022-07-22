@@ -437,6 +437,10 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	if (harpoon.grapple_id != 0xffff)
 	{
 		CButton@ unhookButton = caller.CreateGenericButton(1, (harpoon.grapple_pos - this.getPosition())*0.5f, this, this.getCommandID("unhook"), "Unhook Harpoon");
-		if (unhookButton !is null) unhookButton.radius = 3.3f; //engine fix
+		if (unhookButton !is null)
+		{
+			unhookButton.radius = 8.0f; //engine fix
+			unhookButton.enableRadius = 8.0f;
+		}
 	}
 }

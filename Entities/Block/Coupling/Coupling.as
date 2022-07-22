@@ -20,7 +20,11 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	if (this.getDistanceTo(caller) < 6 && caller.getPlayer().getUsername() == this.get_string("playerOwner"))
 	{
 		CButton@ button = caller.CreateGenericButton(2, Vec2f(0.0f, 0.0f), this, this.getCommandID("decouple"), "Decouple");
-		if (button !is null) button.radius = 3.3f; //engine fix
+		if (button !is null)
+		{
+			button.radius = 8.0f; //engine fix
+			button.enableRadius = 8.0f;
+		}
 	}
 }
 

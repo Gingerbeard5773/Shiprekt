@@ -340,9 +340,9 @@ void PlayerControls(CBlob@ this)
 		if (this.isKeyJustPressed(key_use))
 		{
 			useClickTime = getGameTime();
-		}
-		if (this.isKeyPressed(key_use))
-		{
+		//}
+		//if (this.isKeyPressed(key_use))
+		//{
 			this.ClearMenus();
 			this.ClearButtons();
 			this.ShowInteractButtons();

@@ -25,7 +25,8 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 		CButton@ button = caller.CreateGenericButton(5, Vec2f_zero, this, this.getCommandID("clear attached"), "Push Crewmate Out");
 		if (button !is null)
 		{
-			button.radius = 3.3f;
+			button.radius = 8.0f;
+			button.enableRadius = 8.0f;
 		}
 	}
 	else if (!this.hasAttached())
@@ -35,7 +36,8 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 		CButton@ button = caller.CreateGenericButton(this.get_u8("seat icon"), Vec2f_zero, this, this.getCommandID("get in seat"), this.get_string("seat label"), params);
 		if (button !is null)
 		{
-			button.radius = 3.3f;
+			button.radius = 8.0f;
+			button.enableRadius = 8.0f;
 		}
 	}
 }
