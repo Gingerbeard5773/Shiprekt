@@ -224,8 +224,8 @@ void PositionBlocks(u16[] blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&in bl
 
 Vec2f SnapToGrid(Vec2f&in pos) //determines the grid of blocks
 {
-	pos.x = Maths::Round(pos.x / 8.0f);
-	pos.y = Maths::Round(pos.y / 8.0f);
+	pos.x = Maths::Floor(pos.x / 8.0f + 0.5f);
+	pos.y = Maths::Floor(pos.y / 8.0f + 0.5f);
 	pos *= 8;
 	return pos;
 }
