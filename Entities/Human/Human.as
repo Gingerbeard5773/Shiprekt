@@ -25,6 +25,9 @@ const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 //global is fine since only used with isMyPlayer
 int useClickTime = 0;
 bool buildMenuOpen = false;
+u16 stayBlobID = 0;
+u8 stayCount = 0;
+
 Random _shotspreadrandom(0x11598);
 
 void onInit(CBlob@ this)
@@ -59,7 +62,7 @@ void onInit(CBlob@ this)
 	{
 		this.setPosition(core.getPosition());
 		this.set_u16("shipBlobID", core.getNetworkID());
-		this.set_u16("stay ID", core.getNetworkID());
+		this.set_netid("stay ID", core.getNetworkID());
 		this.set_s8("stay count", 3);
 	}
 	
@@ -110,9 +113,11 @@ void Move(CBlob@ this)
 	ShipDictionary@ ShipSet = getShipSet(rules);
 	
 	CBlob@ shipBlob = null;
-	CBlob@[] blobsInRadius;
-	if (getMap().getBlobsInRadius(pos, 1.0f, @blobsInRadius))
+	if (!this.isAttached())
 	{
+		CBlob@[] blobsInRadius;
+		getMap().getBlobsInRadius(pos, 1.0f, @blobsInRadius);
+		
 		f32 mDist = 9999.0f;
 		const u8 blobsLength = blobsInRadius.length;
 		for (u8 i = 0; i < blobsLength; i++)
@@ -127,6 +132,12 @@ void Move(CBlob@ this)
 				mDist = dist;
 			}
 		}
+	}
+	else
+	{
+		//reference the seat we are in
+		CBlob@ occupier = this.getAttachmentPoint(0).getOccupied();
+		if (occupier !is null) @shipBlob = occupier;
 	}
 	
 	this.set_u16("shipBlobID", shipBlob !is null ? shipBlob.getNetworkID() : 0);
@@ -157,6 +168,35 @@ void Move(CBlob@ this)
 		const bool shoot = this.isKeyPressed(key_action2);
 		
 		shape.getVars().onground = ship !is null || isTouchingLand(pos);
+		
+		// artificial stay on ship
+		if (myPlayer)
+		{
+			if (shipBlob !is null)
+			{
+				stayBlobID = shipBlob.getNetworkID();
+				stayCount = 3;
+			}
+			else
+			{
+				CBlob@ stayBlob = getBlobByNetworkID(stayBlobID);
+				if (stayBlob !is null && !stayBlob.hasTag("solid"))
+				{
+					stayCount = Maths::Max(0, stayCount-1);
+					if (stayCount == 0) stayBlobID = 0;
+					
+					if (!up && !left && !right && !down)
+					{
+						Ship@ stayShip = ShipSet.getShip(stayBlob.getShape().getVars().customData);
+						if (stayShip !is null && stayShip.vel.Length() > 3.3f)
+						{
+							this.setPosition(stayBlob.getPosition() + stayShip.vel);
+							shape.getVars().onground = true;
+						}
+					}
+				}
+			}
+		}
 		
 		if (myPlayer || isBot)
 		{
@@ -279,35 +319,6 @@ void Move(CBlob@ this)
 		while(angle < 0)   angle += 360;
 
 		shape.SetAngleDegrees(angle);
-
-		// artificial stay on ship
-		if (myPlayer || isBot)
-		{
-			if (shipBlob !is null)
-			{
-				this.set_u16("stay ID", shipBlob.getNetworkID());
-				this.set_s8("stay count", 3);
-			}
-			else
-			{
-				CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("stay ID"));
-				if (shipBlob !is null)
-				{
-					s8 count = this.get_s8("stay count");
-					count--;
-					if (count <= 0)
-					{
-						this.set_u16("stay ID", 0);	
-					}
-					else if (!shipBlob.hasTag("solid") && ((!up && !left && !right && !down) || !blobInitialized))
-					{
-						if (ship !is null && ship.vel.Length() > 1.0f)
-							this.setPosition(shipBlob.getPosition());
-					}
-					this.set_s8("stay count", count);
-				}
-			}
-		}
 	}
 	else
 	{
