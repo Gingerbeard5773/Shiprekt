@@ -172,7 +172,7 @@ void onTick(CBlob@ this)
 						if (button !is null) 
 						{
 							button.enableRadius = 999.0f;
-							button.radius = 6.0f; //radius change for engine issue (remove this if engine gets fixed) (shut yo goofy ass its ur brain issue m8)
+							button.radius = 1.0f; //radius change for engine issue (remove this if engine gets fixed) (shut yo goofy ass its ur brain issue m8)
 						}
 					} 
 					else if (isOwner)
@@ -181,7 +181,7 @@ void onTick(CBlob@ this)
 						if (button !is null)
 						{
 							button.enableRadius = 999.0f;
-							button.radius = 6.0f;
+							button.radius = 1.0f;
 						}
 					}
 				}
@@ -200,7 +200,7 @@ void onTick(CBlob@ this)
 						if (button !is null)
 						{
 							button.enableRadius = 999.0f;
-							button.radius = 6.0f;
+							button.radius = 1.0f;
 						}
 					}
 				}
@@ -217,7 +217,7 @@ void onTick(CBlob@ this)
 							if (button !is null)
 							{
 								button.enableRadius = 999.0f;
-								button.radius = 6.0f;
+								button.radius = 1.0f;
 							}
 						}
 					}
