@@ -13,7 +13,7 @@ void onInit(CBlob@ this)
 	sprite.asLayer().SetLighting(false);
 	
 	ShapeConsts@ consts = this.getShape().getConsts();
-	consts.net_threshold_multiplier = -1.0f;
+	consts.net_threshold_multiplier = 100.0f;
 	consts.mapCollisions = false; //ships.as gives own tile collision
 	
 	this.SetMapEdgeFlags(u8(CBlob::map_collide_none | CBlob::map_collide_nodeath));
