@@ -1,12 +1,13 @@
 #define CLIENT_ONLY
 #include "ShipsCommon.as"
+#include "TileCommon.as"
 
-f32 angle = 0;
 f32 zoom = 1.0f;
 const f32 ZOOM_SPEED = 0.1f;
 
 void onInit(CBlob@ this)
 {
+	this.set_f32("camera_angle", 0.0f);
 	this.getCurrentScript().runFlags |= Script::tick_myplayer;
 }
 
@@ -47,6 +48,7 @@ void onTick(CBlob@ this)
 	if (this.getName() == "shark") return;
 	
 	//set camera rotation
+	f32 angle = camera.getRotation();
 	if (this.isAttached()) //use angle of seat
 	{
 		CBlob@ seat = this.getAttachmentPoint(0).getOccupied();
@@ -68,31 +70,15 @@ void onTick(CBlob@ this)
 			
 			angle = nearest_angle;
 		}
+		else if (isTouchingLand(this.getPosition()))
+		{
+			angle = Maths::Ceil((camera.getRotation()-45.0f) / 90.0f) * 90.0f;
+		}
 	}
-	
-	CameraRotation(camera, angle);
+	this.set_f32("camera_angle", angle);
 }
 
-void CameraRotation(CCamera@ camera, const f32&in angle)
-{
-	f32 camAngle = camera.getRotation();
-	f32 rotdelta = angle - camAngle;
-	if (rotdelta > 180)  rotdelta -= 360;
-	if (rotdelta < -180) rotdelta += 360;
-
-	const f32 rotate_max = 20.0f;
-	rotdelta = Maths::Max(Maths::Min(rotate_max, rotdelta), -rotate_max);
-
-	const f32 rot = rotdelta / 1.75f;
-	camAngle += rot;
-
-	while(camAngle < -180.0f) camAngle += 360.0f;
-	while(camAngle > 180.0f)  camAngle -= 360.0f;
-	
-	camera.setRotation(camAngle);
-}
-
-void onSetPlayer(CBlob@ this, CPlayer@ player)
+void onSetPlayer(CBlob@ this, CPlayer@ player) // never runs on localhost, huh
 {
 	if (player !is null && player.isMyPlayer()) // setup camera to follow
 	{
@@ -101,6 +87,7 @@ void onSetPlayer(CBlob@ this, CPlayer@ player)
 		camera.targetDistance = 1.0f; // zoom factor
 		camera.posLag = 1.0f; // lag/smoothen the movement of the camera, carries outside of shiprekt for some reason
 		camera.setRotation(0.0f);
+		this.set_f32("camera_angle", 0.0f);
 	}
 }
 
@@ -115,4 +102,22 @@ void onDie(CBlob@ this)
 			camera.targetDistance = 1.0f;
 		}
 	}
+}
+
+void onRender(CSprite@ this)
+{
+	CBlob@ blob = this.getBlob();
+	if (blob is null) return;
+
+	CCamera@ camera = getCamera();
+	if (camera is null) return;
+
+	f32 next_angle = blob.get_f32("camera_angle");
+	f32 angle = camera.getRotation();
+
+	f32 angle_delta = next_angle - angle;
+	if (angle_delta > 180.0f) angle += 360.0f;
+	if (angle_delta < -180.0f) angle -= 360.0f;
+
+	camera.setRotation(Maths::Lerp(angle, next_angle, getRenderApproximateCorrectionFactor()/2.0f));
 }
