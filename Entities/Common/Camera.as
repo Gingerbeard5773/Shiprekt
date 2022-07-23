@@ -3,11 +3,11 @@
 #include "TileCommon.as"
 
 f32 zoom = 1.0f;
-const f32 ZOOM_SPEED = 0.1f;
 
 void onInit(CBlob@ this)
 {
 	this.set_f32("camera_angle", 0.0f);
+	this.set_f32("camera_zoom", zoom);
 	this.getCurrentScript().runFlags |= Script::tick_myplayer;
 }
 
@@ -20,30 +20,29 @@ void onTick(CBlob@ this)
 	CControls@ controls = getControls();
 	const bool zoomIn = controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMIN));
 	const bool zoomOut = controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMOUT));
-	if (zoom == 2.0f) //max zoom in
+	if (zoomIn)
 	{
-		if (zoomOut)
-			zoom = 1.0f;
-		else if (camera.targetDistance < zoom)
-			camera.targetDistance += ZOOM_SPEED;
-	}
-	else if (zoom == 1.0f)	
-	{
-		if (zoomOut)
-			zoom = 0.5f;
-		else if (zoomIn)
+		if (zoom == 1.0f)
+		{
 			zoom = 2.0f;
-		
-		if (camera.targetDistance < zoom) camera.targetDistance += ZOOM_SPEED;	
-		if (camera.targetDistance > zoom) camera.targetDistance -= ZOOM_SPEED;
-	}
-	else if (zoom == 0.5f) //max out zoom
-	{
-		if (zoomIn)
+		}
+		else if (zoom == 0.5f)
+		{
 			zoom = 1.0f;
-		else if (camera.targetDistance > zoom)	
-			camera.targetDistance -= ZOOM_SPEED;
+		}
 	}
+	else if (zoomOut)
+	{
+		if (zoom == 1.0f)
+		{
+			zoom = 0.5f;
+		}
+		else if (zoom == 2.0f)
+		{
+			zoom = 1.0f;
+		}
+	}
+	this.set_f32("camera_zoom", zoom);
 	
 	if (this.getName() == "shark") return;
 	
@@ -112,6 +111,9 @@ void onRender(CSprite@ this)
 	CCamera@ camera = getCamera();
 	if (camera is null) return;
 
+	f32 next_zoom = blob.get_f32("camera_zoom");
+	f32 old_zoom = camera.targetDistance;
+
 	f32 next_angle = blob.get_f32("camera_angle");
 	f32 angle = camera.getRotation();
 
@@ -120,4 +122,5 @@ void onRender(CSprite@ this)
 	if (angle_delta < -180.0f) angle -= 360.0f;
 
 	camera.setRotation(Maths::Lerp(angle, next_angle, getRenderApproximateCorrectionFactor()/2.0f));
+	camera.targetDistance = Maths::Lerp(old_zoom, next_zoom, getRenderApproximateCorrectionFactor()/2.0f);
 }
