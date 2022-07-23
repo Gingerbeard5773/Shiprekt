@@ -18,17 +18,21 @@ void onTick(CRules@ this)
 		if (camera is null || d is null) return;
 		
 		Vec2f wavepos = camera.getPosition() + Vec2f(-d.getScreenWidth()/2 + _r.NextRanged(d.getScreenWidth()), -d.getScreenHeight()/2 + _r.NextRanged(d.getScreenHeight()));
+		
 		// return if wavepos outside map bounds
-		if(wavepos.x < 0 || wavepos.x > getMap().tilemapwidth * getMap().tilesize || wavepos.y < 0 || wavepos.y > getMap().tilemapheight * getMap().tilesize)
+		Vec2f dim = getMap().getMapDimensions();
+		if (wavepos.x < 0 || wavepos.x > dim.x || wavepos.y < 0 || wavepos.y > dim.y)
 			return;
 		
 		CBlob@ whirlpool = getBlobByName("whirlpool");
-		
 		if (whirlpool is null || (whirlpool.getPosition() - wavepos).Length() > 250.0f)
 		{
 			if (isInWater(wavepos))
 			{
-				MakeWaterWaveRender(wavepos);
+				if (v_fastrender)
+					MakeWaterWave(wavepos, wind_direction, wind_direction.Angle());
+				else
+					MakeWaterWaveRender(wavepos);
 			}
 		}
 	}

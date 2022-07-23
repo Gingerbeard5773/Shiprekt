@@ -111,13 +111,13 @@ void onRender(CSprite@ this)
 	CCamera@ camera = getCamera();
 	if (camera is null) return;
 
-	f32 next_zoom = blob.get_f32("camera_zoom");
-	f32 old_zoom = camera.targetDistance;
+	const f32 next_zoom = blob.get_f32("camera_zoom");
+	const f32 old_zoom = camera.targetDistance;
 
-	f32 next_angle = blob.get_f32("camera_angle");
+	const f32 next_angle = blob.get_f32("camera_angle");
 	f32 angle = camera.getRotation();
 
-	f32 angle_delta = next_angle - angle;
+	const f32 angle_delta = next_angle - angle;
 	if (angle_delta > 180.0f) angle += 360.0f;
 	if (angle_delta < -180.0f) angle -= 360.0f;
 
