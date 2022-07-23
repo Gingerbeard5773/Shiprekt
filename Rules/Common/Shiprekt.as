@@ -278,11 +278,24 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					server_SoftBan(tokens[1], ban_time, description);
 					return true;
 				}
-				
-				CBlob@ pBlob = player.getBlob();
-				if (pBlob is null) return false;
-				
-				if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
+				else if (tokens[0] == "!freeze")
+				{
+					CPlayer@ ply = getPlayerByUsername(tokens[1]);
+					if (ply !is null)
+					{
+						ply.freeze = !ply.freeze;
+						if (!ply.freeze)
+						{
+							CBlob@ b = ply.getBlob();
+							if (b !is null) b.server_Die();
+						}
+						return true;
+					}
+					
+					warn("!freeze:: player "+tokens[1]+" not found!");
+					return false;
+				}
+				else if (tokens[0] == "!addbot") //add a bot to the server. Supports names & teams
 				{
 					if (tokensLength > 2)
 						AddBot(tokens[1], parseInt(tokens[2]), 0);
@@ -291,7 +304,29 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					return true;
 				}
-				else if (tokens[0] == "!team") //change your team or another player's team
+				else if (tokens[0] == "!hash") //gives encoded hash for the word you input
+				{
+					const string word = text_in.replace("!hash ", "");
+					print(word.getHash() + " : "+ word, color_white);
+					
+					return false;
+				}
+				else if (tokens[0] == "!crit") //kill defined mothership
+				{
+					CBlob@ mothership = getMothership(parseInt(tokens[1]));
+					if (mothership !is null)
+						mothership.server_Hit(mothership, mothership.getPosition(), Vec2f_zero, 50.0f, 0, true);
+				}
+				else if (tokens[0] == "!playsound") //play a sound (only works localhost)
+				{
+					Sound::Play(tokens[1]);
+					return false;
+				}
+				
+				CBlob@ pBlob = player.getBlob();
+				if (pBlob is null) return false;
+				
+				if (tokens[0] == "!team") //change your team or another player's team
 				{
 					if (tokensLength > 2)
 					{
@@ -306,16 +341,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					else
 					{
 						player.server_setTeamNum(parseInt(tokens[1]));
-						if (player.getBlob() !is null)
-							player.getBlob().server_Die();
+						pBlob.server_Die();
 					}
-					
-					return false;
-				}
-				else if (tokens[0] == "!hash") //gives encoded hash for the word you input
-				{
-					const string word = text_in.replace("!hash ", "");
-					print(word.getHash() + " : "+ word, color_white);
 					
 					return false;
 				}
@@ -370,23 +397,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					player.server_setTeamNum(parseInt(tokens[1]));
 					pBlob.server_setTeamNum(parseInt(tokens[1]));
 				}
-				else if (tokens[0] == "!crit") //kill defined mothership
-				{
-					CBlob@ mothership = getMothership(parseInt(tokens[1]));
-					if (mothership !is null)
-						mothership.server_Hit(mothership, mothership.getPosition(), Vec2f_zero, 50.0f, 0, true);
-				}
-				else if (tokens[0] == "!playsound") //play a sound (only works localhost)
-				{
-					Sound::Play(tokens[1]);
-					return false;
-				}
 				else if (tokens[0] == "!saveship") //all players can save their ship
 				{
 					ConfigFile cfg;
 					
 					Vec2f playerPos = pBlob.getPosition();
-					Ship@ ship = getOverlappingShip(player.getBlob());
+					Ship@ ship = getOverlappingShip(pBlob);
 					if (ship is null)
 					{
 						warn("!saveship:: No ship found!");
@@ -440,8 +456,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				if (tokens[0] == "!deleteship") //kill a ship
 				{
 					CBlob@ pBlob = player.getBlob();
-					if (pBlob is null)
-						return false;
+					if (pBlob is null) return false;
 					
 					Ship@ ship = getOverlappingShip(player.getBlob());
 					if (ship !is null)
@@ -481,9 +496,10 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 				}
 				else if (tokens[0] == "!debugship") //print ship infos
 				{
-					if (player.getBlob() is null) return true;
+					CBlob@ pBlob = player.getBlob();
+					if (pBlob is null) return false;
 					
-					Ship@ ship = getOverlappingShip(player.getBlob());
+					Ship@ ship = getOverlappingShip(pBlob);
 					if (ship is null)
 					{
 						warn("!debugship:: no ship found");
@@ -512,6 +528,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					print("\n      >>    SHIPREKT COMMANDS LIST    <<\n"+
 						  "\n !kick [playername] : kick the specified player."+
 						  "\n !ban [playername OR IP address] [minutes] [reason] : soft ban the specified player. -1 for perm."+
+						  "\n !freeze [playername] : freeze or unfreeze player. works mechanically better than F2/F3 freeze method."+
 						  "\n !addbot [botname] [team] : add a bot to the server. [team] is optional."+
 						  "\n !hash [string] : print the hashcode of a string. originally used for debugging purposes."+
 						  "\n !tp [playername OR playerID] ['here'] : teleport to a player, add the token 'here' to do the opposite."+
@@ -534,6 +551,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						  "\n !freebuild : toggle free-build mode on or off."+
 						  "\n !sd : spawn a whirlpool in the center of the map."+
 						  "\n !pinball : fun."+
+						  "\n !lego : loosen it up."+
 						  "\n !list : this! \n", color_white);
 					return false;
 				}

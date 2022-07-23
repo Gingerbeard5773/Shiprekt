@@ -62,8 +62,11 @@ void onInit(CBlob@ this)
 	{
 		this.setPosition(core.getPosition());
 		this.set_u16("shipBlobID", core.getNetworkID());
-		this.set_netid("stay ID", core.getNetworkID());
-		this.set_s8("stay count", 3);
+		if (this.isMyPlayer())
+		{
+			stayBlobID = core.getNetworkID();
+			stayCount = 3;
+		}
 	}
 	
 	if (isClient())
@@ -138,6 +141,8 @@ void Move(CBlob@ this)
 		//reference the seat we are in
 		CBlob@ occupier = this.getAttachmentPoint(0).getOccupied();
 		if (occupier !is null) @shipBlob = occupier;
+		
+		shape.getVars().onground = true;
 	}
 	
 	this.set_u16("shipBlobID", shipBlob !is null ? shipBlob.getNetworkID() : 0);
@@ -319,10 +324,6 @@ void Move(CBlob@ this)
 		while(angle < 0)   angle += 360;
 
 		shape.SetAngleDegrees(angle);
-	}
-	else
-	{
-		shape.getVars().onground = true;
 	}
 }
 
