@@ -39,7 +39,7 @@ void onTick(CBlob@ this)
 		
 	//suck in player
 	CBlob@ h = getLocalPlayerBlob();
-	if (h !is null && !h.isOnGround())
+	if (h !is null && !h.isOnGround() && h.hasTag("player"))
 	{
 		Vec2f attractDir = h.getPosition() - pos;
 		
