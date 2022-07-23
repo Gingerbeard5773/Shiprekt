@@ -166,11 +166,18 @@ void onTick(CRules@ this)
 			for (u8 i = 0; i < respawns.length; i++)
 			{
 				Respawn@ r = respawns[i];
-				if (r.timeStarted == 0 || r.timeStarted <= gametime)
+				CPlayer@ player = getPlayerByUsername(r.username);
+				// check if player is in spectator team
+				if (player.getTeamNum() == this.getSpectatorTeamNum())
+				{
+					respawns.erase(i);
+					i--;
+				}
+				else if (r.timeStarted == 0 || r.timeStarted <= gametime)
 				{
 					SpawnPlayer(this, getPlayerByUsername(r.username));
 					respawns.erase(i);
-					i = 0;
+					i--;
 				}
 			}
 		}
