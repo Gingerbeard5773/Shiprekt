@@ -26,7 +26,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 		if (button !is null)
 		{
 			button.radius = 8.0f;
-			button.enableRadius = 8.0f;
+			button.enableRadius = 12.0f;
 		}
 	}
 	else if (!this.hasAttached())
@@ -37,7 +37,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 		if (button !is null)
 		{
 			button.radius = 8.0f;
-			button.enableRadius = 8.0f;
+			button.enableRadius = 12.0f;
 		}
 	}
 }
