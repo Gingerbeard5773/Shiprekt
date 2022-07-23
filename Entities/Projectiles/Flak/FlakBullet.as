@@ -59,11 +59,6 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 		this.server_Hit(b, point1, Vec2f_zero, getDamage(b) * 7, Hitters::bomb, true);
 		this.Tag("noFlakBoom");
 		
-		CPlayer@ owner = this.getDamageOwnerPlayer();
-		if (owner !is null)
-		{
-			rewardBooty(owner, b, booty_reward);
-		}
 		this.server_Die();
 	}
 }
@@ -75,8 +70,7 @@ void flak(CBlob@ this)
 	CBlob@[] blobs;
 	map.getBlobsInRadius(pos, FLAK_REACH, @blobs);
 	
-	if (blobs.length < 2)
-		return;
+	if (blobs.length < 2) return;
 		
 	f32 angle = XORRandom(360);
 
@@ -152,7 +146,7 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	
 	if (hitBlob.hasTag("block"))
 	{
-		Vec2f vel = worldPoint - hitBlob.getPosition();//todo: calculate real bounce angles?
+		Vec2f vel = worldPoint - hitBlob.getPosition();
 		ShrapnelParticle(worldPoint, vel);
 		directionalSoundPlay("Ricochet" +  (XORRandom(3) + 1) + ".ogg", worldPoint, 0.35f);
 	}

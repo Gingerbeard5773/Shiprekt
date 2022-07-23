@@ -4,7 +4,9 @@
 
 const f32 PROJECTILE_SPEED = 9.0f;
 const f32 PROJECTILE_SPREAD = 2.25;
+const f32 PROJECTILE_SPREAD_MANUAL = 1.5f;
 const int FIRE_RATE = 60;
+const int FIRE_RATE_MANUAL = 40;
 const f32 PROJECTILE_RANGE = 460.0f;
 const f32 CLONE_RADIUS = 20.0f;
 const f32 AUTO_RADIUS = 380.0f;
@@ -64,7 +66,6 @@ void onTick(CBlob@ this)
 	const u32 gameTime = getGameTime();
 	AttachmentPoint@ seat = this.getAttachmentPoint(0);
 	CBlob@ occupier = seat.getOccupied();
-	const u16 thisID = this.getNetworkID();
 	if (occupier !is null)
 	{
 		this.set_u16("parentID", 0);
@@ -84,7 +85,7 @@ void onTick(CBlob@ this)
 			if (childFlak !is null)
 			{
 				this.set_u16("childID", childFlak.getNetworkID());
-				childFlak.set_u16("parentID", thisID);
+				childFlak.set_u16("parentID", this.getNetworkID());
 			}
 		}
 	}
@@ -114,16 +115,11 @@ void Manual(CBlob@ this, CBlob@ controller)
 	Vec2f aimpos = controller.getAimPos();
 	Vec2f pos = this.getPosition();
 	Vec2f aimVec = aimpos - pos;
-	CPlayer@ player = controller.getPlayer();
 
 	// fire
 	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && isClearShot(this, aimVec))
 	{
-		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
-		u16 netID = 0;
-		if (ship !is null && player !is null && (!ship.isMothership || ship.owner != player.getUsername()))
-			netID = controller.getNetworkID();
-		Fire(this, aimVec, netID);
+		Fire(this, aimVec, controller.getNetworkID(), true);
 	}
 
 	// rotate turret
@@ -185,19 +181,19 @@ void Auto(CBlob@ this)
 
 					//prediction compensation
 					//aimVec += targetShip.vel * distance /PROJECTILE_SPEED * 0.9f;//poor man's kinematics
-					aimVec += targetShip.vel * Maths::FastSqrt(distance) * 13.0f/PROJECTILE_SPEED;
-					distance = aimVec.Length();//account for compensation
+					aimVec += targetShip.vel * Maths::FastSqrt(distance) * 13.0f / PROJECTILE_SPEED;
+					distance = aimVec.Length(); //account for compensation
 				}
 				else if (b.hasTag("rocket"))
 				{
-					aimVec += b.getVelocity() * distance /PROJECTILE_SPEED * 0.9f;//poor man's kinematics
-					distance = aimVec.Length();//account for compensation
+					aimVec += b.getVelocity() * distance / PROJECTILE_SPEED * 0.9f;//poor man's kinematics
+					distance = aimVec.Length(); //account for compensation
 				}
 
 				const bool merged = bColor != 0 && thisColor == bColor;
 
 				if (b.getName() == "human")
-					distance += 80.0f;//humans have lower priority
+					distance += 80.0f; //humans have lower priority
 
 				if (distance < minDistance && isClearShot(this, aimVec, merged))
 				{
@@ -235,21 +231,16 @@ void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
 	Vec2f aimpos = controller.getAimPos();
 	Vec2f pos = parent.getPosition();
 	Vec2f aimVec = aimpos - pos;
-	CPlayer@ player = controller.getPlayer();
 	// fire
 	if (isClearShot(this, aimVec))
 	{
 		Rotate(this, aimVec);
 		if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
 		{
-			Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
-			u16 netID = 0;
-			if (ship !is null && player !is null && (!ship.isMothership || ship.owner != player.getUsername()))
-				netID = controller.getNetworkID();
-			Fire(this, aimVec, netID);
+			Fire(this, aimVec, controller.getNetworkID());
 		}
 	}
-	else if (getGameTime() - this.get_u32("fire time") > 50)//free it so it tries to find another
+	else if (getGameTime() - this.get_u32("fire time") > 50) //free it so it tries to find another
 	{
 		parent.set_u16("childID", 0);
 		this.set_u16("parentID", 0);
@@ -283,7 +274,7 @@ bool canShootAuto(CBlob@ this)
 
 bool canShootManual(CBlob@ this)
 {
-	return this.get_u32("fire time") + FIRE_RATE/2 < getGameTime();
+	return this.get_u32("fire time") + FIRE_RATE_MANUAL < getGameTime();
 }
 
 const bool isClearShot(CBlob@ this, Vec2f&in aimVec, const bool&in targetMerged = false)
@@ -310,17 +301,14 @@ const bool isClearShot(CBlob@ this, Vec2f&in aimVec, const bool&in targetMerged 
 			CBlob@ b = hi.blob;
 			if (b is null || b is this) continue;
 
-			int thisColor = this.getShape().getVars().customData;
-			int bColor = b.getShape().getVars().customData;
-			bool sameShip = bColor != 0 && thisColor == bColor;
-
-			bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
-
-			//if (sameShip || targetMerged) print ("" + (sameShip ? "sameship; " : "") + (targetMerged ? "targetMerged; " : ""));
+			const int thisColor = this.getShape().getVars().customData;
+			const int bColor = b.getShape().getVars().customData;
+			
+			const bool sameShip = bColor != 0 && thisColor == bColor;
+			const bool canShootSelf = targetMerged && hi.distance > distanceToTarget * 0.7f;
 
 			if (b.hasTag("block") && b.getShape().getVars().customData > 0 && ((b.hasTag("solid") && !b.hasTag("plank")) || b.hasTag("weapon")) && sameShip && !canShootSelf)
 			{
-				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;
 			}
 		}
@@ -333,18 +321,17 @@ const bool isClearShot(CBlob@ this, Vec2f&in aimVec, const bool&in targetMerged 
 		AttachmentPoint@ seat = this.getAttachmentPoint(0);
 		CBlob@ occupier = seat.getOccupied();
 
-		if (occupier is null)
-			return false;
+		if (occupier is null) return false;
 	}
 
 	return true;
 }
 
-void Fire(CBlob@ this, Vec2f&in aimVector, const u16&in netid)
+void Fire(CBlob@ this, Vec2f&in aimVector, const u16&in netid, const bool&in manual = false)
 {
 	const f32 aimdist = Maths::Min(aimVector.Normalize(), PROJECTILE_RANGE);
 
-	Vec2f offset(_shotspreadrandom.NextFloat() * PROJECTILE_SPREAD,0);
+	Vec2f offset(_shotspreadrandom.NextFloat() * (manual ? PROJECTILE_SPREAD_MANUAL : PROJECTILE_SPREAD), 0);
 	offset.RotateBy(_shotspreadrandom.NextFloat() * 360.0f, Vec2f());
 
 	const Vec2f _vel = (aimVector * PROJECTILE_SPEED) + offset;
@@ -397,7 +384,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
             if (bullet !is null)
             {
             	if (caller !is null)
-                	bullet.SetDamageOwnerPlayer(caller.getPlayer());
+				{
+					if (caller.getPlayer() !is null)
+						bullet.SetDamageOwnerPlayer(caller.getPlayer());
+				}
 
                 bullet.setVelocity(velocity);
                 bullet.server_SetTimeToDie(time);
