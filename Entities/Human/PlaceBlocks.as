@@ -71,8 +71,7 @@ void onTick(CBlob@ this)
 		f32 target_angle = this.get_f32("target_angle"); //final angle (after manual rotation)
 		Vec2f aimPos = this.getAimPos();
 
-		//if (isClient())
-			PositionBlocks(blocks, pos, aimPos, blocks_angle, refBlock, shipBlob);
+		PositionBlocks(blocks, pos, aimPos, blocks_angle, refBlock, shipBlob);
 
 		CPlayer@ player = this.getPlayer();
 		if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
@@ -82,6 +81,7 @@ void onTick(CBlob@ this)
 			const bool overlappingShip = blocksOverlappingShip(blocks);
 			bool cLinked = false;
 			bool onRock = false;
+			bool not_ready = (getGameTime() - this.get_u32("placedTime")) <= placement_time; // dont show block if we are not ready to build yet
 			for (u8 i = 0; i < blocksLength; ++i)
 			{
 				CBlob@ block = getBlobByNetworkID(blocks[i]);
@@ -92,7 +92,7 @@ void onTick(CBlob@ this)
 				if (map.isTileSolid(bTile))
 					onRock = true;
 				
-				if (overlappingShip || onRock)
+				if (overlappingShip || onRock || not_ready)
 				{
 					SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
 					continue;
