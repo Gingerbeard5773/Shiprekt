@@ -28,20 +28,13 @@ void onTick(CRules@ this)
 		{
 			if (isInWater(wavepos))
 			{
-				#ifdef STAGING
-					MakeWaterWaveRender(wavepos);
-				#endif
-				#ifndef STAGING
-					MakeWaterWave(wavepos, wind_direction, wind_direction.Angle());
-				#endif
+				MakeWaterWaveRender(wavepos);
 			}
 		}
 	}
 }
 
 // Water rendering by GoldenGuy
-
-#ifdef STAGING
 
 void onInit(CRules@ this)
 {
@@ -55,6 +48,9 @@ SColor water_color = SColor(255, 41, 100, 176);
 void water_render(int id)
 {
 	Render::SetTransformWorldspace();
+
+	#ifdef STAGING
+
 	CMap@ map = getMap();
 	Vertex[] verts = {
 		Vertex(0, 0, -800, 0, 0, water_color),
@@ -62,6 +58,8 @@ void water_render(int id)
 		Vertex(map.tilemapwidth*8, map.tilemapheight*8, -800, 1, 1, water_color),
 		Vertex(0, map.tilemapheight*8, -800, 0, 1, water_color)};
 	Render::RawQuads("pixel.png", verts);
+
+	#endif
 
 	// get wavespool from rules
 	CRules@ rules = getRules();
@@ -95,7 +93,7 @@ class WavesPool
 		{
 			timers[i] = 16;
 			positions[i] = pos;
-			scales[i] = 1 + (XORRandom(100) / 100.0f * 0.5f);
+			scales[i] = 1.0f + (XORRandom(100) / 100.0f * 0.25f);
 			float scale = scales[i];
 
 			Vec2f top_left = Vec2f(-8, -8)*scale;
@@ -210,5 +208,3 @@ void MakeWaterWaveRender(Vec2f pos)
 
 	waves.AddWave(pos);
 }
-
-#endif
