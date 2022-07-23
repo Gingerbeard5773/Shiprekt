@@ -23,7 +23,7 @@ void onRender(CRules@ this)
 	{
 		GUI::SetFont("menu");
 		string text;
-		if (time_left = 0) text = Trans::Respawn;
+		if (time_left == 0) text = Trans::Respawn;
 		else if (time_left < 0) text = Trans::RespawnSoon;
 		else text = getTranslatedString("Respawning in: {SEC}").replace("{SEC}", "" + time_left);
 
