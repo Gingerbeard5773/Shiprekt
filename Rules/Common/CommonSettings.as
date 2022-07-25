@@ -4,10 +4,10 @@ const u8 BUTTON_SIZE = 4;
 void onInit(CRules@ this)
 {
 	//mod version
-	this.set_string("version", "1.52.1");
+	this.set_string("version", "1.52.2");
 	
 	//dedicated server name
-	const string server_name = "[EU] Shiprekt++ ("+this.get_string("version")+")";
+	const string server_name = "[EU] Shiprekt++ : Lagless Waters ("+this.get_string("version")+")";
 	
 	if (sv_name != server_name)
 	{

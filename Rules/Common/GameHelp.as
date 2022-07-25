@@ -128,12 +128,11 @@ void onRender(CRules@ this)
 		//PAGE 1
 		const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
 		const string lastChangesInfo = Trans::LastChanges+":\n"
-		+ "- 7-20-2022 - By Gingerbeard\n"
-		+ "  * Increased rocket damage.\n"
-		+ "  * Freebuild vote is now only available during warmup.\n"
-		+ "  * Kicked players become sharks.\n"
-		+ "  * New maps; Dice, Youkai, Serpents.\n"
-		+ "  * Bombs will explode on contact with flak, rockets and other explosives.\n";
+		+ "- 7-25-2022 - By GoldenGuy & Gingerbeard\n"
+		+ "  * Smoother camera and improved visuals.\n"
+		+ "  * Fixed unaligned block cursor placement.\n"
+		+ "  * Flak firing is more accurate when manned.\n"
+		+ "  * Players shouldn't get randomly booted off their ship as much.\n";
 		
 		GUI::SetFont("menu");
 		Vec2f lastChangesSize;
