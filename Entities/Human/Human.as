@@ -177,10 +177,10 @@ void Move(CBlob@ this)
 		// artificial stay on ship
 		if (myPlayer)
 		{
-			if (shipBlob !is null)
+			if (shipBlob !is null && ship !is null)
 			{
 				stayBlobID = shipBlob.getNetworkID();
-				stayCount = 3;
+				stayCount = Maths::Max(stayCount, Maths::Max(3, Maths::Floor(ship.vel.Length())));
 			}
 			else
 			{
@@ -190,12 +190,14 @@ void Move(CBlob@ this)
 					stayCount = Maths::Max(0, stayCount-1);
 					if (stayCount == 0) stayBlobID = 0;
 					
-					if (!up && !left && !right && !down)
+					if ((!up && !left && !right && !down))
 					{
 						Ship@ stayShip = ShipSet.getShip(stayBlob.getShape().getVars().customData);
 						if (stayShip !is null && stayShip.vel.Length() > 3.3f)
 						{
 							this.setPosition(stayBlob.getPosition() + stayShip.vel);
+							this.set_u16("shipBlobID", stayBlobID);
+							this.set_s32("shipID", stayShip.id);
 							shape.getVars().onground = true;
 						}
 					}

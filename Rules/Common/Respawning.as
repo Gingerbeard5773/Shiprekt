@@ -168,7 +168,7 @@ void onTick(CRules@ this)
 				Respawn@ r = respawns[i];
 				CPlayer@ player = getPlayerByUsername(r.username);
 				// check if player is in spectator team
-				if (player.getTeamNum() == this.getSpectatorTeamNum())
+				if (player.getTeamNum() == this.getSpectatorTeamNum() && hasSoftBanExpired(player))
 				{
 					respawns.erase(i);
 					i--;
