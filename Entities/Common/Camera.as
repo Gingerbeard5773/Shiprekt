@@ -2,24 +2,23 @@
 #include "ShipsCommon.as"
 #include "TileCommon.as"
 
-f32 zoom = 1.0f;
-
 void onInit(CBlob@ this)
 {
 	this.set_f32("camera_angle", 0.0f);
-	this.set_f32("camera_zoom", zoom);
+	this.set_f32("camera_zoom", 1.0f);
 	this.getCurrentScript().runFlags |= Script::tick_myplayer;
 }
 
 void onTick(CBlob@ this)
 {
+	if (!this.isMyPlayer()) return;
 	CCamera@ camera = getCamera();
-	if (camera is null) return;
 	
 	//set camera zoom
 	CControls@ controls = getControls();
 	const bool zoomIn = controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMIN));
 	const bool zoomOut = controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMOUT));
+	f32 zoom = this.get_f32("camera_zoom");
 	if (zoomIn)
 	{
 		if (zoom == 1.0f)
@@ -87,6 +86,7 @@ void onSetPlayer(CBlob@ this, CPlayer@ player) // never runs on localhost, huh
 		camera.posLag = 1.0f; // lag/smoothen the movement of the camera, carries outside of shiprekt for some reason
 		camera.setRotation(0.0f);
 		this.set_f32("camera_angle", 0.0f);
+		this.set_f32("camera_zoom", 1.0f);
 	}
 }
 
@@ -107,9 +107,9 @@ void onRender(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
+	if (!blob.isMyPlayer()) return;
 
 	CCamera@ camera = getCamera();
-	if (camera is null) return;
 
 	f32 next_zoom = blob.get_f32("camera_zoom");
 	f32 old_zoom = camera.targetDistance;
