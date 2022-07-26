@@ -448,7 +448,7 @@ void initiateSelfDestruct(CBlob@ this)
 void selfDestruct(CBlob@ this)
 {
 	const Vec2f pos = this.getPosition();
-	
+
 	//effects
 	if (isClient())
 	{
@@ -459,11 +459,11 @@ void selfDestruct(CBlob@ this)
 		if (this.isOnScreen())
 			SetScreenFlash(150, 255, 255, 255);
 	}
-	
+
 	if (!isServer()) return;
-	
+
 	const u8 teamNum = this.getTeamNum();
-	
+
 	//kill team players
 	CBlob@[] humans;
 	getBlobsByName("human", @humans);
@@ -475,18 +475,19 @@ void selfDestruct(CBlob@ this)
 			this.server_Hit(human, human.getPosition(), Vec2f_zero, human.getInitialHealth(), 44, true);
 			//hitter set to 44 so human dies no matter what
 	}
-	
-	//turrets go neutral
-	CBlob@[] turrets;
-	getBlobsByTag("weapon", @turrets);
-	const u16 turretsLength = turrets.length;
+
+	//blocks go neutral
+	CBlob@[] blocks;
+	getBlobsByTag("weapon", @blocks);
+	getBlobsByTag("hasSeat", @blocks);
+	const u16 turretsLength = blocks.length;
 	for (u16 i = 0; i < turretsLength; i++)
 	{
-		CBlob@ turret = turrets[i];
-		if (turret.getTeamNum() == teamNum)
-			turret.server_setTeamNum(-1);
+		CBlob@ block = blocks[i];
+		if (block.getTeamNum() == teamNum)
+			block.server_setTeamNum(-1);
 	}
-			
+
 	//damage nearby blobs
 	CBlob@[] blastBlobs;
 	getMap().getBlobsInRadius(pos, BLAST_RADIUS, @blastBlobs);
@@ -505,7 +506,7 @@ void selfDestruct(CBlob@ this)
 	//kill ship
 	Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
 	if (ship is null) return;
-	
+
 	const u16 blocksLength = ship.blocks.length;
 	if (blocksLength < 10) return;
 
