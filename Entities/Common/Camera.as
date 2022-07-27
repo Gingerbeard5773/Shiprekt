@@ -121,6 +121,6 @@ void onRender(CSprite@ this)
 	if (angle_delta > 180.0f) angle += 360.0f;
 	if (angle_delta < -180.0f) angle -= 360.0f;
 
-	camera.setRotation(Maths::Lerp(angle, next_angle, getRenderApproximateCorrectionFactor()/2.0f));
-	camera.targetDistance = Maths::Lerp(old_zoom, next_zoom, getRenderApproximateCorrectionFactor()/2.0f);
+	camera.setRotation(Maths::Lerp(angle, next_angle, getRenderApproximateCorrectionFactor()));
+	camera.targetDistance = Maths::Lerp(old_zoom, next_zoom, getRenderApproximateCorrectionFactor());
 }
