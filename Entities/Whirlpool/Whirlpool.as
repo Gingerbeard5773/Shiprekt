@@ -42,12 +42,15 @@ void onTick(CBlob@ this)
 	if (h !is null && !h.isOnGround() && h.hasTag("player"))
 	{
 		Vec2f attractDir = h.getPosition() - pos;
+		float length = attractDir.Length();
 		
 		attractDir.Normalize();
 		Vec2f perpDir = attractDir * 2.5f;
-		perpDir.RotateBy(90.0f);
+		perpDir.RotateBy(75.0f);
+
+		Vec2f forceDir = Vec2f_lerp(perpDir, attractDir, Maths::Min(1.0f, length / 500.0f));
 		
-		h.setVelocity(-(attractDir + perpDir) * Maths::Min(5.0f, force) / 2.0f);
+		h.setVelocity(-(forceDir) * Maths::Min(5.0f, force) / 2.0f);
 	}
 	
 	//suck in ships
