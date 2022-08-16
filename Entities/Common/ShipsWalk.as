@@ -24,7 +24,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	if (!this.get_bool("onGround")) return;
+	if (!this.isMyPlayer() || !this.get_bool("onGround")) return;
 	
 	WalkInfo@ walk;
 	if (!this.get("WalkInfo", @walk)) return;
