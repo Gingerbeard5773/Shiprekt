@@ -1,6 +1,6 @@
 #include "WeaponCommon.as";
 #include "AccurateSoundPlay.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 
 const f32 PROJECTILE_RANGE = 375.0F;
 const f32 PROJECTILE_SPEED = 15.0f;;

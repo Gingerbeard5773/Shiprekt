@@ -3,7 +3,7 @@
 #include "Booty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 #include "BlockCosts.as";
 #include "PlankCommon.as";
  

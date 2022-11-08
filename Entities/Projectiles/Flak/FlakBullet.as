@@ -1,7 +1,7 @@
 #include "ExplosionEffects.as";;
 #include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 #include "Hitters.as";
 #include "PlankCommon.as";
 

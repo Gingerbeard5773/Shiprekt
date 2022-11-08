@@ -2,7 +2,7 @@
 #include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 #include "Hitters.as";
 
 BootyRewards@ booty_reward;

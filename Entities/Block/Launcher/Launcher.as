@@ -1,6 +1,6 @@
 #include "WeaponCommon.as";
 #include "AccurateSoundPlay.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 
 const f32 BULLET_SPEED = 3.0f;
 const int FIRE_RATE = 200;

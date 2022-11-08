@@ -1,6 +1,6 @@
 #include "ShipsCommon.as";
 #include "HarpoonForceCommon.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 #include "AccurateSoundPlay.as";
 #include "PlankCommon.as";
 

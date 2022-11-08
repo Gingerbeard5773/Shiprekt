@@ -3,7 +3,7 @@
 #include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "Hitters.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 #include "PlankCommon.as";
 
 const f32 BULLET_SPREAD = 2.5f;

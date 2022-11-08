@@ -5,7 +5,7 @@
 #include "AccurateSoundPlay.as";
 #include "TileCommon.as";
 #include "Hitters.as";
-#include "ParticleSparks.as";
+#include "ParticleSpark.as";
 #include "ParticleHeal.as";
 #include "BlockCosts.as";
 #include "ShiprektTranslation.as";
