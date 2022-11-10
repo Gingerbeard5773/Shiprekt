@@ -171,7 +171,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-	if (isClient() && customData == 9)
+	if (isClient() && customData == 9 && damage > 0.0f)
 		directionalSoundPlay("propellerHit.ogg", worldPoint);
 }
 
