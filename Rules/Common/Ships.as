@@ -139,19 +139,8 @@ void ConfigureToShip(CRules@ this, CBlob@[] blocks)
 			Ship@ ship = ShipSet.getShip(bCol);
 			if (ship is null || (b.getPosition() - block.getPosition()).LengthSquared() > 78)
 				continue;
-				
-			//shitty algorithm to make sure there is no duplicates
-			bool pushShip = true;
-			const u8 touchingShipsLength = touchingShips.length;
-			for (u8 p = 0; p < touchingShipsLength; p++)
-			{
-				if (ship.id == touchingShips[p].id)
-				{
-					pushShip = false;
-					break;
-				}
-			}
-			if (pushShip)
+			
+			if (touchingShips.find(ship) == -1)
 				touchingShips.push_back(ship);
 		}
 	}
@@ -188,52 +177,33 @@ void ConfigureToShip(CRules@ this, CBlob@[] blocks)
 	}
 }
 
-// Put two more more ships together into one
+// Put two or more ships together into one
 void CombineShips(CRules@ this, Ship@[] ships, CBlob@ connector)
 {
 	ShipDictionary@ ShipSet = getShipSet(this);
 	
-	Ship@ largestShip;
-	u16 blocksAmount = 0;
+	ships.sortAsc(); //sorts by ship size (refer to opCmp method)
 	
-	//find the largest ship and use it as the reference
+	Ship@ largestShip = ships[0];
+	ships.erase(0);
+	
+	//delete other ships
 	const u8 shipsLength = ships.length;
 	for (u8 i = 0; i < shipsLength; ++i)
 	{
 		Ship@ ship = ships[i];
-		const u16 blocksLength = ship.blocks.length;
-		if (blocksLength > blocksAmount)
+		//set all block colors to zero
+		const u16 shipBlocks = ship.blocks.length;
+		for (u16 q = 0; q < shipBlocks; ++q)
 		{
-			blocksAmount = blocksLength;
-			@largestShip = ship;
-		}
-	}
-	
-	if (largestShip is null)
-	{
-		warn("CombineShips: no reference ship found!");
-		return;
-	}
-	
-	//delete smaller ships
-	for (u8 i = 0; i < shipsLength; ++i)
-	{
-		Ship@ ship = ships[i];
-		if (ship.id != largestShip.id)
-		{
-			//set all block colors to zero
-			const u16 shipBlocks = ship.blocks.length;
-			for (u16 i = 0; i < shipBlocks; ++i)
-			{
-				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-				if (b is null) continue;
-				
-				b.set_u16("last color", 0);
-				b.getShape().getVars().customData = 0;
-			}
+			CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
+			if (b is null) continue;
 			
-			ShipSet.delete(ship.id);
+			b.set_u16("last color", 0);
+			b.getShape().getVars().customData = 0;
 		}
+		
+		ShipSet.delete(ship);
 	}
 	
 	ColorBlocks(connector, largestShip);
@@ -350,10 +320,8 @@ void ColorBlocks(CBlob@ this, Ship@ ship, CMap@ map = getMap())
 }
 
 // Sets information that doesn't need to be set every tick (centerblock, mass etc)
-void InitShip(Ship @ship)
-{
-	//if (!isServer()) print ("client: initializing ship: ["+ship.id+"]");
-	
+void InitShip(Ship@ ship)
+{	
 	Vec2f center;
 	const u16 blocksLength = ship.blocks.length;
 	if (ship.centerBlock is null) //when clients InitShip(), they should have key values pre-synced. no need to calculate
@@ -461,7 +429,7 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 		if (blocksLength <= 0)
 		{
 			warn("UpdateShips: no ship blocks found! Removing ID ["+ship.id+"]");
-			ShipSet.delete(ship.id);
+			ShipSet.delete(ship);
 			continue;
 		}
 
@@ -735,7 +703,7 @@ void onBlobDie(CRules@ this, CBlob@ blob)
 	
 	if (ship.blocks.length <= 1) //no blocks left, kill ship
 	{
-		ShipSet.delete(ship.id);
+		ShipSet.delete(ship);
 		return;
 	}
 	
