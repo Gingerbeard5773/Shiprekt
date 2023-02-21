@@ -1167,6 +1167,7 @@ void onRender(CRules@ this)
 	const f32 camRotation = camera.getRotation();
 	
 	ShipDictionary@ ShipSet = getShipSet(this);
+	if (ShipSet is null) return;
 	Ship@[] ships = ShipSet.getShips();
 	
 	const u16 shipsLength = ships.length;
