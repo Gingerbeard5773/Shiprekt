@@ -423,7 +423,7 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 	for (u16 i = 0; i < shipsLength; ++i)
 	{
 		Ship@ ship = ships[i];
-		if (ship is null) return;
+		if (ship is null) continue;
 		
 		const u16 blocksLength = ship.blocks.length;
 		if (blocksLength <= 0)
