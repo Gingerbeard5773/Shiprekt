@@ -203,7 +203,7 @@ void onEnterChat(CRules@ this)
 
 	CBlob@ localblob = getLocalPlayerBlob();
 	if (localblob !is null)
-		set_emote(localblob, "dots", 100000);
+		set_emote(localblob, "smalldots", 100000);
 }
 
 void onExitChat(CRules@ this)
