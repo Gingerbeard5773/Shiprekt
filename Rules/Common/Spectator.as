@@ -1,8 +1,25 @@
-#define CLIENT_ONLY
+#include "CinematicCommon.as";
 #include "ShipsCommon.as";
 
-f32 zoomTarget = 1.0f;
-float timeToScroll = 0.0f;
+#define CLIENT_ONLY
+
+const bool FOCUS_ON_IMPORTANT_BLOBS = true;						//whether camera should focus on important blobs
+
+const float CINEMATIC_PAN_X_EASE = 12.0f;						//amount of ease along the x-axis while cinematic
+const float CINEMATIC_PAN_Y_EASE = 12.0f;						//amount of ease along the y-axis while cinematic
+
+const float CINEMATIC_ZOOM_EASE = 14.0f;						//amount of ease when zooming while cinematic
+const float CINEMATIC_CLOSEST_ZOOM = 1.5f;						//how close the camera can zoom in while cinematic (default is 2.0f)
+const float CINEMATIC_FURTHEST_ZOOM = 0.5f;						//how far the camera can zoom out while cinematic (default is 0.5f)
+
+const float AUTO_CINEMATIC_TIME = 3.0f;							//time until camera automatically becomes cinematic. set to zero to disable
+
+Vec2f posTarget;												//position which cinematic camera moves towards
+float zoomTarget = 1.0f;										//zoom level which camera zooms towards
+float timeToScroll = 0.0f;										//time until next able to scroll to zoom camera
+float timeToCinematic = 0.0f;									//time until camera automatically becomes cinematic
+uint currentTarget;											    //the current target blob
+uint switchTarget;												//time when camera can move onto new target
 
 string _targetPlayer;
 s32 _shipID;
