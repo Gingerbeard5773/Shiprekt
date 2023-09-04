@@ -143,6 +143,7 @@ void Move(CBlob@ this)
 		if (occupier !is null) @shipBlob = occupier;
 		
 		shape.getVars().onground = true;
+		this.set_bool("onGround", true);
 	}
 	
 	this.set_u16("shipBlobID", shipBlob !is null ? shipBlob.getNetworkID() : 0);
