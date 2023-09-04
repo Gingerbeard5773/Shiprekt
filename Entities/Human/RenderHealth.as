@@ -16,6 +16,7 @@ void onRender(CSprite@ this)
 	if (mBlob !is null && mBlob.getShape().getVars().customData > 0 && !mBlob.hasTag("noRenderHealth") && 
 	   (blob.get_string("current tool") == "deconstructor" || blob.get_string("current tool") == "reconstructor"))
 	{
+		mBlob.RenderForHUD(RenderStyle::outline_front);
 		const Vec2f pos2d = mBlob.getInterpolatedScreenPos() + Vec2f(0, -50);
 		const Vec2f dim = Vec2f(24,8);
 		const f32 y = mBlob.getHeight()*2.4f;
