@@ -444,3 +444,33 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 		}
 	}
 }
+
+// network
+
+void onSendCreateData(CBlob@ this, CBitStream@ stream)
+{
+	HarpoonInfo@ harpoon;
+	if (!this.get("harpoonInfo", @harpoon)) return;
+
+	stream.write_bool(harpoon.grappling);
+	stream.write_bool(harpoon.reeling);
+	stream.write_u16(harpoon.grapple_id);
+	stream.write_f32(harpoon.grapple_ratio);
+	stream.write_Vec2f(harpoon.grapple_pos);
+	stream.write_Vec2f(harpoon.grapple_vel);
+}
+
+bool onReceiveCreateData(CBlob@ this, CBitStream@ stream)
+{
+	HarpoonInfo@ harpoon;
+	if (!this.get("harpoonInfo", @harpoon)) return true;
+
+	if (!stream.saferead_bool(harpoon.grappling))     return false;
+	if (!stream.saferead_bool(harpoon.reeling))       return false;
+	if (!stream.saferead_u16(harpoon.grapple_id))     return false;
+	if (!stream.saferead_f32(harpoon.grapple_ratio))  return false;
+	if (!stream.saferead_Vec2f(harpoon.grapple_pos))  return false;
+	if (!stream.saferead_Vec2f(harpoon.grapple_vel))  return false;
+
+	return true;
+}
