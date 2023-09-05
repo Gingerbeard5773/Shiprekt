@@ -18,7 +18,7 @@ void onTick(CRules@ this)
 		if (time_left == 0) showTip = false;
 		
 		CControls@ controls = getControls();
-		if (controls.isKeyJustPressed(KEY_RBUTTON))
+		if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ACTION3)))
 		{
 			tipIndex = XORRandom(shiprektTips.length);
 			Sound::Play("LoadingTick2.ogg");
@@ -52,8 +52,9 @@ void onRender(CRules@ this)
 	GUI::DrawText(tip, tl + Vec2f(10, 10), br - Vec2f(10, 10), color_white, true, true, false);
 	
 	Vec2f shuffleTipPos(scrw / 2, br.y + 30);
-	GUI::DrawButton(shuffleTipPos + Vec2f(-Trans::FindNewTip.length * 3.7f, -15), shuffleTipPos - Vec2f(-Trans::FindNewTip.length * 3.7f, -15));
-	GUI::DrawTextCentered(Trans::FindNewTip, shuffleTipPos, color_white);
+	const string findNewTip = Trans::FindNewTip.replace("{key}", ""+getControls().getActionKeyKeyName(AK_ACTION3));
+	GUI::DrawButton(shuffleTipPos + Vec2f(-findNewTip.length * 3.7f, -15), shuffleTipPos - Vec2f(-findNewTip.length * 3.7f, -15));
+	GUI::DrawTextCentered(findNewTip, shuffleTipPos, color_white);
 }
 
 void onPlayerDie(CRules@ this, CPlayer@ victim, CPlayer@ attacker, u8 customData)
