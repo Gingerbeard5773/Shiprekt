@@ -31,27 +31,9 @@ void onChangeTeam(CBlob@ this, const int oldTeam)
 		}
 	}
 	
-	Capture(this, this.getTeamNum());
-}
-
-void Capture(CBlob@ this, const int&in attackerTeam)
-{
 	Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
-	if (ship is null) return;
-	
-	if (!ship.isMothership)
-	{
-		//print ("setting team for " + ship.owner + "'s " + ship.id + " to " + attackerTeam);
-		const u16 blocksLength = ship.blocks.length;
-		for (u16 i = 0; i < blocksLength; ++i)
-		{
-			CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-			if (b !is null)
-			{
-				b.server_setTeamNum(attackerTeam);
-			}
-		}
-	}
+	if (ship !is null && !ship.isMothership)
+		server_setShipTeam(ship, this.getTeamNum());
 }
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)

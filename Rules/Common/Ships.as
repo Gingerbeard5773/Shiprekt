@@ -44,9 +44,9 @@ void onRestart(CRules@ this)
 
 void onTick(CRules@ this)
 {
-	bool full_sync = false;
 	if (isServer())
 	{
+		bool full_sync = false;
 		const u32 gameTime = getGameTime();
 		if (gameTime < 2) return; //issues happen if ships generate on first tick
 		
@@ -71,11 +71,10 @@ void onTick(CRules@ this)
 			this.set_bool("dirty ships", false);
 		}
 
-		UpdateShips(this, true, full_sync);
 		Synchronize(this, full_sync);
 	}
-	else
-		UpdateShips(this); //client-side integrate
+
+	UpdateShips(this); //client-side integrate
 }
 
 // Generate ships from unassigned blocks
@@ -412,10 +411,9 @@ void InitShip(Ship@ ship)
 }
 
 // Called every tick, this is what makes the ships move and function
-void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in forceOwnerSearch = false)
+void UpdateShips(CRules@ this, const bool&in integrate = true)
 {
 	CMap@ map = getMap();
-	const u32 gameTime = getGameTime();
 	ShipDictionary@ ShipSet = getShipSet(this);
 	Ship@[] ships = ShipSet.getShips();
 	
@@ -494,7 +492,7 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 			}
 		}
 		
-		if (!isServer() || (!forceOwnerSearch && (gameTime + ship.id * 33) % 45 > 0)) //updateShipBlobs if !isServer OR isServer and not on a 'second tick'
+		if (!isServer() || (getGameTime() + ship.id * 33) % 45 != 0)
 		{
 			for (u16 q = 0; q < blocksLength; ++q)
 			{
@@ -505,7 +503,7 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 				UpdateShipBlob(b, ship, ship_block);
 			}
 		}
-		else //(server) updateShipBlobs and find ship.owner once a second or after GenerateShips()
+		else //(server) find the ship's owner
 		{
 			CBlob@ core = null;
 			bool multiTeams = false;
@@ -544,46 +542,29 @@ void UpdateShips(CRules@ this, const bool&in integrate = true, const bool&in for
 				
 				if (multiTeams) // ship has multiple owners (e.g two connected motherships)
 					oldestSeatOwner = "*";
-				else if (ship.isMothership && core !is null)
+				else
 				{
+					//find the oldest seat available
+					const bool mothership = ship.isMothership && core !is null;
 					for (u8 q = 0; q < seatLength; q++)
 					{
 						CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
 						u16[] checked, unchecked;
-						if (oldestSeat !is null && shipLinked(oldestSeat, core, checked, unchecked))
+						if (oldestSeat !is null && (mothership ? shipLinked(oldestSeat, core, checked, unchecked) : true))
 						{
 							oldestSeatOwner = oldestSeat.get_string("playerOwner");
 							break;
 						}
 					}
 				}
-				else
+
+				//change ship team (only non-motherships that have activated seats)
+				if (!ship.isMothership && !ship.isStation && !multiTeams && !oldestSeatOwner.isEmpty() && ship.owner != oldestSeatOwner)
 				{
-					//find the oldest seat available
-					for (u8 q = 0; q < seatLength; q++)
+					CPlayer@ oldestOwner = getPlayerByUsername(oldestSeatOwner);
+					if (oldestOwner !is null)
 					{
-						CBlob@ oldestSeat = getBlobByNetworkID(seatIDs[q]);
-						if (oldestSeat !is null)
-						{
-							oldestSeatOwner = oldestSeat.get_string("playerOwner");
-							break;
-						}
-					}
-				}
-			}
-			
-			//change ship team (only non-motherships that have activated seats)
-			if (!ship.isMothership && !ship.isStation && !multiTeams && !oldestSeatOwner.isEmpty() && ship.owner != oldestSeatOwner)
-			{
-				CPlayer@ iOwner = getPlayerByUsername(oldestSeatOwner);
-				if (iOwner !is null)
-				{
-					const u16 blocksLength = ship.blocks.length;
-					for (u16 i = 0; i < blocksLength; ++i)
-					{
-						CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
-						if (b !is null)
-							b.server_setTeamNum(iOwner.getTeamNum());
+						server_setShipTeam(ship, oldestOwner.getTeamNum());
 					}
 				}
 			}

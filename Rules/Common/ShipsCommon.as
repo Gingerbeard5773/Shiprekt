@@ -212,3 +212,14 @@ shared const bool shipLinked(CBlob@ this, CBlob@ goal, u16[]&in checked, u16[]&i
 	}
 	return false;
 }
+
+shared void server_setShipTeam(Ship@ ship, const int&in teamNum)
+{
+	const u16 blocksLength = ship.blocks.length;
+	for (u16 i = 0; i < blocksLength; ++i)
+	{
+		CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
+		if (b !is null)
+			b.server_setTeamNum(teamNum);
+	}
+}
