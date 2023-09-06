@@ -306,8 +306,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				}
 				
 				rules.push("dirtyBlocks", blob_blocks);
-				PositionBlocks(blocks, shipPos + pos_offset.RotateBy(angleDelta), shipPos + aimPos_offset.RotateBy(angleDelta), target_angle, refBlock, shipBlob);
 			}
+			PositionBlocks(blocks, shipPos + pos_offset.RotateBy(angleDelta), shipPos + aimPos_offset.RotateBy(angleDelta), target_angle, refBlock, shipBlob);
 
 			const int iColor = refBlock.getShape().getVars().customData;
 			for (u8 i = 0; i < blocksLength; ++i)
