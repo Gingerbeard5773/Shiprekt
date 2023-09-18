@@ -71,10 +71,11 @@ void onTick(CRules@ this)
 			this.set_bool("dirty ships", false);
 		}
 
+		UpdateShips(this);
 		Synchronize(this, full_sync);
 	}
-
-	UpdateShips(this); //client-side integrate
+	else
+		UpdateShips(this); //client-side integrate
 }
 
 // Generate ships from unassigned blocks
