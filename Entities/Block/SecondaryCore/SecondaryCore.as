@@ -8,6 +8,8 @@ const float HEAL_AMOUNT = 0.1f;
 
 void onInit(CBlob@ this)
 {
+	this.sendonlyvisible = false; //clients always know this blob's position
+
 	this.set_f32("weight", 12.0f);
 	
 	this.Tag("secondaryCore");

@@ -1,5 +1,7 @@
 void onInit(CBlob@ this)
 {
+	this.sendonlyvisible = false; //clients always know this blob's position
+
 	this.Tag("decoyCore");
 	this.Tag("core");
 	

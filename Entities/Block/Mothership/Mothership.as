@@ -19,6 +19,8 @@ u8 maxBlockTimer; //can be global since only used for myplayer
 
 void onInit(CBlob@ this)
 {
+	this.sendonlyvisible = false; //clients always know this blob's position
+
 	this.Tag("mothership");
 	this.Tag("core");
 	this.Tag("noRenderHealth");
