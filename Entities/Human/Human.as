@@ -32,6 +32,8 @@ Random _shotspreadrandom(0x11598);
 
 void onInit(CBlob@ this)
 {
+	this.sendonlyvisible = false; //clients always know this blob's position
+
 	this.Tag("player");
 	this.addCommandID("sync camera");
 	this.addCommandID("get out");
