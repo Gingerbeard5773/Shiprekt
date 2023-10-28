@@ -17,30 +17,6 @@ void onInit(CBlob@ this)
 	this.addCommandID("place");
 }
 
-CBlob@ getReferenceBlock(CBlob@ this, Ship@ ship, CBlob@ shipBlob) //find specific origin blocks connected to a ship
-{
-	const u8 teamNum = this.getTeamNum();
-	CBlob@[] references;
-
-	if (ship.isMothership)
-		return getMothership(teamNum);
-	if (ship.isSecondaryCore)
-		getBlobsByTag("secondaryCore", @references);
-	else if (ship.isStation)
-		getBlobsByTag("station", @references);
-	else getBlobsByTag("seat", @references);
-	
-	const u16 refLength = references.length;
-	for (u16 i = 0; i < refLength; i++)
-	{
-		CBlob@ ref = references[i];
-		if (ref.getTeamNum() == teamNum && ref.getShape().getVars().customData == shipBlob.getShape().getVars().customData)
-			return ref;
-	}
-	
-	return ship.centerBlock;
-}
-
 void onTick(CBlob@ this)
 {
 	u16[] blocks;
@@ -51,7 +27,7 @@ void onTick(CBlob@ this)
 	const u8 blocksLength = blocks.length;
 	const s32 overlappingShipID = this.get_s32("shipID");
 	Ship@ ship = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
-	if (ship !is null && ship.centerBlock !is null)
+	if (ship !is null)
 	{
 		CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("shipBlobID"));
 		if (shipBlob is null)
@@ -60,18 +36,11 @@ void onTick(CBlob@ this)
 			return;
 		}
 		
-		CBlob@ refBlock = getReferenceBlock(this, ship, shipBlob);
-		if (refBlock is null)
-		{
-			warn("PlaceBlocks: centerblock not found");
-			return;
-		}
-		
 		f32 blocks_angle = this.get_f32("blocks_angle"); //next step angle
 		f32 target_angle = this.get_f32("target_angle"); //final angle (after manual rotation)
 		Vec2f aimPos = this.getAimPos();
 
-		PositionBlocks(blocks, pos, aimPos, blocks_angle, refBlock, shipBlob);
+		PositionBlocks(blocks, pos, aimPos, blocks_angle, ship, shipBlob);
 
 		CPlayer@ player = this.getPlayer();
 		if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
@@ -132,15 +101,13 @@ void onTick(CBlob@ this)
 				{
 					if (target_angle == blocks_angle && !overlappingShip && !cLinked && !onRock)
 					{
-						Vec2f shipPos = refBlock.getPosition();
-						
 						CBitStream params;
-						params.write_netid(refBlock.getNetworkID());
+						params.write_s32(ship.id);
 						params.write_netid(shipBlob.getNetworkID());
-						params.write_Vec2f(pos - shipPos);
-						params.write_Vec2f(aimPos - shipPos);
+						params.write_Vec2f(pos - ship.origin_pos);
+						params.write_Vec2f(aimPos - ship.origin_pos);
 						params.write_f32(target_angle);
-						params.write_f32(refBlock.getAngleDegrees());
+						params.write_f32(ship.angle);
 						this.SendCommand(this.getCommandID("place"), params);
 						this.set_u32("placedTime", gameTime);
 					}
@@ -184,16 +151,15 @@ void onTick(CBlob@ this)
 	}
 }
 
-void PositionBlocks(u16[] blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&in blocks_angle, CBlob@ refBlock, CBlob@ shipBlob)
+void PositionBlocks(u16[] blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&in blocks_angle, Ship@ ship, CBlob@ shipBlob)
 {
-	Vec2f ship_pos = refBlock.getPosition();
-	const f32 angle = refBlock.getAngleDegrees();
+	Vec2f ship_pos = ship.origin_pos;
 	f32 refBAngle = shipBlob.getAngleDegrees(); //reference block angle
 	//current ship angle as point of reference
-	while (refBAngle > angle + 45) refBAngle -= 90.0f;
-	while (refBAngle < angle - 45) refBAngle += 90.0f;
+	while (refBAngle > ship.angle + 45) refBAngle -= 90.0f;
+	while (refBAngle < ship.angle - 45) refBAngle += 90.0f;
 	
-	//add offset (based on the refBlock) of block we're standing on
+	//add offset of block we're standing on
 	Vec2f refBOffset = shipBlob.getPosition() - ship_pos;
 	refBOffset.RotateBy(-refBAngle); refBOffset.x %= 8.0f; refBOffset.y %= 8.0f; refBOffset.RotateBy(refBAngle);
 	ship_pos += refBOffset;
@@ -260,11 +226,20 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("place"))
 	{
-		CBlob@ refBlock = getBlobByNetworkID(params.read_netid());
-		CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
-		if (refBlock is null || shipBlob is null)
+		const s32 shipID = params.read_s32();
+		CRules@ rules = getRules();
+		ShipDictionary@ ShipSet = getShipSet(rules);
+		Ship@ ship = ShipSet.getShip(shipID);
+		if (ship is null)
 		{
-			warn("place cmd: centerBlock not found");
+			warn("place cmd: ship not found");
+			return;
+		}
+		
+		CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
+		if (shipBlob is null)
+		{
+			warn("place cmd: shipBlob not found");
 			return;
 		}
 
@@ -273,27 +248,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		const f32 target_angle = params.read_f32();
 		const f32 ship_angle = params.read_f32();
 		
-		CRules@ rules = getRules();
-		ShipDictionary@ ShipSet = getShipSet(rules);
-		Ship@ ship = ShipSet.getShip(refBlock.getShape().getVars().customData);
-		if (ship is null)
-		{
-			warn("place cmd: ship not found");
-			return;
-		}
-		
-		if (ship.centerBlock is null)
-		{
-			warn("place cmd: ship centerBlock not found");
-			return;
-		}
-		
 		u16[] blocks;
 		if (this.get("blocks", blocks) && blocks.size() > 0)
 		{
-			Vec2f shipPos = refBlock.getPosition();
-			const f32 shipAngle = ship.centerBlock.getAngleDegrees();
-			const f32 angleDelta = refBlock.getAngleDegrees() - ship_angle; //to account for ship angle lag
+			const f32 angleDelta = ship.angle - ship_angle; //to account for ship angle lag
 			const u8 blocksLength = blocks.length;
 			
 			if (isServer())
@@ -307,9 +265,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				
 				rules.push("dirtyBlocks", blob_blocks);
 			}
-			PositionBlocks(blocks, shipPos + pos_offset.RotateBy(angleDelta), shipPos + aimPos_offset.RotateBy(angleDelta), target_angle, refBlock, shipBlob);
+			PositionBlocks(blocks, ship.origin_pos + pos_offset.RotateBy(angleDelta), ship.origin_pos + aimPos_offset.RotateBy(angleDelta), target_angle, ship, shipBlob);
 
-			const int iColor = refBlock.getShape().getVars().customData;
 			for (u8 i = 0; i < blocksLength; ++i)
 			{
 				CBlob@ b = getBlobByNetworkID(blocks[i]);
@@ -328,10 +285,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				{
 					ShipBlock ship_block;
 					ship_block.blobID = b.getNetworkID();
-					ship_block.offset = b.getPosition() - ship.centerBlock.getPosition();
-					ship_block.offset.RotateBy(-shipAngle);
-					ship_block.angle_offset = b.getAngleDegrees() - shipAngle;
-					b.getShape().getVars().customData = iColor;
+					ship_block.offset = b.getPosition() - ship.pos;
+					ship_block.offset.RotateBy(-ship.angle);
+					ship_block.angle_offset = b.getAngleDegrees() - ship.angle;
+					b.getShape().getVars().customData = shipID;
 					ship.blocks.push_back(ship_block);
 				}
 				else
