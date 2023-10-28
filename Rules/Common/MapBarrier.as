@@ -2,12 +2,11 @@
 #define SERVER_ONLY
 #include "ShipsCommon.as";
 
-//TODO: better calculation for torpedo bounce angle, to allow for ships with more blocks than 2
-
 s32[] shipIDs;
 u32[] shipTimes;
 
 const u32 ticksTillNextBounce = 4;
+const u8 torpedo_size_max = 3;
 
 void onTick(CRules@ this)
 {
@@ -47,7 +46,7 @@ void onTick(CRules@ this)
 			bs.write_s32(ship.id);
 			
 			const u16 blocksLength = ship.blocks.length;
-			if (blocksLength < 3) //do torpedo bounce
+			if (blocksLength <= torpedo_size_max && ship.owner.isEmpty()) //do torpedo bounce
 			{
 				if (shipIDs.find(ship.id) < 0)
 				{
