@@ -95,6 +95,7 @@ void GenerateShips(CRules@ this)
 			{
 				Ship@ newShip = CreateShip(this, ShipSet);
 				ColorBlocks(b, newShip);
+				SetShipOrigin(b, newShip);
 			}
 		}	
 	}
@@ -150,6 +151,7 @@ void ConfigureToShip(CRules@ this, CBlob@[] blocks)
 	{
 		Ship@ newShip = CreateShip(this, ShipSet);
 		ColorBlocks(blocks[0], newShip);
+		SetShipOrigin(blocks[0], newShip);
 		return;
 	}
 	
@@ -249,9 +251,10 @@ void SeperateShip(CRules@ this, CBlob@ seperator, ShipDictionary@ ShipSet)
 			{
 				Ship@ newShip = CreateShip(this, ShipSet);
 				ColorBlocks(b, newShip);
+				SetShipOrigin(b, newShip);
 				SetUpdateBlocks(newShip.id);
 				SetUpdateCores(newShip.id);
-				
+
 				//reference past velocities for a seamless transition
 				newShip.vel = ship.vel;
 				newShip.angle_vel = ship.angle_vel;
@@ -273,6 +276,13 @@ Ship@ CreateShip(CRules@ this, ShipDictionary@ ShipSet)
 	ShipSet.setShip(ship.id, @ship);
 	
 	return ship;
+}
+
+// Set the ship's origin
+void SetShipOrigin(CBlob@ this, Ship@ ship)
+{
+	ship.origin_pos = this.getPosition();
+	ship.angle = this.getAngleDegrees();
 }
 
 // Set information needed to pair a block to a ship
@@ -384,7 +394,6 @@ void InitShip(Ship@ ship)
 		
 		if (ship.centerBlock !is null)
 		{
-			ship.angle = ship.centerBlock.getAngleDegrees();
 			ship.pos = ship.centerBlock.getPosition();
 		}
 	}
@@ -397,6 +406,9 @@ void InitShip(Ship@ ship)
 	}
 
 	center = ship.centerBlock.getPosition();
+	
+	ship.origin_offset = ship.origin_pos - center;
+	ship.origin_offset.RotateBy(-ship.angle);
 	
 	//update block positions/angle array
 	for (u16 i = 0; i < blocksLength; ++i)
@@ -451,10 +463,14 @@ void UpdateShips(CRules@ this, const bool&in integrate = true)
 		{
 			ship.old_pos = ship.pos;
 			ship.old_angle = ship.angle;
-			ship.pos += ship.vel;		
+			ship.pos += ship.vel;
 			ship.angle = loopAngle(ship.angle + ship.angle_vel);
 			ship.vel *= VEL_DAMPING;
 			ship.angle_vel *= ANGLE_VEL_DAMPING;
+			
+			Vec2f offset = ship.origin_offset;
+			offset.RotateBy(ship.angle);
+			ship.origin_pos = ship.pos + offset;
 			
 			//check for beached or slowed ships
 			
@@ -784,6 +800,8 @@ const bool Serialize(CRules@ this, CBitStream@ stream, const bool&in full_sync)
 			stream.write_netid(owner !is null ? owner.getNetworkID() : 0);
 			stream.write_netid(ship.centerBlock !is null ? ship.centerBlock.getNetworkID() : 0);
 			stream.write_Vec2f(ship.vel);
+			stream.write_Vec2f(ship.origin_pos);
+			stream.write_Vec2f(ship.origin_offset);
 			stream.write_f32(ship.angle);
 			stream.write_f32(ship.angle_vel);
 			stream.write_f32(ship.mass);
@@ -946,6 +964,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 				warn("ships sync (CMD): ship.pos not found");
 				return;
 			}
+			const bool firstSync = ship.id == 0; //true when the player first joins the server
 			ship.id = params.read_s32();
 			const u16 ownerID = params.read_netid();
 			CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
@@ -953,8 +972,17 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			const u16 centerBlockID = params.read_netid();
 			@ship.centerBlock = centerBlockID != 0 ? getBlobByNetworkID(centerBlockID) : null;
 			ship.vel = params.read_Vec2f();
-			ship.angle = params.read_f32();
-			ship.angle_vel = params.read_f32();
+			ship.origin_pos = params.read_Vec2f();
+			ship.origin_offset = params.read_Vec2f();
+			
+			const f32 angle = params.read_f32();
+			const f32 angle_vel = params.read_f32();
+			if (firstSync)
+			{
+				ship.angle = angle;
+				ship.angle_vel = angle_vel;
+			}
+
 			ship.mass = params.read_f32();
 			ship.isMothership = params.read_bool();
 			ship.isStation = params.read_bool();
@@ -963,7 +991,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			if (ship.centerBlock !is null && ship.vel.LengthSquared() > 0.01f) //try to use local values to smoother sync
 			{
 				ship.pos = ship.centerBlock.getPosition();
-				ship.angle = ship.centerBlock.getAngleDegrees();
 			}
 			ship.old_pos = ship.pos;
 			ship.old_angle = ship.angle;

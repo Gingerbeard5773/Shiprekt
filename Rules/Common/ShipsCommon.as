@@ -10,6 +10,8 @@ shared class Ship
 	CBlob@ centerBlock;       //the block in the center of the entire ship
 	uint soundsPlayed;        //used in limiting sounds in propellers
 	string owner;             //username of the player who owns the ship
+	Vec2f origin_pos;         //reference pos for the entire ship
+	Vec2f origin_offset;      //origin's offset from the ship's center
 	bool isMothership;        //does the ship contain a mothership core?
 	bool isStation;           //does the ship contain a station?
 	bool isSecondaryCore;     //does the ship contain an auxiliary core?
@@ -23,7 +25,7 @@ shared class Ship
 		angle = angle_vel = old_angle = mass = carryMass = 0.0f;
 		colliding = isMothership = isStation = isSecondaryCore = false;
 		@centerBlock = null;
-		soundsPlayed = 0;
+		id = soundsPlayed = 0;
 		owner = "";
 	}
 	
