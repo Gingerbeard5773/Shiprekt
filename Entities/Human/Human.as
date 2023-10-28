@@ -723,10 +723,10 @@ void ShootPistol(CBlob@ this)
 
 	const s32 overlappingShipID = this.get_s32("shipID");
 	Ship@ ship = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
-	if (ship !is null && ship.centerBlock !is null) //relative positioning
+	if (ship !is null) //relative positioning
 	{
 		params.write_bool(true);
-		const Vec2f rPos = (pos + aimVector*3) - ship.centerBlock.getPosition();
+		const Vec2f rPos = (pos + aimVector*3) - ship.origin_pos;
 		params.write_Vec2f(rPos);
 		params.write_u32(ship.id);
 	}
@@ -894,22 +894,17 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		//shoot pistol
 		Vec2f velocity = params.read_Vec2f();
 		const f32 lifetime = params.read_f32();
-		Vec2f pos;
+		Vec2f pos = this.getPosition();
 		
 		if (params.read_bool()) //relative positioning
 		{
 			Vec2f rPos = params.read_Vec2f();
 			const int shipColor = params.read_u32();
 			Ship@ ship = getShipSet().getShip(shipColor);
-			if (ship !is null && ship.centerBlock !is null)
+			if (ship !is null)
 			{
-				pos = rPos + ship.centerBlock.getPosition();
+				pos = rPos + ship.origin_pos;
 				velocity += ship.vel;
-			}
-			else
-			{
-				warn("BulletSpawn: ship or centerBlock is null");
-				pos = this.getPosition(); //failsafe (bullet will spawn lagging behind player)
 			}
 		}
 		else
