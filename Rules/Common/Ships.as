@@ -788,7 +788,6 @@ const bool Serialize(CRules@ this, CBitStream@ stream, const bool&in full_sync)
 			stream.write_netid(owner !is null ? owner.getNetworkID() : 0);
 			stream.write_netid(ship.centerBlock !is null ? ship.centerBlock.getNetworkID() : 0);
 			stream.write_Vec2f(ship.vel);
-			stream.write_Vec2f(ship.origin_pos);
 			stream.write_Vec2f(ship.origin_offset);
 			stream.write_f32(ship.angle);
 			stream.write_f32(ship.angle_vel);
@@ -960,17 +959,9 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			const u16 centerBlockID = params.read_netid();
 			@ship.centerBlock = centerBlockID != 0 ? getBlobByNetworkID(centerBlockID) : null;
 			ship.vel = params.read_Vec2f();
-			ship.origin_pos = params.read_Vec2f();
 			ship.origin_offset = params.read_Vec2f();
-			
-			const f32 angle = params.read_f32();
-			const f32 angle_vel = params.read_f32();
-			if (firstSync)
-			{
-				ship.angle = angle;
-				ship.angle_vel = angle_vel;
-			}
-
+			ship.angle = params.read_f32();
+			ship.angle_vel = params.read_f32();
 			ship.mass = params.read_f32();
 			ship.isMothership = params.read_bool();
 			ship.isStation = params.read_bool();
@@ -980,6 +971,10 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			{
 				ship.pos = ship.centerBlock.getPosition();
 			}
+			Vec2f offset = ship.origin_offset;
+			offset.RotateBy(ship.angle);
+			ship.origin_pos = ship.pos + offset;
+			
 			ship.old_pos = ship.pos;
 			ship.old_angle = ship.angle;
 			
