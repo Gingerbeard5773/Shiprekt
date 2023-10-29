@@ -35,7 +35,6 @@ void onInit(CBlob@ this)
 	this.sendonlyvisible = false; //clients always know this blob's position
 
 	this.Tag("player");
-	this.addCommandID("sync camera");
 	this.addCommandID("get out");
 	this.addCommandID("shoot");
 	this.addCommandID("construct");
@@ -155,17 +154,6 @@ void Move(CBlob@ this)
 	
 	if (!this.isAttached())
 	{
-		if (myPlayer && blobInitialized)
-		{
-			const f32 camRotation = getCamera().getRotation();
-			if (Maths::Roundf(this.get_f32("camera rotation")) != Maths::Roundf(camRotation))
-			{
-				CBitStream params;
-				params.write_f32(camRotation);
-				this.SendCommand(this.getCommandID("sync camera"), params);
-			}
-		}
-		
 		const f32 camRotation = myPlayer ? getCamera().getRotation() : this.get_f32("camera rotation");
 		
 		const bool up = this.isKeyPressed(key_up);
@@ -866,12 +854,7 @@ void EndConstructEffects(CBlob@ this, CSprite@ sprite)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (this.getCommandID("sync camera") == cmd)
-	{
-		const f32 camRotation = params.read_f32();
-		this.set_f32("camera rotation", camRotation);
-	}
-	else if (isServer() && this.getCommandID("get out") == cmd)
+	if (isServer() && this.getCommandID("get out") == cmd)
 	{
 		//get out of a seat
 		this.server_DetachFromAll();
