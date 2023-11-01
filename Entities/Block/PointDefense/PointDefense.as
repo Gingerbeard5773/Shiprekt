@@ -74,17 +74,12 @@ void Auto(CBlob@ this)
 	if ((getGameTime() + this.getNetworkID() * 33) % 5 != 0)
 		return;
 
-	CBlob@[] blobsInRadius;
 	const Vec2f pos = this.getPosition();
-	const int thisColor = this.getShape().getVars().customData;
 	f32 minDistance = 9999999.9f;
-	bool shoot = false;
-	Vec2f shootVec = Vec2f(0, 0);
-
 	u16 hitBlobNetID = 0;
-	Vec2f bPos = Vec2f(0, 0);
 
-	if (this.getMap().getBlobsInRadius(this.getPosition(), AUTO_RADIUS, @blobsInRadius))
+	CBlob@[] blobsInRadius;
+	if (getMap().getBlobsInRadius(pos, AUTO_RADIUS, @blobsInRadius))
 	{
 		const u8 blobsLength = blobsInRadius.length;
 		for (u8 i = 0; i < blobsLength; i++)
@@ -93,26 +88,16 @@ void Auto(CBlob@ this)
 			if (b.getTeamNum() != this.getTeamNum()
 					&& (b.getName() == "human"|| b.hasTag("projectile")))
 			{
-				bPos = b.getPosition();
+				Vec2f bPos = b.getPosition();
 
-				if (b.isAttached())
-				{
-					AttachmentPoint@ humanAttach = b.getAttachmentPoint(0);
-					CBlob@ seat = humanAttach.getOccupied();
-					if (seat !is null)
-						bPos = seat.getPosition();
-				}
-
-				Vec2f aimVec = bPos - pos;
-				f32 distance = aimVec.Length();
+				Vec2f aimVector = bPos - pos;
+				f32 distance = aimVector.Length();
 
 				if (b.getName() == "human")
 					distance += 80.0f;//humans have lower priority
 
-				if (distance < minDistance && isClearShot(this, aimVec) && !getMap().rayCastSolid(bPos, pos))
+				if (distance < minDistance && isClearShot(this, aimVector) && !getMap().rayCastSolid(bPos, pos))
 				{
-					shoot = true;
-					shootVec = aimVec;
 					minDistance = distance;
 					hitBlobNetID = b.getNetworkID();
 				}
@@ -120,12 +105,9 @@ void Auto(CBlob@ this)
 		}
 	}
 
-	if (shoot)
+	if (isServer() && hitBlobNetID > 0 && canShootAuto(this))
 	{
-		if (isServer() && canShootAuto(this))
-		{
-			Fire(this, shootVec, hitBlobNetID);
-		}
+		Fire(this, hitBlobNetID);
 	}
 }
 
@@ -134,41 +116,24 @@ const bool canShootAuto(CBlob@ this)
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-const bool isClearShot(CBlob@ this, Vec2f&in aimVec)
+const bool isClearShot(CBlob@ this, Vec2f&in aimVector)
 {
-	Vec2f pos = this.getPosition();
-	const f32 distanceToTarget = Maths::Max(aimVec.Length() - 8.0f, 0.0f);
+	const f32 distanceToTarget = Maths::Max(aimVector.Length() - 8.0f, 0.0f);
 	HitInfo@[] hitInfos;
-	CMap@ map = getMap();
-
-	Vec2f offset = aimVec;
-	offset.Normalize();
-	offset *= 7.0f;
-
-	map.getHitInfosFromRay(pos + offset.RotateBy(30), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
-	map.getHitInfosFromRay(pos + offset.RotateBy(-60), -aimVec.Angle(), distanceToTarget, this, @hitInfos);
+	getMap().getHitInfosFromRay(this.getPosition(), -aimVector.Angle(), distanceToTarget, this, @hitInfos);
 	
 	const u8 hitLength = hitInfos.length;
 	if (hitLength > 0)
 	{
-		//HitInfo objects are sorted, first come closest hits
 		for (u8 i = 0; i < hitLength; i++)
 		{
 			HitInfo@ hi = hitInfos[i];
 			CBlob@ b = hi.blob;
 			if (b is null || b is this) continue;
 
-			const int thisColor = this.getShape().getVars().customData;
-			const int bColor = b.getShape().getVars().customData;
-			const bool sameShip = bColor != 0 && thisColor == bColor;
-			const bool canShootSelf = hi.distance > distanceToTarget * 0.7f;
-
-			//if (sameShip || targetMerged) print ("" + (sameShip ? "sameship; " : "") + (targetMerged ? "targetMerged; " : ""));
-
-			if (b.hasTag("weapon") || b.hasTag("solid")
-					|| (b.hasTag("block") && b.getShape().getVars().customData > 0 && (b.hasTag("solid")) && sameShip && !canShootSelf))
+			if ((b.hasTag("weapon") || b.hasTag("solid") || (b.hasTag("door") && b.getShape().getConsts().collidable))
+				&& b.getShape().getVars().customData > 0)
 			{
-				//print ("not clear " + (b.hasTag("block") ? " (block) " : "") + (!canShootSelf ? "!canShootSelf; " : ""));
 				return false;
 			}
 		}
@@ -177,11 +142,10 @@ const bool isClearShot(CBlob@ this, Vec2f&in aimVec)
 	return true;
 }
 
-void Fire(CBlob@ this, const Vec2f&in aimVector, const u16&in netid)
+void Fire(CBlob@ this, const u16&in netid)
 {
 	CBitStream params;
 	params.write_netid(netid);
-	params.write_Vec2f(aimVector);
 
 	this.SendCommand(this.getCommandID("fire"), params);
 }
@@ -192,7 +156,7 @@ void Rotate(CBlob@ this, Vec2f&in aimVector)
 	if (layer !is null)
 	{
 		layer.ResetTransform();
-		layer.RotateBy(-aimVector.getAngleDegrees() - this.getAngleDegrees(), Vec2f_zero);
+		layer.RotateBy(-aimVector.Angle() - this.getAngleDegrees(), Vec2f_zero);
 	}
 }
 
@@ -201,17 +165,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	if (cmd == this.getCommandID("fire"))
 	{
 		CBlob@ hitBlob = getBlobByNetworkID(params.read_netid());
-		Vec2f aimVector = params.read_Vec2f();
-
-		if (hitBlob is null)
-			return;
+		if (hitBlob is null) return;
 
 		Vec2f pos = this.getPosition();
 		Vec2f bPos = hitBlob.getPosition();
+		Vec2f aimVector = bPos - pos;
 
 		//ammo
 		u16 ammo = this.get_u16("ammo");
-
 		if (ammo == 0)
 		{
 			directionalSoundPlay("LoadingTick1", pos, 1.0f);
@@ -221,40 +182,38 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		ammo--;
 		this.set_u16("ammo", ammo);
 
-		if (hitBlob !is null)
+		if (isServer())
 		{
-			if (isServer())
+			this.server_Hit(hitBlob, bPos, Vec2f_zero, getDamage(hitBlob), 0, true);
+		}
+
+		if (isClient())//effects
+		{
+			Rotate(this, aimVector);
+			directionalSoundPlay("Laser1.ogg", pos, 1.0f);
+
+			const Vec2f barrelPos = pos + Vec2f(1,0).RotateBy(aimVector.Angle())*8;
+			CSprite@ sprite = this.getSprite();
+			sprite.RemoveSpriteLayer("laser");
+			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam2.png", 16, 16);
+			if (laser !is null)//partial length laser
 			{
-				f32 damage = getDamage(hitBlob);
-				this.server_Hit(hitBlob, bPos, Vec2f_zero, damage, 0, true);
+				Animation@ anim = laser.addAnimation("default", 1, false);
+				int[] frames = { 0, 1, 2, 3, 4, 5 };
+				anim.AddFrames(frames);
+				laser.SetVisible(true);
+				f32 laserLength = Maths::Max(0.1f, (bPos - barrelPos).getLength() / 16.0f);
+				laser.ResetTransform();
+				laser.ScaleBy(Vec2f(laserLength, 0.5f));
+				laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));
+				laser.RotateBy(-this.getAngleDegrees() - aimVector.Angle(), Vec2f());
+				laser.setRenderStyle(RenderStyle::light);
+				laser.SetRelativeZ(1);
 			}
 
-			if (isClient())//effects
+			if (hitBlob.hasTag("projectile"))
 			{
-				Rotate(this, aimVector);
-				shotParticles(pos + aimVector*9, aimVector.Angle(), false);
-				directionalSoundPlay("Laser1.ogg", pos, 1.0f);
-
-				const Vec2f barrelPos = pos + Vec2f(1,0).RotateBy(aimVector.Angle())*8;
-				CSprite@ sprite = this.getSprite();
-				sprite.RemoveSpriteLayer("laser");
-				CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam2.png", 16, 16);
-				if (laser !is null)//partial length laser
-				{
-					Animation@ anim = laser.addAnimation("default", 1, false);
-					int[] frames = { 0, 1, 2, 3, 4, 5 };
-					anim.AddFrames(frames);
-					laser.SetVisible(true);
-					f32 laserLength = Maths::Max(0.1f, (bPos - barrelPos).getLength() / 16.0f);
-					laser.ResetTransform();
-					laser.ScaleBy(Vec2f(laserLength, 0.5f));
-					laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));
-					laser.RotateBy(-this.getAngleDegrees() - aimVector.Angle(), Vec2f());
-					laser.setRenderStyle(RenderStyle::light);
-					laser.SetRelativeZ(1);
-				}
-
-				hitEffects(hitBlob, bPos);
+				sparks(bPos, 4);
 			}
 		}
 
@@ -275,12 +234,3 @@ const f32 getDamage(CBlob@ hitBlob)
 
 	return 0.01f;//cores, solids
 }
-
-void hitEffects(CBlob@ hitBlob, const Vec2f&in worldPoint)
-{
-	if (hitBlob.hasTag("projectile"))
-	{
-		sparks(worldPoint, 4);
-	}
-}
-
