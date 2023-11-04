@@ -57,76 +57,46 @@ void onTick(CBlob@ this)
 	if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
 	{
 		//checks for canPlace
-		const bool skipCoreCheck = !getRules().isWarmup() || (ship.isMothership && (ship.owner.isEmpty() || ship.owner == "*" || ship.owner == player.getUsername()));
+		CMap@ map = getMap();
+		const u32 gameTime = getGameTime();
 		const bool overlappingShip = blocksOverlappingShip(blocks);
-		bool cLinked = false;
 		bool onRock = false;
-		bool not_ready = (getGameTime() - this.get_u32("placedTime")) <= placement_time; // dont show block if we are not ready to build yet
+		bool notReady = (gameTime - this.get_u32("placedTime")) <= placement_time; // dont show block if we are not ready to build yet
 		for (u8 i = 0; i < blocksLength; ++i)
 		{
 			CBlob@ block = getBlobByNetworkID(blocks[i]);
 			if (block is null) continue;
 			
-			CMap@ map = getMap();
 			Tile bTile = map.getTile(block.getPosition());
 			if (map.isTileSolid(bTile))
 				onRock = true;
 			
-			if (overlappingShip || onRock || not_ready)
+			if (overlappingShip || onRock || notReady)
 			{
 				SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
 				continue;
 			}
-			
-			if (skipCoreCheck || block.hasTag("coupling") || block.hasTag("repulsor"))
-				continue;
-				
-			if (!cLinked)
-			{
-				CBlob@ core = getMothership(this.getTeamNum()); //could get the core properly based on adjacent blocks
-				if (core !is null)
-				{
-					u16[] checked, unchecked;
-					cLinked = shipLinked(block, core, checked, unchecked, false);
-				}
-			}
-			 
-			if (cLinked)
-				SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
 		}
-		
-		//can't Place heltips
-		const bool crewCantPlace = !overlappingShip && cLinked;
-		if (crewCantPlace)
-			crewCantPlaceCounter++;
-		else
-			crewCantPlaceCounter = 0;
 
-		this.set_bool("blockPlacementWarn", crewCantPlace && crewCantPlaceCounter > 15);
-		
 		// place
-		if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
+		if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons() && !notReady)
 		{
-			const u32 gameTime = getGameTime();
-			if (gameTime - this.get_u32("placedTime") > placement_time)
+			if (target_angle == blocks_angle && !overlappingShip && !onRock)
 			{
-				if (target_angle == blocks_angle && !overlappingShip && !cLinked && !onRock)
-				{
-					CBitStream params;
-					params.write_s32(ship.id);
-					params.write_netid(shipBlob.getNetworkID());
-					params.write_Vec2f(pos - ship.origin_pos);
-					params.write_Vec2f(aimPos - ship.origin_pos);
-					params.write_f32(target_angle);
-					params.write_f32(ship.angle);
-					this.SendCommand(this.getCommandID("place"), params);
-					this.set_u32("placedTime", gameTime);
-				}
-				else
-				{
-					this.getSprite().PlaySound("Denied.ogg");
-					this.set_u32("placedTime", gameTime - 10);
-				}
+				CBitStream params;
+				params.write_s32(ship.id);
+				params.write_netid(shipBlob.getNetworkID());
+				params.write_Vec2f(pos - ship.origin_pos);
+				params.write_Vec2f(aimPos - ship.origin_pos);
+				params.write_f32(target_angle);
+				params.write_f32(ship.angle);
+				this.SendCommand(this.getCommandID("place"), params);
+				this.set_u32("placedTime", gameTime);
+			}
+			else
+			{
+				this.getSprite().PlaySound("Denied.ogg");
+				this.set_u32("placedTime", gameTime - 10);
 			}
 		}
 

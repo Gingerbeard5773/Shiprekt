@@ -109,8 +109,8 @@ void onRender(CSprite@ this)
 		GUI::DrawText(Trans::CouplingRDY.replace("{key}",""+getControls().getActionKeyKeyName(AK_INVENTORY)),  tl + Vec2f(350, 10), tipsColor);
 	
 	//Can't place blocks on mothership
-	if (blob.get_bool("blockPlacementWarn"))
-		GUI::DrawText(Trans::WarmupPlacing, controls.getMouseScreenPos() + Vec2f(-200, -40), tipsColor);
+	//if (blob.get_bool("blockPlacementWarn"))
+		//GUI::DrawText(Trans::WarmupPlacing, controls.getMouseScreenPos() + Vec2f(-200, -40), tipsColor);
 	
 	//Seat couplings help
 	if (blob.isAttached() && blob.get_bool("drawSeatHelp"))
