@@ -27,118 +27,7 @@ void onTick(CBlob@ this)
 	const u8 blocksLength = blocks.length;
 	const s32 overlappingShipID = this.get_s32("shipID");
 	Ship@ ship = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
-	if (ship !is null)
-	{
-		CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("shipBlobID"));
-		if (shipBlob is null)
-		{
-			warn("PlaceBlocks: shipBlob not found");
-			return;
-		}
-		
-		f32 blocks_angle = this.get_f32("blocks_angle"); //next step angle
-		f32 target_angle = this.get_f32("target_angle"); //final angle (after manual rotation)
-		Vec2f aimPos = this.getAimPos();
-
-		PositionBlocks(blocks, pos, aimPos, blocks_angle, ship, shipBlob);
-
-		CPlayer@ player = this.getPlayer();
-		if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
-		{
-			//checks for canPlace
-			const bool skipCoreCheck = !getRules().isWarmup() || (ship.isMothership && (ship.owner.isEmpty() || ship.owner == "*" || ship.owner == player.getUsername()));
-			const bool overlappingShip = blocksOverlappingShip(blocks);
-			bool cLinked = false;
-			bool onRock = false;
-			bool not_ready = (getGameTime() - this.get_u32("placedTime")) <= placement_time; // dont show block if we are not ready to build yet
-			for (u8 i = 0; i < blocksLength; ++i)
-			{
-				CBlob@ block = getBlobByNetworkID(blocks[i]);
-				if (block is null) continue;
-				
-				CMap@ map = getMap();
-				Tile bTile = map.getTile(block.getPosition());
-				if (map.isTileSolid(bTile))
-					onRock = true;
-				
-				if (overlappingShip || onRock || not_ready)
-				{
-					SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
-					continue;
-				}
-				
-				if (skipCoreCheck || block.hasTag("coupling") || block.hasTag("repulsor"))
-					continue;
-					
-				if (!cLinked)
-				{
-					CBlob@ core = getMothership(this.getTeamNum()); //could get the core properly based on adjacent blocks
-					if (core !is null)
-					{
-						u16[] checked, unchecked;
-						cLinked = shipLinked(block, core, checked, unchecked, false);
-					}
-				}
-				 
-				if (cLinked)
-					SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
-			}
-			
-			//can't Place heltips
-			const bool crewCantPlace = !overlappingShip && cLinked;
-			if (crewCantPlace)
-				crewCantPlaceCounter++;
-			else
-				crewCantPlaceCounter = 0;
-
-			this.set_bool("blockPlacementWarn", crewCantPlace && crewCantPlaceCounter > 15);
-			
-			// place
-			if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
-			{
-				const u32 gameTime = getGameTime();
-				if (gameTime - this.get_u32("placedTime") > placement_time)
-				{
-					if (target_angle == blocks_angle && !overlappingShip && !cLinked && !onRock)
-					{
-						CBitStream params;
-						params.write_s32(ship.id);
-						params.write_netid(shipBlob.getNetworkID());
-						params.write_Vec2f(pos - ship.origin_pos);
-						params.write_Vec2f(aimPos - ship.origin_pos);
-						params.write_f32(target_angle);
-						params.write_f32(ship.angle);
-						this.SendCommand(this.getCommandID("place"), params);
-						this.set_u32("placedTime", gameTime);
-					}
-					else
-					{
-						this.getSprite().PlaySound("Denied.ogg");
-						this.set_u32("placedTime", gameTime - 10);
-					}
-				}
-			}
-
-			// rotate
-			if (this.isKeyJustPressed(key_action3))
-			{
-				target_angle += 90.0f;
-				if (target_angle > 360.0f)
-				{
-					target_angle -= 360.0f;
-					blocks_angle -= 360.0f;
-				}
-				this.set_f32("target_angle", target_angle);
-				this.Sync("target_angle", false); //-1491678232 HASH
-			}
-		}
-
-		blocks_angle += rotate_speed;
-		if (blocks_angle > target_angle)
-			blocks_angle = target_angle;        
-		this.set_f32("blocks_angle", blocks_angle);
-	}
-	else
+	if (ship is null)
 	{
 		// cant place in water
 		for (u8 i = 0; i < blocksLength; ++i)
@@ -148,7 +37,117 @@ void onTick(CBlob@ this)
 			
 			SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::light, -10.0f);
 		}
+		return;
 	}
+	
+	CBlob@ shipBlob = getBlobByNetworkID(this.get_u16("shipBlobID"));
+	if (shipBlob is null)
+	{
+		warn("PlaceBlocks: shipBlob not found");
+		return;
+	}
+	
+	f32 blocks_angle = this.get_f32("blocks_angle"); //next step angle
+	f32 target_angle = this.get_f32("target_angle"); //final angle (after manual rotation)
+	Vec2f aimPos = this.getAimPos();
+
+	PositionBlocks(blocks, pos, aimPos, blocks_angle, ship, shipBlob);
+
+	CPlayer@ player = this.getPlayer();
+	if (player !is null && player.isMyPlayer() && !this.get_bool("justMenuClicked")) 
+	{
+		//checks for canPlace
+		const bool skipCoreCheck = !getRules().isWarmup() || (ship.isMothership && (ship.owner.isEmpty() || ship.owner == "*" || ship.owner == player.getUsername()));
+		const bool overlappingShip = blocksOverlappingShip(blocks);
+		bool cLinked = false;
+		bool onRock = false;
+		bool not_ready = (getGameTime() - this.get_u32("placedTime")) <= placement_time; // dont show block if we are not ready to build yet
+		for (u8 i = 0; i < blocksLength; ++i)
+		{
+			CBlob@ block = getBlobByNetworkID(blocks[i]);
+			if (block is null) continue;
+			
+			CMap@ map = getMap();
+			Tile bTile = map.getTile(block.getPosition());
+			if (map.isTileSolid(bTile))
+				onRock = true;
+			
+			if (overlappingShip || onRock || not_ready)
+			{
+				SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
+				continue;
+			}
+			
+			if (skipCoreCheck || block.hasTag("coupling") || block.hasTag("repulsor"))
+				continue;
+				
+			if (!cLinked)
+			{
+				CBlob@ core = getMothership(this.getTeamNum()); //could get the core properly based on adjacent blocks
+				if (core !is null)
+				{
+					u16[] checked, unchecked;
+					cLinked = shipLinked(block, core, checked, unchecked, false);
+				}
+			}
+			 
+			if (cLinked)
+				SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::additive);
+		}
+		
+		//can't Place heltips
+		const bool crewCantPlace = !overlappingShip && cLinked;
+		if (crewCantPlace)
+			crewCantPlaceCounter++;
+		else
+			crewCantPlaceCounter = 0;
+
+		this.set_bool("blockPlacementWarn", crewCantPlace && crewCantPlaceCounter > 15);
+		
+		// place
+		if (this.isKeyPressed(key_action1) && !getHUD().hasMenus() && !getHUD().hasButtons())
+		{
+			const u32 gameTime = getGameTime();
+			if (gameTime - this.get_u32("placedTime") > placement_time)
+			{
+				if (target_angle == blocks_angle && !overlappingShip && !cLinked && !onRock)
+				{
+					CBitStream params;
+					params.write_s32(ship.id);
+					params.write_netid(shipBlob.getNetworkID());
+					params.write_Vec2f(pos - ship.origin_pos);
+					params.write_Vec2f(aimPos - ship.origin_pos);
+					params.write_f32(target_angle);
+					params.write_f32(ship.angle);
+					this.SendCommand(this.getCommandID("place"), params);
+					this.set_u32("placedTime", gameTime);
+				}
+				else
+				{
+					this.getSprite().PlaySound("Denied.ogg");
+					this.set_u32("placedTime", gameTime - 10);
+				}
+			}
+		}
+
+		// rotate
+		if (this.isKeyJustPressed(key_action3))
+		{
+			target_angle += 90.0f;
+			if (target_angle > 360.0f)
+			{
+				target_angle -= 360.0f;
+				blocks_angle -= 360.0f;
+			}
+			this.set_f32("target_angle", target_angle);
+			this.Sync("target_angle", false); //-1491678232 HASH
+		}
+	}
+
+	blocks_angle += rotate_speed;
+	if (blocks_angle > target_angle)
+		blocks_angle = target_angle;        
+	this.set_f32("blocks_angle", blocks_angle);
 }
 
 void PositionBlocks(u16[] blocks, Vec2f&in pos, Vec2f&in aimPos, const f32&in blocks_angle, Ship@ ship, CBlob@ shipBlob)
@@ -224,103 +223,100 @@ const bool blocksOverlappingShip(u16[] blocks)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("place"))
+	if (cmd != this.getCommandID("place")) return;
+
+	const s32 shipID = params.read_s32();
+	CRules@ rules = getRules();
+	ShipDictionary@ ShipSet = getShipSet(rules);
+	Ship@ ship = ShipSet.getShip(shipID);
+	if (ship is null)
 	{
-		const s32 shipID = params.read_s32();
-		CRules@ rules = getRules();
-		ShipDictionary@ ShipSet = getShipSet(rules);
-		Ship@ ship = ShipSet.getShip(shipID);
-		if (ship is null)
+		warn("place cmd: ship not found");
+		return;
+	}
+	
+	CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
+	if (shipBlob is null)
+	{
+		warn("place cmd: shipBlob not found");
+		return;
+	}
+
+	Vec2f pos_offset = params.read_Vec2f();
+	Vec2f aimPos_offset = params.read_Vec2f();
+	const f32 target_angle = params.read_f32();
+	const f32 ship_angle = params.read_f32();
+	
+	u16[] blocks;
+	if (!this.get("blocks", blocks) || blocks.size() <= 0)
+	{
+		//can happen when placing and returning blocks at same time
+		if (sv_test) warn("place cmd: no blocks");
+		return;
+	}
+
+	const f32 angleDelta = ship.angle - ship_angle; //to account for ship angle lag
+	const u8 blocksLength = blocks.length;
+	
+	if (isServer())
+	{
+		CBlob@[] blob_blocks;
+		for (u8 i = 0; i < blocksLength; ++i)
 		{
-			warn("place cmd: ship not found");
-			return;
+			CBlob@ b = getBlobByNetworkID(blocks[i]);
+			if (b !is null) blob_blocks.push_back(b);
 		}
 		
-		CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
-		if (shipBlob is null)
+		rules.push("dirtyBlocks", blob_blocks);
+	}
+	PositionBlocks(blocks, ship.origin_pos + pos_offset.RotateBy(angleDelta), ship.origin_pos + aimPos_offset.RotateBy(angleDelta), target_angle, ship, shipBlob);
+
+	for (u8 i = 0; i < blocksLength; ++i)
+	{
+		CBlob@ b = getBlobByNetworkID(blocks[i]);
+		if (b is null)
 		{
-			warn("place cmd: shipBlob not found");
-			return;
+			if (sv_test) warn("place cmd: blob not found");
+			continue;
 		}
-
-		Vec2f pos_offset = params.read_Vec2f();
-		Vec2f aimPos_offset = params.read_Vec2f();
-		const f32 target_angle = params.read_f32();
-		const f32 ship_angle = params.read_f32();
 		
-		u16[] blocks;
-		if (this.get("blocks", blocks) && blocks.size() > 0)
+		b.set_netid("ownerID", 0); //so it wont add to owner blocks
+		
+		const f32 z = b.hasTag("platform") ? 309.0f : (b.hasTag("weapon") ? 311.0f : 310.0f);
+		SetDisplay(b, color_white, RenderStyle::normal, z);
+		
+		if (!isServer()) //add it locally till a sync
 		{
-			const f32 angleDelta = ship.angle - ship_angle; //to account for ship angle lag
-			const u8 blocksLength = blocks.length;
-			
-			if (isServer())
-			{
-				CBlob@[] blob_blocks;
-				for (u8 i = 0; i < blocksLength; ++i)
-				{
-					CBlob@ b = getBlobByNetworkID(blocks[i]);
-					if (b !is null) blob_blocks.push_back(b);
-				}
-				
-				rules.push("dirtyBlocks", blob_blocks);
-			}
-			PositionBlocks(blocks, ship.origin_pos + pos_offset.RotateBy(angleDelta), ship.origin_pos + aimPos_offset.RotateBy(angleDelta), target_angle, ship, shipBlob);
-
-			for (u8 i = 0; i < blocksLength; ++i)
-			{
-				CBlob@ b = getBlobByNetworkID(blocks[i]);
-				if (b is null)
-				{
-					if (sv_test) warn("place cmd: blob not found");
-					continue;
-				}
-				
-				b.set_netid("ownerID", 0); //so it wont add to owner blocks
-				
-				const f32 z = b.hasTag("platform") ? 309.0f : (b.hasTag("weapon") ? 311.0f : 310.0f);
-				SetDisplay(b, color_white, RenderStyle::normal, z);
-				
-				if (!isServer()) //add it locally till a sync
-				{
-					ShipBlock ship_block;
-					ship_block.blobID = b.getNetworkID();
-					ship_block.offset = b.getPosition() - ship.pos;
-					ship_block.offset.RotateBy(-ship.angle);
-					ship_block.angle_offset = b.getAngleDegrees() - ship.angle;
-					b.getShape().getVars().customData = shipID;
-					ship.blocks.push_back(ship_block);
-				}
-				else
-					b.getShape().getVars().customData = 0; // push on ship
-				
-				b.set_u32("placedTime", getGameTime());
-			}
+			ShipBlock ship_block;
+			ship_block.blobID = b.getNetworkID();
+			ship_block.offset = b.getPosition() - ship.pos;
+			ship_block.offset.RotateBy(-ship.angle);
+			ship_block.angle_offset = b.getAngleDegrees() - ship.angle;
+			b.getShape().getVars().customData = shipID;
+			ship.blocks.push_back(ship_block);
 		}
 		else
-		{
-			//can happen when placing and returning blocks at same time
-			if (sv_test) warn("place cmd: no blocks");
-			return;
-		}
+			b.getShape().getVars().customData = 0; // push on ship
 		
-		this.clear("blocks"); //releases the blocks (they are placed)
-		directionalSoundPlay("build_ladder.ogg", this.getPosition());
-		
-		//Grab another block
-		if (this.isMyPlayer() && !this.isAttached())
+		b.set_u32("placedTime", getGameTime());
+	}
+	
+	this.clear("blocks"); //releases the blocks (they are placed)
+	directionalSoundPlay("build_ladder.ogg", this.getPosition());
+	
+	//Grab another block
+	if (this.isMyPlayer() && !this.isAttached())
+	{
+		CBlob@ core = getMothership(this.getTeamNum());
+		if (core !is null && !core.hasTag("critical"))
 		{
-			CBlob@ core = getMothership(this.getTeamNum());
-			if (core !is null && !core.hasTag("critical"))
+			const s32 overlappingShipID = this.get_s32("shipID");
+			Ship@ pShip = overlappingShipID > 0 ? ShipSet.getShip(overlappingShipID) : null;
+			if (pShip !is null && pShip.centerBlock !is null && ((pShip.id == core.getShape().getVars().customData) 
+				|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum())))
 			{
-				const s32 overlappingShipID = this.get_s32("shipID");
-				Ship@ pShip = overlappingShipID > 0 ? ShipSet.getShip(overlappingShipID) : null;
-				if (pShip !is null && pShip.centerBlock !is null && ((pShip.id == core.getShape().getVars().customData) 
-					|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum())))
-				{
-					this.set_bool("getting block", true);
-					this.Sync("getting block", false);
-				}
+				this.set_bool("getting block", true);
+				this.Sync("getting block", false);
 			}
 		}
 	}
