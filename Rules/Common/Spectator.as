@@ -86,6 +86,11 @@ void Spectator(CRules@ this)
 	{
 		return;
 	}
+	
+	CPlayer@ localPlayer = getLocalPlayer();
+	const bool isSpectator = localPlayer !is null ? localPlayer.getTeamNum() == this.getSpectatorTeamNum() : false;
+
+	v_camera_cinematic = isSpectator;
 
 	//variables
 	const Vec2f dim = map.getMapDimensions();
@@ -93,8 +98,7 @@ void Spectator(CRules@ this)
 
     if (this.get_bool("set new target"))
     {
-        string newTarget = this.get_string("new target");
-        _targetPlayer = newTarget;
+        _targetPlayer = this.get_string("new target");
         if (targetPlayer() !is null)
         {
             waitForRelease = true;
@@ -121,9 +125,6 @@ void Spectator(CRules@ this)
 		{
 			timeToScroll = 7;
 			setCinematicEnabled(false);
-			
-			CPlayer@ localPlayer = getLocalPlayer();
-			const bool isSpectator = localPlayer !is null ? localPlayer.getTeamNum() == this.getSpectatorTeamNum() : false;
 			const bool allowMegaZoom = isSpectator && dim.x > 900 && camera.getTarget() is null; //map must be large enough, player has to be spectator team
 
 			if (zoomTarget >= 2.0f)
