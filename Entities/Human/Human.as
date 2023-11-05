@@ -11,7 +11,6 @@
 #include "ShiprektTranslation.as";
 #include "PlankCommon.as";
 
-const int CONSTRUCT_COST = 5;
 const int CONSTRUCT_RANGE = 48;
 const f32 MOTHERSHIP_CREW_HEAL = 0.1f;
 const u16 MOTHERSHIP_HEAL_COST = 10;
@@ -761,7 +760,9 @@ void Construct(CBlob@ this)
 			u16 cost = 0;
 			bool doWarning = false;
 			
-			const f32 constructAmount = blob.hasTag("mothership") ? initHealth / 100 : (CONSTRUCT_COST / f32(blobCost)) * initHealth * (blob.hasTag("weapon") ? 3 : 1);
+			const f32 constructDiscount = 0.5f; //50 percent cheaper to repair block than to replace it
+			const f32 constructFactor = blobCost / (5.0f + blobCost * 0.04f);
+			const f32 constructAmount = initHealth / (blob.hasTag("mothership") ? 100.0f : constructFactor);
 			
 			if (currentTool == "deconstructor")
 			{
@@ -790,7 +791,7 @@ void Construct(CBlob@ this)
 			{
 				reclaim = Maths::Min(currentReclaim + constructAmount, initHealth);
 				
-				const u16 reconstructCost = blob.hasTag("mothership") ? MOTHERSHIP_HEAL_COST : CONSTRUCT_COST;
+				const u16 reconstructCost = blob.hasTag("mothership") ? MOTHERSHIP_HEAL_COST : blobCost*constructDiscount / constructFactor;
 				if (reclaim > health)
 				{
 					heal = reclaim;
@@ -814,14 +815,13 @@ void Construct(CBlob@ this)
 		//effects
 		if (isClient())
 		{
-			const Vec2f barrelPos = pos + Vec2f(0.0f, 0.0f).RotateBy(aimVector.Angle());
 			const f32 offsetAngle = aimVector.Angle() - (blob.getPosition() - pos).Angle(); 
 			
 			CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
 			if (laser !is null)
 			{
 				laser.SetVisible(true);
-				const f32 laserLength = Maths::Max(0.1f, (aimPos - barrelPos).getLength() / 32.0f);
+				const f32 laserLength = Maths::Max(0.1f, (aimPos - pos).getLength() / 32.0f);
 				laser.ResetTransform();
 				laser.ScaleBy(Vec2f(laserLength, 1.0f));
 				laser.TranslateBy(Vec2f(laserLength * 16.0f, + 0.5f));
