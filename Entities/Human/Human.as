@@ -638,19 +638,14 @@ void Punch(CBlob@ this)
 		{
 			CBlob@ b = hitInfos[i].blob;
 			if (b is null) continue;
-			//dirty fix: get occupier if seat
-			if (b.hasTag("hasSeat"))
-			{
-				AttachmentPoint@ seat = b.getAttachmentPoint(0);
-				@b = seat.getOccupied();
-			}
-			if (b !is null && b.getName() == "human" && b.getTeamNum() != this.getTeamNum())
+
+			if (b.getName() == "human" && b.getTeamNum() != this.getTeamNum())
 			{
 				//check to make sure we aren't hitting through blocks
 				bool hitBlock = false;
-				Vec2f dir = b.getPosition() - this.getPosition();
+				Vec2f dir = b.getPosition() - pos;
 				HitInfo@[] rayInfos;
-				if (map.getHitInfosFromRay(this.getPosition(), -dir.Angle(), dir.Length(), this, @rayInfos))
+				if (map.getHitInfosFromRay(pos, -dir.Angle(), dir.Length(), this, @rayInfos))
 				{
 					const u8 rayLength = rayInfos.length;
 					for (u8 q = 0; q < rayLength; q++)
@@ -863,7 +858,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	{
 		//hurt blob with a punch
 		CBlob@ b = getBlobByNetworkID(params.read_netid());
-		if (b !is null && b.hasTag("player") && b.getDistanceTo(this) < 100.0f)
+		if (b !is null)
 		{
 			const Vec2f pos = b.getPosition();
 			if (isClient())
