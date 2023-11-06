@@ -1,4 +1,5 @@
 #include "EmotesCommon.as";
+#include "Default/DefaultGUI.as"
 const u8 BUTTON_SIZE = 4;
 
 void onInit(CRules@ this)
@@ -48,6 +49,7 @@ void onInit(CRules@ this)
 	this.set_u16("bootyRefillLimit", 50);        //limit of welfare booty for poor captains
 	
 	//add icons
+	LoadDefaultGUI();
 	AddIconToken("$BOOTY$", "InteractionIconsBig.png", Vec2f(32,32), 26);
 	AddIconToken("$CORE$", "InteractionIconsBig.png", Vec2f(32,32), 29);
 	AddIconToken("$CAPTAIN$", "InteractionIconsBig.png", Vec2f(32,32), 11);
