@@ -951,7 +951,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 				warn("ships sync (CMD): ship.pos not found");
 				return;
 			}
-			const bool firstSync = ship.id == 0; //true when the player first joins the server
 			ship.id = params.read_s32();
 			const u16 ownerID = params.read_netid();
 			CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;

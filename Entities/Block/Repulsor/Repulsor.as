@@ -73,7 +73,6 @@ void Repulse(CBlob@ this)
 			const f32 pushMultiplier = b.hasTag("engine") ? 1.5f : 1.0f; //engines get pushed more
 			const f32 pushDistance = (b.getPosition() - pos).getLength();
 			const Vec2f pushVel = (b.getPosition() - pos) * (1 - (pushDistance/(PUSH_RADIUS*1.5f))) * PUSH_FACTOR*pushMultiplier/ship.mass;
-			//use ship.centerBlock.getPosition() instead of  b.getPosition()?
 			
 			ship.vel += pushVel;
 			//if (ship.blocks.length == 1) b.setAngularVelocity(300.0f);

@@ -1,13 +1,10 @@
 #include "WeaponCommon.as";
-#include "WaterEffects.as";
 #include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
-#include "Hitters.as";
 #include "ParticleSpark.as";
 #include "PlankCommon.as";
+#include "GunStandard.as";
 
-const f32 BULLET_SPREAD = 2.5f;
-const f32 BULLET_RANGE = 240.0F;
 const f32 MIN_FIRE_PAUSE = 2.85f; //min wait between shots
 const f32 MAX_FIRE_PAUSE = 8.0f; //max wait between shots
 const f32 FIRE_PAUSE_RATE = 0.08f; //higher values = higher recover
@@ -18,8 +15,6 @@ const u8 REFILL_SECONDS = 6;
 const u8 REFILL_SECONDARY_CORE_SECONDS = 1;
 const u8 REFILL_SECONDARY_CORE_AMOUNT = 2;
 
-Random _shotspreadrandom(0x11598); //clientside
-
 BootyRewards@ booty_reward;
 
 void onInit(CBlob@ this)
@@ -28,7 +23,7 @@ void onInit(CBlob@ this)
 	{
 		BootyRewards _booty_reward;
 		_booty_reward.addTagReward("bomb", 1);
-		_booty_reward.addTagReward("engine", 2);
+		_booty_reward.addTagReward("engine", 1);
 		@booty_reward = _booty_reward;
 	}
 	
@@ -36,6 +31,9 @@ void onInit(CBlob@ this)
 	this.Tag("machinegun");
 	this.Tag("usesAmmo");
 	this.Tag("fixed_gun");
+	
+	this.set_u8("TTL", 12);
+	this.set_u8("speed", 25);
 	
 	this.set_f32("weight", 2.0f);
 	
@@ -57,11 +55,11 @@ void onInit(CBlob@ this)
 	{
 		sprite.SetRelativeZ(2);
 		Animation@ anim = sprite.addAnimation("fire left", Maths::Round(MIN_FIRE_PAUSE), false);
-		anim.AddFrame(1);
+		anim.AddFrame(2);
 		anim.AddFrame(0);
 
 		Animation@ anim2 = sprite.addAnimation("fire right", Maths::Round(MIN_FIRE_PAUSE), false);
-		anim2.AddFrame(2);
+		anim2.AddFrame(1);
 		anim2.AddFrame(0);
 
 		Animation@ anim3 = sprite.addAnimation("default", 1, false);
@@ -84,13 +82,6 @@ void onTick(CBlob@ this)
 
 	//print("Fire pause: " + currentFirePause);
 
-	CSprite@ sprite = this.getSprite();
-	CSpriteLayer@ laser = sprite.getSpriteLayer("laser");
-
-	//kill laser after a certain time
-	if (laser !is null && this.get_u32("fire time") + 3.0f < gameTime)
-		sprite.RemoveSpriteLayer("laser");
-
 	if (isServer())
 	{
 		Ship@ ship = getShipSet().getShip(col);
@@ -101,10 +92,6 @@ void onTick(CBlob@ this)
 				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
 		}
 	}
-
-	//reset the random seed periodically so joining clients see the same bullet paths
-	if (gameTime % 450 == 0)
-		_shotspreadrandom.Reset(gameTime);
 }
 
 const bool canShoot(CBlob@ this)
@@ -149,7 +136,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 		// ammo
 		u16 ammo = this.get_u16("ammo");
-
 		if (ammo <= 0)
 		{
 			directionalSoundPlay("LoadingTick1", pos, 0.5f);
@@ -168,201 +154,71 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		sprite.SetAnimation("default");
 
 		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-
 		Vec2f barrelOffset;
-		Vec2f barrelOffsetRelative;
 		if (this.get_string("barrel") == "left")
 		{
-			barrelOffsetRelative = Vec2f(0, -2.0);
 			barrelOffset = Vec2f(0, -2.0).RotateBy(-aimVector.Angle());
 			this.set_string("barrel", "right");
 		}
 		else
 		{
-			barrelOffsetRelative = Vec2f(0, 2.0);
 			barrelOffset = Vec2f(0, 2.0).RotateBy(-aimVector.Angle());
 			this.set_string("barrel", "left");
 		}
 
 		Vec2f barrelPos = pos + aimVector*9 + barrelOffset;
-
-		//hit stuff
-		const u8 teamNum = shooter.getTeamNum();//teamNum of the player firing
-		HitInfo@[] hitInfos;
-		CMap@ map = getMap();
-		bool killed = false;
-		bool blocked = false;
-
-		f32 offsetAngle = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 2.0f;
-		aimVector.RotateBy(offsetAngle);
-
-		const f32 rangeOffset = (_shotspreadrandom.NextFloat() - 0.5f) * BULLET_SPREAD * 8.0f;
-
-		if (map.getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE + rangeOffset, this, @hitInfos))
+		if (isObstructed(this, barrelPos, aimVector))
 		{
-			const u8 hitLength = hitInfos.length;
-			for (u8 i = 0; i < hitLength; i++)
-			{
-				HitInfo@ hi = hitInfos[i];
-				CBlob@ b = hi.blob;
-				u16 tileType = hi.tile;
-
-				if (b is null || b is this) continue;
-
-				const int thisColor = this.getShape().getVars().customData;
-				const int bColor = b.getShape().getVars().customData;
-				const bool sameShip = thisColor == bColor;
-				const bool isBlock = b.hasTag("block");
-				
-				if (b.hasTag("plank") && !CollidesWithPlank(b, aimVector))
-					continue;
-
-				if (!b.hasTag("booty") && (bColor > 0 || !isBlock))
-				{
-					if (isBlock || b.hasTag("rocket"))
-					{
-						if (b.hasTag("solid") || (b.hasTag("door") && b.getShape().getConsts().collidable) || (b.getTeamNum() != teamNum && 
-						   (b.hasTag("core") || b.hasTag("weapon") || b.hasTag("rocket") || b.hasTag("bomb"))))//hit these and die
-							killed = true;
-						else if (sameShip && b.hasTag("weapon") && (b.getTeamNum() == teamNum)) //team weaps
-						{
-							killed = true;
-							blocked = true;
-							directionalSoundPlay("lightup", barrelPos);
-							break;
-						}
-						else if (b.hasTag("seat"))
-						{
-							AttachmentPoint@ seat = b.getAttachmentPoint(0);
-							if (seat !is null)
-							{
-								CBlob@ occupier = seat.getOccupied();
-								if (occupier !is null && occupier.getName() == "human" && occupier.getTeamNum() != this.getTeamNum())
-									killed = true;
-								else
-									continue;
-							}
-						}
-						else
-							continue;
-					}
-					else
-					{
-						if (b.getTeamNum() == teamNum || (b.hasTag("player") && b.isAttached()))
-							continue;
-					}
-
-					if (isClient())//effects
-					{
-						sprite.RemoveSpriteLayer("laser");
-						CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
-						if (laser !is null)//partial length laser
-						{
-							Animation@ anim = laser.addAnimation("default", 1, false);
-							int[] frames = { 0, 1, 2, 3, 4, 5 };
-							anim.AddFrames(frames);
-							laser.SetVisible(true);
-							f32 laserLength = Maths::Max(0.1f, (hi.hitpos - barrelPos).getLength() / 16.0f);
-							laser.ResetTransform();
-							laser.ScaleBy(Vec2f(laserLength, 0.5f));
-							laser.TranslateBy(Vec2f(laserLength*8.0f + 8.0f, barrelOffsetRelative.y));
-							laser.RotateBy(offsetAngle, Vec2f());
-							laser.setRenderStyle(RenderStyle::light);
-							laser.SetRelativeZ(1);
-						}
-
-						hitEffects(b, hi.hitpos);
-					}
-
-					if (attacker !is null)
-						rewardBooty(attacker, b, booty_reward, "Pinball_"+XORRandom(4));
-
-					if (isServer())
-					{
-						if (b.hasTag("engine") && b.getTeamNum() != teamNum && XORRandom(3) == 0)
-							b.SendCommand(b.getCommandID("off"));
-						this.server_Hit(b, hi.hitpos, Vec2f_zero, getDamage(b), Hitters::arrow, true);
-					}
-
-					if (killed) break;
-				}
-			}
+			directionalSoundPlay("lightup", barrelPos);
+			return;
 		}
+		
+		if (isServer())
+			shootGun(this.getNetworkID(), -aimVector.Angle(), barrelPos); //make bullets!
 
-		if (!blocked)
+		if (isClient())
 		{
-			if (isClient())
-			{
-				shotParticles(barrelPos, aimVector.Angle(), false);
-				directionalSoundPlay("Gunshot" + (XORRandom(2) + 2), barrelPos);
-			}
 			if (this.get_string("barrel") == "left")
 				sprite.SetAnimation("fire left");
-			else if (this.get_string("barrel") == "right")
+			else
 				sprite.SetAnimation("fire right");
-		}
-
-		if (!killed && isClient())
-		{
-			sprite.RemoveSpriteLayer("laser");
-			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam1.png", 16, 16);
-			if (laser !is null)
-			{
-				Vec2f solidPos;
-				bool hitStone = map.rayCastSolid(pos, pos + aimVector * (BULLET_RANGE + rangeOffset), solidPos);
-				
-				Animation@ anim = laser.addAnimation("default", 1, false);
-				int[] frames = {0, 1, 2, 3, 4, 5};
-				anim.AddFrames(frames);
-				laser.SetVisible(true);
-				f32 laserLength = Maths::Max(0.1f, (hitStone ? solidPos - barrelPos : (aimVector * (BULLET_RANGE + rangeOffset))).getLength() / 16.0f);
-				laser.ResetTransform();
-				laser.ScaleBy(Vec2f(laserLength, 0.5f));
-				laser.TranslateBy(Vec2f(laserLength * 8.0f + 8.0f, barrelOffsetRelative.y));
-				laser.RotateBy(offsetAngle, Vec2f());
-				laser.setRenderStyle(RenderStyle::light);
-				laser.SetRelativeZ(1);
-				
-				Vec2f endPos = barrelPos + aimVector * (BULLET_RANGE + rangeOffset);
-				
-				if (hitStone) hitEffects(this, solidPos);
-				else if (isInWater(endPos) && !v_fastrender)
-					MakeWaterParticle(endPos, Vec2f_zero);
-				else if (!v_fastrender) AngledDirtParticle(endPos, this.getAngleDegrees()-90);
-			}
+			shotParticles(barrelPos, aimVector.Angle(), false);
+			directionalSoundPlay("Gunshot" + (XORRandom(2) + 2), barrelPos, 1.8f);
 		}
 	}
 }
 
-const f32 getDamage(CBlob@ hitBlob)
+bool isObstructed(CBlob@ this, Vec2f&in barrelPos, Vec2f&in aimVector)
 {
-	f32 damage = 0.01f;
-
-	if (hitBlob.hasTag("ramengine"))
-		return 0.25f;
-	if (hitBlob.hasTag("propeller"))
-		return 0.15f;
-	if (hitBlob.hasTag("seat") || hitBlob.hasTag("plank"))
-		return 0.05f;
-	if (hitBlob.hasTag("decoyCore"))
-		return 0.075f;
-	if (hitBlob.hasTag("bomb"))
-		return 0.4f;
-	if (hitBlob.hasTag("rocket"))
-		return 0.35f;
-	if (hitBlob.hasTag("weapon"))
-		return 0.075f;
-	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
-		return 0.2f;
-
-	return damage;//cores, solids
+	HitInfo@[] hitInfos;
+	if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), 100.0f, this, @hitInfos))
+	{
+		const u8 hitLength = hitInfos.length;
+		for (u8 i = 0; i < hitLength; i++)
+		{
+			HitInfo@ hi = hitInfos[i];
+			CBlob@ b = hi.blob;
+			if (b is null || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector))) continue;
+			
+			const bool sameShip = b.getShape().getVars().customData == this.getShape().getVars().customData;
+			if (sameShip && (b.hasTag("weapon") || b.getShape().getConsts().collidable) && b.getTeamNum() == this.getTeamNum())
+				return true;
+		}
+	}
+	return false;
 }
 
-void hitEffects(CBlob@ hitBlob, const Vec2f&in worldPoint)
+void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-	if (hitBlob.hasTag("block") && isClient())
+	if (damage <= 0.0f) return;
+
+	CPlayer@ player = this.getDamageOwnerPlayer();
+	if (player !is null)
+		rewardBooty(player, hitBlob, booty_reward, "Pinball_"+XORRandom(4));
+	
+	if (isServer())
 	{
-		sparks(worldPoint, v_fastrender ? 1 : 4);
-		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", worldPoint, 0.50f);
+		if (hitBlob.hasTag("engine") && hitBlob.getTeamNum() != this.getTeamNum() && XORRandom(3) == 0)
+			hitBlob.SendCommand(hitBlob.getCommandID("off")); //force turn off
 	}
 }
