@@ -512,6 +512,7 @@ void UpdateShips(CRules@ this, const bool&in integrate = true)
 		{
 			CBlob@ core = null;
 			bool multiTeams = false;
+			bool multiCores = false;
 			u8 teamComp = 255;	
 			u16[] seatIDs;
 			
@@ -534,6 +535,8 @@ void UpdateShips(CRules@ this, const bool&in integrate = true)
 				} 
 				else if (b.hasTag("mothership"))
 				{
+					if (core !is null)
+						multiCores = true;
 					@core = b;
 				}
 			}
@@ -564,10 +567,11 @@ void UpdateShips(CRules@ this, const bool&in integrate = true)
 				}
 
 				//change ship team (only non-motherships that have activated seats)
-				if (!ship.isMothership && !ship.isStation && !multiTeams && !oldestSeatOwner.isEmpty() && ship.owner != oldestSeatOwner)
+				if (!multiCores && !multiTeams && !ship.isStation && !oldestSeatOwner.isEmpty() && ship.owner != oldestSeatOwner)
 				{
 					CPlayer@ oldestOwner = getPlayerByUsername(oldestSeatOwner);
-					if (oldestOwner !is null)
+
+					if (oldestOwner !is null && (core !is null ? core.getTeamNum() == oldestOwner.getTeamNum() : true))
 					{
 						server_setShipTeam(ship, oldestOwner.getTeamNum());
 					}
