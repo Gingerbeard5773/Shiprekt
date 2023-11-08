@@ -27,4 +27,5 @@ https://discord.gg/V29BBeba3C
   <li><b>Nova</b> - French Translator</li>
   <li><b>Gizmodious</b> - French Translator</li>
   <li><b>Sheepo</b> - Spanish Translator</li>
+  <li><b>Vamist</b> - Scripting</li>
 </ul>
