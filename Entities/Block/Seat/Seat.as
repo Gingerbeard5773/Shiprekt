@@ -11,12 +11,9 @@ const u8 CANNON_FIRE_CYCLE = 15;
 void onInit(CBlob@ this)
 {
 	this.set_f32("weight", 0.5f);
-	
-	//Set Owner/couplingsCooldown
+
 	if (isServer())
 	{
-		this.set("couplingCooldown", 0);
-			
 		u16[] left_propellers, strafe_left_propellers, strafe_right_propellers, right_propellers, up_propellers, down_propellers, machineguns, cannons;					
 		this.set("left_propellers", left_propellers);
 		this.set("strafe_left_propellers", strafe_left_propellers);
@@ -33,10 +30,10 @@ void onInit(CBlob@ this)
 		this.set_u8("cannonFireIndex", 0);
 		this.set_u32("lastActive", getGameTime());
 		this.set_u32("lastOwnerUpdate", 0);
+		this.set_u32("couplingCooldown", 0);
 	}
 	
 	this.set_string("seat label", "Steering Seat");
-	this.set_bool("canProduceCoupling", false);
 	this.set_u8("seat icon", 7);
 	this.Tag("control");
 	this.Tag("seat");
@@ -94,11 +91,10 @@ void onTick(CBlob@ this)
 	CBlob@ occupier = seat.getOccupied();
 	if (occupier !is null)
 	{
-		const f32 angle = this.getAngleDegrees();
-		occupier.setAngleDegrees(angle);
-				
+		occupier.setAngleDegrees(this.getAngleDegrees());
+
 		CPlayer@ player = occupier.getPlayer();
-		if (player is null)	return;
+		if (player is null) return;
 
 		CRules@ rules = getRules();
 		CHUD@ HUD = getHUD();
@@ -124,10 +120,10 @@ void onTick(CBlob@ this)
 			occupier.set_bool("drawSeatHelp", !ship.owner.isEmpty() && occupierTeam == teamNum && !isCaptain && occupierName == seatOwner);
 			
 			//couplings help tip
-			occupier.set_bool("drawCouplingsHelp", this.get_bool("canProduceCoupling"));
+			occupier.set_bool("drawCouplingsHelp", this.get_u32("couplingCooldown") + COUPLINGS_COOLDOWN < gameTime);
 
-			//gather couplings and flak
-			CBlob@[] couplings, flak;
+			//gather couplings
+			CBlob@[] couplings;
 			const u16 blocksLength = ship.blocks.length;
 			for (u16 i = 0; i < blocksLength; ++i)
 			{
@@ -138,16 +134,13 @@ void onTick(CBlob@ this)
 				if (block is null) continue;
 				
 				//gather couplings
-				if (block.hasTag("coupling") && !block.hasTag("_coupling_hitspace"))
+				if (block.hasTag("coupling") && !block.hasTag("dead"))
 					couplings.push_back(block);
-				else if (block.hasTag("flak"))
-					flak.push_back(block);
 			}
 			
 			const u16 couplingsLength = couplings.length;
-			const u16 flakLength = flak.length;
 
-			//Show coupling/flak/repulsor buttons on spacebar down
+			//Show coupling/repulsor buttons on spacebar down
 			if (occupier.isKeyJustPressed(key_action3))
 			{
 				//couplings on ship
@@ -204,24 +197,6 @@ void onTick(CBlob@ this)
 						}
 					}
 				}
-				
-				//flak on ship: detach player
-				if (isCaptain)
-				{
-					for (u16 i = 0; i < flakLength; ++i)
-					{
-						CBlob@ f = flak[i];
-						if (f.hasAttached())
-						{
-							CButton@ button = occupier.CreateGenericButton(5, Vec2f_zero, f, f.getCommandID("clear attached"), "Push Crewmate Out");
-							if (button !is null)
-							{
-								button.enableRadius = 999.0f;
-								button.radius = 1.0f;
-							}
-						}
-					}
-				}
 			}
 			
 			//hax: update can't-decouplers
@@ -235,7 +210,11 @@ void onTick(CBlob@ this)
 						occupier.ClickClosestInteractButton(c.getPosition(), 0.0f);
 						
 						CButton@ button = occupier.CreateGenericButton(1, Vec2f_zero, c, c.getCommandID("decouple"), "Decouple (crew's)");
-						if (button !is null) button.enableRadius = 999.0f;
+						if (button !is null)
+						{
+							button.enableRadius = 999.0f;
+							button.radius = 1.0f;
+						}
 					}
 				}
 			}
@@ -252,7 +231,7 @@ void onTick(CBlob@ this)
 					CBlob@ c = couplings[i];
 					if (c.get_string("playerOwner") == occupierName)
 					{
-						c.Tag("_coupling_hitspace");
+						c.Tag("dead");
 						c.SendCommand(c.getCommandID("decouple"));
 					}
 				}
@@ -274,15 +253,11 @@ void onTick(CBlob@ this)
 		}	
 		
 		//Produce coupling
-		u32 couplingCooldown;
-		this.get("couplingCooldown", couplingCooldown);
-		const bool canProduceCoupling = gameTime > couplingCooldown;
-		this.set_bool("canProduceCoupling", canProduceCoupling);
-		this.Sync("canProduceCoupling", true); //-1891382656 HASH
-		
+		const bool canProduceCoupling = gameTime > this.get_u32("couplingCooldown") + COUPLINGS_COOLDOWN;
 		if (inv && canProduceCoupling && !Human::wasHoldingBlocks(occupier) && !Human::isHoldingBlocks(occupier))
 		{
-			this.set("couplingCooldown", gameTime + COUPLINGS_COOLDOWN);
+			this.set_u32("couplingCooldown", gameTime);
+			this.Sync("couplingCooldown", true);
 			ProduceBlock(rules, occupier, "coupling", 2);
 		}
 		
@@ -448,9 +423,9 @@ void onTick(CBlob@ this)
 			if (!space && !Human::isHoldingBlocks(occupier) && !Human::wasHoldingBlocks(occupier))
 			{
 				//machineguns on left click
+				Vec2f aim = occupier.getAimPos() - this.getPosition();//relative to seat
 				if (left_click)
 				{
-					Vec2f aim = occupier.getAimPos() - this.getPosition();//relative to seat
 					const u16 machinegunsLength = machineguns.length;
 					for (u16 i = 0; i < machinegunsLength; ++i)
 					{
@@ -471,7 +446,6 @@ void onTick(CBlob@ this)
 				if (right_click && cannonsLength > 0 && this.get_u32("lastCannonFire") + CANNON_FIRE_CYCLE < gameTime)
 				{
 					CBlob@[] fireCannons;
-					Vec2f aim = occupier.getAimPos() - this.getPosition();//relative to seat
 					
 					for (u16 i = 0; i < cannonsLength; ++i)
 					{
@@ -555,7 +529,7 @@ void updateArrays(CBlob@ this, Ship@ ship)
 			PropellerForces(block, ship, 1.0f, _veltemp, velNorm, angleVel);
 
 			velNorm.RotateBy(-this.getAngleDegrees());
-			
+
 			const float angleLimit = 0.05f;
 			const float forceLimit = 0.01f;
 			const float forceLimit_side = 0.2f;
@@ -564,7 +538,7 @@ void updateArrays(CBlob@ this, Ship@ ship)
 				right_propellers.push_back(netID);
 			else if (angleVel > angleLimit || (velNorm.y > forceLimit_side && angleVel > -angleLimit))
 				left_propellers.push_back(netID);
-			
+
 			if (Maths::Abs(velNorm.x) < forceLimit)
 			{
 				if (velNorm.y < -forceLimit_side)
@@ -572,7 +546,7 @@ void updateArrays(CBlob@ this, Ship@ ship)
 				else if (velNorm.y > forceLimit_side)
 					strafe_left_propellers.push_back(netID);
 			}
-					
+
 			if (velNorm.x > forceLimit)
 				down_propellers.push_back(netID);
 			else if (velNorm.x < -forceLimit)
