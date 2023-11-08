@@ -285,7 +285,7 @@ void onTick(CBlob@ this)
 			this.get("cannons", cannons);
 
 			//propellers
-			const bool teamInsensitive = !ship.isMothership || ship.owner != "*"; //it's a mini or mship isn't merged with another mship (every side controls their props)
+			const bool teamInsensitive = ship.owner != "*"; //combined ships, every side controls their own props
 			
 			const u16 upPropLength = up_propellers.length;
 			const u16 downPropLength = down_propellers.length;
