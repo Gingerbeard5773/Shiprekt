@@ -133,7 +133,7 @@ void onTick(CBlob@ this)
 				if (block is null) continue;
 				
 				//gather couplings
-				if (block.hasTag("coupling") && !block.hasTag("dead") && block.getTeamNum() == occupierTeam)
+				if (block.hasTag("coupling") && !block.hasTag("dead") && block.getTeamNum() == teamNum)
 					couplings.push_back(block);
 			}
 			
