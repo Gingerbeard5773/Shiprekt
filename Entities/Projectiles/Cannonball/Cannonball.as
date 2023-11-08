@@ -34,8 +34,6 @@ void onInit(CBlob@ this)
 	this.SetMapEdgeFlags(CBlob::map_collide_none);
 	
 	this.set_u16("pierced count", 0);
-	u32[] piercedBlobIDs;
-	this.set("pierced blob IDs", piercedBlobIDs);
 
 	this.getSprite().SetZ(550.0f);
 }
@@ -59,11 +57,6 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 		return;
 	
 	u16 piercedCount = this.get_u16("pierced count");
-	u32[]@ piercedBlobIDs;
-	this.get("pierced blob IDs", @piercedBlobIDs);
-	
-	const u32 bID = b.getNetworkID();
-	if (piercedBlobIDs.find(bID) >= 0) return;
 
 	bool killed = false;
 	const int color = b.getShape().getVars().customData;
@@ -81,7 +74,6 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 					killed = true;
 				else
 				{
-					this.push("pierced blob IDs", bID);
 					this.setVelocity(this.getVelocity() * 0.5f);
 				}
 				piercedCount++;
@@ -96,7 +88,6 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 						killed = true;
 					else
 					{
-						this.push("pierced blob IDs", bID);
 						this.setVelocity(this.getVelocity() * 0.5f);
 					}
 					piercedCount++;
@@ -134,9 +125,9 @@ const f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 		damageFactor = 0.5f;
 	
 	if (hitBlob.hasTag("ramengine"))
-		return 3.9f * damageFactor;
+		return 2.3f * damageFactor;
 	if (hitBlob.hasTag("propeller"))
-		return 2.15f * damageFactor;
+		return 1.75f * damageFactor;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("plank"))
 		return 1.5f * damageFactor;
 	if (hitBlob.hasTag("weapon"))
