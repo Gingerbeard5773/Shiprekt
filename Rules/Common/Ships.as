@@ -781,11 +781,10 @@ const bool Serialize(CRules@ this, CBitStream@ stream, const bool&in full_sync)
 		{
 			//send all of a ship's info- ships sync
 			const u16 blocksLength = ship.blocks.length;
-			CPlayer@ owner = getPlayerByUsername(ship.owner);
 			
 			stream.write_Vec2f(ship.pos);
 			stream.write_s32(ship.id);
-			stream.write_netid(owner !is null ? owner.getNetworkID() : 0);
+			stream.write_string(ship.owner);
 			stream.write_netid(ship.centerBlock !is null ? ship.centerBlock.getNetworkID() : 0);
 			stream.write_Vec2f(ship.vel);
 			stream.write_Vec2f(ship.origin_offset);
@@ -829,8 +828,7 @@ const bool Serialize(CRules@ this, CBitStream@ stream, const bool&in full_sync)
 				const f32 thresh = 0.005f;
 				
 				stream.write_bool(true);
-				CPlayer@ owner = getPlayerByUsername(ship.owner);
-				stream.write_netid(owner !is null ? owner.getNetworkID() : 0);
+				stream.write_string(ship.owner);
 				if ((ship.net_pos - ship.pos).LengthSquared() > thresh) //position
 				{
 					stream.write_bool(true);
@@ -952,9 +950,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 				return;
 			}
 			ship.id = params.read_s32();
-			const u16 ownerID = params.read_netid();
-			CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
-			ship.owner = owner !is null ? owner.getUsername() : "";
+			ship.owner = params.read_string();
 			const u16 centerBlockID = params.read_netid();
 			@ship.centerBlock = centerBlockID != 0 ? getBlobByNetworkID(centerBlockID) : null;
 			ship.vel = params.read_Vec2f();
@@ -1044,10 +1040,8 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 					warn("ships update (CMD): ship not found ["+i+"]");
 					return;
 				}
-				
-				const u16 ownerID = params.read_netid();
-				CPlayer@ owner = ownerID != 0 ? getPlayerByNetworkId(ownerID) : null;
-				ship.owner = owner !is null ? owner.getUsername() : "";
+
+				ship.owner = params.read_string();
 				if (params.read_bool()) //passed position thresh
 				{
 					Vec2f dDelta = params.read_Vec2f() - ship.pos;
