@@ -763,11 +763,9 @@ void Construct(CBlob@ this)
 			{
 				if (blob.hasTag("mothership")) return;
 				
-				const string blockOwner = blob.get_string("playerOwner");
-				
-				if ((ship.owner.isEmpty() && !ship.isMothership)
-					|| (blockOwner.isEmpty() && (!ship.isMothership || blob.getTeamNum() == this.getTeamNum()))
-					|| ship.owner == playerName || blockOwner == playerName)
+				const bool sameTeam = blob.getTeamNum() == this.getTeamNum();
+				if ((ship.owner.isEmpty() && (!ship.isMothership || sameTeam)) || //reclaim abandoned ships , reclaim our team's mothership if no owner
+				   ((blob.get_string("playerOwner") == playerName || ship.owner == "*" || ship.owner == playerName) && sameTeam)) //reclaim if we own the ship or block- or the ship has multi-teams
 				{
 					reclaim = currentReclaim - constructAmount;
 				}
@@ -922,12 +920,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		const f32 heal = params.read_f32();
 		const f32 reclaim = params.read_f32();
 		const u16 cost = params.read_u16();
-		
-		if (params.read_bool())
-		{
-			this.set_bool("reclaimPropertyWarn", true);	
-		}
-		
+
+		this.set_bool("reclaimPropertyWarn", params.read_bool());	
+
 		if (reclaim <= 0)
 		{
 			directionalSoundPlay("/ChaChing.ogg", blob.getPosition());
