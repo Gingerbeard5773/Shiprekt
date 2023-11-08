@@ -35,7 +35,6 @@ void onInit(CBlob@ this)
 	
 	this.set_string("seat label", "Steering Seat");
 	this.set_u8("seat icon", 7);
-	this.Tag("control");
 	this.Tag("seat");
 	this.Tag("ramming");
 	
@@ -134,7 +133,7 @@ void onTick(CBlob@ this)
 				if (block is null) continue;
 				
 				//gather couplings
-				if (block.hasTag("coupling") && !block.hasTag("dead"))
+				if (block.hasTag("coupling") && !block.hasTag("dead") && block.getTeamNum() == occupierTeam)
 					couplings.push_back(block);
 			}
 			
@@ -154,7 +153,7 @@ void onTick(CBlob@ this)
 					if (isCaptain)
 					{
 						CButton@ button;
-						const bool oldEnough = c.getTickSinceCreated() > CREW_COUPLINGS_LEASE || c.getTeamNum() != occupierTeam;
+						const bool oldEnough = c.getTickSinceCreated() > CREW_COUPLINGS_LEASE;
 						if ((isOwner || oldEnough))
 						{
 							@button = occupier.CreateGenericButton(isOwner ? 2 : 1, Vec2f_zero, c, c.getCommandID("decouple"), isOwner ? "Decouple" : "Decouple (crew's)");

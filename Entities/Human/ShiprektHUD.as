@@ -42,7 +42,7 @@ void onTick(CSprite@ this)
 			for (u8 i = 0; i < blobsLength; i++)
 			{
 				CBlob@ seat = blobs[i];
-				if (seat.hasTag("control") && seat.get_string("playerOwner") == name)
+				if (seat.hasTag("seat") && seat.get_string("playerOwner") == name)
 				{
 					seatID = seat.getNetworkID();
 					break;

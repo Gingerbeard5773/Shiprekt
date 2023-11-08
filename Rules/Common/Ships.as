@@ -523,7 +523,7 @@ void UpdateShips(CRules@ this, const bool&in integrate = true)
 				
 				UpdateShipBlob(b, ship, ship_block);
 				
-				if (b.hasTag("control") && !b.get_string("playerOwner").isEmpty())
+				if (b.hasTag("seat") && !b.get_string("playerOwner").isEmpty())
 				{
 					seatIDs.push_back(ship_block.blobID);
 					
