@@ -29,7 +29,6 @@ void onInit(CBlob@ this)
 		this.set_u32("lastCannonFire", getGameTime());
 		this.set_u8("cannonFireIndex", 0);
 		this.set_u32("lastActive", getGameTime());
-		this.set_u32("lastOwnerUpdate", 0);
 		this.set_u32("couplingCooldown", 0);
 	}
 	
@@ -69,14 +68,6 @@ void onTick(CBlob@ this)
 		if (ownerPlayer is null || ownerPlayer.getTeamNum() != teamNum || gameTime - this.get_u32("lastActive") > UNUSED_RESET)
 		{
 			server_setOwner(this, "");
-			//print("** Clearing ownership: " + seatOwner + (ownerPlayer is null ? " left" : " changed team/not used"));
-		}
-		
-		//fail-safe. force owner update
-		if (gameTime - this.get_u32("lastOwnerUpdate") > 90)
-		{
-			this.Sync("playerOwner", true);
-			this.set_u32("lastOwnerUpdate", gameTime);
 		}
 	}
 
@@ -247,9 +238,8 @@ void onTick(CBlob@ this)
 			
 		if (seatOwner.isEmpty())//Re-set empty seat's owner to occupier
 		{
-			//print("** Re-setting seat owner: " + occupierName);
 			server_setOwner(this, occupierName);
-		}	
+		}
 		
 		//Produce coupling
 		const bool canProduceCoupling = gameTime > this.get_u32("couplingCooldown") + COUPLINGS_COOLDOWN;
@@ -570,5 +560,4 @@ void server_setOwner(CBlob@ this, const string&in owner)
 	//print("" + this.getNetworkID() + " seat setOwner: " + owner);
 	this.set_string("playerOwner", owner);
 	this.Sync("playerOwner", true);
-	this.set_u32("lastOwnerUpdate", getGameTime());
 }
