@@ -17,8 +17,8 @@ const u16 MOTHERSHIP_HEAL_COST = 10;
 const f32 BULLET_SPREAD = 0.2f;
 const f32 BULLET_SPEED = 9.0f;
 const f32 BULLET_RANGE = 350.0f;
-const Vec2f BUILD_MENU_SIZE = Vec2f(7, 3);
-const Vec2f BUILD_MENU_TEST = Vec2f(7, 3); //for testing, only activates when sv_test is on
+const Vec2f BUILD_MENU_SIZE = Vec2f(8, 3);
+const Vec2f BUILD_MENU_TEST = Vec2f(8, 3); //for testing, only activates when sv_test is on
 const Vec2f TOOLS_MENU_SIZE = Vec2f(2, 6);
 
 //global is fine since only used with isMyPlayer
@@ -556,6 +556,10 @@ void BuildShopMenu(CBlob@ this, CBlob@ core, const string&in desc, const Vec2f&i
 	{ //Flak
 		description = Trans::FlakDesc+"\n"+Trans::AmmoCap+": 15";
 		AddBlock(this, menu, "flak", "$FLAK$", Trans::FlakCannon, description, core, 2.5f, warmup);
+	}
+	{ //Heavy Machinegun
+		description = Trans::HeavyMGDesc+"\n"+Trans::AmmoCap+": 160";
+		AddBlock(this, menu, "heavymachinegun", "$HEAVYMACHINEGUN$", Trans::HeavyMG, description, core, 3.0f, warmup);
 	}
 	{ //AP Cannon
 		description = Trans::CannonDesc+"\n"+Trans::AmmoCap+": 10";

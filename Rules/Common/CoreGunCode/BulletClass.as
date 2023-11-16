@@ -254,9 +254,9 @@ const f32 getDamageHeavy(CBlob@ hitBlob)
 	f32 damage = 0.05f;
 
 	if (hitBlob.hasTag("ramengine"))
-		return 0.3f;
+		return 0.4f;
 	if (hitBlob.hasTag("propeller"))
-		return 0.125f;
+		return 0.135f;
 	if (hitBlob.hasTag("plank"))
 		return 0.1f;
 	if (hitBlob.hasTag("decoyCore"))
