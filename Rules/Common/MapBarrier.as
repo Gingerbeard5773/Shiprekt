@@ -6,7 +6,7 @@ s32[] shipIDs;
 u32[] shipTimes;
 
 const u32 ticksTillNextBounce = 4;
-const u8 torpedo_size_max = 3;
+const u8 torpedo_size_max = 2;
 
 void onTick(CRules@ this)
 {

@@ -361,6 +361,18 @@ void InitShip(Ship@ ship)
 		ship.mass = totalMass; //linear mass growth
 
 		//determine center block
+		if (blocksLength == 2)
+		{
+			//use an engine as centerblock for 2 block ships (this is used for torpedo border bounce)
+			for (u16 i = 0; i < blocksLength; ++i)
+			{
+				CBlob@ b = getBlobByNetworkID(ship.blocks[i].blobID);
+				if (b is null || !b.hasTag("engine")) continue;
+
+				@ship.centerBlock = b;
+				break;
+			}
+		}
 		if (ship.centerBlock is null)
 		{
 			//find the center of ship and label it as the centerBlock
