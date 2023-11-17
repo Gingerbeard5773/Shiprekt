@@ -128,11 +128,12 @@ void onRender(CRules@ this)
 		//PAGE 1
 		const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
 		const string lastChangesInfo = Trans::LastChanges+":\n"
-		+ "- 7-25-2022 - By GoldenGuy & Gingerbeard\n"
-		+ "  * Smoother camera and improved visuals.\n"
-		+ "  * Fixed unaligned block cursor placement.\n"
-		+ "  * Flak firing is more accurate when manned.\n"
-		+ "  * Players shouldn't get randomly booted off their ship as much.\n";
+		+ "- 11-17-2023 - By Gingerbeard\n"
+		+ "  * Added a new weapon component- Heavy Machinegun.\n"
+		+ "  * Revamped bullet mechanics.\n"
+		+ "  * Repairing blocks is much cheaper.\n"
+		+ "  * All players can build on the mothership during warm-up.\n"
+		+ "  * Cannonballs & machinegun bullets do less damage to engines than before.\n";
 		
 		GUI::SetFont("menu");
 		Vec2f lastChangesSize;
