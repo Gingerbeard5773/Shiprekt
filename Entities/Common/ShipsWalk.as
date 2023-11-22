@@ -31,6 +31,7 @@ void onTick(CBlob@ this)
 	WalkInfo@ walk;
 	if (!this.get("WalkInfo", @walk)) return;
 	
+	bool ship_server_sync = false;
 	Vec2f pos = this.getPosition();
 	const s32 overlappingShipID = this.get_s32("shipID");
 	if (this.get_bool("onGround"))
@@ -40,6 +41,7 @@ void onTick(CBlob@ this)
 		{
 			if (ship.id != walk.shipID || !this.wasOnGround()) //ship changed: change cached values to current
 			{
+				ship_server_sync = true; //sync client's position to server to avoid desync
 				walk.shipID = ship.id;
 				walk.shipOldAngle = ship.angle;
 				walk.shipOldPos = ship.origin_pos;
@@ -67,6 +69,7 @@ void onTick(CBlob@ this)
 		CBitStream params;
 		params.write_f32(getCamera().getRotation());
 		params.write_s32(overlappingShipID);
+		params.write_bool(ship_server_sync);
 		params.write_Vec2f(pos);
 		this.SendCommand(this.getCommandID("sync player"), params);
 	}
@@ -82,13 +85,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 	if (this.isMyPlayer()) return; //our client has already calculated our position
 
-	//sync pos to other clients (and server when off ship)
+	//sync pos to other clients (and server when off ship/when necessary)
 	const s32 overlappingShipID = params.read_s32();
+	const bool ship_server_sync = params.read_bool();
 	Vec2f offset = params.read_Vec2f();
 	if (overlappingShipID > 0)
 	{
 		Ship@ ship = getShipSet().getShip(overlappingShipID);
-		if (ship is null || isServer()) return;
+		if (ship is null || (isServer() && !ship_server_sync)) return;
 
 		offset.RotateBy(ship.angle);
 		offset += ship.origin_pos;
