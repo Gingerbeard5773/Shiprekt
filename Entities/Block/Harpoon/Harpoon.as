@@ -41,6 +41,7 @@ void onInit(CBlob@ this)
 	HarpoonInfo harpoon;
 	this.set("harpoonInfo", @harpoon);
 
+	this.addCommandID("hook"); //hook onto a block
 	this.addCommandID("unhook"); //start reel
 	this.addCommandID("grapple"); //start grapple sequence
 	this.addCommandID("resetgrapple"); //return to normal
@@ -353,12 +354,11 @@ const bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 		
 		if (b.getShape().getVars().customData > 0 && b.getShape().getConsts().collidable)
 		{
-			harpoon.grapple_id = b.getNetworkID();
-			
-			if (isClient())
+			if (isServer())
 			{
-				directionalSoundPlay("crowbar_impact2.ogg", harpoon.grapple_pos);
-				sparks(harpoon.grapple_pos, v_fastrender ? 7 : 9, 3.0f);
+				CBitStream bt;
+				bt.write_netid(b.getNetworkID());
+				this.SendCommand(this.getCommandID("hook"), bt);
 			}
 			
 			return true;
@@ -370,11 +370,11 @@ const bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
+	HarpoonInfo@ harpoon;
+	if (!this.get("harpoonInfo", @harpoon)) return;
+
 	if (cmd == this.getCommandID("grapple"))
 	{
-		HarpoonInfo@ harpoon;
-		if (!this.get("harpoonInfo", @harpoon)) return;
-		
 		Vec2f pos = this.getPosition();
 		Vec2f direction = params.read_Vec2f();
 		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
@@ -400,11 +400,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				p.Z = 650;
 		}
 	}
+	else if (cmd == this.getCommandID("hook"))
+	{
+		const u16 id = params.read_netid();
+		harpoon.grapple_id = id;
+		if (isClient())
+		{
+			directionalSoundPlay("crowbar_impact2.ogg", harpoon.grapple_pos);
+			sparks(harpoon.grapple_pos, v_fastrender ? 7 : 9, 3.0f);
+		}
+	}
 	else if (cmd == this.getCommandID("unhook"))
 	{
-		HarpoonInfo@ harpoon;
-		if (!this.get("harpoonInfo", @harpoon)) return;
-		
 		if (isClient())
 			directionalSoundPlay("HookReel.ogg", this.getPosition());
 			
@@ -413,9 +420,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	}
 	else if (cmd == this.getCommandID("resetgrapple"))
 	{
-		HarpoonInfo@ harpoon;
-		if (!this.get("harpoonInfo", @harpoon)) return;
-		
 		if (isClient())		
 			directionalSoundPlay("HookReset.ogg", this.getPosition());
 		
