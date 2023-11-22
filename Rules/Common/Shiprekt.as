@@ -386,6 +386,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					}
 					return false;
 				}
+				else if (tokens[0] == "!teambooty" && tokens.length > 2) //change a team's total booty
+				{
+					if (this.exists("bootyTeam_total" + tokens[1]))
+						this.set_u16("bootyTeam_total" + tokens[1], parseInt(tokens[2]));
+					return false;
+				}
 				else if (tokens[0] == "!booty") //give or take defined amount of booty
 				{
 					error(player.getUsername()+" cheating for "+parseInt(tokens[1])+" booty, bad!");
@@ -533,6 +539,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						  "\n !hash [string] : print the hashcode of a string. originally used for debugging purposes."+
 						  "\n !tp [playername OR playerID] ['here'] : teleport to a player, add the token 'here' to do the opposite."+
 						  "\n !class [blobname] : change your player's blob. mostly useful for changing between human and shark."+
+						  "\n !teambooty [team] [amount] : change booty of the selected team."+
 						  "\n !booty [amount] : give booty to your player. use negative integers to remove booty instead."+
 						  "\n !teamchange [teamnum] : change your player's team without dying."+
 						  "\n !crit [teamnum] : instantly kill a team's mothership core."+
