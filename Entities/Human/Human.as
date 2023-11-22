@@ -60,7 +60,6 @@ void onInit(CBlob@ this)
 	CBlob@ core = getMothership(this.getTeamNum());
 	if (core !is null && this.getPlayer() !is null) 
 	{
-		this.setPosition(core.getPosition());
 		this.set_u16("shipBlobID", core.getNetworkID());
 		if (this.isMyPlayer())
 		{

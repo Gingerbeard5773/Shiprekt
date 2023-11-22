@@ -101,8 +101,17 @@ void assignTeams(CRules@ this, CPlayer@[] players)
 
 void assignTeam(CRules@ this, CPlayer@ player)
 {
-	//finds the team with the lowest amount of players
-	//TODO: prioritize assignment to teams with less booty over rich teams when teams have equal playercount
+	//assigns the player to the team with the lowest amount of players.
+	//in case there is multiple teams with the lowest amount of players, it will select the team with the lowest team-booty.
+
+	if (!hasSoftBanExpired(player))
+	{
+		player.server_setTeamNum(this.getSpectatorTeamNum());
+		return;
+	}
+
+	if (getMothership(player.getTeamNum()) !is null)
+		return; //if we already have a suitable team, dont re-assign
 	
 	const u8 teamsNum = this.getTeamsNum();
 	u8[] playersperteam(teamsNum);
@@ -128,14 +137,27 @@ void assignTeam(CRules@ this, CPlayer@ player)
 			
 		minplayers = Maths::Min(playersperteam[i], minplayers); //set minimum
 	}
-	
+
 	if (minplayers == 255) return;
+
+	//only allow the teams with the least amount of players to get more players.
+	//find the minimum team booty
+	u8[] smallestTeams;
+	u16 minbooty = -1;
+	for (u8 i = 0; i < teamsNum; i++)
+	{
+		if (playersperteam[i] == minplayers)
+		{
+			smallestTeams.push_back(i);
+			minbooty = Maths::Min(this.get_u16("bootyTeam_total" + i), minbooty);
+		}
+	}
 	
-	//choose a random team with minimum player count
+	//find and choose the team with the minimum booty. we have to randomize incase multiple teams have the same team booty
 	u8 team;
 	do
-		team = XORRandom(teamsNum);
-	while (playersperteam[team] > minplayers); //theoretically could loop infinitely
+		team = smallestTeams[XORRandom(smallestTeams.length)]; //choose a random team from our selected smallest teams
+	while (this.get_u16("bootyTeam_total" + team) > minbooty); //if the chosen team has more booty than the min, continue the loop and choose a new team to check.
 
 	player.server_setTeamNum(team);
 }
@@ -184,11 +206,10 @@ void onTick(CRules@ this)
 	}
 }
 
-CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
+void SpawnPlayer(CRules@ this, CPlayer@ player)
 {
-	if (player is null)
-		return null;
-	
+	if (player is null) return;
+
 	// remove previous players blob
 	CBlob@ blob = player.getBlob();
 	if (blob !is null)
@@ -196,18 +217,9 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 		blob.server_SetPlayer(null);
 		blob.server_Die();
 	}
-	
-	if (!hasSoftBanExpired(player))
-	{
-		player.server_setTeamNum(this.getSpectatorTeamNum());
-	}
-	//player mothership got destroyed or joining player
-	else if (getMothership(player.getTeamNum()) is null)
-	{
-		//reassign to a team with alive core
-		assignTeam(this, player);
-	}
-	
+
+	assignTeam(this, player);
+
 	const u8 newteam = player.getTeamNum();
 	CBlob@ newship = getMothership(newteam);
 	
@@ -216,11 +228,9 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 	{
 		CBlob@ shark = server_CreateBlob("shark", this.getSpectatorTeamNum(), getSpawnPosition(0));
 		if (shark !is null)
-		{
 			shark.server_SetPlayer(player);
-		}
-		
-		return shark;
+
+		return;
 	}
 
 	CBlob@ newBlob = server_CreateBlobNoInit(PLAYER_BLOB);
@@ -231,8 +241,6 @@ CBlob@ SpawnPlayer(CRules@ this, CPlayer@ player)
 		newBlob.setPosition(newship.getPosition());
 		newBlob.Init();
 	}
-	
-	return newBlob;
 }
 
 bool isRespawnAdded(CRules@ this, const string&in username)
@@ -280,6 +288,7 @@ void onPlayerRequestTeamChange(CRules@ this, CPlayer@ player, u8 newteam)
 	{
 		if (old_team == specNum)
 		{
+			assignTeam(this, player);
 			Respawn r(player.getUsername(), specToTeamRespawnTime + getGameTime());
 			this.push("respawns", r);
 			syncRespawnTime(this, player, specToTeamRespawnTime + getGameTime());
