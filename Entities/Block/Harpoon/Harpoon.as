@@ -4,8 +4,6 @@
 #include "AccurateSoundPlay.as";
 #include "PlankCommon.as";
 
-//TODO:
-// BUG: Harpoon-states aren't synced on player-join, so to joining clients a harpoon may not be in the correct state
 // BUG: Visual sprite-layers 'shaking' when launching grapple at certain angles
 
 const f32 harpoon_grapple_length = 300.0f;
@@ -440,11 +438,36 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 
 	if (harpoon.grapple_id != 0xffff)
 	{
-		CButton@ unhookButton = caller.CreateGenericButton(1, (harpoon.grapple_pos - this.getPosition())*0.5f, this, this.getCommandID("unhook"), "Unhook Harpoon");
-		if (unhookButton !is null)
+		CBlob@ b = getBlobByNetworkID(harpoon.grapple_id);
+		if (b !is null)
 		{
-			unhookButton.radius = 8.0f; //engine fix
-			unhookButton.enableRadius = 15.0f;
+			CButton@ unhookButton = caller.CreateGenericButton(1, Vec2f(), b, unhookGrapple, "Unhook Harpoon");
+			if (unhookButton !is null)
+			{
+				unhookButton.radius = 8.0f; //engine fix
+				unhookButton.enableRadius = 15.0f;
+			}
+		}
+	}
+}
+
+//HACK: use a callback function in order to allow the button to follow the block the harpoon has grappled 
+void unhookGrapple(CBlob@ block, CBlob@ caller)
+{
+	const u16 id = block.getNetworkID();
+	CBlob@[] harpoons;
+	getBlobsByTag("harpoon", @harpoons); //we cant inherit the harpoon blob with callback so we have to find it ourselves
+	
+	for (u8 i = 0; i < harpoons.length; ++i)
+	{
+		CBlob@ b = harpoons[i];
+		HarpoonInfo@ harpoon;
+		if (!b.get("harpoonInfo", @harpoon)) continue;
+		
+		if (harpoon.grapple_id == id)
+		{
+			b.SendCommand(b.getCommandID("unhook"));
+			return;
 		}
 	}
 }
