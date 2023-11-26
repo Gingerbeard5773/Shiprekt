@@ -6,6 +6,7 @@ bool showHelp = true;
 bool justJoined = true;
 bool page1 = true;
 bool mouseWasPressed1 = false;
+bool shiprektUpdated = false;
 
 const f32 boxMargin = 50.0f;
 const SColor tipsColor = SColor(255, 255, 255, 255);
@@ -21,7 +22,8 @@ const string action3_key = getControls().getActionKeyKeyName(AK_ACTION3);
 const string map_key = getControls().getActionKeyKeyName(AK_MAP);
 const string zoomIn_key = getControls().getActionKeyKeyName(AK_ZOOMIN);
 const string zoomOut_key = getControls().getActionKeyKeyName(AK_ZOOMOUT);
-		
+const string FileName = "Shiprekt/Settings.cfg";
+
 void onInit(CRules@ this)
 {
 	CFileImage@ image = CFileImage("GameHelp.png");
@@ -31,6 +33,26 @@ void onInit(CRules@ this)
 	if (!GUI::isFontLoaded("thick font"))
 	{
 		GUI::LoadFont("thick font", g_locale == "ru" ? "GUI/Fonts/Arial.ttf" : "GUI/Fonts/AveriaSerif-Bold.ttf", 30, true);
+	}
+	
+	const u32 versionNum = parseInt(this.get_string("version").replace(".", ""));
+	
+	ConfigFile cfg = ConfigFile();
+	if (!cfg.loadFile("../Cache/"+FileName))
+	{
+		warn("Creating settings config ../Cache/"+FileName);
+		cfg.add_u32("version", versionNum);
+		cfg.saveFile(FileName);
+		if (versionNum == 1531)
+			shiprektUpdated = true; //this line should be removed once we update away from 1.53.1
+	}
+	
+	const u32 oldVersionNum = cfg.read_u32("version");
+	if (oldVersionNum < versionNum)
+	{
+		cfg.add_u32("version", versionNum);
+		cfg.saveFile(FileName);
+		shiprektUpdated = true;
 	}
 }
 
@@ -143,6 +165,13 @@ void onRender(CRules@ this)
 		
 		GUI::SetFont("thick font");
 		GUI::DrawText(shiprektVersion, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
+		
+		if (shiprektUpdated)
+		{
+			Vec2f shiprektVersionSize;
+			GUI::GetTextDimensions(shiprektVersion, shiprektVersionSize);
+			GUI::DrawText("[UPDATE!]", Vec2f(sMid - imageSize.x + shiprektVersionSize.x + 10, tlBoxJustJoined.y + 2*imageSize.y), ConsoleColour::ERROR);
+		}
 		
 		GUI::SetFont("menu");
 		GUI::DrawText(lastChangesInfo, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
