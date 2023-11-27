@@ -17,10 +17,10 @@ void onInit(CBlob@ this)
 	if (booty_reward is null)
 	{
 		BootyRewards _booty_reward;
-		_booty_reward.addTagReward("bomb", 8);
-		_booty_reward.addTagReward("engine", 6);
-		_booty_reward.addTagReward("weapon", 8);
-		_booty_reward.addTagReward("core", 12);
+		_booty_reward.addTagReward("bomb", 4);
+		_booty_reward.addTagReward("engine", 3);
+		_booty_reward.addTagReward("weapon", 4);
+		_booty_reward.addTagReward("core", 6);
 		@booty_reward = _booty_reward;
 	}
 
@@ -120,24 +120,24 @@ const f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 	f32 damageFactor = 1.0f;
 	
 	if (piercedCount > 2)
-		damageFactor = 0.35f;
+		damageFactor = 0.15f;
 	else if (piercedCount > 1)
-		damageFactor = 0.5f;
+		damageFactor = 0.35f;
 	
 	if (hitBlob.hasTag("ramengine"))
-		return 2.3f * damageFactor;
+		return 2.0f * damageFactor;
 	if (hitBlob.hasTag("propeller"))
-		return 1.75f * damageFactor;
+		return 1.65f * damageFactor;
 	if (hitBlob.hasTag("seat") || hitBlob.hasTag("plank"))
 		return 1.5f * damageFactor;
 	if (hitBlob.hasTag("weapon"))
-		return 1.75f * damageFactor;
+		return 1.35f * damageFactor;
 	if (hitBlob.getName() == "shark" || hitBlob.getName() == "human")
 		return 0.9f * damageFactor;
 	if (hitBlob.hasTag("mothership"))
 		return 0.4f * damageFactor;
 
-	return 0.7f *damageFactor;
+	return 0.55f *damageFactor;
 }
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
