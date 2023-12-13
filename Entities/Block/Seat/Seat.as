@@ -489,6 +489,10 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 	}
 }
 
+const f32 angleLimit = 0.05f;
+const f32 forceLimit = 0.01f;
+const f32 forceLimit_side = 0.2f;
+
 void updateArrays(CBlob@ this, Ship@ ship)
 {
 	this.set_bool("updateBlock", false);
@@ -518,10 +522,6 @@ void updateArrays(CBlob@ this, Ship@ ship)
 			PropellerForces(block, ship, 1.0f, _veltemp, velNorm, angleVel);
 
 			velNorm.RotateBy(-this.getAngleDegrees());
-
-			const float angleLimit = 0.05f;
-			const float forceLimit = 0.01f;
-			const float forceLimit_side = 0.2f;
 
 			if (angleVel < -angleLimit || (velNorm.y < -forceLimit_side && angleVel < angleLimit))
 				right_propellers.push_back(netID);
