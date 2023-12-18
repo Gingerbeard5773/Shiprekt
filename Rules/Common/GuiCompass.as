@@ -6,6 +6,11 @@ bool mKeyTap = false;
 bool mKeyWasPressed = false;
 u32 mKeyPressTime = 0;
 
+const Vec2f framesize = Vec2f(64,64);
+const Vec2f smallframesize = Vec2f(8,8);
+const Vec2f bigframesize = Vec2f(16,16);
+const string gui_image_fname = "GUI/compass.png";
+
 class CompassVars 
 {
 	u8[] core_teams;
@@ -193,8 +198,6 @@ void onRestart(CRules@ this)
 void onRender(CRules@ this)
 {
 	if (g_videorecording) return;
-	
-	const string gui_image_fname = "GUI/compass.png";
 
 	CCamera@ c = getCamera();
 	const f32 camangle = c.getRotation();
@@ -202,10 +205,11 @@ void onRender(CRules@ this)
 	const bool mapKey = controls.ActionKeyPressed(AK_MAP);
 	
 	CPlayer@ p = getLocalPlayer();
-	const u8 localTeamNum = p !is null ? p.getTeamNum() : -1;
+	if (p is null) return;
+
+	const u8 localTeamNum = p.getTeamNum();
 	
 	Vec2f topLeft = Vec2f(8,8);
-	const Vec2f framesize = Vec2f(64,64);
 	Vec2f center = Vec2f(32,32);
 
 	if (mapKey)
@@ -237,12 +241,10 @@ void onRender(CRules@ this)
 		Vec2f pos(Maths::Min(8.0f, _vars.center_distance / 48.0f), 0.0f);
 		pos.RotateBy(_vars.center_angle - camangle);
 
-		const Vec2f thisframesize = Vec2f(16,16);
-
 		if (!getRules().get_bool("whirlpool"))
-			GUI::DrawIcon(gui_image_fname, 13, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
+			GUI::DrawIcon(gui_image_fname, 13, bigframesize, (topLeft + (center + pos)*2.0f - bigframesize) * scale, scale, 0);
 		else
-			GUI::DrawIcon("WhirlpoolIcon.png", 0, Vec2f(16,16), (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
+			GUI::DrawIcon("WhirlpoolIcon.png", 0, bigframesize, (topLeft + (center + pos)*2.0f - bigframesize) * scale, scale, 0);
 	}
 	
 	//closest booty
@@ -250,9 +252,8 @@ void onRender(CRules@ this)
 	{
 		Vec2f pos(Maths::Min(18.0f, _vars.booty_distance / 48.0f), 0.0f);
 		pos.RotateBy(_vars.booty_angle - camangle);
-		
-		const Vec2f thisframesize = Vec2f(16,16);
-		GUI::DrawIcon(gui_image_fname, 14, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, 0);
+
+		GUI::DrawIcon(gui_image_fname, 14, bigframesize, (topLeft + (center + pos)*2.0f - bigframesize) * scale, scale, 0);
 	}
 	
 	//station icons
@@ -262,8 +263,7 @@ void onRender(CRules@ this)
 		Vec2f pos(Maths::Min(18.0f, _vars.station_distances[i] / 48.0f), 0.0f);
 		pos.RotateBy(_vars.station_angles[i] - camangle);
 		
-		const Vec2f thisframesize = Vec2f(8,8);
-		GUI::DrawIcon(gui_image_fname, 25, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, _vars.station_teams[i]);
+		GUI::DrawIcon(gui_image_fname, 25, smallframesize, (topLeft + (center + pos)*2.0f - smallframesize) * scale, scale, _vars.station_teams[i]);
 	}
 	
 	//human icons
@@ -274,8 +274,7 @@ void onRender(CRules@ this)
 		pos.RotateBy(_vars.human_angles[i] - camangle);
 
 		const bool borderZoom = localTeamNum != _vars.human_teams[i] && pos.x > 16.5f;
-		const Vec2f thisframesize = Vec2f(8,8);
-		GUI::DrawIcon(gui_image_fname, 23, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale * (borderZoom ? 1.25f : 1.0f), _vars.human_teams[i]);
+		GUI::DrawIcon(gui_image_fname, 23, smallframesize, (topLeft + (center + pos)*2.0f - smallframesize) * scale, scale * (borderZoom ? 1.25f : 1.0f), _vars.human_teams[i]);
 	}
 	
 	//core icons
@@ -299,26 +298,25 @@ void onRender(CRules@ this)
 
 		if (decoyExists)
 		{
-			// draw decoy core as mother core
+			const bool local = localTeamNum == _vars.core_teams[i];
+			// draw decoy core as mother core to enemies
 			Vec2f pos(Maths::Min(18.0f, _vars.decoycore_distances[decoycore_index] / 48.0f), 0.0f);
 			pos.RotateBy(_vars.decoycore_angles[decoycore_index] - camangle);
 
-			const Vec2f thisframesize = Vec2f(8,8);
-			GUI::DrawIcon(gui_image_fname, 24, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, _vars.decoycore_teams[decoycore_index]);
+			GUI::DrawIcon(gui_image_fname, local ? 22 : 24, smallframesize, (topLeft + (center + pos)*2.0f - smallframesize) * scale, scale, _vars.decoycore_teams[decoycore_index]);
 
-			// draw main core as miniship
+			// draw main core as miniship to enemies
 			Vec2f pos2(Maths::Min(18.0f, _vars.core_distances[i] / 48.0f), 0.0f);
 			pos2.RotateBy(_vars.core_angles[i] - camangle);
 
-			GUI::DrawIcon(gui_image_fname, 23, thisframesize, (topLeft + (center + pos2)*2.0f - thisframesize) * scale, scale, _vars.core_teams[i]);
+			GUI::DrawIcon(gui_image_fname, local ? 24 : 23, smallframesize, (topLeft + (center + pos2)*2.0f - smallframesize) * scale, scale, _vars.core_teams[i]);
 		}
 		else
 		{
 			Vec2f pos(Maths::Min(18.0f, _vars.core_distances[i] / 48.0f), 0.0f);
 			pos.RotateBy(_vars.core_angles[i] - camangle);
 
-			const Vec2f thisframesize = Vec2f(8,8);
-			GUI::DrawIcon(gui_image_fname, 24, thisframesize, (topLeft + (center + pos)*2.0f - thisframesize) * scale, scale, _vars.core_teams[i]);
+			GUI::DrawIcon(gui_image_fname, 24, smallframesize, (topLeft + (center + pos)*2.0f - smallframesize) * scale, scale, _vars.core_teams[i]);
 		}
 	}
 }
