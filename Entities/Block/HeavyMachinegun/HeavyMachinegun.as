@@ -99,7 +99,7 @@ void Manual(CBlob@ this, CBlob@ controller)
 	Vec2f aimVector = aimpos - pos;
 
 	// fire
-	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShoot(this) && isClearShot(this, aimVector))
+	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && isClearShot(this, aimVector))
 	{
 		Fire(this, aimVector, controller.getNetworkID());
 	}
