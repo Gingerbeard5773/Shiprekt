@@ -1,13 +1,15 @@
-//Gingerbeard @ 3/27/2022
-//Converts a block to the player's team after some time nearby
+//Gingerbeard @ 12/20/2023
+//Converts a block to the player's team after some attached
 
-const int capture_radius = 8;
+#include "ShipsCommon.as";
+
 const u8 checkFrequency = 15;
-const u8 checkFrequencyIdle = 40;
+const u8 checkFrequencyIdle = 60;
 
 void onInit(CBlob@ this)
 {
 	this.getCurrentScript().tickFrequency = checkFrequencyIdle;
+	this.set_u8("capture time", 10);
 	this.set_u8("convertTime", this.get_u8("capture time"));
 	this.set_u8("convertTeam", this.getTeamNum());
 }
@@ -16,41 +18,32 @@ void onTick(CBlob@ this)
 {
 	if (!isServer()) return;
 	
+	const int color = this.getShape().getVars().customData;
+	if (color <= 0) return;
+	
+	Ship@ ship = getShipSet().getShip(color);
+	if (ship is null) return;
+	
 	u8 convertTime = this.get_u8("convertTime");
 	u8 convertTeam = this.get_u8("convertTeam");
 	
 	const u8 capture_time = this.get_u8("capture time"); //time it takes to capture
 	const u8 thisTeamNum = this.getTeamNum();
-	u8 crewNum = 0;
-
-	CBlob@[] blobsInRadius;
-	getMap().getBlobsInRadius(this.getPosition(), capture_radius, @blobsInRadius);
 	
-	//use players in radius
-	const u8 blobsLength = blobsInRadius.length;
-	for (u8 i = 0; i < blobsLength; i++)
-	{
-		CBlob@ b = blobsInRadius[i];
-		const u8 bTeamNum = b.getTeamNum();
-		if (b.getName() == "human" && bTeamNum != thisTeamNum)
-		{
-			if (convertTeam == thisTeamNum) //claim attack cycle
-				convertTeam = bTeamNum;
-			if (convertTeam == bTeamNum) //attack
-				crewNum++;
-		}
-	}
-	
-	if (crewNum > 0)
+	AttachmentPoint@ seat = this.getAttachmentPoint(0);
+	CBlob@ occupier = seat.getOccupied();
+	if (occupier !is null && occupier.getTeamNum() != thisTeamNum &&
+		!ship.isMothership && !ship.isStation)
 	{
 		//start counting upwards
-		convertTime = Maths::Max(0, convertTime - crewNum);
+		convertTime = Maths::Max(0, convertTime - 1);
+		convertTeam = occupier.getTeamNum();
 		this.getCurrentScript().tickFrequency = checkFrequency;
 		
 		if (convertTime <= 0)
 		{
 			//capture!
-			this.server_setTeamNum(convertTeam);
+			server_setShipTeam(ship, convertTeam);
 		
 			convertTime = capture_time;
 			this.getCurrentScript().tickFrequency = checkFrequencyIdle;
@@ -83,3 +76,9 @@ void onTick(CBlob@ this)
 		this.Sync("convertTime", true); //-1321747407 HASH
 	}
 }
+
+/*void onChangeTeam(CBlob@ this, const int oldTeam)
+{
+	if (this.get_u8("convertTime") == 1)
+		Sound::Play("snes_coin.ogg", this.getPosition());
+}*/

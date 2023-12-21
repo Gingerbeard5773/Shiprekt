@@ -236,7 +236,7 @@ void onTick(CBlob@ this)
 		else
 			this.set_u32("lastActive", Maths::Max(0, this.get_u32("lastActive") - 3));//resets 4x faster if enemy is using it
 			
-		if (seatOwner.isEmpty())//Re-set empty seat's owner to occupier
+		if (seatOwner.isEmpty() && occupierTeam == teamNum)//Re-set empty seat's owner to occupier
 		{
 			server_setOwner(this, occupierName);
 		}
