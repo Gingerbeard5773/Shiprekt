@@ -113,7 +113,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					sparks(hi.hitpos, 4);
 				}
 
-				const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName(), true) : 1;
+				const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName()) : 1;
 				const f32 initialHealth = b.getInitialHealth();
 				const f32 currentReclaim = b.get_f32("current reclaim");
 

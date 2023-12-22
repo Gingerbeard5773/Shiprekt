@@ -141,8 +141,6 @@ void onRender(CSprite@ this)
 			const u8 seconds = Maths::Round(WARMUP_TIME/30 % 60);
 			const string warmupText = getTranslatedString("WARMUP")+" "+ Maths::Round(WARMUP_TIME/30/60) + ":" + (seconds > 9 ? "" : "0") + seconds;
 			GUI::DrawText(warmupText, Vec2f(screenWidth/2 - 75, 15), tipsColor);
-			if (getGridMenuByName(Trans::Components) !is null) //has to be translated otherwise it wont work
-				GUI::DrawText(Trans::ReducedCosts, Vec2f(screenWidth/2 - 75, 35 + Maths::Sin(gameTime/6.5f) * 3.5f), tipsColor);
 		}
 	}
 	

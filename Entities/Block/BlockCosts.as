@@ -1,4 +1,4 @@
-const u16 getCost(const string&in blockName, const bool&in normalCost = false)
+const u16 getCost(const string&in blockName)
 {
 	ConfigFile cfg;
 	if (!cfg.loadFile("BlockVars.cfg"))
@@ -10,10 +10,6 @@ const u16 getCost(const string&in blockName, const bool&in normalCost = false)
 		return 0;
 	}
 	u16 cost = cfg.read_u16(blockName);
-	u16 warmup_cost = cfg.read_u16("warmup_"+blockName, cost);
-
-	if (getRules().isWarmup() && !normalCost)
-		return warmup_cost;
 	
 	return cost;
 }

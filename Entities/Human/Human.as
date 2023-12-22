@@ -748,7 +748,7 @@ void Construct(CBlob@ this)
 			
 			const string playerName = player.getUsername();
 			
-			const u16 blobCost = Maths::Max(!blob.hasTag("coupling") ? getCost(blob.getName(), true) : 1, 1);
+			const u16 blobCost = Maths::Max(!blob.hasTag("coupling") ? getCost(blob.getName()) : 1, 1);
 			const f32 health = blob.getHealth();
 			const f32 initHealth = blob.getInitialHealth();
 			const f32 currentReclaim = blob.get_f32("current reclaim");
