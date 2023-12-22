@@ -6,7 +6,6 @@ void onInit(CBlob@ this)
 	this.set_string("seat label", "");
 	this.set_u8("seat icon", 0);
 	this.addCommandID("get in seat");
-	this.addCommandID("clear attached");
 	this.Tag("hasSeat");
 }
 
@@ -17,12 +16,11 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 		|| this.getShape().getVars().customData <= 0
 		|| (this.hasTag("noEnemyEntry") && this.getTeamNum() != caller.getTeamNum()))
 		return;
-	
-	CPlayer@ player = caller.getPlayer();
-	if (this.hasAttached() && player !is null && getCaptainName(this.getTeamNum()) == player.getUsername())
+
+	if (this.hasAttached() && canEjectCrewmate(this, caller))
 	{
-		//push someone out of a seat if you are captain
-		CButton@ button = caller.CreateGenericButton(5, Vec2f_zero, this, this.getCommandID("clear attached"), "Push Crewmate Out");
+		//push someone out of a seat if you have authority
+		CButton@ button = caller.CreateGenericButton(1, Vec2f_zero, this, ejectCrewmate, "Push Crewmate Out");
 		if (button !is null)
 		{
 			button.radius = 8.0f;
@@ -42,6 +40,27 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	}
 }
 
+const bool canEjectCrewmate(CBlob@ this, CBlob@ caller)
+{
+	CPlayer@ player = caller.getPlayer();
+	if (player !is null)
+	{
+		const string playerName = player.getUsername();
+		if (this.get_string("playerOwner") == playerName) return true; //we own the seat
+		if (getCaptainName(this.getTeamNum()) == playerName) return true; //we are captain of the team
+	}
+	
+	return false;
+}
+
+void ejectCrewmate(CBlob@ this, CBlob@ caller)
+{
+	AttachmentPoint@ seat = this.getAttachmentPoint(0);
+	CBlob@ crewmate = seat.getOccupied();
+	if (crewmate !is null && caller.isMyPlayer() && crewmate.getTeamNum() == this.getTeamNum())
+		crewmate.SendCommand(crewmate.getCommandID("get out"));
+}
+
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("get in seat"))
@@ -54,13 +73,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				this.server_AttachTo(caller, "SEAT");
 			}
 		}
-	}
-	else if (cmd == this.getCommandID("clear attached"))
-	{
-		AttachmentPoint@ seat = this.getAttachmentPoint(0);
-		CBlob@ crewmate = seat.getOccupied();
-		if (crewmate !is null && crewmate.isMyPlayer() && crewmate.getTeamNum() == this.getTeamNum())
-			crewmate.SendCommand(crewmate.getCommandID("get out"));
 	}
 }
 
