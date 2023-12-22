@@ -28,7 +28,7 @@ void onInit(CBlob@ this)
 		this.set_bool("kLR", false);
 		this.set_u32("lastCannonFire", getGameTime());
 		this.set_u8("cannonFireIndex", 0);
-		this.set_u32("lastActive", getGameTime());
+		this.set_u32("seatResetTime", getGameTime() + UNUSED_RESET);
 		this.set_u32("couplingCooldown", 0);
 	}
 	
@@ -65,7 +65,7 @@ void onTick(CBlob@ this)
 	{
 		//clear ownership on player leave/change team or seat not used
 		CPlayer@ ownerPlayer = getPlayerByUsername(seatOwner);
-		if (ownerPlayer is null || ownerPlayer.getTeamNum() != teamNum || gameTime - this.get_u32("lastActive") > UNUSED_RESET)
+		if (ownerPlayer is null || ownerPlayer.getTeamNum() != teamNum || gameTime >= this.get_u32("seatResetTime"))
 		{
 			server_setOwner(this, "");
 		}
@@ -232,9 +232,9 @@ void onTick(CBlob@ this)
 		if (!isServer()) return;
 	
 		if (occupierName == seatOwner)
-			this.set_u32("lastActive", gameTime);
+			this.set_u32("seatResetTime", gameTime + UNUSED_RESET);
 		else
-			this.set_u32("lastActive", Maths::Max(0, this.get_u32("lastActive") - 3));//resets 4x faster if enemy is using it
+			this.set_u32("seatResetTime",  Maths::Max(0, this.get_u32("seatResetTime") - 3)); //resets 4x faster if enemy is using it
 			
 		if (seatOwner.isEmpty() && occupierTeam == teamNum)//Re-set empty seat's owner to occupier
 		{
@@ -463,9 +463,9 @@ void onTick(CBlob@ this)
 	else if (isServer() && ship.owner == seatOwner) //captain seats release rates
 	{
 		if ((ship.pos - ship.old_pos).Length() > 0.01f) //keep extra seats alive while the mothership moves
-			this.set_u32("lastActive", gameTime);
+			this.set_u32("seatResetTime", gameTime + UNUSED_RESET);
 		else //release seat faster for when captain abandons the ship
-			this.set_u32("lastActive", Maths::Max(0, this.get_u32("lastActive") - 2));
+			this.set_u32("seatResetTime", Maths::Max(0, this.get_u32("seatResetTime") - 2));
 	}
 }
 
