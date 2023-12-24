@@ -126,7 +126,8 @@ void onRender(CSprite@ this)
 	}
 	
 	//warm-up/freebuild
-	if (rules.get_bool("freebuild"))
+	const bool freebuild = rules.get_bool("freebuild");
+	if (freebuild)
 	{
 		if (getPlayersCount() == 1)
 			GUI::DrawText(Trans::FreeMode, Vec2f(screenWidth/2 - 125, 15), tipsColor);
@@ -160,7 +161,7 @@ void onRender(CSprite@ this)
 			else if (mShipDMG > MSHIP_DAMAGE_ALERT) //mothership under attack alert
 				GUI::DrawText(Trans::ShipAttack, Vec2f(screenWidth/2 - 135, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 		}
-		else if (captainName.isEmpty() && pBooty < rules.get_u16("bootyRefillLimit") && mShipDMG == 0) //poor and no captain: sharks for income
+		else if (captainName.isEmpty() && pBooty < rules.get_u16("bootyRefillLimit") && !freebuild) //poor and no captain: sharks for income
 			GUI::DrawText("[ "+Trans::KillSharks+" ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
 	}
 	

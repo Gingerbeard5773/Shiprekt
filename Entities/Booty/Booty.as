@@ -97,9 +97,11 @@ shared void server_setPlayerBooty(const string&in name, const u16&in booty)
 {
 	if (!isServer()) return;
 	
+	CRules@ rules = getRules();
+	if (rules.get_bool("freebuild")) return;
+	
 	getBootySet().set("booty" + name, booty);
 	//sync to clients
-	CRules@ rules = getRules();
 	rules.set_u16("booty" + name, booty);
 	rules.Sync("booty" + name, true);
 	CPlayer@ player = getPlayerByUsername(name);
