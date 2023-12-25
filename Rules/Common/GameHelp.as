@@ -150,12 +150,13 @@ void onRender(CRules@ this)
 		//PAGE 1
 		const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
 		const string lastChangesInfo = Trans::LastChanges+":\n"
-		+ "- 11-17-2023 - By Gingerbeard\n"
-		+ "  * Added a new weapon component- Heavy Machinegun.\n"
-		+ "  * Revamped bullet mechanics.\n"
-		+ "  * Repairing blocks is much cheaper.\n"
-		+ "  * All players can build on the mothership during warm-up.\n"
-		+ "  * Cannonballs & machinegun bullets do less damage to engines than before.\n";
+		+ "- 12-25-2023 - By Gingerbeard\n"
+		+ "  * Cannonballs do less damage and give less coins.\n"
+		+ "  * Heavy machinegun firerate is now the same for all players.\n"
+		+ "  * Capturing ships is now similiar to capturing stations.\n"
+		+ "  * Ram is twice as effective against half-walls.\n"
+		+ "  * Secondary cores no longer take damage from propellers or blow up instantly from bombs.\n"
+		+ "  * Decoy cores now have their own map symbol- only appearing for teammates.\n";
 		
 		GUI::SetFont("menu");
 		Vec2f lastChangesSize;
