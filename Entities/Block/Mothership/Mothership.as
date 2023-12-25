@@ -497,12 +497,11 @@ void selfDestruct(CBlob@ this)
 	for (u16 i = 0; i < blastBlobsLength; i++)
 	{
 		CBlob@ blastBlob = blastBlobs[i];
-		if (blastBlob !is this)
-		{
-			const f32 maxHealth = blastBlob.getInitialHealth();
-			const f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlob))/BLAST_RADIUS;
-			this.server_Hit(blastBlob, pos, Vec2f_zero, Maths::Max(0.1f, damage), Hitters::bomb, true);
-		}
+		if (blastBlob is this) continue;
+
+		const f32 maxHealth = blastBlob.getInitialHealth();
+		const f32 damage = 1.5f * maxHealth * (BLAST_RADIUS - this.getDistanceTo(blastBlob))/BLAST_RADIUS;
+		this.server_Hit(blastBlob, pos, Vec2f_zero, Maths::Max(0.1f, damage), Hitters::bomb, true);
 	}
 
 	//kill ship
@@ -510,7 +509,7 @@ void selfDestruct(CBlob@ this)
 	if (ship is null) return;
 
 	const u16 blocksLength = ship.blocks.length;
-	if (blocksLength < 10) return;
+	if (blocksLength < 10 || ship.isStation) return;
 
 	for (u16 i = 0; i < blocksLength; ++i)
 	{
