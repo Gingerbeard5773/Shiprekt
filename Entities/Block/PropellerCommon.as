@@ -109,7 +109,7 @@ void onTick(CBlob@ this)
 				if (victim !is null && victim.getShape().getVars().customData > 0)
 				{
 					const f32 hitPower = Maths::Max(0.5f, Maths::Abs(this.get_f32("power")));
-					if (!victim.hasTag("mothership"))
+					if (!victim.hasTag("core"))
 						this.server_Hit(victim, pos, Vec2f_zero, hitPower, 9, true);
 					else
 						victim.server_Hit(this, pos, Vec2f_zero, hitPower, 9, true);

@@ -194,7 +194,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 				}
 				else if (this.hasTag("bomb")) //bombs annihilate all
 				{
-					if (blob.hasTag("mothership"))
+					if (blob.hasTag("mothership") || blob.hasTag("secondaryCore"))
 						this.server_Hit(blob, point1, ship.vel, 2.7f, 0, true);
 					else Die(blob);
 					Die(this);
