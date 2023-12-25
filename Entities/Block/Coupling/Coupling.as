@@ -40,10 +40,5 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		{
 			directionalSoundPlay("mechanical_click", this.getPosition());
 		}
-		if (isServer())
-		{
-			CBlob@[] tempArray; tempArray.push_back(this);
-			getRules().push("dirtyBlocks", tempArray);
-		}
 	}
 }

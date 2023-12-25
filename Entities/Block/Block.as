@@ -131,9 +131,9 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		if (docking) //force ship merge
 		{
 			if (blob.hasTag("coupling"))
-				blob.SendCommand(blob.getCommandID("couple"));
+				CoupleShip(blob, rules);
 			else if (this.hasTag("coupling"))
-				this.SendCommand(this.getCommandID("couple"));
+				CoupleShip(this, rules);
 		}
 		else
 		{
@@ -227,6 +227,13 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			}
 		}
 	}
+}
+
+void CoupleShip(CBlob@ this, CRules@ rules)
+{
+	this.SendCommand(this.getCommandID("couple"));
+	CBlob@[] tempArray; tempArray.push_back(this);
+	rules.push("dirtyBlocks", tempArray);
 }
 
 void CollisionResponse(CRules@ rules, Ship@ ship, Ship@ other_ship, Vec2f&in point1)
