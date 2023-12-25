@@ -933,7 +933,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		}
 		
 		blob.set_f32("current reclaim", reclaim);
-		if (server_getPlayerBooty(playerName) > -cost)
+		if (server_getPlayerBooty(playerName) > -cost || getRules().get_bool("freebuild"))
 		{
 			server_addPlayerBooty(playerName, cost);
 			blob.server_SetHealth(heal);
