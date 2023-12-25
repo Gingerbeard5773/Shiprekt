@@ -445,7 +445,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 			if (unhookButton !is null)
 			{
 				unhookButton.radius = 8.0f; //engine fix
-				unhookButton.enableRadius = 15.0f;
+				unhookButton.enableRadius = 13.0f;
 			}
 		}
 	}
