@@ -753,8 +753,8 @@ void Construct(CBlob@ this)
 			const f32 initHealth = blob.getInitialHealth();
 			const f32 currentReclaim = blob.get_f32("current reclaim");
 			
-			f32 heal = health;
-			f32 reclaim = currentReclaim;
+			f32 heal = 0.0f;
+			f32 reclaim = 0.0f;
 			u16 cost = 0;
 			bool doWarning = false;
 			
@@ -770,33 +770,31 @@ void Construct(CBlob@ this)
 				if ((ship.owner.isEmpty() && (!ship.isMothership || sameTeam)) || //reclaim abandoned ships , reclaim our team's mothership if no owner
 				   ((blob.get_string("playerOwner") == playerName || ship.owner == "*" || ship.owner == playerName) && sameTeam)) //reclaim if we own the ship or block- or the ship has multi-teams
 				{
-					reclaim = currentReclaim - constructAmount;
+					reclaim = -constructAmount;
 				}
 				else
 				{
-					reclaim = currentReclaim - constructAmount / 3;
+					reclaim = -(constructAmount / 3);
 					doWarning = true;
 				}
 				
-				if (reclaim <= 0) //give money if we ate this blob
+				if (reclaim + currentReclaim <= 0) //give money if we ate this blob
 				{
 					cost = blobCost * (health / initHealth);
 				}
 			}
 			else if (currentTool == "reconstructor")
 			{
-				reclaim = Maths::Min(currentReclaim + constructAmount, initHealth);
+				reclaim = constructAmount;
 				
 				const u16 reconstructCost = blob.hasTag("mothership") ? MOTHERSHIP_HEAL_COST : blobCost*constructDiscount / constructFactor;
-				if (reclaim > health)
+				if (currentReclaim + reclaim > health && health < initHealth)
 				{
-					heal = reclaim;
+					heal = constructAmount;
 					cost = -reconstructCost;
 				}
 			}
-			
-			reclaim = Maths::Min(reclaim, initHealth);
-			
+
 			CBitStream params;
 			params.write_netid(blob.getNetworkID());
 			params.write_f32(heal);
@@ -920,13 +918,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		
 		const string playerName = player.getUsername();
 		
-		const f32 heal = params.read_f32();
-		const f32 reclaim = params.read_f32();
+		const f32 heal = Maths::Min(blob.getHealth() + params.read_f32(), blob.getInitialHealth());
+		const f32 reclaim = Maths::Min(blob.get_f32("current reclaim") + params.read_f32(), blob.getInitialHealth());
 		const u16 cost = params.read_u16();
 
 		this.set_bool("reclaimPropertyWarn", params.read_bool());	
 
-		if (reclaim <= 0)
+		if (reclaim <= 0.0f)
 		{
 			directionalSoundPlay("/ChaChing.ogg", blob.getPosition());
 			blob.Tag("disabled");
