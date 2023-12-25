@@ -248,6 +248,7 @@ void Move(CBlob@ this)
 			// punch
 			if (isClient() && punch && !Human::isHoldingBlocks(this) && canPunch(this))
 			{
+				EndConstructEffects(this, sprite);
 				Punch(this);
 			}
 			
