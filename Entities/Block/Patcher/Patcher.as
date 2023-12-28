@@ -148,7 +148,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					if (b.hasTag("mothership"))
 					{
 						//mothership
-						if (cBooty >= reconstructCost && mBlobHealth < initialReclaim)
+						if ((cBooty >= reconstructCost || getRules().get_bool("freebuild")) && mBlobHealth < initialReclaim)
 						{
 							b.server_SetHealth(mBlobHealth + reconstructAmount);
 							server_addPlayerBooty(cName, -reconstructCost);
@@ -157,7 +157,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					else
 					{
 						//normal blocks
-						if (cBooty >= reconstructCost)
+						if (cBooty >= reconstructCost || getRules().get_bool("freebuild"))
 						{
 							b.server_SetHealth(Maths::Min(initialReclaim, mBlobHealth + reconstructAmount));
 							b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
