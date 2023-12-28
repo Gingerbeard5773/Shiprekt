@@ -26,9 +26,9 @@ const string FileName = "Shiprekt/Settings.cfg";
 
 void onInit(CRules@ this)
 {
-	CFileImage@ image = CFileImage("GameHelp.png");
+	CFileImage@ image = CFileImage("ShiprektHelp.png");
 	const Vec2f imageSize = Vec2f(image.getWidth(), image.getHeight());
-	AddIconToken("$HELP$", "GameHelp.png", imageSize, 0);
+	AddIconToken("$SHIPREKTHELP$", "ShiprektHelp.png", imageSize, 0);
 	
 	if (!GUI::isFontLoaded("thick font"))
 	{
@@ -82,7 +82,7 @@ void onRender(CRules@ this)
 	const u32 gameTime = getGameTime();
 
 	Vec2f imageSize;
-	GUI::GetIconDimensions("$HELP$", imageSize);
+	GUI::GetIconDimensions("$SHIPREKTHELP$", imageSize);
 
 	const string infoTitle = Trans::HowToPlay;
 	const string textInfo = "- "+ Trans::Mothership+":\n" +
@@ -178,7 +178,7 @@ void onRender(CRules@ this)
 		GUI::DrawText(lastChangesInfo, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
 		
 		//image
-		GUI::DrawIconByName("$HELP$", Vec2f(sMid - imageSize.x, tlBox.y + boxMargin + 10));
+		GUI::DrawIconByName("$SHIPREKTHELP$", Vec2f(sMid - imageSize.x, tlBox.y + boxMargin + 10));
 		
 		//captions
 		if (g_locale != "en")
