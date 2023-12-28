@@ -30,6 +30,14 @@ void onTick(CSprite@ this)
 	const u16 pBooty = rules.get_u16("booty" + name);
 	CControls@ controls = getControls();
 	
+	// calculate mothership damage
+	if (getGameTime() % 30 == 0)
+	{
+		const f32 msDMG = rules.get_f32("msDMG");
+		if (msDMG > 0.0f)
+			rules.set_f32("msDMG", Maths::Clamp(msDMG - 0.35f, 0.0f, 5.0f));
+	}
+
 	// seat relinquish
 	if ((controls.getMouseScreenPos() - tl - Vec2f(100, 20)).Length() < 15.0f)
 	{
@@ -151,15 +159,18 @@ void onRender(CSprite@ this)
 	//mothership alerts
 	if (teamCore !is null)
 	{
-		const f32 mShipDMG = rules.get_f32("msDMG");
+		const f32 msDMG = rules.get_f32("msDMG");
 		const bool mShipOnScreen = teamCore.isOnScreen();
-		
-		if (!mShipOnScreen)
+		if (mShipOnScreen)
 		{	
 			if (name == captainName) //captain has abandoned ship!
 				GUI::DrawText(Trans::Abandon, Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
-			else if (mShipDMG > MSHIP_DAMAGE_ALERT) //mothership under attack alert
-				GUI::DrawText(Trans::ShipAttack, Vec2f(screenWidth/2 - 135, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);
+			else if (msDMG > MSHIP_DAMAGE_ALERT) //mothership under attack alert
+			{
+				const f32 percent = (msDMG-MSHIP_DAMAGE_ALERT) / (5.0f-MSHIP_DAMAGE_ALERT);
+				const u8 change = 255 - Maths::Min(255, 255 * percent);
+				GUI::DrawText(Trans::ShipAttack, Vec2f(screenWidth/2 - 135, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 255, change, change));
+			}
 		}
 		else if (captainName.isEmpty() && pBooty < rules.get_u16("bootyRefillLimit") && !freebuild) //poor and no captain: sharks for income
 			GUI::DrawText("[ "+Trans::KillSharks+" ]", Vec2f(220, 60 + Maths::Sin(gameTime/4.5f) * 4.5f), tipsColor);

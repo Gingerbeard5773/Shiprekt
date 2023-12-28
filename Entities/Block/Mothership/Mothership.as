@@ -368,16 +368,6 @@ void onTick(CBlob@ this)
 		}
 	}*/
 
-	if (isClient() && gameTime % 60 == 0)
-	{
-		const u8 coreTeam = this.getTeamNum();
-
-		//dmgmanaging
-		const f32 msDMG = rules.get_f32("msDMG");
-		if (msDMG > 0)
-			rules.set_f32("msDMG", Maths::Max(msDMG - 0.75f, 0.0f));
-	}
-
 	//critical Slowdown, selfDestruct and effects
 	if (this.hasTag("critical"))
 	{
