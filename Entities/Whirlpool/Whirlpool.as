@@ -17,7 +17,7 @@ void onInit(CBlob@ this)
 	sprite.SetEmitSound("Whirlpool.ogg");
 	sprite.SetEmitSoundPaused(false);
 	sprite.SetEmitSoundVolume(3.0f);
-	sprite.SetZ(-20.0f);
+	//sprite.SetZ(-20.0f);
 	
 	if (!CustomEmitEffectExists("whirlpoolEmit"))
 		SetupCustomEmitEffect("whirlpoolEmit", "Whirlpool.as", "updateWhirlpoolParticle", 10, 0, 120);
