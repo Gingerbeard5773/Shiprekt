@@ -161,7 +161,7 @@ void onRender(CSprite@ this)
 	{
 		const f32 msDMG = rules.get_f32("msDMG");
 		const bool mShipOnScreen = teamCore.isOnScreen();
-		if (mShipOnScreen)
+		if (!mShipOnScreen)
 		{	
 			if (name == captainName) //captain has abandoned ship!
 				GUI::DrawText(Trans::Abandon, Vec2f(screenWidth/2 - 100, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 235, 35, 35));
