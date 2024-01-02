@@ -29,6 +29,7 @@ void onInit(CRules@ this)
 	CFileImage@ image = CFileImage("ShiprektHelp.png");
 	const Vec2f imageSize = Vec2f(image.getWidth(), image.getHeight());
 	AddIconToken("$SHIPREKTHELP$", "ShiprektHelp.png", imageSize, 0);
+	AddIconToken("$DISCORD$", "DiscordIcon.png", Vec2f(65, 50), 0);
 	
 	if (!GUI::isFontLoaded("thick font"))
 	{
@@ -93,7 +94,8 @@ void onRender(CRules@ this)
 	" * "+ Trans::Docking    +"\n\n"+
 	"- " + Trans::OtherTips  +":\n"+
 	" * "+ Trans::Leaderboard+"\n"+
-	" * "+ Trans::BlockWeight;
+	" * "+ Trans::BlockWeight+"\n\n"+
+	" * "+ Trans::NoGriefing+"\n";
 	
 	//Controls
 	const string controlsTitle = Trans::Controls;
@@ -236,8 +238,10 @@ void onRender(CRules@ this)
 	
 	//Add social links
 	GUI::SetFont("menu");
-	makeWebsiteLink(Vec2f(brBox.x, 100.0f), Trans::Go_to_the+" Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
-	makeWebsiteLink(Vec2f(brBox.x, 150.0f), Trans::Go_to_the+" Shiprekt Discord", "https://discord.gg/V29BBeba3C");
+	//makeWebsiteLink(Vec2f(brBox.x, 100.0f), " Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
+	makeWebsiteLink(Vec2f(brBox.x, 150.0f), "          Shiprekt Discord", "https://discord.gg/V29BBeba3C");
+	GUI::DrawIconByName("$DISCORD$", Vec2f(tlBox.x - 180.0f, 155.0f), 0.29f);
+	
 	
 	mouseWasPressed1 = controls.mousePressed1; 
 }
