@@ -208,6 +208,12 @@ void CombineShips(CRules@ this, Ship@[] ships, CBlob@ connector)
 		ShipSet.delete(ship);
 	}
 	
+	if (connector.hasTag("coupling")) //coupling attachment effects
+	{
+		connector.SendCommand(connector.getCommandID("couple"));
+		connector.Untag("attempt attachment");
+	}
+	
 	ColorBlocks(connector, largestShip);
 	SetUpdateBlocks(largestShip.id);
 	SetUpdateCores(largestShip.id);

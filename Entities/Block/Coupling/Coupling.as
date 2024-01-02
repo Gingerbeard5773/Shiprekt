@@ -8,6 +8,8 @@ void onInit(CBlob@ this)
 	this.Tag("ramming");
 	this.Tag("removable");//for corelinked checks
 	
+	this.getCurrentScript().tickIfTag = "attempt attachment";
+	
 	this.set_f32("weight", 0.1f);
 }
 
@@ -25,6 +27,37 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 			button.radius = 8.0f; //engine fix
 			button.enableRadius = 8.0f;
 		}
+	}
+}
+
+void onTick(CBlob@ this)
+{
+	if (!isServer()) return;
+
+	Vec2f pos = this.getPosition();
+	CBlob@[] overlapping;
+	getMap().getBlobsInRadius(pos, 4.0f, @overlapping);
+	
+	const u8 overlappingLength = overlapping.length;
+	for (u8 i = 0; i < overlappingLength; i++)
+	{
+		CBlob@ b = overlapping[i];
+		if (b.getShape().getVars().customData > 0 // is valid block
+			&& (b.getPosition() - pos).LengthSquared() < 78) //avoid corner overlaps
+		{
+			CBlob@[] tempArray; tempArray.push_back(this);
+			getRules().push("dirtyBlocks", tempArray);
+
+			return;
+		}
+	}
+}
+
+void onEndCollision(CBlob@ this, CBlob@ blob)
+{
+	if (isServer() && blob.getShape().getVars().customData > 0)
+	{
+		this.Untag("attempt attachment"); //stop ticking if we arent colliding
 	}
 }
 
