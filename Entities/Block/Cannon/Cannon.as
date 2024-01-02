@@ -9,8 +9,6 @@ const u16 FIRE_RATE = 170;//max wait between shots
 const u8 MAX_AMMO = 10;
 const u8 REFILL_AMOUNT = 1;
 const u8 REFILL_SECONDS = 5;
-const u8 REFILL_SECONDARY_CORE_SECONDS = 12;
-const u8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotrandom(0x15125); //clientside
 
@@ -29,8 +27,6 @@ void onInit(CBlob@ this)
 	{
 		this.set_u16("ammo", MAX_AMMO);
 		this.set_u16("maxAmmo", MAX_AMMO);
-		this.Sync("ammo", true); //1536888239 HASH
-		this.Sync("maxAmmo", true); //2002479429 HASH
 	}
 
 	CSprite@ sprite = this.getSprite();
@@ -73,7 +69,7 @@ void onTick(CBlob@ this)
 		{
 			checkDocked(this, ship);
 			if (this.get_bool("fire ready"))
-				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS);
 		}
 	}
 }

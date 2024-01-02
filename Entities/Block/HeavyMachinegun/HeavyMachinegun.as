@@ -9,8 +9,6 @@ const int FIRE_RATE = 4;
 const u8 MAX_AMMO = 160;
 const u8 REFILL_AMOUNT = 30;
 const u8 REFILL_SECONDS = 5;
-const u8 REFILL_SECONDARY_CORE_SECONDS = 1;
-const u8 REFILL_SECONDARY_CORE_AMOUNT = 2;
 
 BootyRewards@ booty_reward;
 
@@ -45,8 +43,6 @@ void onInit(CBlob@ this)
 	{
 		this.set_u16("ammo", MAX_AMMO);
 		this.set_u16("maxAmmo", MAX_AMMO);
-		this.Sync("ammo", true);
-		this.Sync("maxAmmo", true);
 	}
 
 	this.set_u32("fire time", 0);
@@ -88,7 +84,7 @@ void onTick(CBlob@ this)
 	{
 		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null && canShoot(this))
-			refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+			refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS);
 	}
 }
 

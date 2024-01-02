@@ -11,8 +11,6 @@ const f32 AUTO_RADIUS = 100.0f;
 const u8 MAX_AMMO = 15;
 const u8 REFILL_AMOUNT = 1;
 const u8 REFILL_SECONDS = 5;
-const u8 REFILL_SECONDARY_CORE_SECONDS = 10;
-const u8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 void onInit(CBlob@ this)
 {
@@ -29,8 +27,6 @@ void onInit(CBlob@ this)
 	{
 		this.set_u16("ammo", MAX_AMMO);
 		this.set_u16("maxAmmo", MAX_AMMO);
-		this.Sync("ammo", true);
-		this.Sync("maxAmmo", true);
 	}
 
 	this.set_u32("fire time", 0);
@@ -65,7 +61,7 @@ void onTick(CBlob@ this)
 	{
 		Ship@ ship = getShipSet().getShip(col);
 		if (ship !is null && canShootAuto(this))
-			refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+			refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS);
 	}
 }
 

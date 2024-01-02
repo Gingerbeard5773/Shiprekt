@@ -8,8 +8,6 @@ const int FIRE_RATE = 200;
 const u8 MAX_AMMO = 8;
 const u8 REFILL_AMOUNT = 1;
 const u8 REFILL_SECONDS = 8;
-const u8 REFILL_SECONDARY_CORE_SECONDS = 14;
-const u8 REFILL_SECONDARY_CORE_AMOUNT = 1;
 
 Random _shotspreadrandom(0x11598); //clientside
 
@@ -27,8 +25,6 @@ void onInit(CBlob@ this)
 	{
 		this.set_u16("ammo", MAX_AMMO);
 		this.set_u16("maxAmmo", MAX_AMMO);
-		this.Sync("ammo", true);
-		this.Sync("maxAmmo", true);
 	}
 
 	CSprite@ sprite = this.getSprite();
@@ -49,7 +45,7 @@ void onTick(CBlob@ this)
 		{
 			checkDocked(this, ship);
 			if (canShoot(this))
-				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS);
 		}
 	}
 }

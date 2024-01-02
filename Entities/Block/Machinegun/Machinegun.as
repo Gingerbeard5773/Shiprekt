@@ -12,8 +12,6 @@ const f32 FIRE_PAUSE_RATE = 0.08f; //higher values = higher recover
 const u8 MAX_AMMO = 250;
 const u8 REFILL_AMOUNT = 30;
 const u8 REFILL_SECONDS = 6;
-const u8 REFILL_SECONDARY_CORE_SECONDS = 1;
-const u8 REFILL_SECONDARY_CORE_AMOUNT = 2;
 
 BootyRewards@ booty_reward;
 
@@ -45,10 +43,6 @@ void onInit(CBlob@ this)
 		this.set_u16("ammo", MAX_AMMO);
 		this.set_u16("maxAmmo", MAX_AMMO);
 		this.set_f32("fire pause", MIN_FIRE_PAUSE);
-
-		this.Sync("fire pause", true); //-1042743405 HASH
-		this.Sync("ammo", true);
-		this.Sync("maxAmmo", true);
 	}
 
 	CSprite@ sprite = this.getSprite();
@@ -89,7 +83,7 @@ void onTick(CBlob@ this)
 		{
 			checkDocked(this, ship);
 			if (canShoot(this))
-				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS, REFILL_SECONDARY_CORE_AMOUNT, REFILL_SECONDARY_CORE_SECONDS);
+				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS);
 		}
 	}
 }
