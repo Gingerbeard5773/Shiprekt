@@ -151,14 +151,7 @@ void onRender(CRules@ this)
 	{
 		//PAGE 1
 		const string shiprektVersion = "Shiprekt++ "+Trans::Version+" "+this.get_string("version")+"\n";
-		const string lastChangesInfo = Trans::LastChanges+":\n"
-		+ "- 12-25-2023 - By Gingerbeard\n"
-		+ "  * Cannonballs do less damage and give less coins.\n"
-		+ "  * Heavy machinegun firerate is now the same for all players.\n"
-		+ "  * Capturing ships is now similiar to capturing stations.\n"
-		+ "  * Ram is twice as effective against half-walls.\n"
-		+ "  * Secondary cores no longer take damage from propellers or blow up instantly from bombs.\n"
-		+ "  * Decoy cores now have their own map symbol- only appearing for teammates.\n";
+		const string lastChangesInfo = Trans::LastChanges+":\n"+this.get_string("changelog");
 		
 		GUI::SetFont("menu");
 		Vec2f lastChangesSize;

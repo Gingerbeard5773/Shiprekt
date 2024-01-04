@@ -7,6 +7,16 @@ void onInit(CRules@ this)
 	//mod version
 	this.set_string("version", "1.53.1");
 	
+	//change log
+	this.set_string("changelog",
+		  "- 12-25-2023 - By Gingerbeard\n"
+		+ "  * Cannonballs do less damage and give less coins.\n"
+		+ "  * Heavy machinegun firerate is now the same for all players.\n"
+		+ "  * Capturing ships is now similiar to capturing stations.\n"
+		+ "  * Ram is twice as effective against half-walls.\n"
+		+ "  * Secondary cores no longer take damage from propellers or blow up instantly from bombs.\n"
+		+ "  * Decoy cores now have their own map symbol- only appearing for teammates.\n");
+	
 	//dedicated server name
 	const string server_name = "[EU] Shiprekt++ ("+this.get_string("version")+")";
 	
