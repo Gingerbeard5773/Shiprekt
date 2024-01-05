@@ -24,10 +24,9 @@ void onRestart(CRules@ this)
 			if (player.getTeamNum() == specTeam)
 				pCount--;
 		}
-		
+
 		const u8 availableCores = Maths::Min(spawns.length, this.getTeamsNum());
-		const u8 playingCores = pCount == 3 ? 3 : Maths::Max(2, int(Maths::Floor(pCount/2)));//special case for 3 players
-		const u8 mShipsToSpawn = Maths::Min(playingCores, availableCores);
+		const u8 mShipsToSpawn = Maths::Min(getPlayingCores(availableCores, pCount), availableCores);
 		print("** Spawning " + mShipsToSpawn + " motherships of " + availableCores + " for " + pCount + " players");
 		
 		for (u8 s = 0; s < mShipsToSpawn; s++)
@@ -38,6 +37,13 @@ void onRestart(CRules@ this)
 			spawns.erase(randomSpawn);
 		}
 	}
+}
+
+u8 getPlayingCores(const u8&in availableCores, const u8&in playerCount)
+{
+	if (playerCount <= availableCores) return Maths::Max(2, playerCount); //each player gets a ship
+	
+	return Maths::Max(2, Maths::Floor(playerCount/2)); //put 2 players into each available team
 }
 
 void SpawnMothership(Vec2f pos, const u8&in team)
