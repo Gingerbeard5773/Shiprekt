@@ -47,9 +47,8 @@ void onTick(CBlob@ this)
 				walk.shipOldPos = ship.origin_pos;
 			}
 
-			const Vec2f shipDisplacement = ship.origin_pos - walk.shipOldPos;
 			const f32 shipAngleDelta = ship.angle - walk.shipOldAngle;
-			Vec2f shipToBlob = pos - ship.origin_pos + shipDisplacement;
+			Vec2f shipToBlob = pos - walk.shipOldPos;
 			shipToBlob.RotateBy(shipAngleDelta);
 
 			walk.shipOldPos = ship.origin_pos;
