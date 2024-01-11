@@ -474,16 +474,15 @@ void selfDestruct(CBlob@ this)
 	}
 
 	//blocks go neutral
-	CBlob@[] blocks;
-	getBlobsByTag("weapon", @blocks);
-	getBlobsByTag("hasSeat", @blocks);
+	/*CBlob@[] blocks;
+	getBlobsByTag("block", @blocks);
 	const u16 turretsLength = blocks.length;
 	for (u16 i = 0; i < turretsLength; i++)
 	{
 		CBlob@ block = blocks[i];
 		if (block.getTeamNum() == teamNum)
 			block.server_setTeamNum(-1);
-	}
+	}*/
 
 	//damage nearby blobs
 	CBlob@[] blastBlobs;
