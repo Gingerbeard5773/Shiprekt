@@ -249,11 +249,10 @@ void CollisionResponse(CRules@ rules, Ship@ ship, Ship@ other_ship, Vec2f&in poi
 	
 	const u8 shake = (vellen * ship.mass + other_vellen * other_ship.mass)*0.5f;
 	
+	ship.vel = shipvel;
+	other_ship.vel = other_shipvel;
+	
 	CBitStream bs;
-	bs.write_s32(ship.id);
-	bs.write_s32(other_ship.id);
-	bs.write_Vec2f(shipvel);
-	bs.write_Vec2f(other_shipvel);
 	bs.write_Vec2f(point1);
 	bs.write_u8(shake);
 	rules.SendCommand(rules.getCommandID("ship collision"), bs); //sent to Ships.as

@@ -898,23 +898,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	
 	if (cmd == this.getCommandID("ship collision")) //sent from Block.as
 	{
-		ShipDictionary@ ShipSet = getShipSet(this);
-		
-		Ship@ ship = ShipSet.getShip(params.read_s32());
-		Ship@ other_ship = ShipSet.getShip(params.read_s32());
-		if (ship is null || other_ship is null) return;
-		
-		if (!params.saferead_Vec2f(ship.vel))
-		{
-			warn("ship collision (CMD): ship.vel not found, ID ["+ship.id+"]");
-			return;
-		}
-		if (!params.saferead_Vec2f(other_ship.vel))
-		{
-			warn("ship collision (CMD): other_ship.vel not found, ID ["+other_ship.id+"]");
-			return;
-		}
-		
 		const Vec2f point1 = params.read_Vec2f();
 		const u8 shake = params.read_u8();
 		if (isClient())
@@ -922,7 +905,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			ShakeScreen(Maths::Min(shake, 100), 12, point1);
 			directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 		}
-		
 		return;
 	}
 	else if (cmd == this.getCommandID("ship bounce")) //sent from MapBarrier.as
