@@ -107,43 +107,10 @@ void onTick(CRules@ this)
 		}
 	}
 	
-	//after some secs, balance starting booty for teams with less players than the average
+	//after some secs, balance starting booty for teams with less players than the largest team
 	if (gameTime == 500)
 	{
-		CBlob@[] cores;
-		getBlobsByTag("mothership", @cores);
-		const u8 teams = cores.length;
-		const u16 initBooty = Maths::Round(getRules().get_u16("starting_booty") * 0.75f);
-		const u8 players = getPlayersCount();
-		const u8 median = teams <= 0 ? 1 : Maths::Round(players/teams);
-		
-		//player per team
-		const u8 teamsNum = this.getTeamsNum();
-		u8[] teamPlayers(teamsNum);
-		
-		for (u8 p = 0; p < players; p++)
-		{
-			u8 team = getPlayer(p).getTeamNum();
-			if (team < teamsNum)
-				teamPlayers[team]++;
-		}
-		
-		print("** Balancing booty: median = " + median + " for " + players + " players in " + teams + " teams");
-		//balance booty
-		for (u8 p = 0; p < players; p++)
-		{
-			CPlayer@ player = getPlayer(p);
-			const u8 team = player.getTeamNum();
-			if (team >= teamsNum) continue;
-				
-			const f32 compensate = median/teamPlayers[team];
-			if (compensate > 1)
-			{
-				const u16 balance = Maths::Round(initBooty * compensate/teamPlayers[team] - initBooty);
-				string name = player.getUsername();
-				server_setPlayerBooty(name, balance);
-			}
-		}
+		BalanceStartingBooty(this);
 	}
 	
 	//check game states
@@ -214,6 +181,44 @@ void onTick(CRules@ this)
 				this.SetCurrentState(GAME_OVER);
 			}
         }
+	}
+}
+
+void BalanceStartingBooty(CRules@ this)
+{	
+	//get player amounts for each team
+	const u8 players = getPlayersCount();
+	const u8 teamsNum = this.getTeamsNum();
+	u8[] teamPlayers(teamsNum);
+	for (u8 p = 0; p < players; p++)
+	{
+		const u8 team = getPlayer(p).getTeamNum();
+		if (team < teamsNum)
+			teamPlayers[team]++;
+	}
+
+	//get the player amount for the largest team
+	u8 playersOnLargestTeam = 0;
+	for (u8 i = 0; i < teamPlayers.length; i++)
+	{
+		playersOnLargestTeam = Maths::Max(playersOnLargestTeam, teamPlayers[i]);
+	}
+
+	print("** Balancing booty for " + players + " players");
+	const u16 initBooty = Maths::Round(this.get_u16("starting_booty") * 0.65f);
+	for (u8 p = 0; p < players; p++)
+	{
+		CPlayer@ player = getPlayer(p);
+		const u8 team = player.getTeamNum();
+		if (team >= teamsNum) continue; //no spec
+
+		const u8 playersOnMyTeam = teamPlayers[team];
+		const u8 difference = playersOnLargestTeam - playersOnMyTeam;
+
+		//calculate how much my team is missing, then divide those gains to my team's players
+		const u16 compensate = initBooty * difference / playersOnMyTeam;
+		if (compensate > 0)
+			server_addPlayerBooty(player.getUsername(), compensate);
 	}
 }
 
