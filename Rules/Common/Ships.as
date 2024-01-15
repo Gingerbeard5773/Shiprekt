@@ -200,6 +200,9 @@ void CombineShips(CRules@ this, Ship@[] ships, CBlob@ connector)
 			CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
 			if (b is null) continue;
 			
+			if (b.hasTag("engine"))
+				b.set_f32("power", 0); //turn off engines
+			
 			b.set_u16("last color", 0);
 			b.getShape().getVars().customData = 0;
 		}
