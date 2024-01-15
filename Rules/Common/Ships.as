@@ -25,7 +25,6 @@ void onInit(CRules@ this)
 	this.set_bool("dirty ships", true);
 	
 	this.addCommandID("ship collision");
-	this.addCommandID("ship bounce");
 	this.addCommandID("ships sync");
 	this.addCommandID("ships update");
 }
@@ -905,33 +904,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			ShakeScreen(Maths::Min(shake, 100), 12, point1);
 			directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 		}
-		return;
-	}
-	else if (cmd == this.getCommandID("ship bounce")) //sent from MapBarrier.as
-	{
-		const s32 shipID = params.read_s32();
-		
-		Ship@ ship = getShipSet(this).getShip(shipID);
-		if (ship is null) return;
-		
-		f32 bounceAngle;
-		if (!params.saferead_f32(bounceAngle))
-		{
-			warn("ship bounce (CMD): bounce angle not found, ID ["+ship.id+"]");
-			return;
-		}
-		
-		if (bounceAngle != 800)
-		{
-			ship.angle = loopAngle(bounceAngle);
-		}
-		
-		if (!params.saferead_Vec2f(ship.vel))
-		{
-			warn("ship bounce (CMD): ship.vel not found, ID ["+ship.id+"]");
-			return;
-		}
-		
 		return;
 	}
 	
