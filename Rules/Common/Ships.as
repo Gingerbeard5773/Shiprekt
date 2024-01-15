@@ -173,7 +173,6 @@ void ConfigureToShip(CRules@ this, CBlob@[] blocks)
 		}
 		
 		SetUpdateBlocks(ship.id);
-		SetUpdateCores(ship.id);
 		@ship.centerBlock = null; //re-initialize ship
 	}
 }
@@ -218,7 +217,6 @@ void CombineShips(CRules@ this, Ship@[] ships, CBlob@ connector)
 	
 	ColorBlocks(connector, largestShip);
 	SetUpdateBlocks(largestShip.id);
-	SetUpdateCores(largestShip.id);
 	@largestShip.centerBlock = null; //recalibrate ship centerblock
 }
 
@@ -261,7 +259,6 @@ void SeperateShip(CRules@ this, CBlob@ seperator, ShipDictionary@ ShipSet)
 				ColorBlocks(b, newShip);
 				SetShipOrigin(b, newShip);
 				SetUpdateBlocks(newShip.id);
-				SetUpdateCores(newShip.id);
 
 				//reference past velocities for a seamless transition
 				newShip.vel = ship.vel;
@@ -270,7 +267,6 @@ void SeperateShip(CRules@ this, CBlob@ seperator, ShipDictionary@ ShipSet)
 		}
 	}
 	SetUpdateBlocks(ship.id);
-	SetUpdateCores(ship.id);
 	@ship.centerBlock = null; //recalibrate ship centerblock
 }
 
@@ -646,24 +642,15 @@ void UpdateShipBlob(CBlob@ blob, Ship@ ship, ShipBlock@ ship_block)
 void SetUpdateBlocks(const int&in shipColor = 0)
 {
 	CBlob@[] blocks;
-	getBlobsByTag("weapon", @blocks); //update docking info
-	getBlobsByTag("seat", @blocks);   //update controls
-	UpdateBlocks(shipColor, blocks);
-}
-
-// Update core rings spritelayer
-void SetUpdateCores(const int&in shipColor = 0)
-{
-	if (!isClient()) return;
-	
-	CBlob@[] blocks;
-	if (getBlobsByTag("core", @blocks))
-		UpdateBlocks(shipColor, blocks);
-}
-
-// Update specified blocks
-void UpdateBlocks(const int&in shipColor, CBlob@[] blocks)
-{
+	if (isServer())
+	{
+		getBlobsByTag("weapon", @blocks); //update docking info
+		getBlobsByTag("seat", @blocks);   //update controls
+	}
+	if (isClient())
+	{
+		getBlobsByTag("core", @blocks); //update corering spritelayers
+	}
 	const u16 blocksLength = blocks.length;
 	for (u16 i = 0; i < blocksLength; i++)
 	{
@@ -771,13 +758,9 @@ void Synchronize(CRules@ this, const bool full_sync, CPlayer@ player = null)
 	if (Serialize(this, bs, full_sync))
 	{
 		if (player is null)
-		{
 			this.SendCommand(full_sync ? this.getCommandID("ships sync") : this.getCommandID("ships update"), bs);
-		}
 		else
-		{
 			this.SendCommand(full_sync ? this.getCommandID("ships sync") : this.getCommandID("ships update"), bs, player);
-		}
 	}
 }
 
@@ -986,7 +969,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 			ShipSet.setShip(ship.id, @ship);
 		}
 
-		SetUpdateCores();
+		SetUpdateBlocks();
 		UpdateShips(this, false);
 	}
 	else if (cmd == this.getCommandID("ships update"))

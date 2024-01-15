@@ -3,7 +3,8 @@
 
 void onInit(CSprite@ this)
 {
-	this.getCurrentScript().tickFrequency = 5;
+	this.getCurrentScript().tickIfTag = "updateBlock";
+	this.getCurrentScript().runFlags |= Script::tick_onscreen;
 	for (u8 i = 0; i < 4; i++) //4 times for each lateral side
 	{
 		CSpriteLayer@ layer = this.addSpriteLayer("side"+i, "CoreSide.png", 8, 3);
@@ -16,33 +17,26 @@ void onInit(CSprite@ this)
 			layer.SetVisible(false);
 		}
 	}
-	this.getBlob().set_bool("updateBlock", true);
 }
 
 void onTick(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
-	if (blob.get_bool("updateBlock") && blob.getShape().getVars().customData > 0)
-	{
-		checkPerimeter(this, blob);
-		blob.set_bool("updateBlock", false);
-	}
-}
+	blob.Untag("updateBlock");
+	const int bCol = blob.getShape().getVars().customData;
+	if (bCol <= 0) return;
 
-void checkPerimeter(CSprite@ this, CBlob@ blob)
-{
-	//check nearby platforms if we can activate our spritelayers
 	CMap@ map = getMap();
 	Vec2f pos = blob.getPosition();
 	const f32 angle = blob.getAngleDegrees();
 	
-	checkBlock(this, map, pos + Vec2f(0,-8).RotateBy(angle), "side0");
-	checkBlock(this, map, pos + Vec2f(8,0).RotateBy(angle), "side1");
-	checkBlock(this, map, pos + Vec2f(0,8).RotateBy(angle), "side2");
-	checkBlock(this, map, pos + Vec2f(-8,0).RotateBy(angle), "side3");
+	checkBlock(this, map, bCol, pos + Vec2f(0,-8).RotateBy(angle), "side0");
+	checkBlock(this, map, bCol, pos + Vec2f(8,0).RotateBy(angle), "side1");
+	checkBlock(this, map, bCol, pos + Vec2f(0,8).RotateBy(angle), "side2");
+	checkBlock(this, map, bCol, pos + Vec2f(-8,0).RotateBy(angle), "side3");
 }
 
-void checkBlock(CSprite@ this, CMap@ map, const Vec2f&in pos, const string&in layername)
+void checkBlock(CSprite@ this, CMap@ map, const int&in bCol, const Vec2f&in pos, const string&in layername)
 {
 	CSpriteLayer@ layer = this.getSpriteLayer(layername);
 	
@@ -52,7 +46,7 @@ void checkBlock(CSprite@ this, CMap@ map, const Vec2f&in pos, const string&in la
 	for (u8 i = 0; i < blobsLength; i++)
 	{
 		CBlob@ b = blobs[i];
-		if (b.hasTag("platform") && b.getShape().getVars().customData > 0)
+		if (b.hasTag("platform") && b.getShape().getVars().customData == bCol)
 		{
 			if (!layer.isVisible())
 				layer.SetVisible(true);
