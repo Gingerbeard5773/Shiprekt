@@ -31,80 +31,11 @@ void onTick(CRules@ this)
 {
 	const u32 gameTime = getGameTime();
 	
-	//check for minimum resources on captains
+	//give resources
 	if (gameTime % 150 == 0 && !this.get_bool("whirlpool"))
 	{
-		const u16 minBooty = this.get_u16("bootyRefillLimit");
-		ShipDictionary@ ShipSet = getShipSet(this);
-		CBlob@[] cores;
-		getBlobsByTag("mothership", @cores);
-		
-		const u8 coresLength = cores.length;
-		for (u8 i = 0; i < coresLength; i++)
-		{
-			const int coreCol = cores[i].getShape().getVars().customData;
-			if (coreCol <= 0) continue;
-			
-			Ship@ ship = ShipSet.getShip(coreCol);
-			if (ship is null || ship.owner.isEmpty() || ship.owner == "*") continue;
-			
-			const u16 captainBooty = server_getPlayerBooty(ship.owner);
-			if (captainBooty < minBooty)
-			{
-				CPlayer@ player = getPlayerByUsername(ship.owner);
-				if (player is null) continue;
-				
-				//consider blocks to propellers ratio
-				u16 propellers = 1;
-				u16 couplings = 0;
-				const u16 blocksLength = ship.blocks.length;
-				for (u16 q = 0; q < blocksLength; ++q)
-				{
-					CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
-					if (b !is null)
-					{
-						if (b.hasTag("engine"))
-							propellers++;
-						else if (b.hasTag("coupling"))
-							couplings++;
-					}
-				}
-
-				if (((blocksLength - propellers - couplings)/propellers > 3) || this.isWarmup())
-				{
-					CBlob@ pBlob = player.getBlob();
-					u16[] blocks;
-					if (pBlob !is null && pBlob.get("blocks", blocks) && blocks.size() == 0)
-						server_addPlayerBooty(ship.owner, Maths::Min(15, minBooty - captainBooty));
-				}
-			}
-		}
-		
-		//give booty to teams with captured stations
-		const u8 plyCount = getPlayersCount();
-		for (u8 i = 0; i < plyCount; ++i)
-		{
-			CPlayer@ player = getPlayer(i);
-			if (player is null)	continue;
-			
-			const u8 pteam = player.getTeamNum();
-			u8 pStationCount = 0;
-			CBlob@[] stations;
-			getBlobsByTag("station", @stations);
-			const u8 stationsLength = stations.length;
-			for (u8 u = 0; u < stationsLength; u++)
-			{
-				if (stations[u].getTeamNum() == pteam)
-					pStationCount++;
-			}
-			
-			CBlob@ pBlob = player.getBlob();
-			if (pBlob !is null)
-			{
-				server_addPlayerBooty(player.getUsername(), (STATION_BOOTY * pStationCount));
-				server_updateTotalBooty(pteam, (STATION_BOOTY * pStationCount));
-			}
-		}
+		GiveWelfareBooty(this);
+		GiveStationBooty(this);
 	}
 	
 	//after some secs, balance starting booty for teams with less players than the largest team
@@ -116,71 +47,84 @@ void onTick(CRules@ this)
 	//check game states
 	if (gameTime % 30 == 0)
 	{
-		//end warmup time
-		if (this.isWarmup() && (gameTime > this.get_u16("warmup_time") || this.get_bool("freebuild")))
+		SetGameStates(this, gameTime);
+	}
+}
+
+void GiveWelfareBooty(CRules@ this)
+{
+	const u16 minBooty = this.get_u16("bootyRefillLimit");
+	ShipDictionary@ ShipSet = getShipSet(this);
+	CBlob@[] cores;
+	getBlobsByTag("mothership", @cores);
+	
+	const u8 coresLength = cores.length;
+	for (u8 i = 0; i < coresLength; i++)
+	{
+		const int coreCol = cores[i].getShape().getVars().customData;
+		if (coreCol <= 0) continue;
+		
+		Ship@ ship = ShipSet.getShip(coreCol);
+		if (ship is null || ship.owner.isEmpty() || ship.owner == "*") continue;
+		
+		const u16 captainBooty = server_getPlayerBooty(ship.owner);
+		if (captainBooty > minBooty) continue;
+
+		CPlayer@ player = getPlayerByUsername(ship.owner);
+		if (player is null) continue;
+		
+		//consider blocks to propellers ratio
+		u16 propellers = 1;
+		u16 couplings = 0;
+		const u16 blocksLength = ship.blocks.length;
+		for (u16 q = 0; q < blocksLength; ++q)
 		{
-			this.SetCurrentState(GAME);
+			CBlob@ b = getBlobByNetworkID(ship.blocks[q].blobID);
+			if (b !is null)
+			{
+				if (b.hasTag("engine"))
+					propellers++;
+				else if (b.hasTag("coupling"))
+					couplings++;
+			}
+		}
+
+		if (((blocksLength - propellers - couplings)/propellers > 3) || this.isWarmup())
+		{
+			CBlob@ pBlob = player.getBlob();
+			u16[] blocks;
+			if (pBlob !is null && pBlob.get("blocks", blocks) && blocks.size() == 0)
+				server_addPlayerBooty(ship.owner, Maths::Min(15, minBooty - captainBooty));
+		}
+	}
+}
+
+void GiveStationBooty(CRules@ this)
+{
+	//give booty to teams with captured stations
+	const u8 players = getPlayersCount();
+	for (u8 i = 0; i < players; ++i)
+	{
+		CPlayer@ player = getPlayer(i);
+		if (player is null)	continue;
+		
+		const u8 pteam = player.getTeamNum();
+		u8 pStationCount = 0;
+		CBlob@[] stations;
+		getBlobsByTag("station", @stations);
+		const u8 stationsLength = stations.length;
+		for (u8 u = 0; u < stationsLength; u++)
+		{
+			if (stations[u].getTeamNum() == pteam)
+				pStationCount++;
 		}
 		
-		//check if the game has ended
-		CBlob@[] cores;
-		getBlobsByTag("mothership", cores);
-		
-		const u8 coresLength = cores.length;
-		
-		const bool oneTeamLeft = coresLength <= 1;
-		const u8 endCount = this.get_u8("endCount");
-		
-		if (oneTeamLeft && endCount == 0)//start endmatch countdown
-			this.set_u8("endCount", 15);
-		
-		if (endCount != 0)
+		CBlob@ pBlob = player.getBlob();
+		if (pBlob !is null)
 		{
-			this.set_u8("endCount", Maths::Max(endCount - 1, 1));
-			if (endCount == 11)
-			{
-				u8 teamWithPlayers = 0;
-				if (!this.isGameOver())
-				{
-					const u8 plyCount = getPlayerCount();
-					for (u8 coreIt = 0; coreIt < coresLength; coreIt++)
-					{
-						for (u8 i = 0; i < plyCount; i++)
-						{
-							CPlayer@ player = getPlayer(i);
-							if (player.getBlob() !is null)
-								teamWithPlayers = player.getTeamNum();
-						}
-					}
-				}
-				u8 coresAlive = 0;
-				for (u8 i = 0; i < coresLength; i++)
-				{
-					if (!cores[i].hasTag("critical"))
-					coresAlive++;
-				}
-
-				if (coresAlive > 0)
-				{
-					string captain = "";
-					CBlob@ mShip = getMothership(teamWithPlayers);
-					if (mShip !is null)
-					{
-						Ship@ ship = getShipSet(this).getShip(mShip.getShape().getVars().customData);
-						if (ship !is null && !ship.owner.isEmpty() && ship.owner != "*")
-						{
-							const string lastChar = ship.owner.substr(ship.owner.length() -1);
-							captain = ship.owner + (lastChar == "s" ? "' " : "'s ");
-						}
-						this.SetGlobalMessage(captain + this.getTeam(mShip.getTeamNum()).getName() + " Wins!");
-					}
-				}
-				else
-					this.SetGlobalMessage("Game Over! "+ getTranslatedString("It's a tie!"));
-				
-				this.SetCurrentState(GAME_OVER);
-			}
-        }
+			server_addPlayerBooty(player.getUsername(), (STATION_BOOTY * pStationCount));
+			server_updateTotalBooty(pteam, (STATION_BOOTY * pStationCount));
+		}
 	}
 }
 
@@ -222,21 +166,71 @@ void BalanceStartingBooty(CRules@ this)
 	}
 }
 
+void SetGameStates(CRules@ this, const u32&in gameTime)
+{
+	//end warmup time
+	if (this.isWarmup() && (gameTime > this.get_u16("warmup_time") || this.get_bool("freebuild")))
+	{
+		this.SetCurrentState(GAME);
+	}
+
+	//check if the game has ended
+	CBlob@[] cores;
+	getBlobsByTag("mothership", cores);
+	const u8 coresLength = cores.length;
+
+	const u8 endCount = this.get_u8("endCount");
+	if (endCount == 0)
+	{
+		if (coresLength <= 1) //start endmatch countdown since only one or no cores is left
+			this.set_u8("endCount", 15);
+
+		return;
+	}
+
+	this.set_u8("endCount", Maths::Max(endCount - 1, 1));
+	if (endCount == 11)
+	{
+		s16 winningTeam = -1;
+		for (u8 i = 0; i < coresLength; i++)
+		{
+			CBlob@ core = cores[i];
+			if (core !is null && !core.hasTag("critical"))
+				winningTeam = core.getTeamNum();
+		}
+
+		if (winningTeam > -1)
+		{
+			string captain = "";
+			CBlob@ mShip = getMothership(winningTeam);
+			if (mShip !is null)
+			{
+				Ship@ ship = getShipSet(this).getShip(mShip.getShape().getVars().customData);
+				if (ship !is null && !ship.owner.isEmpty() && ship.owner != "*")
+				{
+					const string lastChar = ship.owner.substr(ship.owner.length() -1);
+					captain = ship.owner + (lastChar == "s" ? "' " : "'s ");
+				}
+				this.SetGlobalMessage(captain + this.getTeam(winningTeam).getName() + " Wins!");
+			}
+		}
+		else
+			this.SetGlobalMessage("Game Over! "+ getTranslatedString("It's a tie!"));
+		
+		this.SetCurrentState(GAME_OVER);
+	}
+}
+
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 {
 	const string pName = player.getUsername();
-	const u16 pBooty = server_getPlayerBooty(pName);
-	const u16 minBooty = Maths::Round(this.get_u16("bootyRefillLimit") / 2);
-	
 	if (sv_test)
 		server_setPlayerBooty(pName, 9999);
-	else if (pBooty > minBooty)
+	else if (!getBootySet().exists("booty" + pName))
 	{
-		this.set_u16("booty" + pName, pBooty);
-		this.Sync("booty" + pName, true);
+		const u16 starting_booty = this.get_u16("starting_booty");
+		server_setPlayerBooty(pName, !this.isWarmup() ? starting_booty/2 : starting_booty);
 	}
-	else
-		server_setPlayerBooty(pName, !this.isWarmup() ? minBooty : this.get_u16("starting_booty"));
 }
 
 const string[] devNames = {"Mr"+"Ho"+"bo"};
