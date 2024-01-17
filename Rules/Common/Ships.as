@@ -201,8 +201,7 @@ void CombineShips(CRules@ this, Ship@[] ships, CBlob@ connector)
 			
 			if (b.hasTag("engine"))
 				b.set_f32("power", 0); //turn off engines
-			
-			b.set_u16("last color", 0);
+
 			b.getShape().getVars().customData = 0;
 		}
 		
@@ -236,7 +235,6 @@ void SeperateShip(CRules@ this, CBlob@ seperator, ShipDictionary@ ShipSet)
 		if (b is null) continue;
 		
 		blocks.push_back(b);
-		b.set_u16("last color", 0);
 		if (b.getShape().getVars().customData > 0)
 			b.getShape().getVars().customData = 0;
 	}
@@ -294,7 +292,6 @@ void AddShipBlock(CBlob@ this, Ship@ ship)
 {
 	//set color as ship's id
 	this.getShape().getVars().customData = ship.id;
-	this.set_u16("last color", ship.id);
 
 	//add to ship blocks
 	ShipBlock ship_block;
@@ -305,17 +302,13 @@ void AddShipBlock(CBlob@ this, Ship@ ship)
 // Goes through the entirety of connected blobs to determine ship blocks
 void ColorBlocks(CBlob@ this, Ship@ ship, CMap@ map = getMap())
 {
-	const u16 lastCol = this.get_u16("last color");
 	const Vec2f pos = this.getPosition();
 	const u32 placeTime = this.get_u32("placedTime");
 	const bool isCoupling = this.hasTag("coupling");
 	const u32 gameTime = getGameTime();
-	
-	if (lastCol != ship.id) //can do infinite loop- if you don't know what you're doing
-	{
-		AddShipBlock(this, ship);
-	}
-	
+
+	AddShipBlock(this, ship);
+
 	CBlob@[] overlapping;
 	map.getBlobsInRadius(pos, 4.0f, @overlapping);
 	
@@ -324,9 +317,7 @@ void ColorBlocks(CBlob@ this, Ship@ ship, CMap@ map = getMap())
 	{
 		CBlob@ b = overlapping[i];
 		if (b.getShape().getVars().customData == 0 && b.hasTag("block") // is uncolored block
-			&& (b.getPosition() - pos).LengthSquared() < 78 //avoid corner overlaps
-			&& (b.get_u16("last color") == lastCol || b.hasTag("coupling") || isCoupling
-			|| gameTime - b.get_u32("placedTime") < 10 || gameTime - placeTime < 10)) //just placed block
+			&& (b.getPosition() - pos).LengthSquared() < 78) //avoid corner overlaps
 		{
 			ColorBlocks(b, ship, map); //continue the cycle
 		}
