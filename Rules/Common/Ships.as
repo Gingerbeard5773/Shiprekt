@@ -307,7 +307,8 @@ void ColorBlocks(CBlob@ this, Ship@ ship, CMap@ map = getMap())
 	const bool isCoupling = this.hasTag("coupling");
 	const u32 gameTime = getGameTime();
 
-	AddShipBlock(this, ship);
+	if (this.getShape().getVars().customData <= 0)
+		AddShipBlock(this, ship);
 
 	CBlob@[] overlapping;
 	map.getBlobsInRadius(pos, 4.0f, @overlapping);
