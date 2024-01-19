@@ -30,7 +30,7 @@ void onInit(CBlob@ this)
 	this.Tag("usesAmmo");
 	this.Tag("fixed_gun");
 	
-	this.set_u8("TTL", 12);
+	this.set_u8("TTL", 14);
 	this.set_u8("speed", 25);
 	
 	this.set_f32("weight", 2.0f);
