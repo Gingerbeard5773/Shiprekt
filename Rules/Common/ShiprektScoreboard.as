@@ -11,7 +11,6 @@
 const f32 scoreboardMargin = 52.0f;
 const f32 scrollSpeed = 4.0f;
 const f32 maxMenuWidth = 430;
-const f32 screenMidX = getScreenWidth()/2;
 
 f32 scrollOffset = 0.0f;
 bool mouseWasPressed2 = false;
@@ -29,8 +28,10 @@ float drawScoreboard(CPlayer@[] players, Vec2f topleft, const u8&in teamNum)
 
 	const f32 lineheight = 16;
 	const f32 padheight = 2;
+	Vec2f screenDim(getScreenWidth(), getScreenHeight());
+	const f32 screenMidX = screenDim.x * 0.5f;
 	const f32 stepheight = lineheight + padheight;
-	Vec2f bottomright(Maths::Min(getScreenWidth() - 100, screenMidX+maxMenuWidth), topleft.y + (playersLength + 5.5) * stepheight);
+	Vec2f bottomright(Maths::Min(screenDim.x - 100, screenMidX+maxMenuWidth), topleft.y + (playersLength + 5.5) * stepheight);
 	GUI::DrawPane(topleft, bottomright, team.color);
 
 	//offset border
@@ -206,6 +207,7 @@ void onRenderScoreboard(CRules@ this)
 
 	@hoveredPlayer = null;
 
+	const f32 screenMidX = getScreenWidth() * 0.5f;
 	Vec2f topleft(Maths::Max(100, screenMidX-maxMenuWidth), 150);
 	drawServerInfo(40);
 
