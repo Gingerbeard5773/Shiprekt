@@ -303,9 +303,6 @@ void AddShipBlock(CBlob@ this, Ship@ ship)
 void ColorBlocks(CBlob@ this, Ship@ ship, CMap@ map = getMap())
 {
 	const Vec2f pos = this.getPosition();
-	const u32 placeTime = this.get_u32("placedTime");
-	const bool isCoupling = this.hasTag("coupling");
-	const u32 gameTime = getGameTime();
 
 	if (this.getShape().getVars().customData <= 0)
 		AddShipBlock(this, ship);
