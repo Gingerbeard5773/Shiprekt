@@ -206,11 +206,10 @@ void sparksDirectional(const Vec2f&in pos, Vec2f&in blobVel, const u8&in amount)
 		Vec2f vel(_sprk_r.NextFloat() * 5.0f, 0);
 		vel.RotateBy((-blobVel.getAngle() + 180.0f) + _sprk_r.NextFloat() * 30.0f - 15.0f);
 
-		CParticle@ p = ParticlePixel(pos, vel, SColor( 255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128)), true);
+		CParticle@ p = ParticleAnimated("pixel.png", pos, vel, 0.0f, 1.0f + _sprk_r.NextFloat(), 20 + _sprk_r.NextRanged(20), 0.0f, true);
 		if (p is null) return; //bail if we stop getting particles
 
-		p.timeout = 20 + _sprk_r.NextRanged(20);
-		p.scale = 1.0f + _sprk_r.NextFloat();
+		p.colour = SColor(255, 255, 128+_sprk_r.NextRanged(128), _sprk_r.NextRanged(128));
 		p.damping = 0.85f;
 		p.Z = 650.0f;
 	}

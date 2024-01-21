@@ -8,11 +8,10 @@ void sparks(const Vec2f&in pos, const u8&in amount, const f32&in spread = 1.0f, 
 		Vec2f vel(spark.NextFloat() * spread, 0); //spread
 		vel.RotateBy(spark.NextFloat() * 360.0f);
 
-		CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + spark.NextRanged(128), spark.NextRanged(128)), true);
+		CParticle@ p = ParticleAnimated("pixel.png", pos, vel, 0.0f, 1.0f + spark.NextFloat(), pTime + spark.NextRanged(20), 0.0f, true);
 		if (p is null) return; //bail if we stop getting particles
 
-		p.timeout = pTime + spark.NextRanged(20);
-		p.scale = 0.5f + spark.NextFloat();
+		p.colour = SColor(255, 255, 128 + spark.NextRanged(128), spark.NextRanged(128));
 		p.damping = 0.95f;
 		p.collides = false;
 		p.Z = 650.0f;
@@ -67,11 +66,10 @@ void shotParticles(const Vec2f&in pos, const f32&in angle, const bool&in smoke =
 
 shared void ShrapnelParticle(const Vec2f&in pos, const Vec2f&in vel)
 {
-	CParticle@ p = ParticlePixel(pos, vel, SColor(255, 255, 128 + XORRandom(128), 100), true);
+	CParticle@ p = ParticleAnimated("pixel.png", pos, vel, 0.0f, 1.5f, 10 + XORRandom(6), 0.0f, true);
 	if (p !is null)
 	{
-		p.timeout = 10 + XORRandom(6);
-		p.scale = 1.5f;
+		p.colour = SColor(255, 255, 128 + XORRandom(128), 100);
 		p.Z = 650.0f;
 		p.damping = 0.85f;
 	}
