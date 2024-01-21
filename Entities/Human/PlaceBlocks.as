@@ -35,6 +35,8 @@ void onTick(CBlob@ this)
 			CBlob@ block = getBlobByNetworkID(blocks[i]);
 			if (block is null) continue;
 			
+			if (!this.isMyPlayer())
+				block.setPosition(Vec2f_zero);
 			SetDisplay(block, SColor(255, 255, 0, 0), RenderStyle::light, -10.0f);
 		}
 		return;
