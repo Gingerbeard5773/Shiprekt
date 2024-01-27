@@ -148,9 +148,9 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 			if (blob.hasTag("removable")) Die(blob);
 			else if (!this.hasTag("removable"))
 			{
-				if (this.hasTag("seat")) Die(this);
-				if (blob.hasTag("seat")) Die(blob);
-					
+				if (this.hasTag("seat") || this.hasTag("bomb")) Die(this);
+				if (blob.hasTag("seat") || blob.hasTag("bomb")) Die(blob);
+				
 				if (this.hasTag("ramengine"))
 				{
 					if (blob.hasTag("core"))
@@ -191,13 +191,6 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 						this.server_Hit(this, point1, ship.vel, 1.1f, 0, true);
 						Die(blob);
 					}
-				}
-				else if (this.hasTag("bomb")) //bombs annihilate all
-				{
-					if (blob.hasTag("mothership") || blob.hasTag("secondaryCore"))
-						this.server_Hit(blob, point1, ship.vel, 2.7f, 0, true);
-					else Die(blob);
-					Die(this);
 				}
 			}
 		}
