@@ -152,10 +152,8 @@ void ReturnBlocks(CBlob@ this)
 				for (u16 i = 0; i < blocksLength; ++i)
 				{
 					CBlob@ block = getBlobByNetworkID(blocks[i]);
-					if (block is null) continue;
-					
-					if (!block.hasTag("coupling") && block.getShape().getVars().customData == -1)
-						returnBooty += getCost(block.getName());
+					if (block !is null && block.getShape().getVars().customData == -1)
+						returnBooty += block.hasTag("coupling") ? 2 : getCost(block.getName());
 				}
 				
 				if (returnBooty > 0 && !rules.get_bool("freebuild"))
