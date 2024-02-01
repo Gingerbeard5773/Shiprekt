@@ -170,11 +170,13 @@ void Explode(CBlob@ this)
 		if (hit_blob is this) continue;
 		
 		const int hitCol = hit_blob.getShape().getVars().customData;
+		Vec2f hit_blob_pos = hit_blob.getPosition();
+		Vec2f direction = hit_blob_pos - pos;
+		const f32 damage = direction.Length() > 13.0f ? BOMB_BASE_DAMAGE / 2.0f : BOMB_BASE_DAMAGE;
+		const f32 booty_factor = Maths::Min(damage, hit_blob.getHealth()) / hit_blob.getInitialHealth();
 
 		if (isServer())
 		{
-			Vec2f hit_blob_pos = hit_blob.getPosition();
-			Vec2f direction = hit_blob_pos - pos;
 			if (hitCol > 0)
 			{
 				// move the ship
@@ -186,14 +188,13 @@ void Explode(CBlob@ this)
 				}
 			}
 
-			const f32 damage = direction.Length() > 13.0f ? BOMB_BASE_DAMAGE / 2.0f : BOMB_BASE_DAMAGE;
 			this.server_Hit(hit_blob, hit_blob_pos, direction, damage, Hitters::bomb, true);
 		}
 	
 		CPlayer@ owner = this.getDamageOwnerPlayer();
 		if (owner !is null && hitCol > 0)
 		{
-			rewardBooty(owner, hit_blob, booty_reward, "Pinball_3");
+			rewardBooty(owner, hit_blob, booty_reward, "Pinball_3", booty_factor);
 		}
 	}
 }

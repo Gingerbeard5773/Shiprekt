@@ -26,7 +26,7 @@ shared class TagReward
 	}
 }
 
-void rewardBooty(CPlayer@ attacker, CBlob@ victim, BootyRewards@ booty_reward, const string&in sound = "Pinball_0")
+void rewardBooty(CPlayer@ attacker, CBlob@ victim, BootyRewards@ booty_reward, const string&in sound = "Pinball_0", const f32&in booty_factor = 1.0f)
 {
 	if (isServer() || attacker.isMyPlayer())
 	{
@@ -63,8 +63,9 @@ void rewardBooty(CPlayer@ attacker, CBlob@ victim, BootyRewards@ booty_reward, c
 		
 		if (isServer())
 		{
-			const u16 bFactor = getRules().get_bool("whirlpool") ? 3 : 1;
-			reward *= bFactor;
+			reward *= getRules().get_bool("whirlpool") ? 3 : 1;
+			reward *= booty_factor;
+			reward = Maths::Max(reward, 1);
 			
 			server_addPlayerBooty(attacker.getUsername(), reward);
 			server_updateTotalBooty(attacker.getTeamNum(), reward);
