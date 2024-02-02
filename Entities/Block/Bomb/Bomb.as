@@ -119,7 +119,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	if (hitterBlob.hasTag("engine") && this.getHealth() - damage <= 0.0f)
 		this.Tag("disabled");
 	
-	if (customData == Hitters::bomb)
+	if (customData == Hitters::bomb && this.getShape().getVars().customData > 0)
 	{
 		if (!this.hasTag("exploding"))
 			StartDetonation(this);
