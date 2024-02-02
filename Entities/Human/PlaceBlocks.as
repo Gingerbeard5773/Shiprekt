@@ -170,24 +170,23 @@ Vec2f SnapToGrid(Vec2f&in pos) //determines the grid of blocks
 const bool blocksOverlappingShip(u16[] blocks)
 {
 	const u8 blocksLength = blocks.length;
+	CMap@ map = getMap();
 	for (u8 i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ block = getBlobByNetworkID(blocks[i]);
 		if (block is null) continue;
 		
 		CBlob@[] overlapping; //we use radius since getOverlapping has a delay when blob is created
-		if (getMap().getBlobsInRadius(block.getPosition(), 8.0f, @overlapping))
+		map.getBlobsInRadius(block.getPosition(), 8.0f, @overlapping);
+
+		const u8 overlappingLength = overlapping.length;
+		for (u8 q = 0; q < overlappingLength; q++)
 		{
-			const u8 overlappingLength = overlapping.length;
-			for (u8 q = 0; q < overlappingLength; q++)
-			{
-				CBlob@ b = overlapping[q];
-				if (b.getShape().getVars().customData > 0)
-				{
-					if ((b.getPosition() - block.getPosition()).getLength() < block.getRadius() * 0.4f)
-						return true;
-				}
-			}
+			CBlob@ b = overlapping[q];
+			if (b.getShape().getVars().customData <= 0) continue;
+
+			if ((b.getPosition() - block.getPosition()).getLength() < block.getRadius() * 0.4f)
+				return true;
 		}
 	}
 	return false; 
@@ -254,8 +253,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		
 		b.set_netid("ownerID", 0); //so it wont add to owner blocks
 		
-		const f32 z = b.hasTag("platform") ? 309.0f : (b.hasTag("weapon") ? 311.0f : 310.0f);
-		SetDisplay(b, color_white, RenderStyle::normal, z);
+		SetDisplay(b, color_white, RenderStyle::normal, 310.0f);
 		
 		if (!isServer()) //add it locally till a sync
 		{

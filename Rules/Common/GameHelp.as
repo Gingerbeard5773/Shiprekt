@@ -2,14 +2,14 @@
 #include "ActorHUDStartPos.as";
 #include "ShiprektTranslation.as";
 
-bool showHelp = true;
+bool showHelp = false;
+bool firstJoin = false;
 bool justJoined = true;
 bool page1 = true;
 bool mouseWasPressed1 = false;
 bool shiprektUpdated = false;
 
 const f32 boxMargin = 50.0f;
-const SColor tipsColor = SColor(255, 255, 255, 255);
 //key names
 const string party_key = getControls().getActionKeyKeyName(AK_PARTY);
 const string inv_key = getControls().getActionKeyKeyName(AK_INVENTORY);
@@ -44,8 +44,7 @@ void onInit(CRules@ this)
 		warn("Creating settings config ../Cache/"+FileName);
 		cfg.add_u32("version", versionNum);
 		cfg.saveFile(FileName);
-		if (versionNum == 1531)
-			shiprektUpdated = true; //this line should be removed once we update away from 1.53.1
+		firstJoin = true;
 	}
 	
 	const u32 oldVersionNum = cfg.read_u32("version");
@@ -55,6 +54,8 @@ void onInit(CRules@ this)
 		cfg.saveFile(FileName);
 		shiprektUpdated = true;
 	}
+	
+	showHelp = firstJoin || shiprektUpdated;
 }
 
 void onTick(CRules@ this)
@@ -66,7 +67,7 @@ void onTick(CRules@ this)
 		u_showtutorial = showHelp;
 		justJoined = false;
 	}
-	if (controls.isKeyJustPressed(KEY_LBUTTON))
+	if (showHelp && controls.isKeyJustPressed(KEY_LBUTTON))
 		page1 = !page1;
 }
 
@@ -130,7 +131,7 @@ void onRender(CRules@ this)
 		Vec2f introSize;
 		GUI::GetTextDimensions(intro, introSize);
 		GUI::SetFont("normal");
-		GUI::DrawTextCentered(intro, Vec2f(sMid, tlBox.y + 20), tipsColor);
+		GUI::DrawTextCentered(intro, Vec2f(sMid, tlBox.y + 20), color_white);
 	} 
 	
 	if (!justJoined || gameTime % 90 > 30)
@@ -142,9 +143,9 @@ void onRender(CRules@ this)
 		GUI::GetTextDimensions(helpToggle, toggleSize);
 		
 		GUI::SetFont("menu");
-		GUI::DrawTextCentered(helpToggle, Vec2f(sMid, tlBox.y + 40), tipsColor);
+		GUI::DrawTextCentered(helpToggle, Vec2f(sMid, tlBox.y + 40), color_white);
 		if (page1)
-			GUI::DrawTextCentered(helpToggle, Vec2f(sMid, tlBox.y + 2*imageSize.y + boxMargin + 25), tipsColor);
+			GUI::DrawTextCentered(helpToggle, Vec2f(sMid, tlBox.y + 2*imageSize.y + boxMargin + 25), color_white);
 	}
 	
 	if (page1)
@@ -160,7 +161,7 @@ void onRender(CRules@ this)
 		const Vec2f tlBoxJustJoined = Vec2f(sMid - imageSize.x - boxMargin, Maths::Max(10.0f, sCenter - imageSize.y - lastChangesSize.y/2));
 		
 		GUI::SetFont("thick font");
-		GUI::DrawText(shiprektVersion, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), tipsColor);
+		GUI::DrawText(shiprektVersion, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y), color_white);
 		
 		if (shiprektUpdated)
 		{
@@ -170,7 +171,7 @@ void onRender(CRules@ this)
 		}
 		
 		GUI::SetFont("menu");
-		GUI::DrawText(lastChangesInfo, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), tipsColor);
+		GUI::DrawText(lastChangesInfo, Vec2f(sMid - imageSize.x, tlBoxJustJoined.y + 2*imageSize.y + boxMargin), color_white);
 		
 		//image
 		GUI::DrawIconByName("$SHIPREKTHELP$", Vec2f(sMid - imageSize.x, tlBox.y + boxMargin + 10));
@@ -180,10 +181,10 @@ void onRender(CRules@ this)
 		{
 			GUI::SetFont("normal");
 			Vec2f ImagePos(sMid - imageSize.x, tlBox.y + boxMargin + 10);
-			GUI::DrawTextCentered(Trans::Caption1, ImagePos + Vec2f(150,230), tipsColor);
-			GUI::DrawTextCentered(Trans::Caption2, ImagePos + Vec2f(150,400), tipsColor);
-			GUI::DrawTextCentered(Trans::Caption3, ImagePos + Vec2f(550,190), tipsColor);
-			GUI::DrawTextCentered(Trans::Caption4, ImagePos + Vec2f(340, 30), tipsColor);
+			GUI::DrawTextCentered(Trans::Caption1, ImagePos + Vec2f(150,230), color_white);
+			GUI::DrawTextCentered(Trans::Caption2, ImagePos + Vec2f(150,400), color_white);
+			GUI::DrawTextCentered(Trans::Caption3, ImagePos + Vec2f(550,190), color_white);
+			GUI::DrawTextCentered(Trans::Caption4, ImagePos + Vec2f(340, 30), color_white);
 		}
 	}
 	else
@@ -192,29 +193,29 @@ void onRender(CRules@ this)
 		
 		GUI::SetFont("thick font");
 		
-		GUI::DrawText(infoTitle, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 20), tipsColor);
-		GUI::DrawText(controlsTitle, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 240), tipsColor);
+		GUI::DrawText(infoTitle, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 20), color_white);
+		GUI::DrawText(controlsTitle, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 240), color_white);
 		
 		GUI::SetFont("menu");
-		GUI::DrawText(textInfo, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 60), tipsColor);
-		GUI::DrawText(controlsInfo, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 280), tipsColor);
+		GUI::DrawText(textInfo, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 60), color_white);
+		GUI::DrawText(controlsInfo, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin + 280), color_white);
 		
 		if (!v_fastrender)
 		{
 			const string lagTip = "<> "+Trans::FastGraphics+" <>";
-			GUI::DrawTextCentered(lagTip, Vec2f(sMid, tlBox.y + boxMargin *10), tipsColor);
+			GUI::DrawTextCentered(lagTip, Vec2f(sMid, tlBox.y + boxMargin *10), color_white);
 		}
 		
 		if (player.isMod())
 		{
 			GUI::SetFont("thick font");
 			const string RCONDetected = "Moderator status detected!";
-			GUI::DrawText(RCONDetected, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin * 11), tipsColor);
+			GUI::DrawText(RCONDetected, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin * 11), color_white);
 			
 			GUI::SetFont("menu");
 			const string modTools = "Shiprekt offers a variety of chat commands for testing and moderation purposes." +
 									"\n\n Type ' !list ' in chat and then check the console to see what is available. (check cmd console on server)";
-			GUI::DrawText(modTools, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin * 12), tipsColor);
+			GUI::DrawText(modTools, Vec2f(tlBox.x + boxMargin, tlBox.y + boxMargin * 12), color_white);
 		}
 	}
 	
@@ -226,7 +227,7 @@ void onRender(CRules@ this)
 	CControls@ controls = getControls();
 	if (getLocalPlayerBlob() !is null && (controls.getMouseScreenPos() - (tl + Vec2f(90, 125))).Length() > 200.0f)
 	{
-		GUI::DrawTextCentered("[ "+Trans::ClickIcons+" ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), tipsColor);
+		GUI::DrawTextCentered("[ "+Trans::ClickIcons+" ]",  tl + Vec2f(90, -17 + Maths::Sin(gameTime/4.5f) * 2.5f), color_white);
 	}
 	
 	//Add social links

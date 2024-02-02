@@ -5,17 +5,17 @@ const u8 BUTTON_SIZE = 4;
 void onInit(CRules@ this)
 {
 	//mod version
-	this.set_string("version", "1.53.1");
+	this.set_string("version", "1.53.2");
 	
 	//change log
 	this.set_string("changelog",
 		  "- 12-25-2023 - By Gingerbeard\n"
-		+ "  * Cannonballs do less damage and give less coins.\n"
-		+ "  * Heavy machinegun firerate is now the same for all players.\n"
-		+ "  * Capturing ships is now similiar to capturing stations.\n"
-		+ "  * Ram is twice as effective against half-walls.\n"
-		+ "  * Secondary cores no longer take damage from propellers or blow up instantly from bombs.\n"
-		+ "  * Decoy cores now have their own map symbol- only appearing for teammates.\n");
+		+ "  * Major map changes and new maps.\n"
+		+ "  * Docking to ships with couplings is much more reliable.\n"
+		+ "  * Disabled torpedo border bouncing.\n"
+		+ "  * Fixed a years old bug where particles' size was incorrect.\n"
+		+ "  * Bombs are much more stronger than before, but cost more.\n"
+		+ "  * Machinegun bullets go farther.\n");
 	
 	//dedicated server name
 	const string server_name = "[EU] Shiprekt++ ("+this.get_string("version")+")";
