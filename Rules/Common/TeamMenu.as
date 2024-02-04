@@ -134,11 +134,10 @@ bool isTeamAvailable(CRules@ this, CPlayer@ player, const u8&in team)
 	if (team > this.getTeamsNum()) return true;
 
 	bool canSwitch = true;
-	u8[] availableTeams = getAvailableTeams(this, player, canSwitch);
-	for (u8 i = 0; i < availableTeams.length; i++)
+	if (getAvailableTeams(this, player, canSwitch).find(team) != -1)
 	{
-		if (availableTeams[i] == team)
-			return canSwitch;
+		return canSwitch;
 	}
+
 	return false;
 }
