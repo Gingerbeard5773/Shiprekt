@@ -234,13 +234,14 @@ void onRender(CRules@ this)
 	GUI::SetFont("menu");
 	//makeWebsiteLink(Vec2f(brBox.x, 100.0f), " Shiprekt Github", "https://github.com/Gingerbeard5773/shiprekt");
 	makeWebsiteLink(Vec2f(brBox.x, 150.0f), "          Shiprekt Discord", "https://discord.gg/V29BBeba3C");
+	makeExitButton(Vec2f(brBox.x - 20.0f, tlBox.y + 20));
 	GUI::DrawIconByName("$DISCORD$", Vec2f(tlBox.x - 180.0f, 155.0f), 0.29f);
 	
 	
 	mouseWasPressed1 = controls.mousePressed1; 
 }
 
-void makeWebsiteLink(Vec2f pos, const string&in text, const string&in website)
+void makeWebsiteLink(Vec2f&in pos, const string&in text, const string&in website)
 {
 	Vec2f dim;
 	GUI::GetTextDimensions(text, dim);
@@ -271,6 +272,34 @@ void makeWebsiteLink(Vec2f pos, const string&in text, const string&in website)
 	}
 
 	GUI::DrawTextCentered(text, Vec2f(tl.x + (width * 0.50f), tl.y + (height * 0.50f)), 0xffffffff);
+}
+
+void makeExitButton(Vec2f&in pos)
+{
+	Vec2f tl = pos + Vec2f(-20, -20);
+	Vec2f br = pos + Vec2f(20, 20);
+	
+	CControls@ controls = getControls();
+	const Vec2f mousePos = controls.getMouseScreenPos();
+
+	const bool hover = (mousePos.x > tl.x && mousePos.x < br.x && mousePos.y > tl.y && mousePos.y < br.y);
+	if (hover)
+	{
+		GUI::DrawButton(tl, br);
+		
+		if (controls.mousePressed1 && !mouseWasPressed1)
+		{
+			Sound::Play("option");
+			showHelp = !showHelp;
+			u_showtutorial = showHelp;
+			justJoined = false;
+		}
+	}
+	else
+	{
+		GUI::DrawPane(tl, br, 0xffcfcfcf);
+	}
+	GUI::DrawIcon("MenuItems", 29, Vec2f(32,32), Vec2f(pos.x-32, pos.y-32), 1.0f);
 }
 
 //failback for F1 key problems
