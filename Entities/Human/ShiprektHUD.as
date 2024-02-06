@@ -169,7 +169,8 @@ void onRender(CSprite@ this)
 			{
 				const f32 percent = (msDMG-MSHIP_DAMAGE_ALERT) / (5.0f-MSHIP_DAMAGE_ALERT);
 				const u8 change = 255 - Maths::Min(255, 255 * percent);
-				GUI::DrawText(Trans::ShipAttack, Vec2f(screenWidth/2 - 135, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 255, change, change));
+				const string message = teamCore.hasTag("critical") ? Trans::ShipExplode : Trans::ShipAttack;
+				GUI::DrawTextCentered(message, Vec2f(screenWidth/2, screenHeight/3 + Maths::Sin(gameTime/4.5f) * 4.5f), SColor(255, 255, change, change));
 			}
 		}
 		else if (captainName.isEmpty() && pBooty < rules.get_u16("bootyRefillLimit") && !freebuild) //poor and no captain: sharks for income
