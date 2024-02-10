@@ -5,7 +5,6 @@ shared CBlob@ makeBlock(const Vec2f&in pos, const f32&in angle, const string&in 
 	{
 		block.setAngleDegrees(angle);
 		block.getShape().getVars().customData = 0;
-		block.set_u32("placedTime", getGameTime());
 	}
 	return block;
 }

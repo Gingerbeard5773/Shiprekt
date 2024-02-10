@@ -25,17 +25,6 @@ void onTick(CBlob@ this)
 {
 	if (!isServer()) return; //only server
 	
-	if (this.getTickSinceCreated() < 1) //accounts for time after block production
-	{
-		//Set Owner
-		CBlob@ owner = getBlobByNetworkID(this.get_netid("ownerID"));    
-		if (owner !is null)
-		{
-			this.set_string("playerOwner", owner.getPlayer().getUsername());
-			this.Sync("playerOwner", true); //2040865191 HASH
-		}
-	}
-	
 	//collide even when going super speeds (to avoid clipping)
 	const int color = this.getShape().getVars().customData;
 	if (color <= 0) return;

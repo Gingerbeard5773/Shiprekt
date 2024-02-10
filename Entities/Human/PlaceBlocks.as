@@ -227,21 +227,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	}
 
 	const f32 angleDelta = ship.angle - ship_angle; //to account for ship angle lag
-	const u8 blocksLength = blocks.length;
-	
-	if (isServer())
-	{
-		CBlob@[] blob_blocks;
-		for (u8 i = 0; i < blocksLength; ++i)
-		{
-			CBlob@ b = getBlobByNetworkID(blocks[i]);
-			if (b !is null) blob_blocks.push_back(b);
-		}
-		
-		rules.push("dirtyBlocks", blob_blocks);
-	}
 	PositionBlocks(blocks, ship.origin_pos + pos_offset.RotateBy(angleDelta), ship.origin_pos + aimPos_offset.RotateBy(angleDelta), target_angle, ship, shipBlob);
 
+	CBlob@[] blob_blocks;
+	const u8 blocksLength = blocks.length;
 	for (u8 i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ b = getBlobByNetworkID(blocks[i]);
@@ -250,8 +239,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			if (sv_test) warn("place cmd: blob not found");
 			continue;
 		}
-		
-		b.set_netid("ownerID", 0); //so it wont add to owner blocks
+
+		if (isServer())
+		{
+			//Set Owner
+			b.set_string("playerOwner", this.getPlayer().getUsername());
+			b.Sync("playerOwner", true); //2040865191 HASH
+
+			blob_blocks.push_back(b);
+		}
 		
 		SetDisplay(b, color_white, RenderStyle::normal, 310.0f);
 		
@@ -268,10 +264,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		else
 			b.getShape().getVars().customData = 0; // push on ship
 		
-		b.set_u32("placedTime", getGameTime());
+		b.set_netid("ownerID", 0); //so it wont add to owner blocks
 	}
 	
-	this.clear("blocks"); //releases the blocks (they are placed)
+	if (isServer())
+		rules.push("dirtyBlocks", blob_blocks); //relay to ships.as that we placed the block
+	
+	this.clear("blocks"); //release the blocks from the player
 	directionalSoundPlay("build_ladder.ogg", this.getPosition());
 	
 	//Grab another block
