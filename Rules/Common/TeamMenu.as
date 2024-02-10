@@ -2,6 +2,7 @@
 #include "ShiprektTranslation.as";
 
 const Vec2f BUTTON_SIZE(4, 4);
+const u8 teamsNum = 8;
 
 void onInit(CRules@ this)
 {
@@ -11,7 +12,7 @@ void onInit(CRules@ this)
 	AddIconToken("$TEAMS$", "GUI/MenuItems.png", Vec2f(32,32), 1);
 	AddIconToken("$SPECTATOR$", "GUI/MenuItems.png", Vec2f(32,32), 19);
 	
-	for (u8 i = 0; i < this.getTeamsNum(); i++)
+	for (u8 i = 0; i < teamsNum; i++)
 	{
 		AddIconToken("$MOTHERSHIP"+i+"$", "MothershipIcon.png", Vec2f(32,32), 0, i);
 	}
@@ -90,7 +91,6 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 u8[] getAvailableTeams(CRules@ this, CPlayer@ player, bool&out canSwitch = true) //taken from Respawning.as
 {
-	const u8 teamsNum = this.getTeamsNum();
 	u8[] playersperteam(teamsNum);
 
 	//gather the per team player counts
@@ -131,7 +131,7 @@ u8[] getAvailableTeams(CRules@ this, CPlayer@ player, bool&out canSwitch = true)
 
 bool isTeamAvailable(CRules@ this, CPlayer@ player, const u8&in team)
 {
-	if (team > this.getTeamsNum()) return true;
+	if (team > teamsNum) return true;
 
 	bool canSwitch = true;
 	if (getAvailableTeams(this, player, canSwitch).find(team) != -1)
