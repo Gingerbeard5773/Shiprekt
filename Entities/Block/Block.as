@@ -22,51 +22,48 @@ void onInit(CBlob@ this)
 }
 
 void onTick(CBlob@ this)
+{	
+	CollideByRaycast(this);
+}
+
+void CollideByRaycast(CBlob@ this)
 {
-	if (!isServer()) return; //only server
-	
 	//collide even when going super speeds (to avoid clipping)
+	if (!isServer()) return; //only server
+
 	const int color = this.getShape().getVars().customData;
 	if (color <= 0) return;
 	
 	CRules@ rules = getRules();
 	ShipDictionary@ ShipSet = getShipSet(rules);
 	Ship@ ship = ShipSet.getShip(color);
-	if (ship !is null && !ship.isStation && ship.mass < 3.0f)
+	if (ship is null) return;
+
+	Vec2f shipvel = ship.vel;
+	if (shipvel.Length() <= 12.0f) return;
+
+	Vec2f pos = this.getPosition();
+	HitInfo@[] hitInfos;
+	if (getMap().getHitInfosFromRay(pos, -ship.vel.Angle(), shipvel.Length()*2.0f, this, @hitInfos))
 	{
-		Vec2f velnorm = ship.vel; 
-		const f32 vellen = velnorm.Normalize();		
-		
-		if (vellen > 8.0f) 
+		//HitInfo objects are sorted, first come closest hits
+		const u8 hitLength = hitInfos.length;
+		for (u8 i = 0; i < hitLength; i++)
 		{
-			Vec2f pos = this.getPosition();
-			HitInfo@[] hitInfos;
-			if (getMap().getHitInfosFromRay(pos, -ship.vel.Angle(), ship.vel.Length()*2.0f, this, @hitInfos))
-			{
-				//HitInfo objects are sorted, first come closest hits
-				const u8 hitLength = hitInfos.length;
-				for (u8 i = 0; i < hitLength; i++)
-				{
-					CBlob@ blob = hitInfos[i].blob;	  
-					if (blob is null || blob is this) continue;
-					
-					const int other_color = blob.getShape().getVars().customData;
-					if (color == other_color || other_color <= 0) continue;
-					
-					Ship@ other_ship = ShipSet.getShip(other_color);
-					if (other_ship is null) continue;
-
-					velnorm.Normalize();
-
-					const bool ramming = this.hasTag("ramming") || blob.hasTag("ramming") || blob.hasTag("bomb");
-					if (!ship.colliding && !ramming)
-					{
-						ship.colliding = true; //only collide once per tick
-						CollisionResponse(rules, ship, other_ship, pos + velnorm);
-					}
-					break;
-				}
-			}
+			CBlob@ blob = hitInfos[i].blob;	  
+			if (blob is null || blob is this) continue;
+			
+			const int other_color = blob.getShape().getVars().customData;
+			if (color == other_color || other_color <= 0) continue;
+			
+			Ship@ other_ship = ShipSet.getShip(other_color);
+			if (other_ship is null) continue;
+			
+			Vec2f hitPos = hitInfos[i].hitpos;
+			//ship.pos = hitPos + this.getPosition() - ship.pos; //get what i was trying to do? it could work if oncollision was called next tick rather than now
+			this.setPosition(hitPos); //spoof our position for one tick
+			onCollision(this, blob, false, Vec2f_zero, hitPos);
+			break;
 		}
 	}
 }
