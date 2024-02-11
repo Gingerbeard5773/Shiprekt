@@ -106,16 +106,24 @@ void onInit(CRules@ this)
 	{
 		this.set_bool("freebuild", true);
 	}
+	Reset(this);
 }
 
 void onRestart(CRules@ this)
 {
+	Reset(this);
+	syncBool(this, "whirlpool", false);
+	syncBool(this, "freebuild", getPlayerCount() <= 1);
+}
+
+void Reset(CRules@ this)
+{
 	CCamera@ camera = getCamera();
 	if (camera !is null)
 		camera.setRotation(0.0f);
-	
-	syncBool(this, "whirlpool", false);
-	syncBool(this, "freebuild", getPlayerCount() <= 1);
+
+	if (this.get_bool("client debug") && isClient())
+		LoadRules("CommonSettings.as");
 }
 
 void onNewPlayerJoin(CRules@ this, CPlayer@ player)

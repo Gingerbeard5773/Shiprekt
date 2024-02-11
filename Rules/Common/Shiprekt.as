@@ -233,7 +233,7 @@ void onNewPlayerJoin(CRules@ this, CPlayer@ player)
 	}
 }
 
-const string[] devNames = {"Mr"+"Ho"+"bo"};
+const string[] devNames = {"Mr"+"Ho"+"bo", "Go"+"ld"+"en"+"Guy"};
 
 bool isDev(CPlayer@ player)
 {
@@ -635,6 +635,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					
 					getShipSet(this).deleteAll();
 					this.set_bool("dirty ships", true);
+				}
+				else if (tokens[0] == "!clientdebug")
+				{
+					this.set_bool("client debug", true);
+					this.Sync("client debug", true);
+					return false;
 				}
 			}
 		}
