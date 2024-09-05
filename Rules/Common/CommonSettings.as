@@ -95,9 +95,6 @@ void onInit(CRules@ this)
 	//minimap only appears on browsing
 	this.minimap = !isClient();
 	
-	//shiprekt is old and needs the old command system. very important.
-	getNet().legacy_cmd = true;
-	
 	//add shaders
 	Driver@ driver = getDriver();
 	driver.AddShader("hq2x", 1.0f);

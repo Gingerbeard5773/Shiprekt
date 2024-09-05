@@ -132,7 +132,7 @@ void BalanceStartingBooty(CRules@ this)
 {	
 	//get player amounts for each team
 	const u8 players = getPlayersCount();
-	const u8 teamsNum = this.getTeamsNum();
+	const u8 teamsNum = this.getTeamsCount();
 	u8[] teamPlayers(teamsNum);
 	for (u8 p = 0; p < players; p++)
 	{

@@ -113,7 +113,7 @@ void assignTeam(CRules@ this, CPlayer@ player)
 	if (getMothership(player.getTeamNum()) !is null)
 		return; //if we already have a suitable team, dont re-assign
 	
-	const u8 teamsNum = this.getTeamsNum();
+	const u8 teamsNum = this.getTeamsCount();
 	u8[] playersperteam(teamsNum);
 
 	//gather the per team player counts

@@ -25,7 +25,7 @@ void onRestart(CRules@ this)
 				pCount--;
 		}
 
-		const u8 availableCores = Maths::Min(spawns.length, this.getTeamsNum());
+		const u8 availableCores = Maths::Min(spawns.length, this.getTeamsCount());
 		const u8 mShipsToSpawn = Maths::Min(getPlayingCores(availableCores, pCount), availableCores);
 		print("** Spawning " + mShipsToSpawn + " motherships of " + availableCores + " for " + pCount + " players");
 		
