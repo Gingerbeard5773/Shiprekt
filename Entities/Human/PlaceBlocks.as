@@ -285,7 +285,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 				|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum())))
 			{
 				this.set_bool("getting block", true);
-				this.Sync("getting block", false);
 			}
 		}
 	}

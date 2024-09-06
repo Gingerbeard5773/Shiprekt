@@ -25,7 +25,8 @@ void onInit(CBlob@ this)
 	this.Tag("core");
 	this.Tag("noRenderHealth");
 	this.addCommandID("buyBlock");
-	this.addCommandID("returnBlocks");
+	this.addCommandID("server_returnBlocks");
+	this.addCommandID("client_returnBlocks");
 	
 	this.set_f32("weight", 12.0f);
 	
@@ -57,38 +58,40 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		const string block = params.read_string();
 		const u16 cost = params.read_u16();
-		const bool autoBlock = params.read_bool();
+		const u32 placedTime = params.read_u32();
 		
-		if (caller is null)
-			return;
+		if (caller is null) return;
 		
-		if (autoBlock && !caller.get_bool("getting block"))
-			return;
-			
-		if (caller.isMyPlayer())
-		{
-			caller.set_bool("getting block", false);
-			caller.Sync("getting block", false); //379080002 HASH
-		}
-		caller.set_string("last buy", block);
+		caller.set_u32("placedTime", placedTime);
 
-		if (getGameTime() - caller.get_u32("placedTime") > 26)
-			caller.set_u32("placedTime", getGameTime() - 20);
-
-		if (!isServer() || Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
+		if (Human::isHoldingBlocks(caller) || !this.hasTag("mothership") || this.getTeamNum() != caller.getTeamNum())
 			return;
 		
-		BuyBlock(this, caller, block, cost);
+		server_BuyBlock(this, caller, block, cost);
 	}
-	else if (cmd == this.getCommandID("returnBlocks"))
+	else if (cmd == this.getCommandID("server_returnBlocks"))
 	{
 		CBlob@ caller = getBlobByNetworkID(params.read_netid());
-		if (caller !is null)
-			ReturnBlocks(caller);
+		if (caller is null) return;
+		
+		server_ReturnBlocks(this, caller);
+	}
+	else if (cmd == this.getCommandID("client_returnBlocks"))
+	{
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
+		if (caller is null) return;
+
+		Human::clearHeldBlocks(caller);
+		caller.set_u32("placedTime", getGameTime());
+		if (caller.isMyPlayer())
+		{
+			caller.set_bool("blockPlacementWarn", false);
+			caller.getSprite().PlaySound("join");
+		}
 	}
 }
 
-void BuyBlock(CBlob@ this, CBlob@ caller, const string&in bType, const u16&in cost)
+void server_BuyBlock(CBlob@ this, CBlob@ caller, const string&in bType, const u16&in cost)
 {
 	CRules@ rules = getRules();
 
@@ -136,42 +139,35 @@ void BuyBlock(CBlob@ this, CBlob@ caller, const string&in bType, const u16&in co
 	}
 }
 
-void ReturnBlocks(CBlob@ this)
+void server_ReturnBlocks(CBlob@ this, CBlob@ caller)
 {
-	CRules@ rules = getRules();
+	if (!isServer()) return;
+
 	u16[] blocks;
-	if (this.get("blocks", blocks) && blocks.size() > 0)                 
+	if (!caller.get("blocks", blocks) || blocks.size() <= 0) return;
+	
+	CPlayer@ player = caller.getPlayer();
+	if (player !is null)
 	{
-		if (isServer())
+		u16 returnBooty = 0;
+		const u16 blocksLength = blocks.length;
+		for (u16 i = 0; i < blocksLength; ++i)
 		{
-			CPlayer@ player = this.getPlayer();
-			if (player !is null)
-			{
-				u16 returnBooty = 0;
-				const u16 blocksLength = blocks.length;
-				for (u16 i = 0; i < blocksLength; ++i)
-				{
-					CBlob@ block = getBlobByNetworkID(blocks[i]);
-					if (block !is null && block.getShape().getVars().customData == -1)
-						returnBooty += block.hasTag("coupling") ? 2 : getCost(block.getName());
-				}
-				
-				if (returnBooty > 0 && !rules.get_bool("freebuild"))
-					server_addPlayerBooty(player.getUsername(), returnBooty);
-			}
+			CBlob@ block = getBlobByNetworkID(blocks[i]);
+			if (block !is null && block.getShape().getVars().customData == -1)
+				returnBooty += block.hasTag("coupling") ? 2 : getCost(block.getName());
 		}
 		
-		Human::clearHeldBlocks(this);
-		this.set_u32("placedTime", getGameTime());
-		
-		if (this.isMyPlayer())
-		{
-			this.set_bool("blockPlacementWarn", false);
-			this.getSprite().PlaySound("join");
-		}
+		if (returnBooty > 0 && !getRules().get_bool("freebuild"))
+			server_addPlayerBooty(player.getUsername(), returnBooty);
 	}
-	else if (sv_test)
-		warn("returnBlocks cmd: no blocks"); //happens when block placing & block returning happens at same time
+	
+	Human::clearHeldBlocks(caller);
+	caller.set_u32("placedTime", getGameTime());
+	
+	CBitStream params;
+	params.write_netid(caller.getNetworkID());
+	this.SendCommand(this.getCommandID("client_returnBlocks"), params);
 }
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)

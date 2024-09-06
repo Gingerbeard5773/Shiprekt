@@ -394,7 +394,6 @@ void PlayerControls(CBlob@ this)
 					if (this.get_bool("getting block"))
 					{
 						this.set_bool("getting block", false);
-						this.Sync("getting block", false);
 						this.getSprite().PlaySound("join");
 					}
 					else
@@ -421,12 +420,8 @@ void PlayerControls(CBlob@ this)
 					
 					if (buildMenuOpen)
 					{
-						CBitStream params;
-						params.write_netid(this.getNetworkID());
-						params.write_string(this.get_string("last buy"));
-						params.write_u16(getCost(this.get_string("last buy")));
-						params.write_bool(false);
-						core.SendCommand(core.getCommandID("buyBlock"), params);
+						const string block = this.get_string("last buy");
+						BuyBlock(this, core, block, getCost(block), false);
 					}
 					
 					buildMenuOpen = false;
@@ -438,7 +433,7 @@ void PlayerControls(CBlob@ this)
 				//return blocks
 				CBitStream params;
 				params.write_netid(this.getNetworkID());
-				core.SendCommand(core.getCommandID("returnBlocks"), params);
+				core.SendCommand(core.getCommandID("server_returnBlocks"), params);
 			}
 		}
 	}
@@ -449,12 +444,8 @@ void PlayerControls(CBlob@ this)
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null && !core.hasTag("critical"))
 		{
-			CBitStream params;
-			params.write_netid(this.getNetworkID());
-			params.write_string(this.get_string("last buy"));
-			params.write_u16(getCost(this.get_string("last buy")));
-			params.write_bool(true);
-			core.SendCommand(core.getCommandID("buyBlock"), params);
+			const string block = this.get_string("last buy");
+			BuyBlock(this, core, block, getCost(block), true);
 		}
 	}
 	
@@ -480,6 +471,40 @@ void PlayerControls(CBlob@ this)
 			Sound::Play("buttonclick.ogg");
 		}
 	}
+}
+
+void BuyBlock(CBlob@ caller, CBlob@ core, const string&in block, const u16&in cost, const bool&in autoBlock)
+{
+	if (autoBlock && !caller.get_bool("getting block")) return;
+	
+	caller.set_bool("getting block", false);
+	caller.set_string("last buy", block);
+	
+	u32 placedTime = caller.get_u32("placedTime");
+	if (getGameTime() - placedTime > 26)
+		placedTime = getGameTime() - 20;
+	
+	caller.set_u32("placedTime", placedTime);
+	
+	CBitStream stream;
+	stream.write_netid(caller.getNetworkID());
+	stream.write_string(block);
+	stream.write_u16(cost);
+	stream.write_u32(placedTime);
+	core.SendCommand(core.getCommandID("buyBlock"), stream);
+}
+
+void Callback_BuyBlock(CBitStream@ params)
+{
+	CBlob@ caller = getBlobByNetworkID(params.read_netid());
+	CBlob@ core = getBlobByNetworkID(params.read_netid());
+	const string block = params.read_string();
+	const u16 cost = params.read_u16();
+	const bool autoBlock = params.read_bool();
+
+	if (caller is null || core is null) return;
+	
+	BuyBlock(caller, core, block, cost, autoBlock);
 }
 
 // Open the build menu
@@ -578,11 +603,13 @@ CGridButton@ AddBlock(CBlob@ this, CGridMenu@ menu, const string&in block, const
 	
 	CBitStream params;
 	params.write_netid(this.getNetworkID());
+	params.write_netid(core.getNetworkID());
 	params.write_string(block);
 	params.write_u16(cost);
 	params.write_bool(false);
 	
-	CGridButton@ button = menu.AddButton(icon, bname + " $" + cost, core.getCommandID("buyBlock"), params);
+	CGridButton@ button = menu.AddButton(icon, bname + " $" + cost, "Human.as", "Callback_BuyBlock", params);
+	//CGridButton@ button = menu.AddButton(icon, bname + " $" + cost, core.getCommandID("buyBlock"), params);
 
 	const bool selected = this.get_string("last buy") == block;
 	if (selected) button.SetSelected(2);
