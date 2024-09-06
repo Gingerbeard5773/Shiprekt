@@ -870,15 +870,12 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
 	/// ship functions CMD
 	
-	if (cmd == this.getCommandID("ship collision")) //sent from Block.as
+	if (cmd == this.getCommandID("ship collision") && isClient()) //sent from Block.as
 	{
 		const Vec2f point1 = params.read_Vec2f();
 		const u8 shake = params.read_u8();
-		if (isClient())
-		{
-			ShakeScreen(Maths::Min(shake, 100), 12, point1);
-			directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
-		}
+		ShakeScreen(Maths::Min(shake, 100), 12, point1);
+		directionalSoundPlay(shake > 25 ? "WoodHeavyBump" : "WoodLightBump", point1);
 		return;
 	}
 	
