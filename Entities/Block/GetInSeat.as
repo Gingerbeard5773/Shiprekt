@@ -29,9 +29,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 	}
 	else if (!this.hasAttached())
 	{
-		CBitStream params;
-		params.write_netid(caller.getNetworkID());
-		CButton@ button = caller.CreateGenericButton(this.get_u8("seat icon"), Vec2f_zero, this, this.getCommandID("get in seat"), this.get_string("seat label"), params);
+		CButton@ button = caller.CreateGenericButton(this.get_u8("seat icon"), Vec2f_zero, this, this.getCommandID("get in seat"), this.get_string("seat label"));
 		if (button !is null)
 		{
 			button.radius = 8.0f;
@@ -63,16 +61,15 @@ void ejectCrewmate(CBlob@ this, CBlob@ caller)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("get in seat"))
+	if (cmd == this.getCommandID("get in seat") && isServer())
 	{
-		if (isServer())
-		{
-			CBlob@ caller = getBlobByNetworkID(params.read_netid());
-			if (caller !is null)
-			{
-				this.server_AttachTo(caller, "SEAT");
-			}
-		}
+		CPlayer@ player = getNet().getActiveCommandPlayer();
+		if (player is null) return;
+
+		CBlob@ caller = player.getBlob();
+		if (caller is null) return;
+
+		this.server_AttachTo(caller, "SEAT");
 	}
 }
 

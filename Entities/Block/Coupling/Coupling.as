@@ -63,15 +63,12 @@ void onEndCollision(CBlob@ this, CBlob@ blob)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("decouple"))
+	if (cmd == this.getCommandID("decouple") && isServer())
 	{
 		this.server_Die();
 	}
-	else if (cmd == this.getCommandID("couple"))
+	else if (cmd == this.getCommandID("couple") && isClient())
 	{
-		if (isClient())
-		{
-			directionalSoundPlay("mechanical_click", this.getPosition());
-		}
+		directionalSoundPlay("mechanical_click", this.getPosition());
 	}
 }

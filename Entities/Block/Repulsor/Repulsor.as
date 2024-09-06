@@ -17,7 +17,7 @@ void onInit(CBlob@ this)
 	this.set_f32("weight", 0.25f);
 	
 	this.addCommandID("chainReaction");
-	this.addCommandID("activate");
+	this.addCommandID("client_activate");
 	this.set_u32("detonationTime", 0);
 	this.server_SetHealth(2.0f);
 
@@ -128,9 +128,12 @@ void Activate(CBlob@ this, const u32&in time)
 
 void ChainReaction(CBlob@ this, const u32&in time)
 {
+	this.Tag("activated");
+	this.set_u32("detonationTime", time);
+
 	CBitStream bs;
 	bs.write_u32(time);
-	this.SendCommand(this.getCommandID("activate"), bs);
+	this.SendCommand(this.getCommandID("client_activate"), bs);
 
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
@@ -148,10 +151,22 @@ void ChainReaction(CBlob@ this, const u32&in time)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("activate") && !this.hasTag("activated"))
-		Activate(this, params.read_u32());
-	else if (isServer() && cmd == this.getCommandID("chainReaction") && !this.hasTag("activated"))
+	if (cmd == this.getCommandID("client_activate") && isClient())
+	{
+		if (this.hasTag("activated")) return;
+		
+		this.Tag("activated");
+		this.set_u32("detonationTime", params.read_u32());
+
+		this.getSprite().SetAnimation("activated");
+		directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
+	}
+	else if (cmd == this.getCommandID("chainReaction") && isServer())
+	{
+		if (this.hasTag("activated")) return;
+
 		ChainReaction(this, getGameTime() + FUSE_TIME);
+	}
 }
 
 void onDie(CBlob@ this)
