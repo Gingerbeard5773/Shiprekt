@@ -2,6 +2,7 @@
 #include "HumanCommon.as";
 #include "BlockProduction.as";
 #include "PropellerForceCommon.as";
+#include "WeaponCommon.as";
 
 const u16 COUPLINGS_COOLDOWN = 8 * 30;
 const u16 CREW_COUPLINGS_LEASE = 10 * 30;//time till the captain can control crew's couplings
@@ -418,15 +419,17 @@ void onTick(CBlob@ this)
 					const u16 machinegunsLength = machineguns.length;
 					for (u16 i = 0; i < machinegunsLength; ++i)
 					{
-						CBlob@ weap = getBlobByNetworkID(machineguns[i]);
-						if (weap is null) continue;
+						CBlob@ weapon = getBlobByNetworkID(machineguns[i]);
+						if (weapon is null) continue;
 						
-						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
+						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weapon.getAngleDegrees());
 						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
 						{
-							CBitStream bs;
-							bs.write_netid(occupier.getNetworkID());
-							weap.SendCommand(weap.getCommandID("fire"), bs);
+							onFireHandle@ onfire_handle;
+							if (weapon.get("onFire handle", @onfire_handle))
+							{
+								onfire_handle(weapon, occupier);
+							}
 						}
 					}
 				}
@@ -438,21 +441,23 @@ void onTick(CBlob@ this)
 					
 					for (u16 i = 0; i < cannonsLength; ++i)
 					{
-						CBlob@ weap = getBlobByNetworkID(cannons[i]);
-						if (weap is null || !weap.get_bool("fire ready")) continue;
+						CBlob@ weapon = getBlobByNetworkID(cannons[i]);
+						if (weapon is null || !weapon.get_bool("fire ready")) continue;
 						
-						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weap.getAngleDegrees());
+						Vec2f dirFacing = Vec2f(1, 0).RotateBy(weapon.getAngleDegrees());
 						if (Maths::Abs(dirFacing.AngleWith(aim)) < 40)
-							fireCannons.push_back(weap);
+							fireCannons.push_back(weapon);
 					}
 					
 					if (fireCannons.length > 0)
 					{
 						const u8 index = this.get_u8("cannonFireIndex");
-						CBlob@ weap = fireCannons[index % fireCannons.length];
-						CBitStream bs;
-						bs.write_netid(occupier.getNetworkID());
-						weap.SendCommand(weap.getCommandID("fire"), bs);
+						CBlob@ weapon = fireCannons[index % fireCannons.length];
+						onFireHandle@ onfire_handle;
+						if (weapon.get("onFire handle", @onfire_handle))
+						{
+							onfire_handle(weapon, occupier);
+						}
 						this.set_u32("lastCannonFire", gameTime);
 						this.set_u8("cannonFireIndex", index + 1);
 					}

@@ -2,7 +2,7 @@
 #include "DamageBooty.as";
 #include "AccurateSoundPlay.as";
 #include "ParticleSpark.as";
-#include "GunStandard.as";
+#include "GunCommon.as";
 
 const int FIRE_RATE = 4;
 
@@ -36,8 +36,8 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 3.0f);
 	
-	this.addCommandID("fire");
-	this.set_string("barrel", "left");
+	this.addCommandID("client_fire");
+	this.set_u8("barrel", 0);
 
 	if (isServer())
 	{
@@ -61,10 +61,6 @@ void onInit(CBlob@ this)
 		Animation@ anim2 = layer.addAnimation("fire right", Maths::Round(FIRE_RATE), false);
 		anim2.AddFrame(1);
 		anim2.AddFrame(0);
-
-		Animation@ anim3 = layer.addAnimation("default", 1, false);
-		anim3.AddFrame(0);
-		layer.SetAnimation("default");
 	}
 }
 
@@ -88,22 +84,30 @@ void onTick(CBlob@ this)
 	}
 }
 
-void Manual(CBlob@ this, CBlob@ controller)
+void Manual(CBlob@ this, CBlob@ caller)
 {
-	Vec2f aimpos = controller.getAimPos();
-	Vec2f pos = this.getPosition();
-	Vec2f aimVector = aimpos - pos;
+	Vec2f aimVector = caller.getAimPos() - this.getPosition();
 
 	// fire
-	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && isClearShot(this, aimVector))
+	if (isServer() && caller.isKeyPressed(key_action1) && !isObstructed(this, aimVector))
 	{
-		Fire(this, aimVector, controller.getNetworkID());
+		server_onFire(this, caller, aimVector);
 	}
 
 	// rotate turret
 	Rotate(this, aimVector);
 	aimVector.y *= -1;
-	controller.setAngleDegrees(aimVector.Angle());
+	caller.setAngleDegrees(aimVector.Angle());
+}
+
+void Rotate(CBlob@ this, Vec2f&in aimVector)
+{
+	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
+	if (layer !is null)
+	{
+		layer.ResetTransform();
+		layer.RotateBy(-aimVector.getAngleDegrees() - this.getAngleDegrees(), -layer.getOffset());
+	}
 }
 
 bool canShoot(CBlob@ this)
@@ -111,7 +115,7 @@ bool canShoot(CBlob@ this)
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-const bool isClearShot(CBlob@ this, Vec2f&in aimVector)
+const bool isObstructed(CBlob@ this, Vec2f&in aimVector)
 {
 	Vec2f pos = this.getPosition();
 	const f32 distanceToTarget = Maths::Max(aimVector.Length(), 80.0f);
@@ -138,90 +142,78 @@ const bool isClearShot(CBlob@ this, Vec2f&in aimVector)
 			const bool sameShip = this.getShape().getVars().customData == b.getShape().getVars().customData;
 			if (b.hasTag("block") && b.getShape().getVars().customData > 0 && ((b.hasTag("solid") && !b.hasTag("plank")) || b.hasTag("weapon")) && sameShip)
 			{
-				return false;
+				return true;
 			}
 		}
 	}
 
-	return true;
+	return false;
 }
 
-void Fire(CBlob@ this, Vec2f&in aimVector, const u16&in netid)
+void server_onFire(CBlob@ this, CBlob@ caller, Vec2f&in aimVector)
 {
-	CBitStream params;
-	params.write_netid(netid);
-	params.write_Vec2f(aimVector);
-	this.SendCommand(this.getCommandID("fire"), params);
-}
-
-void Rotate(CBlob@ this, Vec2f&in aimVector)
-{
-	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-	if (layer !is null)
-	{
-		layer.ResetTransform();
-		layer.RotateBy(-aimVector.getAngleDegrees() - this.getAngleDegrees(), -layer.getOffset());
-	}
-}
-
-void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
-{
-    if (cmd != this.getCommandID("fire")) return;
-	
 	if (!canShoot(this)) return;
-
-	CBlob@ shooter = getBlobByNetworkID(params.read_netid());
-	if (shooter is null) return;
-
+	
+	this.SetDamageOwnerPlayer(caller.getPlayer());
+	
+	const u16 ammo = this.get_u16("ammo");
+	this.set_u16("ammo", Maths::Max(0, ammo - 1));
 	this.set_u32("fire time", getGameTime());
 	
-	CPlayer@ attacker = shooter.getPlayer();
-	if (attacker !is null && attacker !is this.getDamageOwnerPlayer())
-		this.SetDamageOwnerPlayer(shooter.getPlayer());
-	
-	Vec2f aimVector = params.read_Vec2f();
-	Vec2f pos = this.getPosition();
-
-	//ammo
-	u16 ammo = this.get_u16("ammo");
-	if (ammo == 0)
-	{
-		directionalSoundPlay("LoadingTick1", pos, 1.0f);
-		return;
-	}
-
-	ammo--;
-	this.set_u16("ammo", ammo);
-	
 	Vec2f barrelOffset;
-	if (this.get_string("barrel") == "left")
+	const u8 barrel = this.get_u8("barrel");
+	if (barrel == 0)
 	{
 		barrelOffset = Vec2f(14, -2.0).RotateBy(-aimVector.Angle());
-		this.set_string("barrel", "right");
+		this.set_u8("barrel", 1);
 	}
 	else
 	{
 		barrelOffset = Vec2f(14, 2.0).RotateBy(-aimVector.Angle());
-		this.set_string("barrel", "left");
+		this.set_u8("barrel", 0);
 	}
 	
-	Vec2f barrelPos = pos + barrelOffset;
-
-	if (isServer())
+	if (ammo > 0)
 	{
-		shootGun(this.getNetworkID(), -aimVector.Angle() + XORRandom(2) - XORRandom(4), barrelPos); //make bullets!
+		server_FireBullet(this, -aimVector.Angle(), this.getPosition() + barrelOffset); //make bullets!
 	}
+	
+	CBitStream params;
+	params.write_u16(ammo);
+	params.write_u8(barrel);
+	params.write_Vec2f(aimVector);
+	this.SendCommand(this.getCommandID("client_fire"), params);
+}
 
-	if (isClient())
+void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
+{
+	if (cmd == this.getCommandID("client_fire") && isClient())
 	{
+		const u16 ammo = params.read_u16();
+		const u8 barrel = params.read_u8();
+		Vec2f aimVector = params.read_Vec2f();
+		
+		this.set_u16("ammo", Maths::Max(0, ammo - 1));
+		this.set_u32("fire time", getGameTime());
+		
+		Vec2f pos = this.getPosition();
+		
+		if (ammo <= 0)
+		{
+			directionalSoundPlay("LoadingTick1", pos, 1.0f);
+			return;
+		}
+		
+		Vec2f barrelOffset = Vec2f(14, barrel == 0 ? -2.0 : 2.0).RotateBy(-aimVector.Angle());
+		Vec2f barrelPos = pos + barrelOffset;
+		
 		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
 		if (layer !is null)
 		{
-			if (this.get_string("barrel") == "left")
-				layer.SetAnimation("fire left");
-			else
-				layer.SetAnimation("fire right");
+			const string fire_anim = barrel == 1 ? "fire left" : "fire right";
+			layer.SetAnimation(fire_anim);
 		}
+
 		Rotate(this, aimVector);
 		shotParticles(barrelPos, aimVector.Angle(), false);
 		directionalSoundPlay("AutoFire", barrelPos);

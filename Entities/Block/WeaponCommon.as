@@ -1,5 +1,7 @@
 #include "ShipsCommon.as";
 
+funcdef void onFireHandle(CBlob@, CBlob@);
+
 // Refill ammunition for weapons
 shared void refillAmmo(CBlob@ this, Ship@ ship, const u8&in refillAmount, const u8&in refillSeconds)
 {
