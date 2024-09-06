@@ -100,7 +100,7 @@ void onInit(CRules@ this)
 	driver.AddShader("hq2x", 1.0f);
 	driver.SetShader("hq2x", v_postprocess);
 	
-	this.addCommandID("sync bool");
+	this.addCommandID("client_sync_bool");
 	
 	if (isServer())
 	{
@@ -145,16 +145,17 @@ void syncBool(CRules@ this, const string&in boolname, const bool&in booltype)
 {
 	if (isServer())
 	{
+		this.set_bool(boolname, booltype);
 		CBitStream params;
 		params.write_string(boolname);
 		params.write_bool(booltype);
-		this.SendCommand(this.getCommandID("sync bool"), params);
+		this.SendCommand(this.getCommandID("client_sync_bool"), params);
 	}
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("sync bool"))
+	if (cmd == this.getCommandID("client_sync_bool") && isClient())
 	{
 		const string boolname = params.read_string();
 		this.set_bool(boolname, params.read_bool());
