@@ -209,6 +209,6 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 	if (isServer())
 	{
 		if (hitBlob.hasTag("engine") && hitBlob.getTeamNum() != this.getTeamNum() && XORRandom(3) == 0)
-			hitBlob.SendCommand(hitBlob.getCommandID("off")); //force turn off
+			hitBlob.set_f32("power", 0.0f); //force turn off
 	}
 }

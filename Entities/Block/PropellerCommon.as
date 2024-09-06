@@ -7,23 +7,13 @@ Random _r(133701); //global clientside random object
 
 void onInit(CBlob@ this)
 {
-	this.addCommandID("on/off");
-	this.addCommandID("off");
 	this.addCommandID("stall");
 	this.Tag("engine");
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("on/off") && isServer())
-	{
-		this.set_f32("power", this.get_f32("power") != 0 ? 0.0f : -this.get_f32("powerFactor"));
-	}
-	else if (cmd == this.getCommandID("off") && isServer())
-	{
-		this.set_f32("power", 0.0f);
-	}
-	else if (cmd == this.getCommandID("stall") && isClient())
+	if (cmd == this.getCommandID("stall") && isClient())
 	{
 		directionalSoundPlay("propellerStall.ogg", this.getPosition(), 2.5f);
 		this.set_u8("stallTime", params.read_u8());
@@ -68,7 +58,7 @@ void onTick(CBlob@ this)
 		//auto turn off after a while
 		if (isServer() && gameTime - this.get_u32("onTime") > 750)
 		{
-			this.SendCommand(this.getCommandID("off"));
+			this.set_f32("power", 0.0f);
 			return;
 		}
 		
@@ -95,11 +85,7 @@ void onTick(CBlob@ this)
 				const f32 healthPct = this.getHealth()/this.getInitialHealth();
 				if (healthPct < 0.25f && !stalled && XORRandom(25) == 0)
 				{
-					const u8 stallTime = 30 + XORRandom(50);
-					this.set_u8("stallTime", stallTime);
-					CBitStream params;
-					params.write_u8(stallTime);
-					this.SendCommand(this.getCommandID("stall"), params);
+					server_Stall(this, 30 + XORRandom(50));
 				}
 				
 				//eat stuff
@@ -147,22 +133,26 @@ void onTick(CBlob@ this)
 	}
 }
 
+void server_Stall(CBlob@ this, const u8&in stallTime)
+{
+	this.set_u8("stallTime", stallTime);
+	CBitStream params;
+	params.write_u8(stallTime);
+	this.SendCommand(this.getCommandID("stall"), params);
+}
+
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	if (!isServer() || this.get_u8("stallTime") > 0)
 		return damage;
 	
-	const f32 healthPct = this.getHealth()/this.getInitialHealth();
+	const f32 healthPct = this.getHealth() / this.getInitialHealth();
 	if (healthPct > 0.0f && healthPct < 0.75f)
 	{
-		const f32 stallFactor = 1.0f/healthPct + Maths::FastSqrt(damage);
+		const f32 stallFactor = 1.0f / healthPct + Maths::FastSqrt(damage);
 		if (stallFactor * XORRandom(9) > 15) //chance based on health and damage to stall
 		{
-			const u8 stallTime = stallFactor * 30;
-			this.set_u8("stallTime", stallTime);
-			CBitStream params;
-			params.write_u8(stallTime);
-			this.SendCommand(this.getCommandID("stall"), params);
+			server_Stall(this, stallFactor * 30);
 		}
 	}
 	
