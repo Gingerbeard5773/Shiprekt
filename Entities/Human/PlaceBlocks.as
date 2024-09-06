@@ -14,7 +14,8 @@ void onInit(CBlob@ this)
 	this.set_f32("blocks_angle", 0.0f);
 	this.set_f32("target_angle", 0.0f);
 
-	this.addCommandID("place");
+	this.addCommandID("server_place");
+	this.addCommandID("client_place");
 }
 
 void onTick(CBlob@ this)
@@ -92,7 +93,7 @@ void onTick(CBlob@ this)
 				params.write_Vec2f(aimPos - ship.origin_pos);
 				params.write_f32(target_angle);
 				params.write_f32(ship.angle);
-				this.SendCommand(this.getCommandID("place"), params);
+				this.SendCommand(this.getCommandID("server_place"), params);
 				this.set_u32("placedTime", gameTime);
 			}
 			else
@@ -194,37 +195,34 @@ const bool blocksOverlappingShip(u16[] blocks)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd != this.getCommandID("place")) return;
+	if (cmd == this.getCommandID("server_place") && isServer())
+	{
+		server_PlaceBlock(this, params);
+	}
+	else if (cmd == this.getCommandID("client_place") && isClient())
+	{
+		client_PlaceBlock(this, params);
+	}
+}
 
+void server_PlaceBlock(CBlob@ this, CBitStream@ params)
+{
 	const s32 shipID = params.read_s32();
 	CRules@ rules = getRules();
 	ShipDictionary@ ShipSet = getShipSet(rules);
 	Ship@ ship = ShipSet.getShip(shipID);
-	if (ship is null)
-	{
-		warn("place cmd: ship not found");
-		return;
-	}
+	if (ship is null) return;
 	
 	CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
-	if (shipBlob is null)
-	{
-		warn("place cmd: shipBlob not found");
-		return;
-	}
+	if (shipBlob is null) return;
 
 	Vec2f pos_offset = params.read_Vec2f();
 	Vec2f aimPos_offset = params.read_Vec2f();
 	const f32 target_angle = params.read_f32();
 	const f32 ship_angle = params.read_f32();
-	
+
 	u16[] blocks;
-	if (!this.get("blocks", blocks) || blocks.size() <= 0)
-	{
-		//can happen when placing and returning blocks at same time
-		if (sv_test) warn("place cmd: no blocks");
-		return;
-	}
+	if (!this.get("blocks", blocks) || blocks.size() <= 0) return;
 
 	const f32 angleDelta = ship.angle - ship_angle; //to account for ship angle lag
 	PositionBlocks(blocks, ship.origin_pos + pos_offset.RotateBy(angleDelta), ship.origin_pos + aimPos_offset.RotateBy(angleDelta), target_angle, ship, shipBlob);
@@ -234,24 +232,62 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	for (u8 i = 0; i < blocksLength; ++i)
 	{
 		CBlob@ b = getBlobByNetworkID(blocks[i]);
-		if (b is null)
-		{
-			if (sv_test) warn("place cmd: blob not found");
-			continue;
-		}
+		if (b is null) continue;
 
-		if (isServer())
-		{
-			//Set Owner
-			b.set_string("playerOwner", this.getPlayer().getUsername());
-			b.Sync("playerOwner", true); //2040865191 HASH
+		b.set_string("playerOwner", this.getPlayer().getUsername());
+		b.Sync("playerOwner", true); //2040865191 HASH
 
-			blob_blocks.push_back(b);
-		}
+		b.getShape().getVars().customData = 0; // push on ship
+		b.set_netid("ownerID", 0); //so it wont add to owner blocks
+		blob_blocks.push_back(b);
+	}
+
+	rules.push("dirtyBlocks", blob_blocks); //relay to ships.as that we placed the block
+	if (!isClient())
+	{
+		this.clear("blocks"); //release the blocks from the player
+	}
+	
+	CBitStream stream;
+	stream.write_s32(shipID);
+	stream.write_netid(shipBlob.getNetworkID());
+	stream.write_Vec2f(pos_offset);
+	stream.write_Vec2f(aimPos_offset);
+	stream.write_f32(target_angle);
+	stream.write_f32(ship_angle);
+	this.SendCommand(this.getCommandID("client_place"), stream);
+}
+
+void client_PlaceBlock(CBlob@ this, CBitStream@ params)
+{
+	const s32 shipID = params.read_s32();
+	CRules@ rules = getRules();
+	ShipDictionary@ ShipSet = getShipSet(rules);
+	Ship@ ship = ShipSet.getShip(shipID);
+	if (ship is null) return;
+	
+	CBlob@ shipBlob = getBlobByNetworkID(params.read_netid());
+	if (shipBlob is null) return;
+
+	Vec2f pos_offset = params.read_Vec2f();
+	Vec2f aimPos_offset = params.read_Vec2f();
+	const f32 target_angle = params.read_f32();
+	const f32 ship_angle = params.read_f32();
+
+	u16[] blocks;
+	if (!this.get("blocks", blocks) || blocks.size() <= 0) return;
+	
+	const f32 angleDelta = ship.angle - ship_angle; //to account for ship angle lag
+	PositionBlocks(blocks, ship.origin_pos + pos_offset.RotateBy(angleDelta), ship.origin_pos + aimPos_offset.RotateBy(angleDelta), target_angle, ship, shipBlob);
+
+	const u8 blocksLength = blocks.length;
+	for (u8 i = 0; i < blocksLength; ++i)
+	{
+		CBlob@ b = getBlobByNetworkID(blocks[i]);
+		if (b is null) continue;
 		
-		SetDisplay(b, color_white, RenderStyle::normal, 310.0f);
-		
-		if (!isServer()) //add it locally till a sync
+		//add it locally till a sync
+		if (!isServer())
 		{
 			ShipBlock ship_block;
 			ship_block.blobID = b.getNetworkID();
@@ -261,18 +297,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			b.getShape().getVars().customData = shipID;
 			ship.blocks.push_back(ship_block);
 		}
-		else
-			b.getShape().getVars().customData = 0; // push on ship
 		
-		b.set_netid("ownerID", 0); //so it wont add to owner blocks
+		SetDisplay(b, color_white, RenderStyle::normal, 310.0f);
 	}
-	
-	if (isServer())
-		rules.push("dirtyBlocks", blob_blocks); //relay to ships.as that we placed the block
-	
+
 	this.clear("blocks"); //release the blocks from the player
 	directionalSoundPlay("build_ladder.ogg", this.getPosition());
-	
+
 	//Grab another block
 	if (this.isMyPlayer() && !this.isAttached())
 	{
