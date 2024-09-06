@@ -30,25 +30,24 @@ void ShowTeamMenu(CRules@ this)
 	if (menu !is null)
 	{
 		CBitStream params;
-		params.write_netid(local.getNetworkID());
 
-		menu.AddKeyCommand(KEY_ESCAPE, this.getCommandID("pick none"), params);
-		menu.SetDefaultCommand(this.getCommandID("pick none"), params);
+		menu.AddKeyCallback(KEY_ESCAPE, "TeamMenuShiprekt.as", "Callback_PickNone", params);
+		menu.SetDefaultCallback("TeamMenuShiprekt.as", "Callback_PickNone", params);
 		
-		if (local.getTeamNum() == this.getSpectatorTeamNum())
+		if (isSpectator)
 		{
 			params.write_u8(-1);
-			CGridButton@ button = menu.AddButton("$TEAMS$", label, this.getCommandID("pick teams"), BUTTON_SIZE, params);
+			CGridButton@ button = menu.AddButton("$TEAMS$", label, "TeamMenuShiprekt.as", "Callback_PickTeamsShiprekt", BUTTON_SIZE, params);
 		}
 		else
 		{
 			params.write_u8(this.getSpectatorTeamNum());
-			CGridButton@ button = menu.AddButton("$SPECTATOR$", label, this.getCommandID("pick teams"), BUTTON_SIZE, params);
+			CGridButton@ button = menu.AddButton("$SPECTATOR$", label, "TeamMenuShiprekt.as", "Callback_PickTeamsShiprekt", BUTTON_SIZE, params);
 		}
 	}
 
 	//team selector
-	bool canSwitch = true;
+	bool canSwitch;
 	u8[] availableTeams = getAvailableTeams(this, local, canSwitch);
 	const u8 availableTeamsLength = availableTeams.length;
 	if (availableTeamsLength > 0 && canSwitch)
@@ -60,37 +59,36 @@ void ShowTeamMenu(CRules@ this)
 			{
 				const u8 team = availableTeams[i];
 				CBitStream params;
-				params.write_netid(local.getNetworkID());
 				params.write_u8(team);
-				CGridButton@ button = menu2.AddButton("$MOTHERSHIP"+team+"$", teamColors[team]+" "+Trans::Team, this.getCommandID("pick teams"), Vec2f(2, 2), params);
+				CGridButton@ button = menu2.AddButton("$MOTHERSHIP"+team+"$", teamColors[team]+" "+Trans::Team, "TeamMenuShiprekt.as", "Callback_PickTeamsShiprekt", Vec2f(2, 2), params);
 			}
 		}
 	}
 }
 
-void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
+void Callback_PickTeamsShiprekt(CBitStream@ params)
 {
-	if (cmd == this.getCommandID("pick teams"))
+	u8 team;
+	if (!params.saferead_u8(team)) return;
+
+	CPlayer@ player = getLocalPlayer();
+	if (player is null) return;
+
+	if (isTeamAvailable(getRules(), player, team))
 	{
-		CPlayer@ player = getPlayerByNetworkId(params.read_netid());
-		const u8 team = params.read_u8();
-		if (player !is null && player is getLocalPlayer())
-		{
-			getHUD().ClearMenus();
-			if (isTeamAvailable(this, player, team))
-				player.client_ChangeTeam(team);
-		}
-	}
-	else if (cmd == this.getCommandID("pick none"))
-	{
-		CPlayer@ player = getPlayerByNetworkId(params.read_netid());
-		if (player !is null && player is getLocalPlayer())
-			getHUD().ClearMenus();
+		player.client_ChangeTeam(team);
+		getHUD().ClearMenus();
 	}
 }
 
-u8[] getAvailableTeams(CRules@ this, CPlayer@ player, bool&out canSwitch = true) //taken from Respawning.as
+void Callback_PickNone(CBitStream@ params)
 {
+	getHUD().ClearMenus();
+}
+
+u8[] getAvailableTeams(CRules@ this, CPlayer@ player, bool&out canSwitch) //taken from Respawning.as
+{
+	canSwitch = true;
 	u8[] playersperteam(teamsNum);
 
 	//gather the per team player counts
@@ -133,7 +131,7 @@ bool isTeamAvailable(CRules@ this, CPlayer@ player, const u8&in team)
 {
 	if (team > teamsNum) return true;
 
-	bool canSwitch = true;
+	bool canSwitch;
 	if (getAvailableTeams(this, player, canSwitch).find(team) != -1)
 	{
 		return canSwitch;
