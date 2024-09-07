@@ -49,6 +49,10 @@ const string votekick_id = "vote: kick";
 const string votenextmap_id = "vote: nextmap";
 const string votefreebuild_id = "vote: freebuild";
 const string votesurrender_id = "vote: surrender";
+const string votekick_id_client = "client vote: kick";
+const string votenextmap_id_client = "client vote: nextmap";
+const string votefreebuild_id_client = "client vote: freebuild";
+const string votesurrender_id_client = "client vote: surrender";
 
 //set up the ids
 void onInit(CRules@ this)
@@ -57,6 +61,10 @@ void onInit(CRules@ this)
 	this.addCommandID(votenextmap_id);
 	this.addCommandID(votefreebuild_id);
 	this.addCommandID(votesurrender_id);
+	this.addCommandID(votekick_id_client);
+	this.addCommandID(votenextmap_id_client);
+	this.addCommandID(votefreebuild_id_client);
+	this.addCommandID(votesurrender_id_client);
 	
 	initializeTimes(this);
 }
@@ -701,14 +709,12 @@ void Callback_Surrender(CBitStream@ params)
 //actually setting up the votes
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-	if (Rules_AlreadyHasVote(this))
-		return;
+	if (Rules_AlreadyHasVote(this)) return;
 
-	if (cmd == this.getCommandID(votekick_id))
+	if (cmd == this.getCommandID(votekick_id) && isServer())
 	{
 		u16 playerid, byplayerid;
 		string reason;
-
 		if (!params.saferead_u16(playerid)) return;
 		if (!params.saferead_u16(byplayerid)) return;
 		if (!params.saferead_string(reason)) return;
@@ -717,45 +723,119 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 
 		CPlayer@ player = getPlayerByNetworkId(playerid);
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
-		if (player !is null && byplayer !is null)
-			Rules_SetVote(this, Create_Votekick(player, byplayer, reason));
+		if (player is null || byplayer is null) return;
+
+		Rules_SetVote(this, Create_Votekick(player, byplayer, reason));
+		
+		CBitStream bt;
+		bt.write_u16(playerid);
+		bt.write_u16(byplayerid);
+		bt.write_string(reason);
+		this.SendCommand(this.getCommandID(votekick_id_client), bt);
 	}
-	else if (cmd == this.getCommandID(votenextmap_id))
+	else if (cmd == this.getCommandID(votekick_id_client) && isClient())
+	{
+		u16 playerid, byplayerid;
+		string reason;
+		if (!params.saferead_u16(playerid)) return;
+		if (!params.saferead_u16(byplayerid)) return;
+		if (!params.saferead_string(reason)) return;
+		
+		lastKVote = getGameTime();
+
+		CPlayer@ player = getPlayerByNetworkId(playerid);
+		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
+		if (player is null || byplayer is null) return;
+		
+		Rules_SetVote(this, Create_Votekick(player, byplayer, reason));
+	}
+	else if (cmd == this.getCommandID(votenextmap_id) && isServer())
 	{
 		u16 byplayerid;
 		string reason;
-
 		if (!params.saferead_u16(byplayerid)) return;
 		if (!params.saferead_string(reason)) return;
 		
 		lastSDVote = getGameTime();
 
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
-		if (byplayer !is null)
-			Rules_SetVote(this, Create_VoteNextmap(byplayer, reason));
+		if (byplayer is null) return;
+
+		Rules_SetVote(this, Create_VoteNextmap(byplayer, reason));
+		
+		CBitStream bt;
+		bt.write_u16(byplayerid);
+		bt.write_string(reason);
+		this.SendCommand(this.getCommandID(votenextmap_id_client), bt);
 	}
-	else if (cmd == this.getCommandID(votefreebuild_id))
+	else if (cmd == this.getCommandID(votenextmap_id_client) && isClient())
 	{
 		u16 byplayerid;
+		string reason;
+		if (!params.saferead_u16(byplayerid)) return;
+		if (!params.saferead_string(reason)) return;
+		
+		lastSDVote = getGameTime();
 
+		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
+		if (byplayer is null) return;
+
+		Rules_SetVote(this, Create_VoteNextmap(byplayer, reason));
+	}
+	else if (cmd == this.getCommandID(votefreebuild_id) && isServer())
+	{
+		u16 byplayerid;
 		if (!params.saferead_u16(byplayerid)) return;
 		
 		lastFBVote = getGameTime();
 
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
-		if (byplayer !is null)
-			Rules_SetVote(this, Create_VoteFreebuild(byplayer));
+		if (byplayer is null) return;
+
+		Rules_SetVote(this, Create_VoteFreebuild(byplayer));
+		
+		CBitStream bt;
+		bt.write_u16(byplayerid);
+		this.SendCommand(this.getCommandID(votefreebuild_id_client), bt);
 	}
-	else if (cmd == this.getCommandID(votesurrender_id))
+	else if (cmd == this.getCommandID(votefreebuild_id_client) && isClient())
 	{
 		u16 byplayerid;
+		if (!params.saferead_u16(byplayerid)) return;
+		
+		lastFBVote = getGameTime();
 
+		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
+		if (byplayer is null) return;
+		
+		Rules_SetVote(this, Create_VoteFreebuild(byplayer));
+	}
+	else if (cmd == this.getCommandID(votesurrender_id) && isServer())
+	{
+		u16 byplayerid;
 		if (!params.saferead_u16(byplayerid)) return;
 		
 		lastSRVote = getGameTime();
 
 		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
-		if (byplayer !is null)
-			Rules_SetVote(this, Create_VoteSurrender(byplayer));
+		if (byplayer is null) return;
+
+		Rules_SetVote(this, Create_VoteSurrender(byplayer));
+		
+		CBitStream bt;
+		bt.write_u16(byplayerid);
+		this.SendCommand(this.getCommandID(votesurrender_id_client), bt);
+	}
+	else if (cmd == this.getCommandID(votesurrender_id_client) && isClient())
+	{
+		u16 byplayerid;
+		if (!params.saferead_u16(byplayerid)) return;
+		
+		lastSRVote = getGameTime();
+
+		CPlayer@ byplayer = getPlayerByNetworkId(byplayerid);
+		if (byplayer is null) return;
+
+		Rules_SetVote(this, Create_VoteSurrender(byplayer));
 	}
 }
