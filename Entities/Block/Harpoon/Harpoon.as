@@ -39,10 +39,11 @@ void onInit(CBlob@ this)
 	HarpoonInfo harpoon;
 	this.set("harpoonInfo", @harpoon);
 
-	this.addCommandID("hook"); //hook onto a block
-	this.addCommandID("unhook"); //start reel
-	this.addCommandID("grapple"); //start grapple sequence
-	this.addCommandID("resetgrapple"); //return to normal
+	this.addCommandID("client_hook"); //hook onto a block
+	this.addCommandID("server_unhook"); //start reel
+	this.addCommandID("client_unhook"); //start reel
+	this.addCommandID("client_grapple"); //start grapple sequence
+	this.addCommandID("client_resetgrapple"); //return to normal
 }
 
 void onInit(CSprite@ this)
@@ -102,17 +103,17 @@ void onTick(CBlob@ this)
 	{
 		Manual(this, occupier, harpoon);
 		
-		if (occupier.isKeyJustPressed(key_action1) && occupier.isMyPlayer()) //left click
+		if (occupier.isKeyJustPressed(key_action1) && isServer()) //left click
 		{
 			// more intuitive aiming (compensates for gravity and cursor position)
 			Vec2f direction = occupier.getAimPos() - pos;
 			const f32 distance = direction.Normalize();
-				
 			if (!harpoon.grappling && !harpoon.reeling && distance > 1.0f) //otherwise grapple PROBLEM BLOCK
 			{
-				CBitStream bt;
-				bt.write_Vec2f(direction);
-				this.SendCommand(this.getCommandID("grapple"), bt);
+				Grapple(this, harpoon, direction);
+				CBitStream stream;
+				stream.write_Vec2f(direction);
+				this.SendCommand(this.getCommandID("client_grapple"), stream);
 			}
 		}
 	}
@@ -147,7 +148,8 @@ void onTick(CBlob@ this)
 			if (((ropeTooLong || ropeOutOfBounds || onRock) && harpoon.grapple_id == 0xffff)
 				|| (occupier !is null ? occupier.isKeyJustPressed(key_action2) : false))
 			{
-				this.SendCommand(this.getCommandID("unhook"));
+				Unhook(harpoon);
+				this.SendCommand(this.getCommandID("client_unhook"));
 			}
 		}
 		
@@ -192,7 +194,10 @@ void onTick(CBlob@ this)
 				{
 					delta = 0.0f;
 					if (isServer())
-						this.SendCommand(this.getCommandID("resetgrapple"));
+					{
+						ResetGrapple(harpoon);
+						this.SendCommand(this.getCommandID("client_resetgrapple"));
+					}
 				}
 			}
 		}
@@ -242,7 +247,8 @@ void onTick(CBlob@ this)
 					@b = getBlobByNetworkID(harpoon.grapple_id);
 					if (b is null && isServer())
 					{
-						this.SendCommand(this.getCommandID("unhook"));
+						Unhook(harpoon);
+						this.SendCommand(this.getCommandID("client_unhook"));
 					}
 				}
 				
@@ -354,9 +360,11 @@ const bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 		{
 			if (isServer())
 			{
-				CBitStream bt;
-				bt.write_netid(b.getNetworkID());
-				this.SendCommand(this.getCommandID("hook"), bt);
+				const u16 id = b.getNetworkID();
+				harpoon.grapple_id = id;
+				CBitStream stream;
+				stream.write_netid(id);
+				this.SendCommand(this.getCommandID("client_hook"), stream);
 			}
 			
 			return true;
@@ -366,23 +374,42 @@ const bool checkGrappleStep(CBlob@ this, HarpoonInfo@ harpoon, CMap@ map)
 	return false;
 }
 
+void Grapple(CBlob@ this, HarpoonInfo@ harpoon, Vec2f direction)
+{
+	Vec2f pos = this.getPosition();
+	Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
+	Vec2f shipVel = ship !is null ? ship.vel : Vec2f();
+	
+	harpoon.grappling = true;
+	harpoon.grapple_id = 0xffff;
+	harpoon.grapple_pos = pos + direction + (shipVel*2);
+	harpoon.grapple_ratio = 1.0f; //allow fully extended
+	harpoon.grapple_vel = direction * harpoon_grapple_throw_speed;
+}
+
+void Unhook(HarpoonInfo@ harpoon)
+{
+	harpoon.grapple_id = 0xffff;
+	harpoon.reeling = true;
+}
+
+void ResetGrapple(HarpoonInfo@ harpoon)
+{
+	harpoon.grapple_id = 0xffff;
+	harpoon.grappling = false;
+	harpoon.reeling = false;
+}
+
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
 	HarpoonInfo@ harpoon;
 	if (!this.get("harpoonInfo", @harpoon)) return;
 
-	if (cmd == this.getCommandID("grapple"))
+	if (cmd == this.getCommandID("client_grapple"))
 	{
 		Vec2f pos = this.getPosition();
 		Vec2f direction = params.read_Vec2f();
-		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
-		Vec2f shipVel = ship !is null ? ship.vel : Vec2f();
-		
-		harpoon.grappling = true;
-		harpoon.grapple_id = 0xffff;
-		harpoon.grapple_pos = pos + direction + (shipVel*2);
-		harpoon.grapple_ratio = 1.0f; //allow fully extended
-		harpoon.grapple_vel = direction * harpoon_grapple_throw_speed;
+		Grapple(this, harpoon, direction);
 		
 		if (isClient())
 		{
@@ -398,32 +425,27 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 				p.Z = 650;
 		}
 	}
-	else if (cmd == this.getCommandID("hook"))
+	else if (cmd == this.getCommandID("client_hook") && isClient())
 	{
-		const u16 id = params.read_netid();
-		harpoon.grapple_id = id;
-		if (isClient())
-		{
-			directionalSoundPlay("crowbar_impact2.ogg", harpoon.grapple_pos);
-			sparks(harpoon.grapple_pos, v_fastrender ? 7 : 9, 3.0f);
-		}
+		harpoon.grapple_id = params.read_netid();
+
+		directionalSoundPlay("crowbar_impact2.ogg", harpoon.grapple_pos);
+		sparks(harpoon.grapple_pos, v_fastrender ? 7 : 9, 3.0f);
 	}
-	else if (cmd == this.getCommandID("unhook"))
+	else if (cmd == this.getCommandID("server_unhook") && isServer())
 	{
-		if (isClient())
-			directionalSoundPlay("HookReel.ogg", this.getPosition());
-			
-		harpoon.grapple_id = 0xffff;
-		harpoon.reeling = true;
+		Unhook(harpoon);
+		this.SendCommand(this.getCommandID("client_unhook"));
 	}
-	else if (cmd == this.getCommandID("resetgrapple"))
+	else if (cmd == this.getCommandID("client_unhook") && isClient())
 	{
-		if (isClient())		
-			directionalSoundPlay("HookReset.ogg", this.getPosition());
-		
-		harpoon.grapple_id = 0xffff;
-		harpoon.grappling = false;
-		harpoon.reeling = false;
+		directionalSoundPlay("HookReel.ogg", this.getPosition());
+		Unhook(harpoon);
+	}
+	else if (cmd == this.getCommandID("client_resetgrapple") && isClient())
+	{
+		directionalSoundPlay("HookReset.ogg", this.getPosition());
+		ResetGrapple(harpoon);
 	}
 }
 
@@ -441,7 +463,7 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 		CBlob@ b = getBlobByNetworkID(harpoon.grapple_id);
 		if (b !is null)
 		{
-			CButton@ unhookButton = caller.CreateGenericButton(1, Vec2f(), b, unhookGrapple, "Unhook Harpoon");
+			CButton@ unhookButton = caller.CreateGenericButton(1, Vec2f(), b, Callback_UnhookGrapple, "Unhook Harpoon");
 			if (unhookButton !is null)
 			{
 				unhookButton.radius = 8.0f; //engine fix
@@ -452,11 +474,11 @@ void GetButtonsFor(CBlob@ this, CBlob@ caller)
 }
 
 //HACK: use a callback function in order to allow the button to follow the block the harpoon has grappled 
-void unhookGrapple(CBlob@ block, CBlob@ caller)
+void Callback_UnhookGrapple(CBlob@ block, CBlob@ caller)
 {
 	const u16 id = block.getNetworkID();
 	CBlob@[] harpoons;
-	getBlobsByTag("harpoon", @harpoons); //we cant inherit the harpoon blob with callback so we have to find it ourselves
+	getBlobsByTag("harpoon", @harpoons); //we cant inherit the harpoon blob with callback so we have to find it ourselves (FUCKING KAG ENGINE MOMENT)
 	
 	for (u8 i = 0; i < harpoons.length; ++i)
 	{
@@ -466,7 +488,7 @@ void unhookGrapple(CBlob@ block, CBlob@ caller)
 		
 		if (harpoon.grapple_id == id)
 		{
-			b.SendCommand(b.getCommandID("unhook"));
+			b.SendCommand(b.getCommandID("server_unhook"));
 			return;
 		}
 	}

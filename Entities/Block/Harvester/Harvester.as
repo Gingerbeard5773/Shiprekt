@@ -6,6 +6,7 @@
 #include "ParticleSpark.as";
 #include "BlockCosts.as";
 #include "PlankCommon.as";
+#include "WeaponCommon.as";
  
 const f32 BULLET_RANGE = 60.0f;
 const f32 DECONSTRUCT_RATE = 10.0f; //higher values = higher recover
@@ -21,7 +22,7 @@ void onInit(CBlob@ this)
 
 	this.set_f32("weight", 2.0f);
 
-	this.addCommandID("fire");
+	this.addCommandID("client_fire");
 
 	if (isClient())
 	{
@@ -33,6 +34,9 @@ void onInit(CBlob@ this)
 	}
 
 	this.set_u32("fire time", 0);
+	
+	onFireHandle@ onfire_handle = @server_onFire;
+	this.set("onFire handle", @onfire_handle);
 }
  
 void onTick(CBlob@ this)
@@ -60,111 +64,120 @@ const bool canShoot(CBlob@ this)
 {
 	return (this.get_u32("fire time") + DECONSTRUCT_RATE < getGameTime());
 }
+
+void server_onFire(CBlob@ this, CBlob@ caller)
+{
+	ShootLaser(this, caller);
+	
+	CBitStream stream;
+	stream.write_netid(caller.getNetworkID());
+	this.SendCommand(this.getCommandID("client_fire"), stream);
+}
+
+void ShootLaser(CBlob@ this, CBlob@ caller)
+{
+	if (!canShoot(this)) return;
+
+	CPlayer@ player = caller.getPlayer();
+	if (player is null) return;
+
+	this.set_u32("fire time", getGameTime());
+
+	ShipDictionary@ ShipSet = getShipSet();
+	CSprite@ sprite = this.getSprite();
+	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
+	Vec2f barrelPos = this.getPosition();
+
+	//hit stuff
+	HitInfo@[] hitInfos;
+	bool killed = false;
+	
+	if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
+	{
+		const u8 hitLength = hitInfos.length;
+		for (u8 i = 0; i < hitLength; i++)
+		{
+			HitInfo@ hi = hitInfos[i];
+			CBlob@ b = hi.blob;	  
+			if (b is null || b is this) continue;
+			
+			const int bCol = b.getShape().getVars().customData;
+			if (bCol <= 0) continue;
+			
+			Ship@ bship = ShipSet.getShip(bCol);
+			if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector) && (bship !is null && !bship.owner.isEmpty()))) 
+				continue;
+				
+			killed = true;
+			
+			if (isClient())//effects
+			{
+				setLaser(sprite, hi.hitpos - barrelPos);
+				sparks(hi.hitpos, 4);
+			}
+
+			const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName()) : 1;
+			const f32 initialHealth = b.getInitialHealth();
+			const f32 currentReclaim = b.get_f32("current reclaim");
+
+			if (bship !is null && bCost > 0)
+			{
+				const f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
+				const string shipOwnerName = bship.owner;
+				
+				if (!b.hasTag("mothership"))
+				{
+					f32 deconstructAmount = 0;
+					if ((shipOwnerName.isEmpty() && !bship.isMothership) //true if no owner for ship and ship is not a mothership
+						|| (b.get_string("playerOwner").isEmpty() && !bship.isMothership) //true if no owner for the block and is not on a mothership
+						|| (shipOwnerName == player.getUsername()) //true if we own the ship
+						|| (b.get_string("playerOwner") == player.getUsername())) //true if we own the specific block
+					{
+						deconstructAmount = fullConstructAmount; 
+					}
+					else
+					{
+						deconstructAmount = (1.0f/bCost)*initialHealth; //slower reclaim
+					}
+
+					if ((currentReclaim - deconstructAmount) <= 0)
+					{
+						server_addPlayerBooty(player.getUsername(), (bCost*0.7f)*(b.getHealth()/initialHealth));
+						directionalSoundPlay("/ChaChing.ogg", barrelPos);
+
+						b.Tag("disabled");
+						b.server_Die();
+					}
+					else
+						b.set_f32("current reclaim", currentReclaim - deconstructAmount);
+				}
+			}
+			break;
+		}
+	}
+	
+	if (isClient())
+	{
+		if (sprite.getEmitSoundPaused())
+		{
+			sprite.SetEmitSoundPaused(false);
+		}
+
+		if (!killed) //full length 'laser'
+		{
+			setLaser(sprite, aimVector * BULLET_RANGE);
+		}
+	}
+}
  
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("fire"))
+    if (cmd == this.getCommandID("client_fire"))
     {
-		if (!canShoot(this)) return;
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
+		if (caller is null) return;
 		
-		u16 shooterID;
-		if (!params.saferead_netid(shooterID)) return;
-			
-		CBlob@ shooter = getBlobByNetworkID(shooterID);
-		if (shooter is null) return;
-		
-		CPlayer@ player = shooter.getPlayer();
-		if (player is null) return;
-		
-		ShipDictionary@ ShipSet = getShipSet();
-
-		this.set_u32("fire time", getGameTime());
-			
-		CSprite@ sprite = this.getSprite();
-	   
-		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-		Vec2f barrelPos = this.getPosition();
-
-		//hit stuff
-		HitInfo@[] hitInfos;
-		bool killed = false;
-		
-		if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
-		{
-			const u8 hitLength = hitInfos.length;
-			for (u8 i = 0; i < hitLength; i++)
-			{
-				HitInfo@ hi = hitInfos[i];
-				CBlob@ b = hi.blob;	  
-				if (b is null || b is this) continue;
-				
-				const int bCol = b.getShape().getVars().customData;
-				if (bCol <= 0) continue;
-				
-				Ship@ bship = ShipSet.getShip(bCol);
-				if (b.hasTag("station") || (b.hasTag("plank") && !CollidesWithPlank(b, aimVector) && (bship !is null && !bship.owner.isEmpty()))) 
-					continue;
-					
-				killed = true;
-				
-				if (isClient())//effects
-				{
-					setLaser(sprite, hi.hitpos - barrelPos);
-					sparks(hi.hitpos, 4);
-				}
-
-				const f32 bCost = !b.hasTag("coupling") ? getCost(b.getName()) : 1;
-				const f32 initialHealth = b.getInitialHealth();
-				const f32 currentReclaim = b.get_f32("current reclaim");
-
-				if (bship !is null && bCost > 0)
-				{
-					const f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
-					const string shipOwnerName = bship.owner;
-					
-					if (!b.hasTag("mothership"))
-					{
-						f32 deconstructAmount = 0;
-						if ((shipOwnerName.isEmpty() && !bship.isMothership) //true if no owner for ship and ship is not a mothership
-							|| (b.get_string("playerOwner").isEmpty() && !bship.isMothership) //true if no owner for the block and is not on a mothership
-							|| (shipOwnerName == player.getUsername()) //true if we own the ship
-							|| (b.get_string("playerOwner") == player.getUsername())) //true if we own the specific block
-						{
-							deconstructAmount = fullConstructAmount; 
-						}
-						else
-						{
-							deconstructAmount = (1.0f/bCost)*initialHealth; //slower reclaim
-						}
-
-						if ((currentReclaim - deconstructAmount) <= 0)
-						{
-							server_addPlayerBooty(player.getUsername(), (bCost*0.7f)*(b.getHealth()/initialHealth));
-							directionalSoundPlay("/ChaChing.ogg", barrelPos);
-
-							b.Tag("disabled");
-							b.server_Die();
-						}
-						else
-							b.set_f32("current reclaim", currentReclaim - deconstructAmount);
-					}
-				}
-				break;
-			}
-		}
-		
-		if (isClient())
-		{
-			if (sprite.getEmitSoundPaused())
-			{
-				sprite.SetEmitSoundPaused(false);
-			}
-
-			if (!killed) //full length 'laser'
-			{
-				setLaser(sprite, aimVector * BULLET_RANGE);
-			}
-		}
+		ShootLaser(this, caller);
     }
 }
 

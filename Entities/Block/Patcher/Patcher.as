@@ -5,6 +5,7 @@
 #include "TileCommon.as";
 #include "ParticleSpark.as";
 #include "BlockCosts.as";
+#include "WeaponCommon.as";
  
 const f32 BULLET_RANGE = 100.0f;
 const f32 CONSTRUCT_RATE = 14.0f; //higher values = higher recover
@@ -21,7 +22,7 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 3.0f);
 	
-	this.addCommandID("fire");
+	this.addCommandID("client_fire");
 	
 	if (isClient())
 	{
@@ -33,6 +34,9 @@ void onInit(CBlob@ this)
 	}
 	
 	this.set_u32("fire time", 0);
+	
+	onFireHandle@ onfire_handle = @server_onFire;
+	this.set("onFire handle", @onfire_handle);
 }
  
 void onTick(CBlob@ this)
@@ -60,129 +64,139 @@ const bool canShoot(CBlob@ this)
 {
 	return (this.get_u32("fire time") + CONSTRUCT_RATE < getGameTime());
 }
- 
+
+void server_onFire(CBlob@ this, CBlob@ caller)
+{
+	ShootLaser(this, caller);
+	
+	CBitStream stream;
+	stream.write_netid(caller.getNetworkID());
+	this.SendCommand(this.getCommandID("client_fire"), stream);
+}
+
+void ShootLaser(CBlob@ this, CBlob@ caller)
+{
+	if (!canShoot(this)) return;
+	
+	CPlayer@ player = caller.getPlayer();
+	if (player is null) return;
+	
+	ShipDictionary@ ShipSet = getShipSet();
+
+	this.set_u32("fire time", getGameTime());
+   
+	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
+	const Vec2f barrelPos = this.getPosition();
+
+	//hit stuff		
+	HitInfo@[] hitInfos;
+	u8 count = 0;
+	
+	if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
+	{
+		const u8 hitLength = hitInfos.length;
+		for (u8 i = 0; i < hitLength; i++)
+		{
+			HitInfo@ hi = hitInfos[i];
+			CBlob@ b = hi.blob;	  
+			if (b is null || b is this) continue;
+			
+			const int color = b.getShape().getVars().customData;
+			if (color <= 0) continue;
+			
+			if (isClient())//effects
+			{
+				sparks(hi.hitpos, v_fastrender ? 1 : 4);
+			}
+			
+			if (b.hasTag("station")) continue;
+
+			if (count >= NUM_HEALS) continue;
+			
+			const bool isMyShip = color == this.getShape().getVars().customData;
+
+			f32 reconstructAmount = 0;
+			u16 reconstructCost = 0;
+			const string cName = player.getUsername();
+			const u16 cBooty = server_getPlayerBooty(cName);
+			const f32 mBlobHealth = b.getHealth();
+			const f32 mBlobCost = getCost(b.getName());
+			const f32 initialReclaim = b.getInitialHealth();
+			const f32 currentReclaim = b.get_f32("current reclaim");
+
+			f32 fullConstructAmount;
+			if (!b.hasTag("mothership"))
+				fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
+			else
+				fullConstructAmount = (0.01f)*initialReclaim; //mothership
+			
+			if (currentReclaim < initialReclaim || b.hasTag("mothership"))
+			{
+				//healing
+				if ((currentReclaim + reconstructAmount) <= initialReclaim)
+				{
+					reconstructAmount = fullConstructAmount;
+					reconstructCost = CONSTRUCT_VALUE;
+				}
+				else if ((currentReclaim + reconstructAmount) > initialReclaim)
+				{
+					reconstructAmount = initialReclaim - currentReclaim;
+					reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
+				}
+				
+				//calculate amount it will cost the player
+				if (b.hasTag("mothership"))
+					reconstructCost = 5;
+				else if (mBlobHealth < initialReclaim)
+					reconstructCost *= isMyShip ? 1.0f : 0.20f;
+					
+				if (b.hasTag("mothership"))
+				{
+					//mothership
+					if ((cBooty >= reconstructCost || getRules().get_bool("freebuild")) && mBlobHealth < initialReclaim)
+					{
+						b.server_SetHealth(mBlobHealth + reconstructAmount);
+						server_addPlayerBooty(cName, -reconstructCost);
+					}
+				}
+				else
+				{
+					//normal blocks
+					if (cBooty >= reconstructCost || getRules().get_bool("freebuild"))
+					{
+						b.server_SetHealth(Maths::Min(initialReclaim, mBlobHealth + reconstructAmount));
+						b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
+						server_addPlayerBooty(cName, -reconstructCost);
+						count++;
+					}
+					else if ((currentReclaim + reconstructAmount) < mBlobHealth)
+						b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
+				}
+			}
+		}
+	}
+	
+	if (isClient())
+	{
+		//effects
+		CSprite@ sprite = this.getSprite();
+		if (sprite.getEmitSoundPaused())
+		{
+			sprite.SetEmitSoundPaused(false);
+		}
+		
+		//full length 'laser'
+		setLaser(sprite, aimVector * (BULLET_RANGE));
+	}
+}
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("fire"))
+    if (cmd == this.getCommandID("client_fire"))
     {
-		if (!canShoot(this)) return;
-		
-		u16 shooterID;
-		if (!params.saferead_netid(shooterID)) return;
-			
-		CBlob@ shooter = getBlobByNetworkID(shooterID);
-		if (shooter is null) return;
-		
-		CPlayer@ player = shooter.getPlayer();
-		if (player is null) return;
-		
-		ShipDictionary@ ShipSet = getShipSet();
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
+		if (caller is null) return;
 
-		this.set_u32("fire time", getGameTime());
-	   
-		Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-		const Vec2f barrelPos = this.getPosition();
-
-		//hit stuff		
-		HitInfo@[] hitInfos;
-		u8 count = 0;
-			
-		if (getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), BULLET_RANGE, this, @hitInfos))
-		{
-			const u8 hitLength = hitInfos.length;
-			for (u8 i = 0; i < hitLength; i++)
-			{
-				HitInfo@ hi = hitInfos[i];
-				CBlob@ b = hi.blob;	  
-				if (b is null || b is this) continue;
-				
-				const int color = b.getShape().getVars().customData;
-				if (color <= 0) continue;
-				
-				if (isClient())//effects
-				{
-					sparks(hi.hitpos, v_fastrender ? 1 : 4);
-				}
-				
-				if (b.hasTag("station")) continue;
-
-				if (count >= NUM_HEALS) continue;
-				
-				const bool isMyShip = color == this.getShape().getVars().customData;
-
-				f32 reconstructAmount = 0;
-				u16 reconstructCost = 0;
-				const string cName = player.getUsername();
-				const u16 cBooty = server_getPlayerBooty(cName);
-				const f32 mBlobHealth = b.getHealth();
-				const f32 mBlobCost = getCost(b.getName());
-				const f32 initialReclaim = b.getInitialHealth();
-				const f32 currentReclaim = b.get_f32("current reclaim");
-
-				f32 fullConstructAmount;
-				if (!b.hasTag("mothership"))
-					fullConstructAmount = Maths::Min(1.0f, CONSTRUCT_VALUE/mBlobCost)*initialReclaim;
-				else
-					fullConstructAmount = (0.01f)*initialReclaim; //mothership
-				
-				if (currentReclaim < initialReclaim || b.hasTag("mothership"))
-				{
-					//healing
-					if ((currentReclaim + reconstructAmount) <= initialReclaim)
-					{
-						reconstructAmount = fullConstructAmount;
-						reconstructCost = CONSTRUCT_VALUE;
-					}
-					else if ((currentReclaim + reconstructAmount) > initialReclaim)
-					{
-						reconstructAmount = initialReclaim - currentReclaim;
-						reconstructCost = CONSTRUCT_VALUE - CONSTRUCT_VALUE*(reconstructAmount/fullConstructAmount);
-					}
-					
-					//calculate amount it will cost the player
-					if (b.hasTag("mothership"))
-						reconstructCost = 5;
-					else if (mBlobHealth < initialReclaim)
-						reconstructCost *= isMyShip ? 1.0f : 0.20f;
-						
-					if (b.hasTag("mothership"))
-					{
-						//mothership
-						if ((cBooty >= reconstructCost || getRules().get_bool("freebuild")) && mBlobHealth < initialReclaim)
-						{
-							b.server_SetHealth(mBlobHealth + reconstructAmount);
-							server_addPlayerBooty(cName, -reconstructCost);
-						}
-					}
-					else
-					{
-						//normal blocks
-						if (cBooty >= reconstructCost || getRules().get_bool("freebuild"))
-						{
-							b.server_SetHealth(Maths::Min(initialReclaim, mBlobHealth + reconstructAmount));
-							b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
-							server_addPlayerBooty(cName, -reconstructCost);
-							count++;
-						}
-						else if ((currentReclaim + reconstructAmount) < mBlobHealth)
-							b.set_f32("current reclaim", Maths::Min(initialReclaim, currentReclaim + reconstructAmount));
-					}
-				}
-			}
-		}
-		
-		if (isClient())
-		{
-			//effects
-			CSprite@ sprite = this.getSprite();
-			if (sprite.getEmitSoundPaused())
-			{
-				sprite.SetEmitSoundPaused(false);
-			}
-			
-			//full length 'laser'
-			setLaser(sprite, aimVector * (BULLET_RANGE));
-		}
+		ShootLaser(this, caller);
     }
 }
 

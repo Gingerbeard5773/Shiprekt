@@ -9,8 +9,6 @@ const u8 MAX_AMMO = 8;
 const u8 REFILL_AMOUNT = 1;
 const u8 REFILL_SECONDS = 8;
 
-Random _shotspreadrandom(0x11598); //clientside
-
 void onInit(CBlob@ this)
 {
 	this.Tag("weapon");
@@ -19,7 +17,7 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 4.5f);
 	
-	this.addCommandID("fire");
+	this.addCommandID("client_fire");
 
 	if (isServer())
 	{
@@ -31,6 +29,9 @@ void onInit(CBlob@ this)
     sprite.SetRelativeZ(2);
 
 	this.set_u32("fire time", 0);
+	
+	onFireHandle@ onfire_handle = @server_onFire;
+	this.set("onFire handle", @onfire_handle);
 }
 
 void onTick(CBlob@ this)
@@ -44,18 +45,18 @@ void onTick(CBlob@ this)
 		if (ship !is null)
 		{
 			checkDocked(this, ship);
-			if (canShoot(this))
+			if (canFire(this))
 				refillAmmo(this, ship, REFILL_AMOUNT, REFILL_SECONDS);
 		}
 	}
 }
 
-const bool canShoot(CBlob@ this)
+const bool canFire(CBlob@ this)
 {
-	return (this.get_u32("fire time") + FIRE_RATE < getGameTime());
+	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-const bool isClear(CBlob@ this)
+const bool isObstructed(CBlob@ this)
 {
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
 	
@@ -79,63 +80,71 @@ const bool isClear(CBlob@ this)
 	return true;
 }
 
+void server_onFire(CBlob@ this, CBlob@ caller)
+{
+	if (!canFire(this) || this.get_bool("docked")) return;
+	
+	const Vec2f pos = this.getPosition();
+	const bool obstructed = isObstructed(this);
+	
+	const u16 ammo = this.get_u16("ammo");
+	this.set_u16("ammo", Maths::Max(0, ammo - 1));
+	this.set_u32("fire time", getGameTime());
+	
+	if (ammo > 0 && obstructed)
+	{
+		server_FireBlob(this, caller);
+	}
+	
+	CBitStream params;
+	params.write_bool(obstructed);
+	params.write_u16(ammo);
+	this.SendCommand(this.getCommandID("client_fire"), params);
+}
+
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("fire"))
-    {
-		if (!canShoot(this) || this.get_bool("docked")) return;
+	if (cmd == this.getCommandID("client_fire") && isClient())
+	{
+		const bool obstructed = params.read_bool();
+		const u16 ammo = params.read_u16();
 
-		u16 shooterID;
-		if (!params.saferead_netid(shooterID)) return;
+		this.set_u16("ammo", Maths::Max(0, ammo - 1));
+		this.set_u32("fire time", getGameTime());
 
-		CBlob@ shooter = getBlobByNetworkID(shooterID);
-		if (shooter is null) return;
-		
-		Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
-		if (ship is null) return;
-			
 		Vec2f pos = this.getPosition();
-
-		if (!isClear(this))
+		if (!obstructed)
 		{
 			directionalSoundPlay("lightup", pos);
 			return;
 		}
 
-		//ammo
-		u16 ammo = this.get_u16("ammo");
-
 		if (ammo <= 0)
 		{
-			directionalSoundPlay("LoadingTick1", pos, 0.35f);
+			directionalSoundPlay("LoadingTick1", pos, 1.0f);
 			return;
 		}
 
-		ammo--;
-		this.set_u16("ammo", ammo);
-
 		Vec2f aimvector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-		const Vec2f barrelPos = this.getPosition() + aimvector*9;
-		Vec2f velocity = aimvector*BULLET_SPEED;
-
-		if (isServer())
-		{
-            CBlob@ bullet = server_CreateBlob("rocket", this.getTeamNum(), pos + aimvector*8.0f);
-            if (bullet !is null)
-            {
-            	if (shooter !is null)
-				{
-                	bullet.SetDamageOwnerPlayer(shooter.getPlayer());
-                }
-                bullet.setVelocity(velocity + ship.vel);
-				bullet.setAngleDegrees(-aimvector.Angle() + 90.0f);
-                bullet.server_SetTimeToDie(25);
-            }
-    	}
-
+		const Vec2f barrelPos = this.getPosition() + aimvector * 9;
 		shotParticles(barrelPos, aimvector.Angle(), false);
 		directionalSoundPlay("LauncherFire" + (XORRandom(2) + 1), barrelPos);
+	}
+}
 
-		this.set_u32("fire time", getGameTime());
-    }
+void server_FireBlob(CBlob@ this, CBlob@ caller)
+{
+	Vec2f aimvector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
+	CBlob@ bullet = server_CreateBlob("rocket", this.getTeamNum(), this.getPosition() + aimvector * 8.0f);
+	if (bullet is null) return;
+	
+	Ship@ ship = getShipSet().getShip(this.getShape().getVars().customData);
+	if (ship is null) return;
+	
+	Vec2f velocity = aimvector * BULLET_SPEED;
+
+	bullet.SetDamageOwnerPlayer(caller.getPlayer());
+	bullet.setVelocity(velocity + ship.vel);
+	bullet.setAngleDegrees(-aimvector.Angle() + 90.0f);
+	bullet.server_SetTimeToDie(25);
 }

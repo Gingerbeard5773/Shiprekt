@@ -15,8 +15,6 @@ const u8 MAX_AMMO = 15;
 const u8 REFILL_AMOUNT = 1;
 const u8 REFILL_SECONDS = 5;
 
-Random _shotspreadrandom(0x11598); //clientside
-
 void onInit(CBlob@ this)
 {
 	this.Tag("flak");
@@ -29,7 +27,7 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 2.5f);
 	
-	this.addCommandID("fire");
+	this.addCommandID("client_fire");
 
 	if (isServer())
 	{
@@ -106,31 +104,29 @@ void onTick(CBlob@ this)
 	}
 }
 
-void Manual(CBlob@ this, CBlob@ controller)
+void Manual(CBlob@ this, CBlob@ caller)
 {
-	Vec2f aimpos = controller.getAimPos();
+	Vec2f aimpos = caller.getAimPos();
 	Vec2f pos = this.getPosition();
 	Vec2f aimVec = aimpos - pos;
 
 	// fire
-	if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && isClearShot(this, aimVec))
+	if (isServer() && caller.isKeyPressed(key_action1) && canShootManual(this) && isClearShot(this, aimVec))
 	{
-		Fire(this, aimVec, controller.getNetworkID(), true);
+		server_onFire(this, caller, aimVec, true);
 	}
 
 	// rotate turret
 	Rotate(this, aimVec);
 	aimVec.y *= -1;
-	controller.setAngleDegrees(aimVec.Angle());
+	caller.setAngleDegrees(aimVec.Angle());
 }
 
 void Auto(CBlob@ this)
 {
-	if (!isServer())
-		return;
+	if (!isServer()) return;
 	
-	if ((getGameTime() + this.getNetworkID() * 33) % 20 != 0)
-		return;
+	if ((getGameTime() + this.getNetworkID() * 33) % 20 != 0) return;
 
 	CBlob@[] blobsInRadius;
 	const Vec2f pos = this.getPosition();
@@ -205,35 +201,33 @@ void Auto(CBlob@ this)
 	{
 		if (canShootAuto(this))
 		{
-			u16 netID = 0;
+			CBlob@ blob;
 			Ship@ ship = ShipSet.getShip(thisColor);
 			if (ship !is null)
 			{
 				CPlayer@ shipOwner = getPlayerByUsername(ship.owner);
 				if (shipOwner !is null)
 				{
-					CBlob@ pBlob = shipOwner.getBlob();
-					if (pBlob !is null)
-						netID = pBlob.getNetworkID();
+					@blob = shipOwner.getBlob();
 				}
 			}
-			Fire(this, shootVec, netID);
+			server_onFire(this, blob, shootVec);
 		}
 	}
 }
 
-void Clone(CBlob@ this, CBlob@ parent, CBlob@ controller)
+void Clone(CBlob@ this, CBlob@ parent, CBlob@ caller)
 {
-	Vec2f aimpos = controller.getAimPos();
+	Vec2f aimpos = caller.getAimPos();
 	Vec2f pos = parent.getPosition();
 	Vec2f aimVec = aimpos - pos;
 	// fire
 	if (isClearShot(this, aimVec))
 	{
 		Rotate(this, aimVec);
-		if (controller.isMyPlayer() && controller.isKeyPressed(key_action1) && canShootManual(this) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
+		if (isServer() && caller.isKeyPressed(key_action1) && canShootManual(this) && (getGameTime() - parent.get_u32("fire time") == FIRE_RATE/2))
 		{
-			Fire(this, aimVec, controller.getNetworkID());
+			server_onFire(this, caller, aimVec, true);
 		}
 	}
 	else if (getGameTime() - this.get_u32("fire time") > 50) //free it so it tries to find another
@@ -323,24 +317,6 @@ const bool isClearShot(CBlob@ this, Vec2f&in aimVec, const bool&in targetMerged 
 	return true;
 }
 
-void Fire(CBlob@ this, Vec2f&in aimVector, const u16&in netid, const bool&in manual = false)
-{
-	const f32 aimdist = Maths::Min(aimVector.Normalize(), PROJECTILE_RANGE);
-
-	Vec2f offset(_shotspreadrandom.NextFloat() * (manual ? PROJECTILE_SPREAD_MANUAL : PROJECTILE_SPREAD), 0);
-	offset.RotateBy(_shotspreadrandom.NextFloat() * 360.0f, Vec2f());
-
-	const Vec2f _vel = (aimVector * PROJECTILE_SPEED) + offset;
-	const f32 _lifetime = Maths::Max(0.05f + aimdist/PROJECTILE_SPEED/32.0f, 0.25f);
-
-	CBitStream params;
-	params.write_netid(netid);
-	params.write_Vec2f(_vel);
-	params.write_f32(_lifetime);
-	this.SendCommand(this.getCommandID("fire"), params);
-	this.set_u32("fire time", getGameTime());
-}
-
 void Rotate(CBlob@ this, Vec2f&in aimVector)
 {
 	CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
@@ -351,55 +327,79 @@ void Rotate(CBlob@ this, Vec2f&in aimVector)
 	}
 }
 
+void server_onFire(CBlob@ this, CBlob@ caller, Vec2f&in aimVector, const bool&in manual = false)
+{
+	const u16 ammo = this.get_u16("ammo");
+	this.set_u16("ammo", Maths::Max(0, ammo - 1));
+	this.set_u32("fire time", getGameTime());
+	
+	if (ammo > 0)
+	{
+		CBlob@ bullet = server_FireBlob(this, caller, aimVector, manual);
+		if (bullet !is null)
+		{
+			aimVector = bullet.getVelocity();
+		}
+	}
+	
+	aimVector.Normalize();
+	
+	CBitStream params;
+	params.write_u16(ammo);
+	params.write_Vec2f(aimVector);
+	this.SendCommand(this.getCommandID("client_fire"), params);
+}
+
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("fire"))
+    if (cmd == this.getCommandID("client_fire") && isClient())
     {
-		CBlob@ caller = getBlobByNetworkID(params.read_netid());
-		Vec2f pos = this.getPosition();
+		const u16 ammo = params.read_u16();
+		Vec2f aimVector = params.read_Vec2f();
 
-		//ammo
-		u16 ammo = this.get_u16("ammo");
-
-		if (ammo == 0)
+		this.set_u16("ammo", Maths::Max(0, ammo - 1));
+		this.set_u32("fire time", getGameTime());
+		
+		Vec2f position = this.getPosition();
+		
+		if (ammo <= 0)
 		{
-			directionalSoundPlay("LoadingTick1", pos, 1.0f);
+			directionalSoundPlay("LoadingTick1", position, 1.0f);
 			return;
 		}
 
-		ammo--;
-		this.set_u16("ammo", ammo);
+		Rotate(this, aimVector);
+		shotParticles(position + aimVector * 9, aimVector.Angle());
+		directionalSoundPlay("FlakFire.ogg", position, 0.50f);
 
-		Vec2f velocity = params.read_Vec2f();
-		Vec2f aimVector = velocity;		aimVector.Normalize();
-		const f32 time = params.read_f32();
-
-		if (isServer())
-		{
-            CBlob@ bullet = server_CreateBlob("flakbullet", this.getTeamNum(), pos + aimVector*9);
-            if (bullet !is null)
-            {
-            	if (caller !is null)
-				{
-					if (caller.getPlayer() !is null)
-						bullet.SetDamageOwnerPlayer(caller.getPlayer());
-				}
-
-                bullet.setVelocity(velocity);
-                bullet.server_SetTimeToDie(time);
-				bullet.setAngleDegrees(-aimVector.Angle());
-            }
-    	}
-
-		if (isClient())
-		{
-			Rotate(this, aimVector);
-			shotParticles(pos + aimVector*9, velocity.Angle());
-			directionalSoundPlay("FlakFire.ogg", pos, 0.50f);
-
-			CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
-			if (layer !is null)
-				layer.animation.SetFrameIndex(0);
-		}
+		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
+		if (layer !is null)
+			layer.animation.SetFrameIndex(0);
     }
+}
+
+CBlob@ server_FireBlob(CBlob@ this, CBlob@ caller, Vec2f&in aimVector, const bool&in manual)
+{
+	const f32 aimdist = Maths::Min(aimVector.Normalize(), PROJECTILE_RANGE);
+	const f32 lifetime = Maths::Max(0.05f + aimdist / PROJECTILE_SPEED / 32.0f, 0.25f);
+
+	CBlob@ bullet = server_CreateBlob("flakbullet", this.getTeamNum(), this.getPosition() + aimVector * 9);
+	if (bullet !is null)
+	{
+		if (caller !is null)
+		{
+			bullet.SetDamageOwnerPlayer(caller.getPlayer());
+		}
+		
+		Random rand(bullet.getNetworkID());
+		Vec2f offset(rand.NextFloat() * (manual ? PROJECTILE_SPREAD_MANUAL : PROJECTILE_SPREAD), 0);
+		offset.RotateBy(rand.NextFloat() * 360.0f, Vec2f());
+		const Vec2f velocity = (aimVector * PROJECTILE_SPEED) + offset;
+
+		bullet.setVelocity(velocity);
+		bullet.server_SetTimeToDie(lifetime);
+		bullet.setAngleDegrees(-aimVector.Angle());
+		return bullet;
+	}
+	return null;
 }

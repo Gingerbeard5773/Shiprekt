@@ -21,7 +21,7 @@ void onInit(CBlob@ this)
 	
 	this.set_f32("weight", 3.5f);
 	
-	this.addCommandID("fire");
+	this.addCommandID("client_fire");
 
 	if (isServer())
 	{
@@ -67,12 +67,11 @@ void onTick(CBlob@ this)
 
 void Auto(CBlob@ this)
 {
-	if ((getGameTime() + this.getNetworkID() * 33) % 5 != 0)
-		return;
+	if ((getGameTime() + this.getNetworkID() * 33) % 5 != 0) return;
 
 	const Vec2f pos = this.getPosition();
 	f32 minDistance = 9999999.9f;
-	u16 hitBlobNetID = 0;
+	CBlob@ hitBlob;
 
 	CBlob@[] blobsInRadius;
 	if (getMap().getBlobsInRadius(pos, AUTO_RADIUS, @blobsInRadius))
@@ -92,18 +91,18 @@ void Auto(CBlob@ this)
 				if (b.getName() == "human")
 					distance += 80.0f;//humans have lower priority
 
-				if (distance < minDistance && isClearShot(this, aimVector) && !getMap().rayCastSolid(bPos, pos))
+				if (distance < minDistance && !isObstructed(this, aimVector) && !getMap().rayCastSolid(bPos, pos))
 				{
 					minDistance = distance;
-					hitBlobNetID = b.getNetworkID();
+					@hitBlob = b;
 				}
 			}
 		}
 	}
 
-	if (isServer() && hitBlobNetID > 0 && canShootAuto(this))
+	if (isServer() && hitBlob !is null && canShootAuto(this))
 	{
-		Fire(this, hitBlobNetID);
+		server_onFire(this, hitBlob);
 	}
 }
 
@@ -112,7 +111,7 @@ const bool canShootAuto(CBlob@ this)
 	return this.get_u32("fire time") + FIRE_RATE < getGameTime();
 }
 
-const bool isClearShot(CBlob@ this, Vec2f&in aimVector)
+const bool isObstructed(CBlob@ this, Vec2f&in aimVector)
 {
 	const f32 distanceToTarget = Maths::Max(aimVector.Length() - 8.0f, 0.0f);
 	HitInfo@[] hitInfos;
@@ -130,20 +129,29 @@ const bool isClearShot(CBlob@ this, Vec2f&in aimVector)
 			if ((b.hasTag("weapon") || b.hasTag("solid") || (b.hasTag("door") && b.getShape().getConsts().collidable))
 				&& b.getShape().getVars().customData > 0)
 			{
-				return false;
+				return true;
 			}
 		}
 	}
 
-	return true;
+	return false;
 }
 
-void Fire(CBlob@ this, const u16&in netid)
+void server_onFire(CBlob@ this, CBlob@ hitBlob)
 {
-	CBitStream params;
-	params.write_netid(netid);
+	u16 ammo = this.get_u16("ammo");
+	this.set_u16("ammo", Maths::Max(0, ammo - 1));
+	this.set_u32("fire time", getGameTime());
+	
+	if (ammo > 0)
+	{
+		this.server_Hit(hitBlob, hitBlob.getPosition(), Vec2f_zero, getDamage(hitBlob), 0, true);
+	}
 
-	this.SendCommand(this.getCommandID("fire"), params);
+	CBitStream stream;
+	stream.write_netid(hitBlob.getNetworkID());
+	stream.write_u16(ammo);
+	this.SendCommand(this.getCommandID("client_fire"), stream);
 }
 
 void Rotate(CBlob@ this, Vec2f&in aimVector)
@@ -158,66 +166,56 @@ void Rotate(CBlob@ this, Vec2f&in aimVector)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("fire"))
+	if (cmd == this.getCommandID("client_fire") && isClient())
 	{
 		CBlob@ hitBlob = getBlobByNetworkID(params.read_netid());
 		if (hitBlob is null) return;
+		
+		const u16 ammo = params.read_u16();
+		this.set_u16("ammo", Maths::Max(0, ammo - 1));
+		this.set_u32("fire time", getGameTime());
 
 		Vec2f pos = this.getPosition();
-		Vec2f bPos = hitBlob.getPosition();
-		Vec2f aimVector = bPos - pos;
 
-		//ammo
-		u16 ammo = this.get_u16("ammo");
-		if (ammo == 0)
+		if (ammo <= 0)
 		{
 			directionalSoundPlay("LoadingTick1", pos, 1.0f);
 			return;
 		}
+		
+		Vec2f bPos = hitBlob.getPosition();
+		Vec2f aimVector = bPos - pos;
 
-		ammo--;
-		this.set_u16("ammo", ammo);
+		Rotate(this, aimVector);
+		directionalSoundPlay("Laser1.ogg", pos, 1.0f);
 
-		if (isServer())
+		const Vec2f barrelPos = pos + Vec2f(1,0).RotateBy(aimVector.Angle()) * 8;
+		CSprite@ sprite = this.getSprite();
+		sprite.RemoveSpriteLayer("laser");
+		CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam2.png", 16, 16);
+		if (laser !is null) //partial length laser
 		{
-			this.server_Hit(hitBlob, bPos, Vec2f_zero, getDamage(hitBlob), 0, true);
+			Animation@ anim = laser.addAnimation("default", 1, false);
+			int[] frames = { 0, 1, 2, 3, 4, 5 };
+			anim.AddFrames(frames);
+			laser.SetVisible(true);
+			f32 laserLength = Maths::Max(0.1f, (bPos - barrelPos).getLength() / 16.0f);
+			laser.ResetTransform();
+			laser.ScaleBy(Vec2f(laserLength, 0.5f));
+			laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));
+			laser.RotateBy(-this.getAngleDegrees() - aimVector.Angle(), Vec2f());
+			laser.setRenderStyle(RenderStyle::light);
+			laser.SetRelativeZ(1);
 		}
 
-		if (isClient())//effects
+		if (hitBlob.hasTag("projectile"))
 		{
-			Rotate(this, aimVector);
-			directionalSoundPlay("Laser1.ogg", pos, 1.0f);
-
-			const Vec2f barrelPos = pos + Vec2f(1,0).RotateBy(aimVector.Angle())*8;
-			CSprite@ sprite = this.getSprite();
-			sprite.RemoveSpriteLayer("laser");
-			CSpriteLayer@ laser = sprite.addSpriteLayer("laser", "Beam2.png", 16, 16);
-			if (laser !is null)//partial length laser
-			{
-				Animation@ anim = laser.addAnimation("default", 1, false);
-				int[] frames = { 0, 1, 2, 3, 4, 5 };
-				anim.AddFrames(frames);
-				laser.SetVisible(true);
-				f32 laserLength = Maths::Max(0.1f, (bPos - barrelPos).getLength() / 16.0f);
-				laser.ResetTransform();
-				laser.ScaleBy(Vec2f(laserLength, 0.5f));
-				laser.TranslateBy(Vec2f(laserLength*8.0f, 0.0f));
-				laser.RotateBy(-this.getAngleDegrees() - aimVector.Angle(), Vec2f());
-				laser.setRenderStyle(RenderStyle::light);
-				laser.SetRelativeZ(1);
-			}
-
-			if (hitBlob.hasTag("projectile"))
-			{
-				sparks(bPos, 4);
-			}
+			sparks(bPos, 4);
 		}
 
 		CSpriteLayer@ layer = this.getSprite().getSpriteLayer("weapon");
 		if (layer !is null)
 			layer.animation.SetFrameIndex(0);
-
-		this.set_u32("fire time", getGameTime());
     }
 }
 
