@@ -4,7 +4,7 @@
 void onInit(CRules@ this)
 {
 	//mod version
-	this.set_string("version", "1.53.2");
+	this.set_string("version", "1.53.3");
 	
 	//change log
 	this.set_string("changelog",
@@ -17,7 +17,7 @@ void onInit(CRules@ this)
 		+ "  * Machinegun bullets go farther.\n");
 	
 	//dedicated server name
-	const string server_name = "[EU] Shiprekt++ ("+this.get_string("version")+")";
+	const string server_name = "[EU] Shiprekt++"; //("+this.get_string("version")+")
 	
 	if (sv_name != server_name)
 	{
