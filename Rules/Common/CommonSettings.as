@@ -48,6 +48,11 @@ void onInit(CRules@ this)
 	sv_gravity = 0;
 	sv_visiblity_scale = 2.0f;
 	
+	//client settings
+	cc_indent = 10;
+	cc_halign = 2;
+	cc_valign = 2;
+	
 	//gameplay settings
 	this.set_u16("starting_booty", 325);         //booty given to players on map restart
 	this.set_u16("warmup_time", 150 * 30);       //no weapons warmup time
