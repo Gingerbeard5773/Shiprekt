@@ -36,7 +36,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	server_SetPlayerPositionWithShipNew(this);
+	server_SetPlayerPositionWithShip(this);
 
 	if (this.isMyPlayer())
 	{
