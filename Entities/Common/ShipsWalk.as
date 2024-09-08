@@ -36,7 +36,10 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	server_SetPlayerPositionWithShip(this);
+	if (isServer() || this.isMyPlayer())
+	{
+		SetPlayerPositionWithShip(this);
+	}
 
 	if (this.isMyPlayer())
 	{
@@ -45,10 +48,8 @@ void onTick(CBlob@ this)
 	}
 }
 
-void server_SetPlayerPositionWithShip(CBlob@ this)
+void SetPlayerPositionWithShip(CBlob@ this)
 {
-	if (!isServer()) return;
-
 	WalkInfo@ walk;
 	if (!this.get("WalkInfo", @walk)) return;
 	
@@ -86,20 +87,23 @@ void server_SetPlayerPositionWithShip(CBlob@ this)
 		this.setPosition(pos);
 	}
 
-	CBitStream params;
-	params.write_s32(overlappingShipID);
-	params.write_Vec2f(pos);
-	this.SendCommand(this.getCommandID("client_set_player_position"), params);
+	if (isServer())
+	{
+		CBitStream params;
+		params.write_s32(overlappingShipID);
+		params.write_Vec2f(pos);
+		this.SendCommand(this.getCommandID("client_set_player_position"), params);
+	}
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	WalkInfo@ walk;
-	if (!this.get("WalkInfo", @walk)) return;
-
 	if (cmd == this.getCommandID("client_set_player_position") && isClient())
 	{
-		if (this.isMyPlayer()) return;
+		if (this.isMyPlayer()) return; //we already calculated our position
+
+		WalkInfo@ walk;
+		if (!this.get("WalkInfo", @walk)) return;
 
 		//sync player position to clients
 		const s32 overlappingShipID = params.read_s32();
