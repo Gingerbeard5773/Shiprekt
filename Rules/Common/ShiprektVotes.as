@@ -573,7 +573,7 @@ void onMainMenuCreated(CRules@ this, CContextMenu@ menu)
 	//Freebuild menu
 	//vote free building mode
 	{
-		const bool canActivate = getPlayersCount() < 4 || (this.isWarmup() && getPlayersCount() < 6) || this.get_bool("freebuild");
+		const bool canActivate = getPlayersCount() < 4 || (this.isWarmup() && getPlayersCount() < 5) || this.get_bool("freebuild");
 		const u32 coolDownFb = Maths::Max(0, freeBuildCooldown - (getGameTime() - lastFBVote));
 		
 		string descFb = Trans::Vote+" "+Trans::Enable+"/"+Trans::Disable+" "+Trans::FreebuildMode+".";
