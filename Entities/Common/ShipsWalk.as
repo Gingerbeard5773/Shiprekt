@@ -99,6 +99,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 	if (cmd == this.getCommandID("client_set_player_position") && isClient())
 	{
+		if (this.isMyPlayer()) return;
+
 		//sync player position to clients
 		const s32 overlappingShipID = params.read_s32();
 		Vec2f offset = params.read_Vec2f();
