@@ -387,29 +387,26 @@ void PlayerControls(CBlob@ this)
 		CBlob@ core = getMothership(this.getTeamNum());
 		if (core !is null && !core.hasTag("critical"))
 		{
-			if (!Human::isHoldingBlocks(this) && !this.isAttached())
+			if (this.get_bool("getting block"))
+			{
+				this.set_bool("getting block", false);
+				this.getSprite().PlaySound("join");
+			}
+			else if (!Human::isHoldingBlocks(this) && !this.isAttached())
 			{
 				if (!hud.hasButtons())
 				{
-					if (this.get_bool("getting block"))
+					//choose a new block to buy
+					const s32 overlappingShipID = this.get_s32("shipID");
+					Ship@ pShip = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
+					if (pShip !is null && pShip.centerBlock !is null && ((pShip.id == core.getShape().getVars().customData) 
+						|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum())))
 					{
-						this.set_bool("getting block", false);
-						this.getSprite().PlaySound("join");
-					}
-					else
-					{
-						//choose a new block to buy
-						const s32 overlappingShipID = this.get_s32("shipID");
-						Ship@ pShip = overlappingShipID > 0 ? getShipSet().getShip(overlappingShipID) : null;
-						if (pShip !is null && pShip.centerBlock !is null && ((pShip.id == core.getShape().getVars().customData) 
-							|| ((pShip.isStation || pShip.isSecondaryCore) && pShip.centerBlock.getTeamNum() == this.getTeamNum())))
-						{
-							buildMenuOpen = true;
-							this.set_bool("justMenuClicked", true);
+						buildMenuOpen = true;
+						this.set_bool("justMenuClicked", true);
 
-							Sound::Play("buttonclick.ogg");
-							BuildShopMenu(this, core, Trans::Components, Vec2f(0,0), (pShip.isStation || pShip.isSecondaryCore) && !pShip.isMothership);
-						}
+						Sound::Play("buttonclick.ogg");
+						BuildShopMenu(this, core, Trans::Components, Vec2f(0,0), (pShip.isStation || pShip.isSecondaryCore) && !pShip.isMothership);
 					}
 				} 
 				else if (hud.hasMenus())
