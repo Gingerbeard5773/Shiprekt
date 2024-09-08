@@ -179,6 +179,7 @@ void server_onFire(CBlob@ this, CBlob@ caller, Vec2f&in aimVector)
 	}
 	
 	CBitStream params;
+	params.write_netid(caller.getNetworkID());
 	params.write_u16(ammo);
 	params.write_u8(barrel);
 	params.write_Vec2f(aimVector);
@@ -189,10 +190,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("client_fire") && isClient())
 	{
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		const u16 ammo = params.read_u16();
 		const u8 barrel = params.read_u8();
 		Vec2f aimVector = params.read_Vec2f();
 		
+		if (caller !is null)
+			this.SetDamageOwnerPlayer(caller.getPlayer());
+
 		this.set_u16("ammo", Maths::Max(0, ammo - 1));
 		this.set_u32("fire time", getGameTime());
 		

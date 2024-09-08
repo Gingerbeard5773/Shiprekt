@@ -133,6 +133,7 @@ void server_onFire(CBlob@ this, CBlob@ caller)
 	}
 	
 	CBitStream params;
+	params.write_netid(caller.getNetworkID());
 	params.write_bool(obstructed);
 	params.write_u16(ammo);
 	params.write_u8(barrel);
@@ -143,9 +144,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("client_fire") && isClient())
 	{
+		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		const bool obstructed = params.read_bool();
 		const u16 ammo = params.read_u16();
 		const u8 barrel = params.read_u8();
+
+		if (caller !is null)
+			this.SetDamageOwnerPlayer(caller.getPlayer());
 
 		this.set_u16("ammo", Maths::Max(0, ammo - 1));
 		this.set_u32("fire time", getGameTime());
