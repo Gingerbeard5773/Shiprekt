@@ -1,6 +1,6 @@
 //Move players with their ships
 
-//Slightly buggy since the player's dont appear in the right spots. :/
+//Slightly buggy since players appear behind while the ships are moving. :/
 //Supposed to function by sending the player's server position on the ship to the clients
 //To make it appear in the same position RELATIVE to the ship but for the clients
 //The result is that server and client is technically desynced but is in the correct locations relative to the ship.
@@ -32,6 +32,7 @@ void onInit(CBlob@ this)
 	this.getShape().getConsts().net_threshold_multiplier = -1.0f; //stop engine shape sync, because we do our own superior synchronization.
 
 	this.addCommandID("client_set_player_position");
+	this.addCommandID("server_set_player_position");
 }
 
 void onTick(CBlob@ this)
@@ -96,27 +97,78 @@ void SetPlayerPositionWithShip(CBlob@ this)
 	}
 }
 
+void SetSynchronizedPosition(CBlob@ this, const s32&in overlappingShipID, Vec2f&in offset)
+{
+	if (overlappingShipID > 0)
+	{
+		Ship@ ship = getShipSet().getShip(overlappingShipID);
+		if (ship is null) return;
+
+		offset.RotateBy(ship.angle);
+		offset += ship.origin_pos;
+	}
+	
+	this.setPosition(offset);
+}
+
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("client_set_player_position") && isClient())
 	{
-		if (this.isMyPlayer()) return; //we already calculated our position
-
-		WalkInfo@ walk;
-		if (!this.get("WalkInfo", @walk)) return;
-
-		//sync player position to clients
 		const s32 overlappingShipID = params.read_s32();
 		Vec2f offset = params.read_Vec2f();
-		if (overlappingShipID > 0)
-		{
-			Ship@ ship = getShipSet().getShip(overlappingShipID);
-			if (ship is null) return;
 
-			offset.RotateBy(ship.angle);
-			offset += ship.origin_pos;
+		if (this.isMyPlayer())
+		{
+			client_FixDesyncs(this, overlappingShipID, offset);
+			return;
 		}
 
-		this.setPosition(offset);
+		SetSynchronizedPosition(this, overlappingShipID, offset);
+	}
+	else if (cmd == this.getCommandID("server_set_player_position") && isServer())
+	{
+		const s32 overlappingShipID = params.read_s32();
+		Vec2f offset = params.read_Vec2f();
+		
+		SetSynchronizedPosition(this, overlappingShipID, offset);
+	}
+}
+
+const f32 resync_threshold = 16.0f;
+void client_FixDesyncs(CBlob@ this, const s32&in server_shipID, Vec2f&in server_offset)
+{
+	if (isServer()) return; //localhost doesnt need to fix desyncs
+
+	WalkInfo@ walk;
+	if (!this.get("WalkInfo", @walk)) return;
+
+	const s32 client_ShipID = this.get_s32("shipID");
+	
+	//sync (server -> my player)
+	//this is a fix for when we experience a network drop, so we dont get booted off the ship randomly. surprisingly effective
+	if (client_ShipID != server_shipID && server_shipID > 0)
+	{
+		SetSynchronizedPosition(this, server_shipID, server_offset);
+		return;
+	}
+
+	//sync (my player -> server)
+	//because the server and client will ALWAYS end up doing different things, this tries to make sure we never get too desynchronized
+	Vec2f client_offset = this.getPosition();
+	Ship@ ship = client_ShipID > 0 ? getShipSet().getShip(client_ShipID) : null;
+	if (ship !is null)
+	{
+		const f32 shipAngleDelta = ship.angle - walk.shipOldAngle;
+		client_offset -= walk.shipOldPos;
+		client_offset.RotateBy(shipAngleDelta - ship.angle);
+	}
+
+	if ((server_offset - client_offset).Length() > resync_threshold) //are we are desynced
+	{
+		CBitStream params;
+		params.write_s32(client_ShipID);
+		params.write_Vec2f(client_offset);
+		this.SendCommand(this.getCommandID("server_set_player_position"), params);
 	}
 }
