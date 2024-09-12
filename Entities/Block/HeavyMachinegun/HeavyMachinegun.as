@@ -118,16 +118,15 @@ bool canShoot(CBlob@ this)
 const bool isObstructed(CBlob@ this, Vec2f&in aimVector)
 {
 	Vec2f pos = this.getPosition();
-	const f32 distanceToTarget = Maths::Max(aimVector.Length(), 80.0f);
+	const f32 distanceToTarget = 80.0f;
 	CMap@ map = getMap();
 
-	Vec2f offset = aimVector;
-	offset.Normalize();
-	offset *= 7.0f;
+	Vec2f barrel_one = Vec2f(11.8f, -2.0).RotateBy(-aimVector.Angle());
+	Vec2f barrel_two = Vec2f(11.8f, 2.0).RotateBy(-aimVector.Angle());
 
 	HitInfo@[] hitInfos;
-	map.getHitInfosFromRay(pos + offset.RotateBy(30), -aimVector.Angle(), distanceToTarget, this, @hitInfos);
-	map.getHitInfosFromRay(pos + offset.RotateBy(-60), -aimVector.Angle(), distanceToTarget, this, @hitInfos);
+	map.getHitInfosFromRay(pos + barrel_one, -aimVector.Angle(), distanceToTarget, this, @hitInfos);
+	map.getHitInfosFromRay(pos + barrel_two, -aimVector.Angle(), distanceToTarget, this, @hitInfos);
 	
 	const u8 hitLength = hitInfos.length;
 	if (hitLength > 0)
