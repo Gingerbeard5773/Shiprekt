@@ -246,7 +246,8 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	if (player is null) return true;
 
 	//for testing
-	if (sv_test || player.isMod() || isDev(player))
+	const bool isLocalhost = isServer() && isClient();
+	if (isLocalhost || player.isMod() || player.isRCON() || isDev(player))
 	{
 		if (text_in.substr(0,1) == "!")
 		{
