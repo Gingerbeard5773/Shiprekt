@@ -113,17 +113,9 @@ void onCollision(CBlob@ this, CBlob@ b, bool solid, Vec2f normal, Vec2f point1)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-	CPlayer@ owner = this.getDamageOwnerPlayer();
-	if (owner !is null)
-	{
-		rewardBooty(owner, hitBlob, booty_reward);
-	}
+	server_rewardBooty(this.getDamageOwnerPlayer(), hitBlob, booty_reward);
 	
-	if (!isClient()) return;
-	
-	if (customData == 9) return;
-	
-	if (hitBlob.hasTag("block"))
+	if (isClient() && customData != 9 && hitBlob.hasTag("block"))
 	{
 		sparks(worldPoint, v_fastrender ? 3 : 8);
 		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", worldPoint, 0.50f);

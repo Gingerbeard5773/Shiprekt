@@ -158,25 +158,25 @@ void Explode(CBlob@ this)
 	makeLargeExplosionParticle(pos);
 	ShakeScreen(4 * BOMB_RADIUS, 45, pos);
 
-	//hit blobs
-	CBlob@[] blobs;
-	getMap().getBlobsInRadius(pos, BOMB_RADIUS, @blobs);
-
-	ShipDictionary@ ShipSet = getShipSet();
-	const u8 blobsLength = blobs.length;
-	for (u8 i = 0; i < blobsLength; i++)
+	if (isServer())
 	{
-		CBlob@ hit_blob = blobs[i];
-		if (hit_blob is this) continue;
-		
-		const int hitCol = hit_blob.getShape().getVars().customData;
-		Vec2f hit_blob_pos = hit_blob.getPosition();
-		Vec2f direction = hit_blob_pos - pos;
-		const f32 damage = direction.Length() > 13.0f ? BOMB_BASE_DAMAGE / 2.0f : BOMB_BASE_DAMAGE;
-		const f32 booty_factor = Maths::Min(damage, hit_blob.getHealth()) / hit_blob.getInitialHealth();
+		//hit blobs
+		CBlob@[] blobs;
+		getMap().getBlobsInRadius(pos, BOMB_RADIUS, @blobs);
 
-		if (isServer())
+		ShipDictionary@ ShipSet = getShipSet();
+		const u8 blobsLength = blobs.length;
+		for (u8 i = 0; i < blobsLength; i++)
 		{
+			CBlob@ hit_blob = blobs[i];
+			if (hit_blob is this) continue;
+			
+			const int hitCol = hit_blob.getShape().getVars().customData;
+			Vec2f hit_blob_pos = hit_blob.getPosition();
+			Vec2f direction = hit_blob_pos - pos;
+			const f32 damage = direction.Length() > 13.0f ? BOMB_BASE_DAMAGE / 2.0f : BOMB_BASE_DAMAGE;
+			const f32 booty_factor = Maths::Min(damage, hit_blob.getHealth()) / hit_blob.getInitialHealth();
+
 			if (hitCol > 0)
 			{
 				// move the ship
@@ -189,12 +189,8 @@ void Explode(CBlob@ this)
 			}
 
 			this.server_Hit(hit_blob, hit_blob_pos, direction, damage, Hitters::bomb, true);
-		}
-	
-		CPlayer@ owner = this.getDamageOwnerPlayer();
-		if (owner !is null && hitCol > 0)
-		{
-			rewardBooty(owner, hit_blob, booty_reward, "Pinball_3", booty_factor);
+
+			server_rewardBooty(this.getDamageOwnerPlayer(), hit_blob, booty_reward, "Pinball_3", booty_factor);
 		}
 	}
 }

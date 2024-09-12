@@ -206,13 +206,11 @@ bool isObstructed(CBlob@ this, Vec2f&in barrelPos, Vec2f&in aimVector)
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
 	if (damage <= 0.0f) return;
-
-	CPlayer@ player = this.getDamageOwnerPlayer();
-	if (player !is null)
-		rewardBooty(player, hitBlob, booty_reward, "Pinball_"+XORRandom(4));
 	
 	if (isServer())
 	{
+		server_rewardBooty(this.getDamageOwnerPlayer(), hitBlob, booty_reward, "Pinball_"+XORRandom(4));
+
 		if (hitBlob.hasTag("engine") && hitBlob.getTeamNum() != this.getTeamNum() && XORRandom(3) == 0)
 			hitBlob.set_f32("power", 0.0f); //force turn off
 	}

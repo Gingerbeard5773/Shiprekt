@@ -233,10 +233,9 @@ f32 getDamage(CBlob@ hitBlob)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-	CPlayer@ owner = this.getDamageOwnerPlayer();
-	if (owner !is null && customData != Hitters::explosion) //no splash damage included
+	if (customData != Hitters::explosion) //no splash damage included
 	{
-		rewardBooty(owner, hitBlob, booty_reward);
+		server_rewardBooty(this.getDamageOwnerPlayer(), hitBlob, booty_reward);
 	}
 		
 	if (!isClient()) return;

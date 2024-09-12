@@ -106,6 +106,7 @@ void onInit(CRules@ this)
 	driver.SetShader("hq2x", v_postprocess);
 	
 	this.addCommandID("client_sync_bool");
+	this.addCommandID("client_damagebooty");
 	
 	if (isServer())
 	{
@@ -164,6 +165,15 @@ void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 	{
 		const string boolname = params.read_string();
 		this.set_bool(boolname, params.read_bool());
+	}
+	else if (cmd == this.getCommandID("client_damagebooty") && isClient())
+	{
+		Driver@ driver = getDriver();
+		if (driver is null) return; //idk if this can even be null
+		
+		const string sound = params.read_string();
+		Vec2f pos = driver.getWorldPosFromScreenPos(driver.getScreenCenterPos());
+		Sound::Play(sound, pos, 0.8f);
 	}
 }
 

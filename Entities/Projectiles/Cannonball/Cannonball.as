@@ -142,25 +142,18 @@ const f32 getDamage(CBlob@ this, CBlob@ hitBlob)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-	CPlayer@ owner = this.getDamageOwnerPlayer();
-	if (owner !is null)
-	{
-		CBlob@ blob = owner.getBlob();
-		if (blob !is null)
-			rewardBooty(owner, hitBlob, booty_reward);
-	}
+	server_rewardBooty(this.getDamageOwnerPlayer(), hitBlob, booty_reward);
 	
-	if (!isClient()) return;
-	
-	if (customData == 9 || damage <= 0.0f) return;
-
-	if (hitBlob.hasTag("solid") || hitBlob.hasTag("core") || hitBlob.hasTag("door") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
+	if (isClient() && customData != 9 && damage > 0.0f)
 	{
-		sparksDirectional(worldPoint + this.getVelocity(), this.getVelocity(), v_fastrender ? 4 : 7);
-		directionalSoundPlay("Pierce1.ogg", worldPoint);
-			
-		if (hitBlob.hasTag("mothership"))
-			directionalSoundPlay("Entities/Characters/Knight/ShieldHit.ogg", worldPoint);
+		if (hitBlob.hasTag("solid") || hitBlob.hasTag("core") || hitBlob.hasTag("door") || hitBlob.hasTag("seat") || hitBlob.hasTag("weapon"))
+		{
+			sparksDirectional(worldPoint + this.getVelocity(), this.getVelocity(), v_fastrender ? 4 : 7);
+			directionalSoundPlay("Pierce1.ogg", worldPoint);
+				
+			if (hitBlob.hasTag("mothership"))
+				directionalSoundPlay("Entities/Characters/Knight/ShieldHit.ogg", worldPoint);
+		}
 	}
 }
 

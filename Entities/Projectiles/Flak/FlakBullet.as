@@ -136,18 +136,12 @@ const f32 getDamage(CBlob@ hitBlob)
 
 void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitBlob, u8 customData)
 {
-	CPlayer@ owner = this.getDamageOwnerPlayer();
-	if (owner !is null)
-	{
-		rewardBooty(owner, hitBlob, booty_reward);
-	}
+	server_rewardBooty(this.getDamageOwnerPlayer(), hitBlob, booty_reward);
 	
-	if (!isClient()) return;
-	
-	if (hitBlob.hasTag("block"))
+	if (isClient() && hitBlob.hasTag("block"))
 	{
 		Vec2f vel = worldPoint - hitBlob.getPosition();
 		ShrapnelParticle(worldPoint, vel);
-		directionalSoundPlay("Ricochet" +  (XORRandom(3) + 1) + ".ogg", worldPoint, 0.35f);
+		directionalSoundPlay("Ricochet" + (XORRandom(3) + 1) + ".ogg", worldPoint, 0.35f);
 	}
 }
