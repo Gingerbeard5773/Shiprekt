@@ -1061,7 +1061,7 @@ void onRender(CRules@ this)
 {
 	//draw ship colors & block ids while in shiprekt debug mode
 	
-	if (g_debug != 1 && !ship_debug) return;
+	if (!ship_debug) return;
 	
 	CCamera@ camera = getCamera();
 	if (camera is null) return;
