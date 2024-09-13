@@ -7,6 +7,7 @@ const u8 CHECK_FREQUENCY = 30; //30 = 1 second
 const u32 FISH_RADIUS = 65.0f; //pickup radius
 const f32 MAX_REWARD_FACTOR = 0.13f; //% taken per check for mothership (goes fully to captain if no one else on the ship)
 const f32 CREW_REWARD_FACTOR = MAX_REWARD_FACTOR/5.0f;
+const f32 OVER_SEA_REWARD_FACTOR = MAX_REWARD_FACTOR/3.0f;
 const f32 CREW_REWARD_FACTOR_MOTHERSHIP = MAX_REWARD_FACTOR/2.5f;
 const u32 AMOUNT_INSTANT_PICKUP = 50;
 const u8 SPACE_HOG_TICKS = 15; //seconds after collecting where no Xs can spawn there
@@ -147,7 +148,9 @@ void onTick(CBlob@ this)
 		const string name = player.getUsername();
 		if (this.getDistanceTo(human) <= FISH_RADIUS && served.find(name) == -1)
 		{
-			const u16 reward = Maths::Ceil(amount * CREW_REWARD_FACTOR);
+			u16 reward = Maths::Ceil(amount * OVER_SEA_REWARD_FACTOR);
+			if (amount - reward <= AMOUNT_INSTANT_PICKUP)
+				reward = AMOUNT_INSTANT_PICKUP;
 			server_giveBooty(name, reward);
 			server_updateX(this, reward, !gaveBooty);
 			gaveBooty = true;

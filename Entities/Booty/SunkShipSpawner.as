@@ -59,7 +59,6 @@ void createBooty(const Vec2f&in pos, const u16&in amount)
 	CBlob@ booty = server_CreateBlobNoInit("booty");
 	if (booty !is null)
 	{
-		booty.Tag("booty");
 		booty.set_u16("amount", amount);
 		booty.set_u16("prevAmount", amount);
 		booty.server_setTeamNum(-1);
