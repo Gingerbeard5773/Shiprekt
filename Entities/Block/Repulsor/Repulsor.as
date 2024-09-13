@@ -17,7 +17,7 @@ void onInit(CBlob@ this)
 	this.set_f32("weight", 0.25f);
 	
 	this.addCommandID("chainReaction");
-	this.addCommandID("client_activate");
+	this.addCommandID("client_chainReaction");
 	this.set_u32("detonationTime", 0);
 	this.server_SetHealth(2.0f);
 
@@ -115,25 +115,12 @@ void SeperateShip(CBlob@ this)
 	}
 }
 
-void Activate(CBlob@ this, const u32&in time)
-{
-	this.Tag("activated");
-	this.set_u32("detonationTime", time);
-	if (isClient())
-	{
-		this.getSprite().SetAnimation("activated");
-		directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
-	}
-}
-
 void ChainReaction(CBlob@ this, const u32&in time)
 {
 	this.Tag("activated");
 	this.set_u32("detonationTime", time);
-
-	CBitStream bs;
-	bs.write_u32(time);
-	this.SendCommand(this.getCommandID("client_activate"), bs);
+	this.getSprite().SetAnimation("activated");
+	directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
 
 	CBlob@[] overlapping;
 	this.getOverlapping(@overlapping);
@@ -151,21 +138,23 @@ void ChainReaction(CBlob@ this, const u32&in time)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("client_activate") && isClient())
+	if (cmd == this.getCommandID("chainReaction") && isServer())
 	{
 		if (this.hasTag("activated")) return;
+
+		const u32 time = getGameTime() + FUSE_TIME;
+		ChainReaction(this, time);
 		
-		this.Tag("activated");
-		this.set_u32("detonationTime", params.read_u32());
+		if (isClient()) return; //no localhost
 
-		this.getSprite().SetAnimation("activated");
-		directionalSoundPlay("ChargeUp3.ogg", this.getPosition(), 3.75f);
+		CBitStream stream;
+		stream.write_u32(time);
+		this.SendCommand(this.getCommandID("client_chainReaction"), stream);
 	}
-	else if (cmd == this.getCommandID("chainReaction") && isServer())
+	else if (cmd == this.getCommandID("client_chainReaction") && isClient())
 	{
-		if (this.hasTag("activated")) return;
-
-		ChainReaction(this, getGameTime() + FUSE_TIME);
+		const u32 time = params.read_u32();
+		ChainReaction(this, time);
 	}
 }
 
