@@ -4,20 +4,19 @@
 void onInit(CRules@ this)
 {
 	//mod version
-	this.set_string("version", "1.53.3");
+	this.set_string("version", "1.53.4");
 	
 	//change log
 	this.set_string("changelog",
-		  "- 12-25-2023 - By Gingerbeard\n"
-		+ "  * Major map changes and new maps.\n"
-		+ "  * Docking to ships with couplings is much more reliable.\n"
-		+ "  * Disabled torpedo border bouncing.\n"
-		+ "  * Fixed a years old bug where particles' size was incorrect.\n"
-		+ "  * Bombs are much more stronger than before, but cost more.\n"
-		+ "  * Machinegun bullets go farther.\n");
+		  "- Sept 12, 2024 - By Gingerbeard\n"
+		+ "  * Long-range hits will give a hit-sound.\n"
+		+ "  * The heavy MG is less obstructed by other blocks.\n"
+		+ "  * Collecting booty from X's on miniships is faster.\n"
+		+ "  * Fixed issue with players getting booted off ships due to network drops/inconsistent ping.\n"
+		+ "  * Fixed invisible players bug and related desyncs.\n");
 	
 	//dedicated server name
-	const string server_name = "[EU] Shiprekt++"; //("+this.get_string("version")+")
+	const string server_name = "Shiprekt++"; //("+this.get_string("version")+")
 	
 	if (sv_name != server_name)
 	{
