@@ -257,7 +257,10 @@ void onHitBlob(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)
 {
 	const f32 spinFactor = this.getInitialHealth() - this.getHealth();
-	this.setAngularVelocity((float(XORRandom(30) - 15))*spinFactor);
+	
+	Random rand(this.getNetworkID() + this.getHealth() + damage);
+	const f32 random_speed = int(rand.NextRanged(30)) - 15;
+	this.setAngularVelocity(random_speed * spinFactor);
 
 	return damage;
 }
