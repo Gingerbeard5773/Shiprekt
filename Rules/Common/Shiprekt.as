@@ -595,7 +595,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					CBitStream params;
 					params.write_string("freebuild");
 					params.write_bool(!this.get_bool("freebuild"));
-					this.SendCommand(this.getCommandID("sync bool"), params);
+					this.SendCommand(this.getCommandID("client_sync_bool"), params);
 					return false;
 				}
 				else if (tokens[0] == "!sd") //spawn a whirlpool
