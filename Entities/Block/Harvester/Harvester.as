@@ -23,6 +23,7 @@ void onInit(CBlob@ this)
 	this.set_f32("weight", 2.0f);
 
 	this.addCommandID("client_fire");
+	this.addCommandID("client_reclaim");
 
 	if (isClient())
 	{
@@ -86,7 +87,8 @@ void ShootLaser(CBlob@ this, CBlob@ caller)
 	ShipDictionary@ ShipSet = getShipSet();
 	CSprite@ sprite = this.getSprite();
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
-	Vec2f barrelPos = this.getPosition();
+	Vec2f pos = this.getPosition();
+	Vec2f barrelPos = pos + aimVector*5;
 
 	//hit stuff
 	HitInfo@[] hitInfos;
@@ -98,7 +100,7 @@ void ShootLaser(CBlob@ this, CBlob@ caller)
 		for (u8 i = 0; i < hitLength; i++)
 		{
 			HitInfo@ hi = hitInfos[i];
-			CBlob@ b = hi.blob;	  
+			CBlob@ b = hi.blob;
 			if (b is null || b is this) continue;
 			
 			const int bCol = b.getShape().getVars().customData;
@@ -112,7 +114,7 @@ void ShootLaser(CBlob@ this, CBlob@ caller)
 			
 			if (isClient())//effects
 			{
-				setLaser(sprite, hi.hitpos - barrelPos);
+				setLaser(sprite, (hi.hitpos - pos).Length());
 				sparks(hi.hitpos, 4);
 			}
 
@@ -120,12 +122,12 @@ void ShootLaser(CBlob@ this, CBlob@ caller)
 			const f32 initialHealth = b.getInitialHealth();
 			const f32 currentReclaim = b.get_f32("current reclaim");
 
-			if (bship !is null && bCost > 0)
+			if (bship !is null && bCost > 0 && !b.hasTag("dead") && isServer())
 			{
 				const f32 fullConstructAmount = (CONSTRUCT_VALUE/bCost)*initialHealth; //fastest reclaim possible
 				const string shipOwnerName = bship.owner;
 				
-				if (!b.hasTag("mothership"))
+				if (!b.hasTag("mothership") || b.hasTag("disabled"))
 				{
 					f32 deconstructAmount = 0;
 					if ((shipOwnerName.isEmpty() && !bship.isMothership) //true if no owner for ship and ship is not a mothership
@@ -142,14 +144,17 @@ void ShootLaser(CBlob@ this, CBlob@ caller)
 
 					if ((currentReclaim - deconstructAmount) <= 0)
 					{
-						server_addPlayerBooty(player.getUsername(), (bCost*0.7f)*(b.getHealth()/initialHealth));
-						directionalSoundPlay("/ChaChing.ogg", barrelPos);
+						server_addPlayerBooty(player.getUsername(), (bCost*0.85f)*(b.getHealth()/initialHealth));
+						this.SendCommand(this.getCommandID("client_reclaim"));
 
-						b.Tag("disabled");
+						b.Tag("dead");
 						b.server_Die();
 					}
 					else
+					{
 						b.set_f32("current reclaim", currentReclaim - deconstructAmount);
+						b.Sync("current reclaim", true);
+					}
 				}
 			}
 			break;
@@ -165,23 +170,27 @@ void ShootLaser(CBlob@ this, CBlob@ caller)
 
 		if (!killed) //full length 'laser'
 		{
-			setLaser(sprite, aimVector * BULLET_RANGE);
+			setLaser(sprite, BULLET_RANGE);
 		}
 	}
 }
  
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-    if (cmd == this.getCommandID("client_fire"))
-    {
+	if (cmd == this.getCommandID("client_fire") && isClient())
+	{
 		CBlob@ caller = getBlobByNetworkID(params.read_netid());
 		if (caller is null) return;
 		
 		ShootLaser(this, caller);
-    }
+	}
+	else if (cmd == this.getCommandID("client_reclaim") && isClient())
+	{
+		directionalSoundPlay("/ChaChing.ogg", this.getPosition());
+	}
 }
 
-void setLaser(CSprite@ this, Vec2f&in lengthPos)
+void setLaser(CSprite@ this, f32&in laser_length)
 {
 	this.RemoveSpriteLayer("laser");
 	
@@ -192,10 +201,10 @@ void setLaser(CSprite@ this, Vec2f&in lengthPos)
 		int[] frames = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 		anim.AddFrames(frames);
 		laser.SetVisible(true);
-		f32 laserLength = Maths::Max(0.1f, lengthPos.getLength() / 16.0f);						
-		laser.ResetTransform();						
-		laser.ScaleBy(Vec2f(laserLength, 1.0f));							
-		laser.TranslateBy(Vec2f(laserLength * 8.0f, 0.0f));								
+		f32 laserLength = Maths::Max(0.1f, laser_length / 16.0f);
+		laser.ResetTransform();
+		laser.ScaleBy(Vec2f(laserLength, 1.0f));
+		laser.TranslateBy(Vec2f(laserLength * 8.0f, 0.0f));
 		laser.RotateBy(0.0f, Vec2f());
 		laser.setRenderStyle(RenderStyle::light);
 		laser.SetRelativeZ(1);

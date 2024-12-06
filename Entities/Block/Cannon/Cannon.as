@@ -78,9 +78,10 @@ void onTick(CBlob@ this)
 bool isObstructed(CBlob@ this)
 {
 	Vec2f aimVector = Vec2f(1, 0).RotateBy(this.getAngleDegrees());
+	Vec2f barrelPos = this.getPosition() + aimVector * 5.0f;
 
 	HitInfo@[] hitInfos;
-	getMap().getHitInfosFromRay(this.getPosition(), -aimVector.Angle(), 60.0f, this, @hitInfos);
+	getMap().getHitInfosFromRay(barrelPos, -aimVector.Angle(), 60.0f, this, @hitInfos);
 	const u8 hitLength = hitInfos.length;
 	for (u8 i = 0; i < hitLength; i++)
 	{
