@@ -6,7 +6,7 @@
 
 const int FIRE_RATE = 4;
 
-const u8 MAX_AMMO = 160;
+const u8 MAX_AMMO = 125;
 const u8 REFILL_AMOUNT = 30;
 const u8 REFILL_SECONDS = 5;
 
