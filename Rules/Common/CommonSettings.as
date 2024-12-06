@@ -4,16 +4,14 @@
 void onInit(CRules@ this)
 {
 	//mod version
-	this.set_string("version", "1.53.4");
+	this.set_string("version", "1.53.5");
 	
 	//change log
 	this.set_string("changelog",
-		  "- Sept 12, 2024 - By Gingerbeard\n"
-		+ "  * Long-range hits will give a hit-sound.\n"
-		+ "  * The heavy MG is less obstructed by other blocks.\n"
-		+ "  * Collecting booty from X's on miniships is faster.\n"
-		+ "  * Fixed issue with players getting booted off ships due to network drops/inconsistent ping.\n"
-		+ "  * Fixed invisible players bug and related desyncs.\n");
+		  "- December 6, 2024 - By Gingerbeard\n"
+		+ "  * Fixed a coin duplication exploit.\n"
+		+ "  * Tweaked plank health.\n"
+		+ "  * Tweaked MG damages.\n");
 	
 	//dedicated server name
 	const string server_name = "Shiprekt++"; //("+this.get_string("version")+")
