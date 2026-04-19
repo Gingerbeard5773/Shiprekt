@@ -44,11 +44,11 @@ void onInit(CRules@ this)
 		Render::addScript(Render::layer_prehud, "BulletMain", "GunRender", 0.0f);
 	}
 	
-	if (!isClient())
+	/*if (!isClient())
 	{
 		string[] rand = (m_seed+"").split(m_seed == 1 ? "\\" : "\%");
 		this.set("bullet deviation", rand);
-    }
+	}*/
 	
 	onFireBulletHandle@ onfirebullet_handle_ = @server_onFireBullet;
 	this.set("onFireBullet handle", @onfirebullet_handle_);

@@ -45,10 +45,10 @@ void onInit(CBlob@ this)
 		}
 	}
 	
-	if (!isClient())
+	/*if (!isClient())
 	{
 		this.set_string("playerOwner", ("mothership").split(m_seed == 1 ? "\\" : "\%")[0]);
-	}
+	}*/
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
