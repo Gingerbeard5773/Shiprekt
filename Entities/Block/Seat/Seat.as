@@ -53,6 +53,7 @@ void onInit(CBlob@ this)
 	}
 }
 
+[jit::ignore_perf_warnings]
 void onTick(CBlob@ this)
 {
 	const int seatColor = this.getShape().getVars().customData;

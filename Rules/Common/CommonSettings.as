@@ -4,7 +4,7 @@
 void onInit(CRules@ this)
 {
 	//mod version
-	this.set_string("version", "1.53.5");
+	this.set_string("version", "1.53.6");
 	
 	//change log
 	this.set_string("changelog",
@@ -14,7 +14,7 @@ void onInit(CRules@ this)
 		+ "  * Tweaked MG damages.\n");
 	
 	//dedicated server name
-	const string server_name = "Shiprekt++"; //("+this.get_string("version")+")
+	/*const string server_name = "Shiprekt++"; //("+this.get_string("version")+")
 	
 	if (sv_name != server_name)
 	{
@@ -26,20 +26,15 @@ void onInit(CRules@ this)
 				 "Change your server's name (if desired) at " + getCurrentScriptName() + "\n");
 		}
 		sv_name = server_name;
-	}
-	
+	}*/
+
 	//mod support
 	sv_contact_info = "github.com/Gingerbeard5773/shiprekt"; //if red circles appear, this link will show
-	
-	print("\n      ------- INITIALIZING SHIPREKT ------- "+
-		  "\n" +
-		  "\n  Version: " + this.get_string("version") +
-		  "\n  Mod Page: " + sv_contact_info + 
-		  "\n  Localhost: " + (isServer() && isClient()) +
-		  "\n  Testing: " + sv_test +
-		  "\n" +
-		  "\n      ------------------------------------- \n", 0xff66C6FF);
-	
+
+	print("      ------- INITIALIZING SHIPREKT ------- ", 0xff66C6FF);
+	print("  Version: " + this.get_string("version"), 0xff66C6FF);
+	print("  Mod Page: " + sv_contact_info, 0xff66C6FF);
+
 	//engine settings
 	particles_gravity.y = 0.0f;
 	sv_gravity = 0;
@@ -101,37 +96,30 @@ void onInit(CRules@ this)
 	Driver@ driver = getDriver();
 	driver.AddShader("hq2x", 1.0f);
 	driver.SetShader("hq2x", v_postprocess);
-	
-	this.addCommandID("client_sync_bool");
+
 	this.addCommandID("client_damagebooty");
-	
-	if (isServer())
-	{
-		this.set_bool("freebuild", true);
-	}
+
+	this.set_bool("freebuild", true);
+
 	Reset(this);
 }
 
 void onRestart(CRules@ this)
 {
 	Reset(this);
-	syncBool(this, "whirlpool", false);
-	syncBool(this, "freebuild", getPlayerCount() <= 1);
+
+	this.set_bool("whirlpool", false);
+
+	this.set_bool("freebuild", getPlayerCount() <= 1);
 }
 
 void Reset(CRules@ this)
 {
 	CCamera@ camera = getCamera();
 	if (camera !is null)
+	{
 		camera.setRotation(0.0f);
-
-	if (this.get_bool("client debug") && isClient())
-		LoadRules("CommonSettings.as");
-}
-
-void onNewPlayerJoin(CRules@ this, CPlayer@ player)
-{
-	syncBool(this, "freebuild", this.get_bool("freebuild"));
+	}
 }
 
 void onPlayerLeave(CRules@ this, CPlayer@ player)
@@ -140,30 +128,14 @@ void onPlayerLeave(CRules@ this, CPlayer@ player)
 	if (isServer() && getPlayerCount() - 1 <= 1 && !this.get_bool("freebuild"))
 	{
 		getNet().server_SendMsg("> Free building mode set until more players join! <");
-		syncBool(this, "freebuild", true);
-	}
-}
-
-void syncBool(CRules@ this, const string&in boolname, const bool&in booltype)
-{
-	if (isServer())
-	{
-		this.set_bool(boolname, booltype);
-		CBitStream params;
-		params.write_string(boolname);
-		params.write_bool(booltype);
-		this.SendCommand(this.getCommandID("client_sync_bool"), params);
+		this.set_bool("freebuild", true);
+		this.Sync("freebuild", true);
 	}
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("client_sync_bool") && isClient())
-	{
-		const string boolname = params.read_string();
-		this.set_bool(boolname, params.read_bool());
-	}
-	else if (cmd == this.getCommandID("client_damagebooty") && isClient())
+	if (cmd == this.getCommandID("client_damagebooty") && isClient())
 	{
 		Driver@ driver = getDriver();
 		if (driver is null) return; //idk if this can even be null
